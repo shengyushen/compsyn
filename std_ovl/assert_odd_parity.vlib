@@ -1,0 +1,28 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+`include "std_ovl_defines.h"
+
+`module assert_odd_parity (clk, reset_n, test_expr);
+  parameter severity_level = `OVL_ERROR;
+  parameter width = 1;
+  parameter property_type = `OVL_ASSERT;
+  parameter msg = "VIOLATION";
+  parameter coverage_level = `OVL_COVER_ALL;
+  input clk, reset_n;
+  input [width-1:0] test_expr;
+
+`ifdef OVL_VERILOG
+  `include "./vlog95/assert_odd_parity_logic.v"
+`endif
+
+`ifdef OVL_SVA
+  `include "./sva31a/assert_odd_parity_logic.sv"
+`endif
+
+`ifdef OVL_PSL
+  `include "./psl11/assert_odd_parity_psl_logic.v"
+`else
+  `endmodule
+`endif
+

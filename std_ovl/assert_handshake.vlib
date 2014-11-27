@@ -1,0 +1,34 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+`include "std_ovl_defines.h"
+
+`module assert_handshake (clk, reset_n, req, ack);
+  parameter severity_level = `OVL_ERROR;
+  parameter min_ack_cycle = 0; // default don't check
+  parameter max_ack_cycle = 0; // default don't check
+  parameter req_drop = 0; // default don't check
+  parameter deassert_count = 0; // default don't check
+  parameter max_ack_length = 0; // default don't check
+  parameter property_type = `OVL_ASSERT;
+  parameter msg = "VIOLATION";
+  parameter coverage_level = `OVL_COVER_ALL;
+  input clk;
+  input reset_n;
+  input req;
+  input ack;
+
+`ifdef OVL_VERILOG
+  `include "./vlog95/assert_handshake_logic.v"
+`endif
+
+`ifdef OVL_SVA
+  `include "./sva31a/assert_handshake_logic.sv"
+`endif
+
+`ifdef OVL_PSL
+  `include "./psl11/assert_handshake_psl_logic.v"
+`else
+  `endmodule
+`endif
+

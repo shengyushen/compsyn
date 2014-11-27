@@ -1,0 +1,318 @@
+# Benchmark "hamming15" written by ABC on Mon Aug 22 16:35:32 2011
+.model hamming15
+.inputs in1 in2 in3 in4 in5 in6 in7 in8 in9 in10 in11
+.outputs out1 out2 out3 out4 out5 out6 out7 out8 out9 out10 out11 out12 \
+ out13 out14 out15
+
+.latch        n53         r0  2
+.latch        n58         r1  2
+.latch        n63         r2  2
+.latch        n68         r3  2
+
+.names r0 r1 n38
+10 1
+.names r2 n38 n39
+01 1
+.names r3 n39 n40
+01 1
+.names in11 n40 n41
+10 1
+.names in11 n40 n42
+01 1
+.names n41 n42 n43
+00 1
+.names in5 in7 n44
+01 1
+.names in5 in7 n45
+10 1
+.names n44 n45 n46
+00 1
+.names in4 n46 n47
+10 1
+.names in4 n46 n48
+01 1
+.names n47 n48 n49
+00 1
+.names in1 in2 n50
+11 1
+.names in1 in2 n51
+00 1
+.names n50 n51 n52
+00 1
+.names in9 n52 n53_1
+10 1
+.names in9 n52 n54
+01 1
+.names n53_1 n54 n55
+00 1
+.names n49 n55 n56
+00 1
+.names n49 n55 n57
+11 1
+.names n56 n57 n58_1
+00 1
+.names n43 n58_1 n59
+01 1
+.names n43 n58_1 n60
+10 1
+.names n59 n60 n61
+00 1
+.names r0 r1 n62
+01 1
+.names r2 n62 n63_1
+01 1
+.names r3 n63_1 n64
+01 1
+.names in4 in10 n65
+01 1
+.names in4 in10 n66
+10 1
+.names n65 n66 n67
+00 1
+.names in3 n67 n68_1
+10 1
+.names in3 n67 n69
+01 1
+.names n68_1 n69 n70
+00 1
+.names in7 in11 n71
+10 1
+.names in7 in11 n72
+01 1
+.names n71 n72 n73
+00 1
+.names in1 in6 n74
+11 1
+.names in1 in6 n75
+00 1
+.names n74 n75 n76
+00 1
+.names n73 n76 n77
+11 1
+.names n73 n76 n78
+00 1
+.names n77 n78 n79
+00 1
+.names n70 n79 n80
+01 1
+.names n70 n79 n81
+10 1
+.names n80 n81 n82
+00 1
+.names n64 n82 n83
+00 1
+.names n64 n82 n84
+11 1
+.names n83 n84 out2
+00 1
+.names r0 r1 n86
+11 1
+.names r2 n86 n87
+01 1
+.names r3 n87 n88
+01 1
+.names in1 n88 n89
+10 1
+.names in1 n88 n90
+01 1
+.names n89 n90 n91
+00 1
+.names r0 r1 n92
+00 1
+.names r2 n92 n93
+11 1
+.names r3 n93 n94
+01 1
+.names in8 in9 n95
+00 1
+.names in8 in9 n96
+11 1
+.names n95 n96 n97
+00 1
+.names in2 in11 n98
+10 1
+.names in2 in11 n99
+01 1
+.names n98 n99 n100
+00 1
+.names n97 n100 n101
+01 1
+.names n97 n100 n102
+10 1
+.names n101 n102 n103
+00 1
+.names n70 n103 n104
+11 1
+.names n70 n103 n105
+00 1
+.names n104 n105 n106
+00 1
+.names n94 n106 n107
+10 1
+.names n94 n106 n108
+01 1
+.names n107 n108 n109
+00 1
+.names r2 n38 n110
+11 1
+.names r3 n110 n111
+01 1
+.names in2 n111 n112
+10 1
+.names in2 n111 n113
+01 1
+.names n112 n113 n114
+00 1
+.names r2 n62 n115
+11 1
+.names r3 n115 n116
+01 1
+.names in3 n116 n117
+10 1
+.names in3 n116 n118
+01 1
+.names n117 n118 n119
+00 1
+.names r2 n86 n120
+11 1
+.names r3 n120 n121
+01 1
+.names in4 n121 n122
+10 1
+.names in4 n121 n123
+01 1
+.names n122 n123 n124
+00 1
+.names r3 n92 n125
+11 1
+.names r2 n125 n126
+01 1
+.names in11 n126 n127
+00 1
+.names in11 n126 n128
+11 1
+.names n127 n128 n129
+00 1
+.names in6 in10 n130
+01 1
+.names in6 in10 n131
+10 1
+.names n130 n131 n132
+00 1
+.names in5 n132 n133
+10 1
+.names in5 n132 n134
+01 1
+.names n133 n134 n135
+00 1
+.names in7 n97 n136
+11 1
+.names in7 n97 n137
+00 1
+.names n136 n137 n138
+00 1
+.names n135 n138 n139
+10 1
+.names n135 n138 n140
+01 1
+.names n139 n140 n141
+00 1
+.names n129 n141 n142
+00 1
+.names n129 n141 n143
+11 1
+.names n142 n143 n144
+00 1
+.names r3 n39 n145
+11 1
+.names in5 n145 n146
+10 1
+.names in5 n145 n147
+01 1
+.names n146 n147 n148
+00 1
+.names r3 n63_1 n149
+11 1
+.names in6 n149 n150
+10 1
+.names in6 n149 n151
+01 1
+.names n150 n151 n152
+00 1
+.names r3 n87 n153
+11 1
+.names in7 n153 n154
+10 1
+.names in7 n153 n155
+01 1
+.names n154 n155 n156
+00 1
+.names r3 n93 n157
+11 1
+.names in8 n157 n158
+10 1
+.names in8 n157 n159
+01 1
+.names n158 n159 n160
+00 1
+.names r3 n110 n161
+11 1
+.names in9 n161 n162
+10 1
+.names in9 n161 n163
+01 1
+.names n162 n163 n164
+00 1
+.names r3 n115 n165
+11 1
+.names in10 n165 n166
+10 1
+.names in10 n165 n167
+01 1
+.names n166 n167 n168
+00 1
+.names r3 n120 n169
+11 1
+.names in11 n169 n170
+10 1
+.names in11 n169 n171
+01 1
+.names n170 n171 n172
+00 1
+.names n61 out1
+0 1
+.names n91 out3
+0 1
+.names n109 out4
+0 1
+.names n114 out5
+0 1
+.names n119 out6
+0 1
+.names n124 out7
+0 1
+.names n144 out8
+0 1
+.names n148 out9
+0 1
+.names n152 out10
+0 1
+.names n156 out11
+0 1
+.names n160 out12
+0 1
+.names n164 out13
+0 1
+.names n168 out14
+0 1
+.names n172 out15
+0 1
+.names r0 n53
+1 1
+.names r1 n58
+1 1
+.names r2 n63
+1 1
+.names r3 n68
+1 1
+.end

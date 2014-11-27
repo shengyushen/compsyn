@@ -1,0 +1,75 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CC_MINIMIZATION	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	24;"	d	file:
+Proof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^Proof::Proof()$/;"	f	class:Proof
+Proof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^Proof::Proof(ProofTraverser& t)$/;"	f	class:Proof
+TempFiles	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^class TempFiles {$/;"	c	file:
+addRoot	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^ClauseId Proof::addRoot(vec<Lit>& cl)$/;"	f	class:Proof
+analyze	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::analyze(Clause* confl, vec<Lit>& out_learnt, int& out_btlevel)$/;"	f	class:Solver
+analyzeFinal	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::analyzeFinal(Clause* confl, bool skip_first)$/;"	f	class:Solver
+analyze_removable	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::analyze_removable(Lit p, uint min_level)$/;"	f	class:Solver
+assume	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::assume(Lit p) {$/;"	f	class:Solver
+beginChain	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::beginChain(ClauseId start)$/;"	f	class:Proof
+cancelUntil	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::cancelUntil(int level) {$/;"	f	class:Solver
+chain	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void ssyChecker::chain  (const vec<ClauseId>& cs, const vec<Var>& xs) {$/;"	f	class:ssyChecker
+checkProof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^vec<long>& Proof::checkProof(char * proofname)$/;"	f	class:Proof
+claRescaleActivity	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::claRescaleActivity()$/;"	f	class:Solver
+clear_proof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::clear_proof()$/;"	f	class:Proof
+close	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::close(void)$/;"	f	class:File
+compress	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::compress(Proof& dst, ClauseId goal)$/;"	f	class:Proof
+convert_literals	MiniSATWrap.C	/^static void convert_literals(value l, vec<Lit> &r) {$/;"	f	file:
+deleted	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::deleted(ClauseId gone)$/;"	f	class:Proof
+deleted	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void ssyChecker::deleted(ClauseId c) {$/;"	f	class:ssyChecker
+endChain	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^ClauseId Proof::endChain()$/;"	f	class:Proof
+enqueue	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::enqueue(Lit p, Clause* from)$/;"	f	class:Solver
+files	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^    vec<cchar*> files;      \/\/ For clean-up purposed on abnormal exit.$/;"	m	class:TempFiles	file:
+getUInt	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^uint64 getUInt(File& in)$/;"	f
+lastToFirst_lt	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^    lastToFirst_lt(const vec<int>& t) : trail_pos(t) {}$/;"	f	class:lastToFirst_lt
+lastToFirst_lt	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^class lastToFirst_lt {  \/\/ Helper class to 'analyze' -- order literals from last to first occurance in 'trail[]'.$/;"	c	file:
+minisat_add_clause	MiniSATWrap.C	/^extern "C" value minisat_add_clause(value c) {$/;"	f
+minisat_clear_proof	MiniSATWrap.C	/^extern "C" value minisat_clear_proof(value unit) {$/;"	f
+minisat_mass_new_var	MiniSATWrap.C	/^extern "C" value minisat_mass_new_var(value v) {$/;"	f
+minisat_neg_lit	MiniSATWrap.C	/^extern "C" value minisat_neg_lit(value v) {$/;"	f
+minisat_new_var	MiniSATWrap.C	/^extern "C" value minisat_new_var(value unit) {$/;"	f
+minisat_pos_lit	MiniSATWrap.C	/^extern "C" value minisat_pos_lit(value v) {$/;"	f
+minisat_reset	MiniSATWrap.C	/^extern "C" value minisat_reset(value unit) {$/;"	f
+minisat_reset_proof	MiniSATWrap.C	/^extern "C" value minisat_reset_proof(value unit) {$/;"	f
+minisat_save_proof	MiniSATWrap.C	/^extern "C"   value minisat_save_proof(value unit) {$/;"	f
+minisat_simplify_db	MiniSATWrap.C	/^extern "C" value minisat_simplify_db(value unit) {$/;"	f
+minisat_solve	MiniSATWrap.C	/^extern "C" value minisat_solve(value unit) {$/;"	f
+minisat_solve_with_assumption	MiniSATWrap.C	/^extern "C" value minisat_solve_with_assumption(value a) {$/;"	f
+minisat_value_of	MiniSATWrap.C	/^extern "C" value minisat_value_of(value v) {$/;"	f
+newClause	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::newClause(const vec<Lit>& ps_, bool learnt, ClauseId id)$/;"	f	class:Solver
+newVar	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^Var Solver::newVar() {$/;"	f	class:Solver
+open	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::open(cchar* name, cchar* mode_)$/;"	f	class:File
+open	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::open(int file_descr, FileMode m, bool own)$/;"	f	class:File
+open	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^    char* open(File& fp)$/;"	f	class:TempFiles
+operator ()	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^    bool operator () (Lit p, Lit q) { return trail_pos[var(p)] > trail_pos[var(q)]; }$/;"	f	class:lastToFirst_lt
+operator ()	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^struct reduceDB_lt { bool operator () (Clause* x, Clause* y) { return x->size() > 2 && (y->size() == 2 || x->activity() < y->activity()); } };$/;"	f	struct:reduceDB_lt
+progressEstimate	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^double Solver::progressEstimate()$/;"	f	class:Solver
+propagate	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^Clause* Solver::propagate()$/;"	f	class:Solver
+putUInt	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void putUInt(File& out, uint64 val)$/;"	f
+reduceDB	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::reduceDB()$/;"	f	class:Solver
+reduceDB_lt	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^struct reduceDB_lt { bool operator () (Clause* x, Clause* y) { return x->size() > 2 && (y->size() == 2 || x->activity() < y->activity()); } };$/;"	s	file:
+remove	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::remove(Clause* c, bool just_dealloc)$/;"	f	class:Solver
+removeWatch	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void removeWatch(vec<Clause*>& ws, Clause* elem)$/;"	f
+resolve	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::resolve(ClauseId next, Var x)$/;"	f	class:Proof
+resolve	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void resolve(vec<Lit>& main, vec<Lit>& other, Var x)$/;"	f
+root	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void ssyChecker::root   (const vec<Lit>& c) {$/;"	f	class:ssyChecker
+save	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^vec<long>& Proof::save(cchar* prooffilename)$/;"	f	class:Proof
+search	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^lbool Solver::search(int nof_conflicts, int nof_learnts, const SearchParams& params)$/;"	f	class:Solver
+seek	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::seek(int64 file_pos, int whence)$/;"	f	class:File
+simplify	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::simplify(Clause* c) const$/;"	f	class:Solver
+simplifyDB	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::simplifyDB()$/;"	f	class:Solver
+solve	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::solve(const vec<Lit>& assumps)$/;"	f	class:Solver
+solver	MiniSATWrap.C	/^Solver *solver = new Solver();$/;"	v
+tell	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^int64 File::tell(void)$/;"	f	class:File
+temp_files	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^static TempFiles temp_files;       \/\/ (should be singleton)$/;"	v	file:
+trail_pos	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^    const vec<int>& trail_pos;$/;"	m	class:lastToFirst_lt	file:
+traverse	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::traverse(ProofTraverser& trav, ClauseId goal)$/;"	f	class:Proof
+varRescaleActivity	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::varRescaleActivity()$/;"	f	class:Solver
+~TempFiles	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^   ~TempFiles()$/;"	f	class:TempFiles

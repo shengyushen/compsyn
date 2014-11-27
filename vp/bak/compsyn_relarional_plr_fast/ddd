@@ -1,0 +1,353 @@
+Binary files ../compsyn_relarional_plr/aig.cmi and ./aig.cmi differ
+Binary files ../compsyn_relarional_plr/aig.cmx and ./aig.cmx differ
+Binary files ../compsyn_relarional_plr/aig.o and ./aig.o differ
+Binary files ../compsyn_relarional_plr/bddssy.o and ./bddssy.o differ
+Binary files ../compsyn_relarional_plr/circuit_obj.cmx and ./circuit_obj.cmx differ
+Binary files ../compsyn_relarional_plr/circuit_obj.o and ./circuit_obj.o differ
+Binary files ../compsyn_relarional_plr/clauseman.cmi and ./clauseman.cmi differ
+Binary files ../compsyn_relarional_plr/clauseman.cmx and ./clauseman.cmx differ
+Binary files ../compsyn_relarional_plr/clauseman.o and ./clauseman.o differ
+Only in ../compsyn_relarional_plr: compsyn_relational_plr.exe
+Only in .: compsyn_relational_plr_fast.exe
+Only in .: ddd
+Binary files ../compsyn_relarional_plr/dependent.o and ./dependent.o differ
+Binary files ../compsyn_relarional_plr/dumpsat.cmi and ./dumpsat.cmi differ
+Binary files ../compsyn_relarional_plr/dumpsat.cmx and ./dumpsat.cmx differ
+diff -r ../compsyn_relarional_plr/dumpsat.ml ./dumpsat.ml
+7a8,39
+> let proc_int var = begin
+> 	if (var > 0) then  var+var
+> 	else if (var<0) then (-var-var+1)
+> 	else begin
+> 		printf "FATAL : 0 literal\n";
+> 		exit 0
+> 	end
+> end
+> ;;
+> 
+> let proc_cls cls = begin
+> 	List.map proc_int cls
+> end
+> ;;
+> 
+> 
+> 
+> let procClauseandAdd clause_list = begin
+> 	(*add all cls*)
+> 	let proc_addcls cls = begin
+> 		match cls with
+> 		(intlst,_) -> begin
+> 			let clscreated=	proc_cls intlst
+> 			in
+> 			MiniSAT.add_clause clscreated
+> 		end
+> 	end
+> 	in
+> 	List.iter proc_addcls  clause_list
+> end
+> ;;
+> 
+14,34c46
+< 			(*add all cls*)
+< 			let proc_int var = begin
+< 				if (var > 0) then  var+var
+< 				else if (var<0) then (-var-var+1)
+< 				else begin
+< 					printf "FATAL : 0 literal\n";
+< 					exit 0
+< 				end
+< 			end
+< 			in
+< 			let proc_cls cls = begin
+< 				match cls with
+< 				(intlst,_) -> begin
+< 					let clscreated=	List.map proc_int intlst
+< 					in
+< 					MiniSAT.add_clause clscreated
+< 				end
+< 			end
+< 			in
+< 			List.iter proc_cls  clause_list
+< 			;
+---
+> 			procClauseandAdd clause_list;
+58a71,90
+> 
+> let reset = begin
+> 	MiniSAT.reset ();
+> end
+> ;;
+> 
+> let satAssumption assumptionList = begin
+> 	let covertedAssList=proc_cls assumptionList in
+> 	let res=MiniSAT.solve_with_assumption covertedAssList in begin	
+> 		match res with
+> 		| UNSAT -> begin
+> 			dbg_print "after MiniSAT.solve_with_assumption";
+> 			UNSATISFIABLE
+> 		end
+> 		| SAT   -> begin
+> 			dbg_print "after MiniSAT.solve_with_assumption";
+> 			SATISFIABLE
+> 		end
+> 	end
+> end
+Binary files ../compsyn_relarional_plr/dumpsat.o and ./dumpsat.o differ
+Binary files ../compsyn_relarional_plr/elabmod.cmi and ./elabmod.cmi differ
+Binary files ../compsyn_relarional_plr/elabmod.cmx and ./elabmod.cmx differ
+diff -r ../compsyn_relarional_plr/elabmod.ml ./elabmod.ml
+692d691
+< 	(*find out the list of uniquelly determined input idx*)
+696,702c695,697
+< 		let arrlist2 = Array.of_list inlst2 (*the list of index and whether they can be uniquely determined*)
+< 		and nonloop_clslst = ref [] (*the non loop cnf contruxted below*)
+< 		and loop_clslst = ref [] (*the looping cnf constructed bekow before calling procBitI*)
+< 		and bnd = ref 2 in
+< 		let procBitI idx x = begin
+< 			(*it must be here because it will refer to the nonloop_clslst and loop_clslst 
+< 			and it also need to change arrlist2*)
+---
+> 		let arrlist2 = Array.of_list inlst2 (*the list of index and whether they can be uniquely determined*) in
+> 		let procBitnonloop bnd idx x  = begin
+> 			(*testing for nonloop uniqness*)
+707,709c702,704
+< 					let p =(!bnd)
+< 					and l =(!bnd)
+< 					and r =(!bnd) in
+---
+> 					let p =bnd
+> 					and l =bnd
+> 					and r =bnd in
+712,713c707
+< 					let newclslst =(self#encode_NEQ o0 ob) in
+< 					let nonloopres = dump_sat_withclear (newclslst@(!nonloop_clslst)) in begin	
+---
+> 					let nonloopres = satAssumption [-o0;ob] in begin	
+719c713
+< 							Array.set arrlist2 idx (bitI,RES_UNIQ,(!bnd),(!bnd),(!bnd));
+---
+> 							Array.set arrlist2 idx (bitI,RES_UNIQ,bnd,bnd,bnd);
+721,749c715,749
+< 						else begin
+< 							dbg_print "before dumpsat loop";
+< 							(*let loopres = dump_sat_withclear (newclslst@(!loop_clslst)) in begin*)
+< 							(*I want to obtain more different values by not reseting minisat*)
+< 							let loopres = dump_sat (newclslst@(!loop_clslst)) in begin
+< 								dbg_print "after dumpsat loop";
+< 								if(loopres == SATISFIABLE) then begin
+< 									(*never uniquelly determined*)
+< 									(*find out all index with diff value*)
+< 									let procdiffv id2 xx = begin
+< 										match xx with
+< 										(bitIxx,resxx,_,_,_) -> begin
+< 											let o0xx = bitIxx + (p+l)*final_index_oneinst
+< 											and obxx = bitIxx + (p+l+1+r+p+l)*final_index_oneinst in
+< 											let (idx1xx,vo0xx)= get_assignment o0xx
+< 											and (idx2xx,vobxx)= get_assignment obxx in begin
+< 												assert (idx1xx == o0xx);
+< 												assert (idx2xx == obxx);
+< 												if(resxx == RES_UNK) then begin
+< 													if(vo0xx!= vobxx) then begin
+< 														let name = self#idx2name bitIxx in 
+< 														printf "nouniq %s @ %d\n" name bitIxx;
+< 														flush stdout;
+< 														Array.set arrlist2 id2 (bitIxx,RES_NONU,0,0,0);
+< 													end
+< 												end
+< 												else if(resxx == RES_UNIQ) then begin
+< 													assert (vobxx == vo0xx);
+< 												end
+---
+> 					end
+> 				end
+> 				| _ -> ()
+> 			end
+> 		end 
+> 		and procBitloop bnd idx x  = begin
+> 			(*testing for loop non-uniqness*)
+> 			match x with 
+> 			(bitI,res,_,_,_) -> begin
+> 				match res with 
+> 				RES_UNK -> begin
+> 					let p =bnd
+> 					and l =bnd
+> 					and r =bnd in
+> 					let o0 = bitI + (p+l)*final_index_oneinst
+> 					and ob = bitI + (p+l+1+r+p+l)*final_index_oneinst in
+> 					let nonloopres = satAssumption [-o0;ob] in begin	
+> 						if(nonloopres == SATISFIABLE) then begin
+> 							(*non-uniquelly determined*)
+> 							(*find out all index with diff value*)
+> 							let procdiffv id2 xx = begin
+> 								match xx with
+> 								(bitIxx,resxx,_,_,_) -> begin
+> 									let o0xx = bitIxx + (p+l)*final_index_oneinst
+> 									and obxx = bitIxx + (p+l+1+r+p+l)*final_index_oneinst in
+> 									let (idx1xx,vo0xx)= get_assignment o0xx
+> 									and (idx2xx,vobxx)= get_assignment obxx in begin
+> 										assert (idx1xx == o0xx);
+> 										assert (idx2xx == obxx);
+> 										if(resxx == RES_UNK) then begin
+> 											if(vo0xx!= vobxx) then begin
+> 												let name = self#idx2name bitIxx in 
+> 												printf "nouniq %s @ %d\n" name bitIxx;
+> 												flush stdout;
+> 												Array.set arrlist2 id2 (bitIxx,RES_NONU,0,0,0);
+752,753c752,755
+< 									end in
+< 									Array.iteri (procdiffv) arrlist2;
+---
+> 										else if(resxx == RES_UNIQ) then begin
+> 											assert (vobxx == vo0xx);
+> 										end
+> 									end
+755c757,758
+< 							end
+---
+> 							end in
+> 							Array.iteri (procdiffv) arrlist2;
+761c764,766
+< 		end (*of procBitI*)
+---
+> 		end
+> 		in 
+> 		let bndd=ref 2
+762a768
+> 			dbg_print "procDetermineUniqueInputs 2";
+764a771
+> 				dbg_print "procDetermineUniqueInputs 3";
+766,772c773,798
+< 				bnd:=(!bnd)+1;
+< 				let target_nonloop = self#construct_nonloop (!bnd) (!bnd) (!bnd) [] [] in begin
+< 					nonloop_clslst:=(([target_nonloop],"target")::clause_list_multiple);
+< 					let target_loop = self#construct_loop (!bnd) (!bnd) (!bnd)  target_nonloop in begin
+< 						loop_clslst:=(([target_loop],"target")::clause_list_multiple);
+< 					end;
+< 					Array.iteri (procBitI ) arrlist2;
+---
+> 				bndd:=(!bndd)+1;
+> 				(**********************)
+> 				(*nonloop case*)
+> 				(**********************)
+> 				let target_nonloop = self#construct_nonloop (!bndd) (!bndd) (!bndd) [] [] in 
+> 				let nonloop_clslst=(([target_nonloop],"target")::clause_list_multiple) in begin
+> 					dbg_print "procDetermineUniqueInputs 4";
+> 					(*add the clasue for one time into the minisat clause database*)
+> 					Dumpsat.reset;
+> 					Dumpsat.procClauseandAdd nonloop_clslst;
+> 					dbg_print "procDetermineUniqueInputs 5";
+> 					(*test for all bits for uniqness without loop*)
+> 					Array.iteri (procBitnonloop (!bndd)) arrlist2;
+> 					dbg_print "procDetermineUniqueInputs 6";
+> 				end;
+> 				(**********************)
+> 				(*loop case*)
+> 				(**********************)
+> 				dbg_print "procDetermineUniqueInputs 7";
+> 				let target_loop = self#construct_loop (!bndd) (!bndd) (!bndd)  target_nonloop in 
+> 				let loop_clslst=(([target_loop],"target")::clause_list_multiple) in begin
+> 					(*add the clasue for one time into the minisat clause database*)
+> 					Dumpsat.reset;
+> 					Dumpsat.procClauseandAdd loop_clslst;
+> 					(*test for all bits for uniqness without loop*)
+> 					Array.iteri (procBitloop (!bndd)) arrlist2;
+774a801
+> 			(*map the result from array back to list*)
+1697a1725
+> 		dbg_print "construct_nonloop 1";
+1699a1728
+> 			dbg_print "construct_nonloop 2";
+1700a1730
+> 			dbg_print "construct_nonloop 2.1";
+Binary files ../compsyn_relarional_plr/elabmod.o and ./elabmod.o differ
+Binary files ../compsyn_relarional_plr/expression.o and ./expression.o differ
+Binary files ../compsyn_relarional_plr/File.o and ./File.o differ
+Binary files ../compsyn_relarional_plr/interp.cmi and ./interp.cmi differ
+Binary files ../compsyn_relarional_plr/interp.cmx and ./interp.cmx differ
+Binary files ../compsyn_relarional_plr/interp.o and ./interp.o differ
+Binary files ../compsyn_relarional_plr/intlist.cmi and ./intlist.cmi differ
+Binary files ../compsyn_relarional_plr/intlist.cmx and ./intlist.cmx differ
+Binary files ../compsyn_relarional_plr/intlist.o and ./intlist.o differ
+Binary files ../compsyn_relarional_plr/main.cmi and ./main.cmi differ
+Binary files ../compsyn_relarional_plr/main.cmx and ./main.cmx differ
+Binary files ../compsyn_relarional_plr/main.o and ./main.o differ
+diff -r ../compsyn_relarional_plr/Makefile ./Makefile
+2c2
+< OCAMLC	= ocamlopt
+---
+> OCAMLC	= ocamlopt -g
+6c6
+< GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
+---
+> GPP_OPT = -g -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
+9c9
+< all : compsyn_relational_plr.exe
+---
+> all : compsyn_relational_plr_fast.exe
+11c11
+< compsyn_relational_plr.exe: File.o Proof.o Solver.o MiniSATWrap.o MiniSATcommondef.cmx MiniSAT.cmi $(OBJS) 
+---
+> compsyn_relational_plr_fast.exe: File.o Proof.o Solver.o MiniSATWrap.o MiniSATcommondef.cmx MiniSAT.cmi $(OBJS) 
+67c67
+< 	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_relational_plr  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe
+---
+> 	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_relational_plr_fast  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe
+Binary files ../compsyn_relarional_plr/MiniSATcommondef.o and ./MiniSATcommondef.o differ
+Binary files ../compsyn_relarional_plr/MiniSATWrap.o and ./MiniSATWrap.o differ
+Binary files ../compsyn_relarional_plr/misc2.cmx and ./misc2.cmx differ
+Binary files ../compsyn_relarional_plr/misc2.o and ./misc2.o differ
+Binary files ../compsyn_relarional_plr/misc.o and ./misc.o differ
+Binary files ../compsyn_relarional_plr/parser.cmx and ./parser.cmx differ
+Binary files ../compsyn_relarional_plr/parser.o and ./parser.o differ
+Binary files ../compsyn_relarional_plr/print_v.cmx and ./print_v.cmx differ
+Binary files ../compsyn_relarional_plr/print_v.o and ./print_v.o differ
+Binary files ../compsyn_relarional_plr/Proof.o and ./Proof.o differ
+Binary files ../compsyn_relarional_plr/rtl.cmi and ./rtl.cmi differ
+Binary files ../compsyn_relarional_plr/rtl.cmx and ./rtl.cmx differ
+Binary files ../compsyn_relarional_plr/rtl.o and ./rtl.o differ
+Binary files ../compsyn_relarional_plr/Solver.o and ./Solver.o differ
+Binary files ../compsyn_relarional_plr/statement.o and ./statement.o differ
+diff -r ../compsyn_relarional_plr/tags ./tags
+114d113
+< MiniSATS	MiniSATS.ml	1;
+334d332
+< add_clause	MiniSATS.ml	/^external add_clause : lit list -> unit = "minisat_add_clause"$/;
+387d384
+< clear_proof	MiniSATS.ml	/^external clear_proof : unit -> unit = "minisat_clear_proof"$/;
+575c572
+< listMax	intlist.ml	/^and listMax lst = begin$/;
+---
+> listMax	intlist.ml	/^and listMax l1 = begin$/;
+598d594
+< mass_new_var	MiniSATS.ml	/^external mass_new_var : var -> var = "minisat_mass_new_var"$/;
+614d609
+< neg_lit	MiniSATS.ml	/^external neg_lit : var -> lit = "minisat_neg_lit"$/;
+616d610
+< new_var	MiniSATS.ml	/^external new_var : unit -> var = "minisat_new_var"$/;
+636d629
+< pos_lit	MiniSATS.ml	/^external pos_lit : var -> lit = "minisat_pos_lit"$/;
+690a684
+> procClauseandAdd	dumpsat.ml	/^let procClauseandAdd clause_list = begin$/;
+700a695
+> proc_cls	dumpsat.ml	/^let proc_cls cls = begin$/;
+702a698
+> proc_int	dumpsat.ml	/^let proc_int var = begin$/;
+714c710
+< reset	MiniSATS.ml	/^external reset : unit -> unit = "minisat_reset"$/;
+---
+> reset	dumpsat.ml	/^let reset = begin$/;
+716d711
+< reset_proof	MiniSATS.ml	/^external reset_proof : unit -> unit = "minisat_reset_proof"$/;
+726a722
+> satAssumption	dumpsat.ml	/^let satAssumption assumptionList = begin$/;
+728d723
+< save_proof	MiniSATS.ml	/^external save_proof : unit -> (int array) = "minisat_save_proof"$/;
+752d746
+< simplify_db	MiniSATS.ml	/^external simplify_db : unit -> unit = "minisat_simplify_db"$/;
+758d751
+< solve	MiniSATS.ml	/^external solve : unit -> solution = "minisat_solve"$/;
+760d752
+< solve_with_assumption	MiniSATS.ml	/^external solve_with_assumption : lit list -> solution = "minisat_solve_with_assumption"$/;
+790d781
+< value_of	MiniSATS.ml	/^external value_of : var -> value = "minisat_value_of"$/;
+Binary files ../compsyn_relarional_plr/very.o and ./very.o differ

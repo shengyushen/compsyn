@@ -1,0 +1,32 @@
+for i in \
+  other/cudd \
+  other/caddie \
+  other/zchaff \
+  other/zchaff_enhance \
+  other/MiniSat-p_v1.14 \
+  other/MiniSat114_enhance \
+  other/nl_const_zchaff \
+  other/nl_const_minisat \
+;
+do 
+  pushd .
+  cd $i
+  echo "Making " $i
+  make clean
+  make distclean
+  make
+  popd
+done
+
+for i in `find vp/ -maxdepth 1 -mindepth 1 -type d|grep -v "\.svn\|vp\/scr\|vp\/bak"|sort`
+do
+  pushd .
+  cd $i
+  echo "Making " $i
+  make clean
+  make distclean
+  make &
+  popd
+done
+
+

@@ -1,0 +1,287 @@
+# Benchmark "hamming" written by ABC on Thu Jul 28 22:20:59 2011
+.model hamming
+.inputs in1 in2 in3 in4 in5 in6 in7 in8 in9 in10 in11
+.outputs out2 out3 out4 out5 out6 out7 out8 out9 out10 out11 out12 out13 \
+ out14 out15
+
+.latch        n51         c2  2
+.latch        n56         c1  2
+.latch        n61         c0  2
+.latch        n66         r0  2
+.latch        n71         r1  2
+.latch        n76         r2  2
+.latch        n81         r3  2
+
+.names c2 r0 n46
+10 1
+.names r1 n46 n47
+11 1
+.names r2 n47 n48
+01 1
+.names r3 n48 n49
+01 1
+.names in10 in11 n50
+01 1
+.names in10 in11 n51_1
+10 1
+.names n50 n51_1 n52
+00 1
+.names in4 n52 n53
+10 1
+.names in4 n52 n54
+01 1
+.names n53 n54 n55
+00 1
+.names in6 in7 n56_1
+10 1
+.names in6 in7 n57
+01 1
+.names n56_1 n57 n58
+00 1
+.names in1 in3 n59
+11 1
+.names in1 in3 n60
+00 1
+.names n59 n60 n61_1
+00 1
+.names n58 n61_1 n62
+01 1
+.names n58 n61_1 n63
+10 1
+.names n62 n63 n64
+00 1
+.names n55 n64 n65
+11 1
+.names n55 n64 n66_1
+00 1
+.names n65 n66_1 n67
+00 1
+.names n49 n67 n68
+10 1
+.names n49 n67 n69
+01 1
+.names n68 n69 n70
+00 1
+.names c2 r0 n71_1
+11 1
+.names r1 n71_1 n72
+11 1
+.names r2 n72 n73
+01 1
+.names r3 n73 n74
+01 1
+.names in1 n74 n75
+10 1
+.names in1 n74 n76_1
+01 1
+.names n75 n76_1 n77
+00 1
+.names r1 n46 n78
+01 1
+.names r2 n78 n79
+11 1
+.names r3 n79 n80
+01 1
+.names in8 in9 n81_1
+00 1
+.names in8 in9 n82
+11 1
+.names n81_1 n82 n83
+00 1
+.names in2 in3 n84
+10 1
+.names in2 in3 n85
+01 1
+.names n84 n85 n86
+00 1
+.names n83 n86 n87
+01 1
+.names n83 n86 n88
+10 1
+.names n87 n88 n89
+00 1
+.names n55 n89 n90
+11 1
+.names n55 n89 n91
+00 1
+.names n90 n91 n92
+00 1
+.names n80 n92 n93
+10 1
+.names n80 n92 n94
+01 1
+.names n93 n94 n95
+00 1
+.names r1 n71_1 n96
+01 1
+.names r2 n96 n97
+11 1
+.names r3 n97 n98
+01 1
+.names in2 n98 n99
+10 1
+.names in2 n98 n100
+01 1
+.names n99 n100 n101
+00 1
+.names r2 n47 n102
+11 1
+.names r3 n102 n103
+01 1
+.names in3 n103 n104
+10 1
+.names in3 n103 n105
+01 1
+.names n104 n105 n106
+00 1
+.names r2 n72 n107
+11 1
+.names r3 n107 n108
+01 1
+.names in4 n108 n109
+10 1
+.names in4 n108 n110
+01 1
+.names n109 n110 n111
+00 1
+.names r2 r3 n112
+01 1
+.names n78 n112 n113
+11 1
+.names in11 n113 n114
+01 1
+.names in11 n113 n115
+10 1
+.names n114 n115 n116
+00 1
+.names in5 in10 n117
+00 1
+.names in5 in10 n118
+11 1
+.names n117 n118 n119
+00 1
+.names n58 n83 n120
+01 1
+.names n58 n83 n121
+10 1
+.names n120 n121 n122
+00 1
+.names n119 n122 n123
+00 1
+.names n119 n122 n124
+11 1
+.names n123 n124 n125
+00 1
+.names n116 n125 n126
+01 1
+.names n116 n125 n127
+10 1
+.names n126 n127 out8
+00 1
+.names n96 n112 n129
+11 1
+.names in5 n129 n130
+01 1
+.names in5 n129 n131
+10 1
+.names n130 n131 n132
+00 1
+.names r3 n48 n133
+11 1
+.names in6 n133 n134
+10 1
+.names in6 n133 n135
+01 1
+.names n134 n135 n136
+00 1
+.names r3 n73 n137
+11 1
+.names in7 n137 n138
+10 1
+.names in7 n137 n139
+01 1
+.names n138 n139 n140
+00 1
+.names r3 n79 n141
+11 1
+.names in8 n141 n142
+10 1
+.names in8 n141 n143
+01 1
+.names n142 n143 n144
+00 1
+.names r3 n97 n145
+11 1
+.names in9 n145 n146
+10 1
+.names in9 n145 n147
+01 1
+.names n146 n147 n148
+00 1
+.names r3 n102 n149
+11 1
+.names in10 n149 n150
+10 1
+.names in10 n149 n151
+01 1
+.names n150 n151 n152
+00 1
+.names r3 n107 n153
+11 1
+.names in11 n153 n154
+10 1
+.names in11 n153 n155
+01 1
+.names n154 n155 n156
+00 1
+.names c1 c0 n157
+11 1
+.names c2 n157 n158
+10 1
+.names c2 n157 n159
+01 1
+.names n158 n159 n160
+00 1
+.names c1 c0 n161
+00 1
+.names n157 n161 n56
+00 1
+.names n70 out2
+0 1
+.names n77 out3
+0 1
+.names n95 out4
+0 1
+.names n101 out5
+0 1
+.names n106 out6
+0 1
+.names n111 out7
+0 1
+.names n132 out9
+0 1
+.names n136 out10
+0 1
+.names n140 out11
+0 1
+.names n144 out12
+0 1
+.names n148 out13
+0 1
+.names n152 out14
+0 1
+.names n156 out15
+0 1
+.names n160 n51
+0 1
+.names c0 n61
+0 1
+.names r0 n66
+1 1
+.names r1 n71
+1 1
+.names r2 n76
+1 1
+.names r3 n81
+1 1
+.end

@@ -1,0 +1,260 @@
+User Manual for CADDIE
+
+CADDIE provides a CAML interface for the CUDD Decision Diagram
+package. It supports BDD's and ADD's (MTBDD's). We do not as yet have
+support for ZDD's (Zero suppressed DDs). 
+
+To run the toplevel system with CUDD support, type ./caddie
+from your CADDIE directory.
+
+To compile programs with CADDIE support, do
+
+ocamlc -o (myprog) runCaddie.cma (myprogfiles)
+
+Types
+-----
+ddMgr : Decision Diagram Manager
+bdd : BDD node
+add : ADD node
+zadd : 0/1 ADD node. NOTE: this is not a zero-suppress DD (ZDD)
+varSet : Sets of dd variables. Used primarily for quantification
+varMap : one-one mapping between two disjoint sets of variables. 
+	 Used mainly for replace
+
+addOp : enumerated type for ADD operations. Used with addApply
+	Operations allowed: 
+		Plus | Times | Divide | Minus | Agree | Max | Min
+zaddOp : Operations for 0/1 ADDs
+	Operations allowed:
+		And | Or | Nand | Nor | Xor | Xnor
+
+reorderType : Reordering Methods for dynamic variable ordering
+
+
+Exceptions
+----------
+InvalidMgr    : Raised if the argument for a BDD manager is invalid.
+                e.g. If the user has 'quit' the manager, and then passes
+                it as an argument to some function
+DifferentMgrs : Raised if user attempts to perform a operation on two DDs
+                belonging to different managers
+
+In addition, some functions raise the InvalidArgument exception
+
+
+Functions
+---------
+
+Manager administration
+----------------------
+* init : int -> int -> int -> int -> ddMgr
+  [init numvars numslots cachesize maxmem] initializes
+	a DD Manager
+
+* exit : ddMgr -> unit
+  [exit  M] gets CUDD to shutdown the DD manager M. It is
+	not necessary for the user to call this function, since
+	a manager will be garbage collected
+
+* dynEnable : ddMgr -> reorderType -> unit
+  [dynEnable M r] enables dynamic reordering in Manager M with
+	method r
+
+* dynDisable : ddMgr -> unit
+  [dynDisable M] disables dynamic reordering in manager M
+
+
+Constant Nodes
+--------------
+* bddTrue : ddMgr -> bdd
+  [bddTrue M] returns the bdd node for logical 1 in manager M
+
+* bddFalse : ddMgr -> bdd
+  [bddFalse M] returns the bdd node for logical 0 in manager M
+
+* addOne : ddMgr -> add
+  [addOne M] gives the arithmetic 1 for manager M.
+	In CUDD, arithmetic 1 is the same as logic 1.
+	However, in CADDIE, there types are different.
+
+* addZero : ddMgr -> add
+  [addZero M] gives the arithmetic 0 for manager M.
+
+* zaddOne : ddMgr -> zadd
+  zaddZero : ddMgr -> zadd
+	These two functions are the same as addOne
+	and addZero, except that the type for the
+	returned values is zadd (for 0/1 ADDs) as
+	opposed to add (for general ADDs)
+
+* addPlusInf : ddMgr -> add
+  addMinusInf : ddMgr -> add
+  [addPlusInf M] returns the ADD node for + infinity in
+	manager M
+  [addMinusInf M] returns the ADD node for - infinity in
+	manager M
+
+* addConst : ddMgr -> float -> add
+  [addConst M v] return the constant add node which evaluates
+	to value v
+
+* addVal : add -> float
+  [addVal C] returns the double-precision value for a
+	constant ADD node. Raises the InvalidArg exception
+	otherwise
+
+* bddIsConst : bdd -> bool
+  [bddIsConst B] returns true if B is a constant node. False
+	otherwise
+
+  addIsConst and zaddIsConst are similar
+
+* bddFromBool : ddMgr -> bool -> bdd
+  [bddFromBool M e] returns the logical 1 node in manager M if
+	e is true, the logical 0 node o.w.
+
+  zaddFromBool : ddMgr -> bool -> zadd 
+	This is similar to bddFromBool
+
+* bddToBool : bdd -> bool
+  [bddToBool C] returns true is C is the logical 1 node, false
+	if it's the logical 0 node. Raises InvalidArg otherwise
+
+  [zaddToBool C] is similar.
+
+Background ADD Values
+---------------------
+* addReadBack : ddMgr -> add
+  [addReadBack M] returns a constant ADD node which
+	evaluates to the Background Value for manager M
+
+* addSetBack : add -> unit
+  [addSetBack A] sets the background value of the manager to
+	which A belongs, to A
+
+New Variables
+-------------
+* bddIthVar : ddMgr -> int -> bdd
+  [bddIthVar M i] returns the BDD for variable indexed i
+
+  addIthVar : ddMgr -> int -> add
+  zaddIthVar : ddMgr -> int -> zadd
+	These are similar to bddIthVar
+
+* bddNewVar : ddMgr -> bdd
+  [bddNewVar M] returns the BDD node for a new variable
+	(highest index) in manager M
+
+  addNewVar : ddMgr -> add
+  zaddNewVar : ddMgr -> zadd
+	These are similar to bddNewVar
+
+Equality comparisons 
+-------------------- 
+
+The following functions compare for equality between two DD nodes (of
+the respective types). If the 2 nodes belong to different managers,
+the DifferentMgrs exception is raised.
+
+bddEqual : bdd -> bdd -> bool
+addEqual : add -> add -> bool
+zaddEqual : zadd -> zadd -> bool
+
+
+BDD operations
+--------------
+* [bddNot B] returns the complement of B
+* [bddIte f g h] returns ITE(f,g,h)
+* [bddAnd f g]
+  [bddNand f g]
+  [bddOr f g]
+  [bddNor f g]
+  [bddXor f g]
+  [bddImp f g]
+  [bddBiimp f g]
+
+	These do the expected operations on the two BDDs f and g
+	and return the resulting BDD
+
+
+0/1 ADD operations
+------------------
+* [zaddNot z] returns the negation of the 0/1 ADD z
+* [zaddApply O f g] Applies operation O to zadd's f and g
+	and returns the resulting zadd. O is of type
+	zaddOp.
+
+ADD operations
+--------------
+* [addApply O f g] Applies operation O to add's f and g
+	and returns the resulting add. O is of type addOp
+* [addIte f g h] Evaluates ITE(f,g,h) where f is a 0/1 ADD
+	and g,h are add's. Returns the resulting add
+* [addCmpl A] complements the ADD A. The complement of
+	a non-zero discriminant is 1, whereas 0 is mapped to 1
+* [addCompose A Z i] replaces the variable indexed i with the
+	0/1 ADD Z in A and returns the resulting ADD
+* [addMax A C] finds the maximum discriminant in the ADD
+	A and returns the constant ADD C which has this max
+	value
+* [addMin A C] similar to addMax
+
+Type conversions
+----------------
+* [zaddToAdd z] returns the add corresponding to the 0/1 
+	ADD z. It actually does nothing, except for
+	a type change
+* [zaddToBdd z] returns the BDD corresponding to the 0/1
+	ADD z
+* [addToBdd a] maps arithmetic 0 to logical 0, all other
+	(non-zero) values to logical 1.
+* [bddToZadd b] returns the 0/1 ADD corresponding to
+	the BDD b
+* [bddToAdd b] same as bddToZadd except that the type
+	of the returned value is add
+* [addIthBit a] maps integer valued ADDs to BDDs. If the
+	ith bit of the (integer) discriminant is 1, the
+	corresponding leaf in the resulting BDD is logical 1.
+
+BDD quantification
+------------------
+* [empty M] returns the empty set (of variables) in
+	manager M
+* [insertVar S i] return the varSet containing
+	the variable indexed i and all the variables in S
+* [singleVar M i] returns the singleton set (in Manager M)
+	containing the variable indexed i
+* [fromList M L] returns a set containing variables
+	indexed by the integers in the list L (in manager M)
+* [forall S B] returns the resulting BDD after universally
+	quantifying all the variables in S from B
+* [exists S B] existential quantification
+
+Replace operations
+------------------
+(Useful e.g. in computing reachable states. The current variables
+	need to be replaced by their next state counterparts
+	and vice-versa)
+* [toMap TL] takes a list of int tuples (i,j) and creates a one-one
+	map between the corresponding variables.
+* [replace B P] replaces the variables according to the one-one
+	correspondence in the varMap P. The replace is
+	both ways, i.e. if i is mapped to j, then the variable
+	indexed i is replaced by the variable indexed j and vice-versa
+
+BDD utilities
+-------------
+* [index] takes a BDD and returns the index of the head variable
+* [support] takes a BDD and returns the variables in its support as
+        a conjunction
+
+* [supportSet] takes a BDD and returns the index of variables in the support as a list
+        of integers.
+
+Output
+------
+The following functions display DDs in SOP form
+
+* [bddPrint B]
+  [addPrint A]
+  [zaddPrint Z]

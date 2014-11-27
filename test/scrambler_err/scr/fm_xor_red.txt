@@ -1,0 +1,10 @@
+read_verilog -container r -libname WORK -01 { resulting_dual_cnf.v } 
+set_top r:/WORK/resulting_dual 
+
+read_verilog -container i -libname WORK -01 { red.v } 
+set_top i:/WORK/resulting_dual 
+
+match 
+verify 
+exit
+

@@ -1,0 +1,112 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ABORTED	minisat_addon.h	/^    ABORTED$/;"	e	enum:SAT_StatusT
+AR	Makefile	/^AR = ar$/;"	m
+CC	Makefile	/^CC=g++ -Wall -O3$/;"	m
+CHAIN	sat_instance.h	/^	CHAIN$/;"	e	enum:ProofItem_Type
+I	sat_instance.h	/^    set<int>	I;\/\/the set of  input idx account for shifted$/;"	m	class:SAT_instance
+MAX_LINE_LENGTH	sat_instance.h	1;"	d
+MAX_WORD_LENGTH	sat_instance.h	2;"	d
+MEM_OUT	minisat_addon.h	/^    MEM_OUT,$/;"	e	enum:SAT_StatusT
+MFLAGS	Makefile	/^  MFLAGS = -D_NEED_REDEFINE_RAND_MAX_$/;"	m
+MFLAGS	Makefile	/^MFLAGS = $/;"	m
+O	sat_instance.h	/^    set<int>	O;\/\/the set of output idx account for shifted$/;"	m	class:SAT_instance
+PROOF_FALSE	sat_instance.h	/^	PROOF_FALSE,$/;"	e	enum:ProofItem_Value_Type
+PROOF_FORMULA	sat_instance.h	/^	PROOF_FORMULA$/;"	e	enum:ProofItem_Value_Type
+PROOF_REF	sat_instance.h	/^	PROOF_REF,$/;"	e	enum:ProofItem_Value_Type
+PROOF_TRUE	sat_instance.h	/^	PROOF_TRUE,$/;"	e	enum:ProofItem_Value_Type
+ProofItem	sat_instance.h	/^struct ProofItem {$/;"	s
+ProofItem_Type	sat_instance.h	/^enum ProofItem_Type {$/;"	g
+ProofItem_Value_Type	sat_instance.h	/^enum ProofItem_Value_Type {$/;"	g
+RANLIB	Makefile	/^RANLIB = ranlib$/;"	m
+ROOT	sat_instance.h	/^	ROOT,$/;"	e	enum:ProofItem_Type
+SATISFIABLE	minisat_addon.h	/^    SATISFIABLE,$/;"	e	enum:SAT_StatusT
+SAT_AddClause	minisat_addon.cpp	/^void SAT_AddClause(SAT_Manager mng,vector <int>& lits, int gid)$/;"	f
+SAT_GetVarAsgnment	minisat_addon.cpp	/^int SAT_GetVarAsgnment(SAT_Manager mng, int varid)$/;"	f
+SAT_Manager	minisat_addon.h	1;"	d
+SAT_SetNumVariables	minisat_addon.cpp	/^void SAT_SetNumVariables(SAT_Manager mng, int init_varnum) $/;"	f
+SAT_Solve	minisat_addon.cpp	/^int SAT_Solve(SAT_Manager mng)$/;"	f
+SAT_StatusT	minisat_addon.h	/^enum SAT_StatusT {$/;"	g
+SAT_instance	sat_instance.cpp	/^SAT_instance::SAT_instance() {$/;"	f	class:SAT_instance
+SAT_instance	sat_instance.h	/^class SAT_instance {$/;"	c
+SOLVER_OBJS	Makefile	/^SOLVER_OBJS = $(SOLVER_SRCS:.cpp=.o)$/;"	m
+SOLVER_SRCS	Makefile	/^SOLVER_SRCS = $(wildcard *.cpp)$/;"	m
+TIME_OUT	minisat_addon.h	/^    TIME_OUT,$/;"	e	enum:SAT_StatusT
+UNDETERMINED	minisat_addon.h	/^    UNDETERMINED,$/;"	e	enum:SAT_StatusT
+UNSATISFIABLE	minisat_addon.h	/^    UNSATISFIABLE,$/;"	e	enum:SAT_StatusT
+add_const_constraint	sat_instance.cpp	/^int SAT_instance::add_const_constraint(SAT_Manager mng_reduce,int var1,map<int,int> idx2value,int gid) {$/;"	f	class:SAT_instance
+add_xor_result_constraint	sat_instance.cpp	/^int SAT_instance::add_xor_result_constraint(SAT_Manager mng_reduce,int var1,int var2,int res_var,map<int,int> idx2value,int gid) {$/;"	f	class:SAT_instance
+backward_gates_extraction	sat_instance.cpp	/^void SAT_instance::backward_gates_extraction(int init_varnum,set<vector <int> > init_clauseset) $/;"	f	class:SAT_instance
+check_proof	sat_instance.cpp	/^void SAT_instance::check_proof(vector< struct ProofItem > & vproof,int totry,int totry_shifted) {$/;"	f	class:SAT_instance
+cls	sat_instance.h	/^	vector <int> cls;$/;"	m	struct:ProofItem
+dly	sat_instance.h	/^    int dly;$/;"	m	class:SAT_instance
+equ2	sat_instance.cpp	/^    void SAT_instance::equ2(SAT_Manager mng,int a, int b, int gid=0)$/;"	f	class:SAT_instance
+filterB	minisat_addon.cpp	/^void filterB(vector<int>& cls,set<int>& POTDEC_reduce,vector<int> & res) {$/;"	f
+final_index_oneinst	sat_instance.h	/^    int final_index_oneinst;$/;"	m	class:SAT_instance
+findin_set	minisat_addon.cpp	/^bool findin_set(int tobefind,const set<int>& vv) {$/;"	f
+findin_vector	minisat_addon.cpp	/^bool findin_vector(int tobefind,vector<int> vv) {$/;"	f
+forward	sat_instance.h	/^    int forward;$/;"	m	class:SAT_instance
+get_cpu_time	minisat_addon.cpp	/^double get_cpu_time()$/;"	f
+in_name_leftright_set	sat_instance.h	/^    set<inout4rev_cz,lt_inout4rev_cz>  in_name_leftright_set;\/\/inname_2dualsyn_notflatidx_lst with array index$/;"	m	class:SAT_instance
+ine2	sat_instance.cpp	/^    void SAT_instance::ine2(SAT_Manager mng,int a, int b, int gid=0)$/;"	f	class:SAT_instance
+initial_sat_solver	sat_instance.cpp	/^void SAT_instance::initial_sat_solver(SAT_Manager & mng_2init,set< vector<int> > init_clauseset_2init,int init_varnum_2init)$/;"	f	class:SAT_instance
+inname_2dualsyn_flatidx_lst	sat_instance.h	/^    set<string>  inname_2dualsyn_flatidx_lst;\/\/the input name to be dual syned, with array index$/;"	m	class:SAT_instance
+inname_2dualsyn_notflatidx_lst	sat_instance.h	/^    set<string>  inname_2dualsyn_notflatidx_lst;\/\/the input name to be dual syned, without array index$/;"	m	class:SAT_instance
+inout4rev_cz	sat_instance.h	/^class inout4rev_cz {$/;"	c
+isAcls	minisat_addon.cpp	/^bool isAcls(vector<int> & cls,int maxidx) {$/;"	f
+isBvar	minisat_addon.cpp	/^bool isBvar(int varidx,set<int>& POTDEC_reduce,int maxidx) {$/;"	f
+is_var_in_cls	sat_instance.cpp	/^bool SAT_instance::is_var_in_cls(int totest,vector<int> cls) $/;"	f	class:SAT_instance
+left	sat_instance.h	/^	int left,right;$/;"	m	class:inout4rev_cz
+len	sat_instance.h	/^    int len;$/;"	m	class:SAT_instance
+lowbound_set	minisat_addon.cpp	/^int lowbound_set(const set<int>& vv) {$/;"	f
+lt_inout4rev_cz	sat_instance.h	/^struct lt_inout4rev_cz$/;"	s
+lt_xor_operation	sat_instance.h	/^struct lt_xor_operation$/;"	s
+ltint	sat_instance.h	/^struct ltint$/;"	s
+main	main.cpp	/^int main(int argc, char ** argv)$/;"	f
+my_set_intersect	sat_instance.cpp	/^void SAT_instance::my_set_intersect(set<int> s1,set<int> s2,set<int> & res)$/;"	f	class:SAT_instance
+my_set_permutation	sat_instance.cpp	/^void SAT_instance::my_set_permutation(set<int> s1,set<int> s2,set<int> & res)$/;"	f	class:SAT_instance
+my_set_permutation_elem	sat_instance.cpp	/^void SAT_instance::my_set_permutation_elem(set<int> s1,int s2,set<int> & res)$/;"	f	class:SAT_instance
+my_set_sub	sat_instance.cpp	/^void SAT_instance::my_set_sub(set<int> s1,set<int> s2,set<int> & res)$/;"	f	class:SAT_instance
+my_set_union	sat_instance.cpp	/^void SAT_instance::my_set_union(set<int> s1,set<int> s2,set<int> & res)$/;"	f	class:SAT_instance
+name	sat_instance.h	/^	string name;$/;"	m	class:inout4rev_cz
+neg	sat_instance.cpp	/^    int SAT_instance::neg(int i) $/;"	f	class:SAT_instance
+op1	sat_instance.h	/^	int op1;$/;"	m	class:xor_operation
+op2	sat_instance.h	/^	int op2;$/;"	m	class:xor_operation
+operator ()	sat_instance.h	/^  bool operator()(inout4rev_cz k1,inout4rev_cz k2) const$/;"	f	struct:lt_inout4rev_cz
+operator ()	sat_instance.h	/^  bool operator()(int s1, int s2) const$/;"	f	struct:ltint
+operator ()	sat_instance.h	/^  bool operator()(xor_operation k1,xor_operation k2) const$/;"	f	struct:lt_xor_operation
+or_n	sat_instance.cpp	/^    void SAT_instance::or_n (SAT_Manager mng,int * inputs, int num_input, int o, int gid=0)$/;"	f	class:SAT_instance
+out_name_leftright_set	sat_instance.h	/^    set<inout4rev_cz,lt_inout4rev_cz>  out_name_leftright_set;\/\/outname_2dualsyn_notflatidx_lst with array index$/;"	m	class:SAT_instance
+outname_2dualsyn_flatidx_lst	sat_instance.h	/^    set<string>  outname_2dualsyn_flatidx_lst;\/\/the output to be dual syned, with array index$/;"	m	class:SAT_instance
+outname_2dualsyn_notflatidx_lst	sat_instance.h	/^    set<string>  outname_2dualsyn_notflatidx_lst;\/\/the output to be dual syned, without array index$/;"	m	class:SAT_instance
+pos	sat_instance.cpp	/^    int SAT_instance::pos(int i) $/;"	f	class:SAT_instance
+prefix	sat_instance.h	/^    int prefix;$/;"	m	class:SAT_instance
+print_cls	minisat_addon.cpp	/^void print_cls(ostream & ost,vector<int> cls2prt) {$/;"	f
+print_dual	sat_instance.cpp	/^int SAT_instance::print_dual (SAT_Manager mng,int totry,set<int> &POTDEC_reduce,ofstream & resulting_dual,ofstream & resulting_dual_wire,int  init_varnum) $/;"	f	class:SAT_instance
+print_dual_head	sat_instance.cpp	/^void SAT_instance::print_dual_head (ofstream & resulting_dual_head,ofstream & resulting_dual) $/;"	f	class:SAT_instance
+print_dual_tail	sat_instance.cpp	/^void SAT_instance::print_dual_tail (ofstream & resulting_dual) $/;"	f	class:SAT_instance
+print_set	minisat_addon.cpp	/^void print_set(ostream & ost,set<int> cls2prt) {$/;"	f
+ptr	sat_instance.cpp	/^    int * SAT_instance::ptr(vector<int>::iterator itr) {$/;"	f	class:SAT_instance
+read_cnf	sat_instance.cpp	/^void SAT_instance::read_cnf(char * filename,char * timeout_value,int & init_varnum,set<vector <int> > & init_clauseset)$/;"	f	class:SAT_instance
+ref	sat_instance.h	/^	int ref;$/;"	m	struct:ProofItem
+res	sat_instance.h	/^	int res;$/;"	m	class:xor_operation
+resolve	minisat_addon.cpp	/^void resolve(vector<int> & leftcls,vector<int>& rightcls,int pivotidx) {$/;"	f
+right	sat_instance.h	/^	int left,right;$/;"	m	class:inout4rev_cz
+solve_ssy	sat_instance.cpp	/^int SAT_instance::solve_ssy(int  init_varnum,set<vector <int> > init_clauseset)$/;"	f	class:SAT_instance
+src_idx2name	sat_instance.h	/^    map<int,string> src_idx2name;$/;"	m	class:SAT_instance
+src_name2idx	sat_instance.h	/^    map<string,int> src_name2idx;$/;"	m	class:SAT_instance
+start_time	sat_instance.h	/^    double start_time;$/;"	m	class:SAT_instance
+tgt_idx2name	sat_instance.h	/^    map<int,string> tgt_idx2name;$/;"	m	class:SAT_instance
+tgt_name2idx	sat_instance.h	/^    map<string,int> tgt_name2idx;$/;"	m	class:SAT_instance
+timeout_nl_const	sat_instance.h	/^    int timeout_nl_const;$/;"	m	class:SAT_instance
+type	sat_instance.h	/^	ProofItem_Type type;$/;"	m	struct:ProofItem
+upbound_set	minisat_addon.cpp	/^int upbound_set(const set<int>& vv) {$/;"	f
+v_ante	sat_instance.h	/^	vector <int> v_ante;$/;"	m	struct:ProofItem
+v_pivot	sat_instance.h	/^	vector <int> v_pivot;$/;"	m	struct:ProofItem
+value_type	sat_instance.h	/^	ProofItem_Value_Type value_type;$/;"	m	struct:ProofItem
+xor2	sat_instance.cpp	/^    void SAT_instance::xor2 (SAT_Manager mng,int a, int b, int o, int gid=0)$/;"	f	class:SAT_instance
+xor_operation	sat_instance.h	/^class xor_operation $/;"	c

@@ -1,0 +1,77 @@
+# Benchmark "Convolutional_Code_3" written by ABC on Mon Aug 22 16:33:31 2011
+.model Convolutional_Code_3
+.inputs in noise0 noise1
+.outputs out1 out2 decosy
+
+.latch        n17 Convolutional_Code_3|r0  2
+.latch        n20 Convolutional_Code_3|r1  2
+.latch        n23 Convolutional_Code_3|r2  2
+.latch        n41 Convolutional_Code_3|noise(3)|x0  2
+.latch        n44 Convolutional_Code_3|noise(3)|x1  2
+.latch        n47 Convolutional_Code_3|noise(3)|x2  2
+
+.names Convolutional_Code_3|noise(3)|x0 Convolutional_Code_3|noise(3)|x1 \
+ n24_1
+00 1
+.names Convolutional_Code_3|noise(3)|x2 n24_1 n25
+11 1
+.names noise1 n25 n26
+01 1
+.names noise0 n26 n27
+01 1
+.names Convolutional_Code_3|r0 Convolutional_Code_3|r2 n28
+10 1
+.names Convolutional_Code_3|r0 Convolutional_Code_3|r2 n29
+01 1
+.names n28 n29 n30
+00 1
+.names n27 n30 n31
+00 1
+.names n27 n30 n32
+11 1
+.names n31 n32 n33
+00 1
+.names noise0 n26 n34
+11 1
+.names Convolutional_Code_3|r1 n30 n35
+10 1
+.names Convolutional_Code_3|r1 n30 n36
+01 1
+.names n35 n36 n37
+00 1
+.names n34 n37 n38
+10 1
+.names n34 n37 n39
+01 1
+.names n38 n39 n40
+00 1
+.names Convolutional_Code_3|noise(3)|x2 n24_1 n41_1
+10 1
+.names Convolutional_Code_3|noise(3)|x0 n25 n41
+00 1
+.names Convolutional_Code_3|noise(3)|x0 Convolutional_Code_3|noise(3)|x1 \
+ n43
+11 1
+.names n24_1 n43 n44
+00 1
+.names Convolutional_Code_3|noise(3)|x2 n43 n45_1
+11 1
+.names Convolutional_Code_3|noise(3)|x2 n43 n46
+00 1
+.names n45_1 n46 n47_1
+00 1
+.names n26 n47_1 n47
+01 1
+.names n33 out1
+0 1
+.names n40 out2
+0 1
+.names n41_1 decosy
+0 1
+.names in n17
+1 1
+.names Convolutional_Code_3|r0 n20
+1 1
+.names Convolutional_Code_3|r1 n23
+1 1
+.end

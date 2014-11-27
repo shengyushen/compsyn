@@ -1,0 +1,1 @@
+1.	the proof generating ability of minisat will generate huge file* under /tmp, sometimes overfill the disk and prevent the solver from proceeding. find a larger disk or delete all other file* caused by interrupted run.

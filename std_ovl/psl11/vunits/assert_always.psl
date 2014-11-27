@@ -1,0 +1,26 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_always_assert_vunit (assert_always_assert)
+{
+  default clock = (posedge clk);
+
+  property ASSERT_ALWAYS_P = always (
+           reset_n -> test_expr);
+
+  A_ASSERT_ALWAYS_P:
+  assert ASSERT_ALWAYS_P
+  report "VIOLATION: ASSERT_ALWAYS Checker Fires : Test expression is FALSE";
+}
+
+vunit assert_always_assume_vunit (assert_always_assume)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_ALWAYS_P = always (
+           reset_n -> test_expr);
+  
+  M_ASSERT_ALWAYS_P:
+  assume ASSERT_ALWAYS_P;
+}
+

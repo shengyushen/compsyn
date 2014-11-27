@@ -1,0 +1,8 @@
+1	out of memory
+	cause 1 :	place ddM in methods, which cause it to be placed in local stack
+	solution 1 : place it in object declaration
+	cause 2 : some dc version such as 2007 and latter may generate over optimized netlist that cause the Craig interpolation to generate too special formula
+	solution 2 : use dc 2004 with "compile -map_effort low" or 2007(and latter) with "compile -map_effort low -no_design_rule -area_effort none"
+	cause 3 : some linux distribution such as (centOS and RHEL) may have too small local stack for application.
+	solution 1 : ulimit -s unlimited
+	

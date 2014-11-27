@@ -1,0 +1,30 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+`include "std_ovl_defines.h"
+
+`module assert_next (clk, reset_n, start_event, test_expr);
+  parameter severity_level = `OVL_ERROR;
+  parameter num_cks = 1;
+  parameter check_overlapping = 1;
+  parameter check_missing_start = 0; // if 1, test_expr can only appear if
+                                     // a corresponding start_event occurs
+  parameter property_type = `OVL_ASSERT;
+  parameter msg = "VIOLATION";
+  parameter coverage_level = `OVL_COVER_ALL;
+  input clk, reset_n, start_event, test_expr;
+
+`ifdef OVL_VERILOG
+  `include "./vlog95/assert_next_logic.v"
+`endif
+
+`ifdef OVL_SVA
+  `include "./sva31a/assert_next_logic.sv"
+`endif
+
+`ifdef OVL_PSL
+  `include "./psl11/assert_next_psl_logic.v"
+`else
+  `endmodule
+`endif
+

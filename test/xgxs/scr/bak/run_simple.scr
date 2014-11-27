@@ -1,0 +1,4 @@
+rm -rf *
+vp_proc1.scr -S ../src/XGXSPCS/XGXSSYNTH_ENC_8B10B.v -T XGXSSYNTH_ENC_8B10B -C c1 -I ../src/XGXSPCS/ -D 5 -L 5 -Input encode_data_in -Input konstant -Output encode_data_out
+source continue.scr
+source ../scr/sim.scr

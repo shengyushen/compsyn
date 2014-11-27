@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# clear all files
+rm -rf *
+
+# convert it to lsi10k cells
+# the result will be ssy.v
+dc_shell-t -f ../scr/syn.tcl |tee syn.log
+retval=$?
+if [ $retval -ne 0 ] ; then
+   echo " dc_shell-t failed\n" ;
+   grep Error syn.log ;
+   return 1 ;
+fi
+
+# covert lsi10k cells to rtl 
+lsi10k2rtl ssy.v XGXSSYNTH_ENC_8B10B
+retval=$?
+if [ $retval -ne 0 ] ; then
+   echo " lsi10k2rtl failed\n" ;
+   return 1 ;
+fi
+
+# change name for identifiers start with backslash
+sed -r -e s/[\\]\([a-zA-Z0-9_]\+\)[\[]\([0-9]\+\)[\]]/\\1_\\2_ssyssyssyssy/g lsi10k2rtl/XGXSSYNTH_ENC_8B10B.v > sed_res.v
+
+# checking complementable
+vp_proc1.scr -S sed_res.v -T XGXSSYNTH_ENC_8B10B -C c1 -D 5 -L 5 -Input encode_data_in -Input konstant -Output encode_data_out |tee vp_proc1.log
+
+# generating complementary circuit
+source continue.scr
+
+# simulate the result
+source ../scr/sim.scr

@@ -1,0 +1,21 @@
+if [ $# != 1 ]; then
+  echo "Usage : blif2verilog <blif file name>"
+else
+	if [ -f $1 ]; then 
+    blifname=$1
+		filename=${blifname%.*}
+		verilogname=$filename.v
+		#echo "$blifname"
+		#echo "$filename"
+		#echo "$verilogname"
+		echo "read_blif $blifname ; write_verilog tmp.v ; strash ; cleanup; dsd ; strash ; dc2 ; dc2 ; dch; read_library ../../scr/mcnc.genlib ; map ; show ;show -g ; print_gates ; print_level ; quit" > blif2verilog.tmp
+		abc -f blif2verilog.tmp
+		# removing blif style naming
+    sed  's/\\\([a-zA-Z0-9_]*\)|r\([0-9]*\)/\1_r\2/g' tmp.v | sed 's/\\\([a-zA-Z0-9_]*\)\[\([0-9]*\)\]/\1_\2/g'> $verilogname
+	else
+	  echo "Error : no this blif file"
+	fi
+fi
+
+
+

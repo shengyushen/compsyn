@@ -1,0 +1,41 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_never_unknown_assert_vunit (assert_never_unknown_assert)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_NEVER_UNKNOWN_P = always (
+           reset_n && xzcheck_enable && qualifier -> 
+           (test_expr ^ test_expr == {width{1'b0}})); 
+
+  A_ASSERT_NEVER_UNKNOWN_P:
+  assert ASSERT_NEVER_UNKNOWN_P
+  report "VIOLATION: ASSERT_NEVER_UNKNOWN Checker Fires : Test expression contains X/Z value";
+}
+
+vunit assert_never_unknown_assume_vunit (assert_never_unknown_assume)
+{
+  default clock = (posedge clk);
+
+  property ASSERT_NEVER_UNKNOWN_P = always (
+           reset_n && xzcheck_enable && qualifier -> 
+           (test_expr ^ test_expr == {width{1'b0}}));
+                                                                                                                                                 
+  M_ASSERT_NEVER_UNKNOWN_P:
+  assume ASSERT_NEVER_UNKNOWN_P;
+}
+
+vunit assert_never_unknown_cover_vunit (assert_never_unknown_cover)
+{
+  default clock = (posedge clk);
+                                                                                                                                                 
+  cover_qualifier:
+  cover {reset_n && qualifier}
+  report "COVERAGE REPORT: ASSERT_NEVER_UNKNOWN Checker: qualifier covered";
+                                                                                      
+  cover_test_expr_change:
+  cover {prev(reset_n) && reset_n && (test_expr != prev(test_expr))}
+  report "COVERAGE REPORT : ASSERT_NEVER_UNKNOWN Checker: test_expr_change covered";
+}
+

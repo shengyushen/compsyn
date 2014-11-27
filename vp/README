@@ -1,0 +1,73 @@
+compsyn	check 
+	the complementary condition, ICCAD'09 and TCAD'10
+compsyn_halting	
+	the halting that proposed in TCAD'11, 
+	1	it checks all combinations of d p and l, so it is very slow. 
+	2	but it use Craig interpolant to characterize the decoder's function
+compsyn_halting_fast	
+	the faster version of compsyn_halting, 
+	1	it checks d p and l with the same value, so it is faster, 
+	2	but it use the zchaff and XORMIN to characterize the decoder function, which is slower but with better area and timing
+
+compsyn_infer_multidec
+	generating multiple decoders if they actually exist, 
+	the inferring algorithm is presented in ICCAD'11
+	and the fd_test is based on functional dependency
+compsyn_infer_multidec_not
+	generating multiple decoders with following miprovements:
+	1	use more general approach to force inferred assertions
+	2	write gen_IA_I to replace gen_IA, which are the same except some comments
+	3	write fd_test_I to replace fd_test, the former use the pair-wise not euqal to replace the functional test in the latter.
+	4	write gen_IA_O and fd_test_O to work from input to output, 
+		unlike gen_IA_I and fd_test_I that work from output to input.
+		but these code fail in test, so we dont use them
+compsyn_infer_multidec_not_charfirst
+	generating multiple decoders with following miprovements:
+	1	characterize the total inverse function first, then use it together with orignal relation, 
+		the formmer will be used in fd_test, while the latter will be used to constraint the domain of bv_O
+compsyn_infer_multidec_not_charfirst_nowall
+	fixing following bug in infer_multidec_not_charfirst:
+	1	false in inferred pre condition
+
+compsyn_relarional : 
+	handling flow control mechanism, submitted to TODAES14
+
+compsyn_relarional_plr :
+	minimizing p, l and r 
+
+compsyn_relarional_plr_fast :
+	speedup finidng flow control with incremental SAT
+
+compsyn_relarional_plr_inc : 
+	speedup characterizing decoder function with incremental SAT
+
+compsyn_relarional_plr_inc_nominlr	:
+	not minimize l and r based on compsyn_relarional_plr_inc, just for comparison
+
+compsyn_relarional_plr_inc_plr1by1 :
+	incremental p l and r one by one, just for comparing to compsyn_relarional_plr_inc
+
+
+
+lsi10k2rtl	for some confidential RTL code, we dont want to expose them to public.
+		So we first map these RTL to LSI10K netlist with design compiler,
+		and then use lsi10k2rtl to convert LSI10K netlist to psudo RTL, 
+		In this way, we can replace confidential RTL code with psudo RTL.
+
+step1_noinc	expand verilog include statement 
+step2_nodef	replace macro with their difinition
+
+aag2verilog convert aig to verilog
+
+
+
+
+###########
+following are never used
+###########
+compsyn_c3	a complete approach to check the complementary condition,based on LP and ring,FMCAD'10
+compsyn_c3Interp	with interpolant to improve run time overhead
+compsyn_c3Interp_as	improve circuit area by swapping interpolant ordercounting suc children numberswapping interpolant order
+compsyn_c4Interp	another complete approach that fix the iccad'10 problem
+
+compsyn_c3a1	infering input pattern automatically,not finished yet

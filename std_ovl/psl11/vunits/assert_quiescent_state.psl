@@ -1,0 +1,31 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_quiescent_state_assert_vunit (assert_quiescent_state_assert)
+{
+  default clock = (posedge clk);
+
+  property ASSERT_QUIESCENT_STATE_P = always (
+    (prev(reset_n) && reset_n && (sample_event || 
+       rose(ovl_end_of_simulation_wire) ) )                   
+	-> (check_value == state_expr) );
+  
+  A_ASSERT_QUIESCENT_STATE_P:
+  assert ASSERT_QUIESCENT_STATE_P
+  report "VIOLATION: ASSERT_QUIESCENT_STATE Checker Fires: State expression is not equal to check_value while sample event is asserted";
+}
+
+vunit assert_quiescent_state_assume_vunit (assert_quiescent_state_assume)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_QUIESCENT_STATE_P = always (
+    (prev(reset_n) && reset_n &&
+       (sample_event ||
+         rose(ovl_end_of_simulation_wire) ) ) ->
+               (check_value == state_expr) );
+
+  A_ASSERT_QUIESCENT_STATE_P:
+  assume ASSERT_QUIESCENT_STATE_P;
+}
+

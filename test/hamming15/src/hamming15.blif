@@ -1,0 +1,268 @@
+.model hamming15
+.inputs  in1 in2 in3 in4 in5 in6 in7 in8 in9 in10 in11 
+.outputs out1 out2 out3 out4 out5 out6 out7 out8 out9 out10 out11 out12 out13 out14 out15 
+
+.latch r0_next r0
+.latch r1_next r1
+.latch r2_next r2
+.latch r3_next r3
+.names r0 r0_temp
+1 1
+.names r1 r1_temp
+1 1
+.names r2 r2_temp
+1 1
+.names r3 r3_temp
+1 1
+.names r0_temp r0_next
+1 1
+.names r1_temp r1_next
+1 1
+.names r2_temp r2_next
+1 1
+.names r3_temp r3_next
+1 1
+.names r0 r1 r2 r3 indicator1
+1000 1
+.names r0 r1 r2 r3 indicator2
+0100 1
+.names r0 r1 r2 r3 indicator3
+1100 1
+.names r0 r1 r2 r3 indicator4
+0010 1
+.names r0 r1 r2 r3 indicator5
+1010 1
+.names r0 r1 r2 r3 indicator6
+0110 1
+.names r0 r1 r2 r3 indicator7
+1110 1
+.names r0 r1 r2 r3 indicator8
+0001 1
+.names r0 r1 r2 r3 indicator9
+1001 1
+.names r0 r1 r2 r3 indicator10
+0101 1
+.names r0 r1 r2 r3 indicator11
+1101 1
+.names r0 r1 r2 r3 indicator12
+0011 1
+.names r0 r1 r2 r3 indicator13
+1011 1
+.names r0 r1 r2 r3 indicator14
+0111 1
+.names r0 r1 r2 r3 indicator15
+1111 1
+.names out1_ indicator1 out1
+01 1
+10 1
+.names out2_ indicator2 out2
+01 1
+10 1
+.names out3_ indicator3 out3
+01 1
+10 1
+.names out4_ indicator4 out4
+01 1
+10 1
+.names out5_ indicator5 out5
+01 1
+10 1
+.names out6_ indicator6 out6
+01 1
+10 1
+.names out7_ indicator7 out7
+01 1
+10 1
+.names out8_ indicator8 out8
+01 1
+10 1
+.names out9_ indicator9 out9
+01 1
+10 1
+.names out10_ indicator10 out10
+01 1
+10 1
+.names out11_ indicator11 out11
+01 1
+10 1
+.names out12_ indicator12 out12
+01 1
+10 1
+.names out13_ indicator13 out13
+01 1
+10 1
+.names out14_ indicator14 out14
+01 1
+10 1
+.names out15_ indicator15 out15
+01 1
+10 1
+
+.names my0
+0
+.names my1
+1
+
+#print the expanded inputs for output
+.names p1
+0
+.names p2
+0
+.names in1 p3
+1 1
+.names p4
+0
+.names in2 p5
+1 1
+.names in3 p6
+1 1
+.names in4 p7
+1 1
+.names p8
+0
+.names in5 p9
+1 1
+.names in6 p10
+1 1
+.names in7 p11
+1 1
+.names in8 p12
+1 1
+.names in9 p13
+1 1
+.names in10 p14
+1 1
+.names in11 p15
+1 1
+
+#print the parity checking outputs
+.names p1 n1
+1 1
+.names p3 n1 n2
+10 1
+01 1
+.names p5 n2 n3
+10 1
+01 1
+.names p7 n3 n4
+10 1
+01 1
+.names p9 n4 n5
+10 1
+01 1
+.names p11 n5 n6
+10 1
+01 1
+.names p13 n6 n7
+10 1
+01 1
+.names p15 n7 n8
+10 1
+01 1
+.names n8 out1_
+1 1
+
+.names p2 n9
+1 1
+.names p3 n9 n10
+10 1
+01 1
+.names p6 n10 n11
+10 1
+01 1
+.names p7 n11 n12
+10 1
+01 1
+.names p10 n12 n13
+10 1
+01 1
+.names p11 n13 n14
+10 1
+01 1
+.names p14 n14 n15
+10 1
+01 1
+.names p15 n15 n16
+10 1
+01 1
+.names n16 out2_
+1 1
+
+.names p4 n17
+1 1
+.names p5 n17 n18
+10 1
+01 1
+.names p6 n18 n19
+10 1
+01 1
+.names p7 n19 n20
+10 1
+01 1
+.names p12 n20 n21
+10 1
+01 1
+.names p13 n21 n22
+10 1
+01 1
+.names p14 n22 n23
+10 1
+01 1
+.names p15 n23 n24
+10 1
+01 1
+.names n24 out4_
+1 1
+
+.names p8 n25
+1 1
+.names p9 n25 n26
+10 1
+01 1
+.names p10 n26 n27
+10 1
+01 1
+.names p11 n27 n28
+10 1
+01 1
+.names p12 n28 n29
+10 1
+01 1
+.names p13 n29 n30
+10 1
+01 1
+.names p14 n30 n31
+10 1
+01 1
+.names p15 n31 n32
+10 1
+01 1
+.names n32 out8_
+1 1
+
+#printing the other outputs
+.names p3 out3_
+1 1
+.names p5 out5_
+1 1
+.names p6 out6_
+1 1
+.names p7 out7_
+1 1
+.names p9 out9_
+1 1
+.names p10 out10_
+1 1
+.names p11 out11_
+1 1
+.names p12 out12_
+1 1
+.names p13 out13_
+1 1
+.names p14 out14_
+1 1
+.names p15 out15_
+1 1
+
+.end
+

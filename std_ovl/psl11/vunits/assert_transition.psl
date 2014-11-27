@@ -1,0 +1,39 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_transition_assert_vunit (assert_transition_assert)
+{
+  default clock = (posedge clk);
+
+  property ASSERT_TRANSITION_P = always (
+           {reset_n && (test_expr == start_state)} |=>
+               { (test_expr == prev(start_state) ) ||
+                 (test_expr == prev(next_state) ) } );
+  
+  A_ASSERT_TRANSITION_P:
+  assert ASSERT_TRANSITION_P
+  report "VIOLATION: ASSERT_TRANSITION Checker Fires: Test expression transitioned from value start_state to a value other than next_state";
+}
+
+vunit assert_transition_assume_vunit (assert_transition_assume)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_TRANSITION_P = always (
+           {reset_n && (test_expr == start_state)} |=>
+               { (test_expr == prev(start_state) ) ||          
+                 (test_expr == prev(next_state) ) } ); 
+
+  A_ASSERT_TRANSITION_P:
+  assume ASSERT_TRANSITION_P;
+}
+
+vunit assert_transition_cover_vunit (assert_transition_cover)
+{ 
+  default clock = (posedge clk);
+
+  cover_start_state:
+  cover {reset_n && test_expr == start_state}
+  report "COVERAGE REPORT : ASSERT_TRANSITION Checker: start_state covered";
+}
+ 

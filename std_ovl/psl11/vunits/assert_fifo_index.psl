@@ -1,0 +1,90 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_fifo_index_assert_vunit (assert_fifo_index_assert)
+{
+  default clock = (posedge clk); 
+
+  property ASSERT_FIFO_INDEX_OVERFLOW_P = always (
+           reset_n && (push != 0) && !((simultaneous_push_pop == 0) && ((push != 0) && (pop != 0))) ->
+           fifo_used_depth + push - pop <= depth);
+           //when simultaneous push pop is not allowed, if it happens then property is not evaluated
+
+  property ASSERT_FIFO_INDEX_UNDERFLOW_P = always (
+           reset_n && pop && !((simultaneous_push_pop == 0) && ((push != 0) && (pop != 0))) ->
+           fifo_used_depth + push >= pop);
+           //when simultaneous push pop is not allowed, if it happens then property is not evaluated
+
+  property ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P = always (
+           reset_n && (simultaneous_push_pop == 0) ->
+           !(push && pop));
+           //when simultaneous push pop is allowed, this property is not evaluated 
+   
+  A_ASSERT_FIFO_INDEX_OVERFLOW_P:
+  assert ASSERT_FIFO_INDEX_OVERFLOW_P
+  report "VIOLATION: ASSERT_FIFO_INDEX Checker Fires : Fifo overflow detected";
+
+  A_ASSERT_FIFO_INDEX_UNDERFLOW_P:
+  assert ASSERT_FIFO_INDEX_UNDERFLOW_P
+  report "VIOLATION: ASSERT_FIFO_INDEX Checker Fires : Fifo underflow detected";
+
+  A_ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P:
+  assert ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P
+  report "VIOLATION: ASSERT_FIFO_INDEX Checker Fires : Illegal simultaneous push pop detected";
+}
+
+vunit assert_fifo_index_assume_vunit (assert_fifo_index_assume)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_FIFO_INDEX_OVERFLOW_P = always (
+           reset_n && (push != 0) && !((simultaneous_push_pop == 0) && ((push != 0) && (pop != 0))) ->
+           fifo_used_depth + push - pop <= depth);
+           //when simultaneous push pop is not allowed, if it happens then property is not evaluated
+                                                                                                                                             
+  property ASSERT_FIFO_INDEX_UNDERFLOW_P = always (
+           reset_n && pop && !((simultaneous_push_pop == 0) && ((push != 0) && (pop != 0))) ->
+           fifo_used_depth + push >= pop);
+           //when simultaneous push pop is not allowed, if it happens then property is not evaluated
+                                                                                                                                             
+  property ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P = always (
+           reset_n && (simultaneous_push_pop == 0) ->
+           !(push && pop));
+           //when simultaneous push pop is allowed, this property is not evaluated
+                                                                                                                             
+                                                                                                                             
+  M_ASSERT_FIFO_INDEX_OVERFLOW_P:
+  assume ASSERT_FIFO_INDEX_OVERFLOW_P;
+                                                                                                                             
+  M_ASSERT_FIFO_INDEX_UNDERFLOW_P:
+  assume ASSERT_FIFO_INDEX_UNDERFLOW_P;
+                                                                                                                             
+  M_ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P:
+  assume ASSERT_FIFO_INDEX_ILLEGAL_PUSH_POP_P;
+}
+
+vunit assert_fifo_index_cover_vunit (assert_fifo_index_cover)
+{ 
+  default clock = (posedge clk);
+ 
+  cover_fifo_push:
+  cover {reset_n && (push != 0)}
+  report "COVERAGE REPORT: ASSERT_FIFO_INDEX Checker: Fifo_push_covered";
+ 
+  cover_fifo_pop:
+  cover {reset_n && (pop != 0)}
+  report "COVER: ASSERT_FIFO_INDEX Checker report: Fifo pop covered";
+
+  cover_fifo_simultaneous_push_pop:
+  cover {reset_n && (push != 0) && (pop != 0)}
+  report "COVER: ASSERT_FIFO_INDEX Checker report: Fifo simultaneous push pop covered";
+ 
+  cover_fifo_full:
+  cover {reset_n && (fifo_used_depth != depth);reset_n && (fifo_used_depth == depth)}
+  report "COVER: ASSERT_FIFO_INDEX Checker report: Fifo full covered";
+
+  cover_fifo_empty:
+  cover {reset_n && (fifo_used_depth != 0);reset_n && (fifo_used_depth == 0)}
+  report "COVER: ASSERT_FIFO_INDEX Checker report: Fifo empty covered";
+}
+ 

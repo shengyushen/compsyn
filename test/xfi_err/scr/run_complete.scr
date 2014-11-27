@@ -1,0 +1,1 @@
+vp_proc1_complete.scr -S ../src/fl_syn.v -T XFIPCS_64B66B_ENC -I ../src/XFIPCS -B 10 -Input ENCODER_DATA_IN -Input ENCODER_CONTROL_IN -Output ENCODER_DATA_OUT

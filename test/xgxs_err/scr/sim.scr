@@ -1,0 +1,14 @@
+if [ $# -ge 1 ] ; then 
+ if [ -f resulting_dual_cnf_[$1].v ] ; then 
+  cp resulting_dual_cnf_[$1].v resulting_dual_cnf.v
+ else
+  echo "resulting_dual_cnf_$1.v does not exist"
+  return
+ fi
+else
+ if [ ! -f resulting_dual_cnf.v ] ; then 
+  echo "resulting_dual_cnf.v does not exist"
+  return
+ fi
+fi
+ncverilog  -f ../scr/xgxs.f

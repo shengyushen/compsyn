@@ -1,0 +1,1152 @@
+option EnumUnknowns=1,BddSift=1;
+#define MAX_RS 31
+scalarset WORD undefined;
+scalarset REG  undefined;
+ordset TAG 0..(MAX_RS);
+scalarset EU undefined;
+
+ordset MEMQ 0..;
+
+#define opcode {ALU,OUT,LD,ST,BC,JMP,NOP};
+
+typedef st_opr struct{
+  valid : boolean;
+  tag : TAG;
+  val : WORD;
+}
+
+module main()
+{
+
+  /**************************************************************/
+  /* the reference model                                        */
+  /**************************************************************/
+
+  /* uninterpreted functions to let us parameterize the architecture */
+
+  f : array WORD of array WORD of WORD; /* ALU function */
+  next(f) := f;
+
+  /* Uninterpreted functions to specify when exceptions have occurred - must there be separate functions for separate units ? */
+  exn_f : array WORD of array WORD of boolean; /* for ALU instr */
+  exn_m : array WORD of boolean;               /* for Mem instr */
+  exn_b : array WORD of array WORD of boolean; /* for Branch instr */
+  
+  next(exn_f) := exn_f;
+  next(exn_m) := exn_m;
+  next(exn_b) := exn_b;
+
+  
+  opdec : array WORD of opcode; /* function to decode opcode */
+  next(opdec) := opdec;
+
+  sadec : array WORD of REG;    /* function to decode srca */
+  next(sadec) := sadec;
+
+  sbdec : array WORD of REG;    /* function to decode srcb */
+  next(sbdec) := sbdec;
+
+  ddec : array WORD of REG;     /* function to decode dst */
+  next(ddec) := ddec;
+
+  next_pc : array WORD of WORD; /* function to increment pc */
+  next(next_pc) := next_pc;
+
+  /* function to compute branch condition */
+  bcond : array WORD of boolean;
+  next(bcond) := bcond;
+
+  /* function to compute branch target from pc and instruction */
+  branch_pc : array WORD of array WORD of WORD;
+  next(branch_pc) := branch_pc;
+
+  /* the architectural state */
+
+  pc : WORD;                    /* the program counter */
+  pm : array WORD of WORD;      /* program memory */
+  inst : WORD;                  /* the current instruction */
+  opin : opcode;                /* opcode field */
+  srca,srcb,dst : REG;          /* source and dest index fields */
+  din,dout : WORD;              /* data input and output */
+  r : array REG of WORD;        /* the register file */
+  m : array WORD of WORD;       /* main memory */
+  opra,oprb,res : WORD;         /* operands and result */
+  taken : boolean;              /* is branch taken? */
+  pc_incr, targ : WORD;         /* incremented pc and branch target */
+  stallarch : boolean;          /* stall (nondeterministic) */
+  exn_handler_pc : WORD;
+  
+  exn_raised : boolean;         /* Was an exception raised ? */
+  /* the reference model behavior */
+
+  next(pm) := pm;         /* assume program memory is constant */
+  next(exn_handler_pc) := exn_handler_pc; /* assume the exn_handler is constant */
+
+  layer arch: {
+    inst := pm[pc];
+    opin := opdec[inst];  /* decode the opcode */
+    srca := sadec[inst];  /* decode the srca operand */
+    srcb := sbdec[inst];  /* decode the srcb operand */
+    dst  := ddec[inst];   /* decode the dst operand */
+    pc_incr := next_pc[pc];  /* incremented pc */
+   
+    if(~stallarch)
+      default {
+      
+      switch(opin){
+	ALU : {
+	  opra := r[srca];
+	  oprb := r[srcb];
+	  res := f[opra][oprb];
+	  exn_raised := exn_f[opra][oprb];
+	  if (!exn_raised){
+	    next(r[dst]) := res;
+	      next(pc) := pc_incr;
+	  }
+	}
+	LD : {
+	  opra := r[srca];
+	  oprb := r[srcb];
+	  res := m[opra];
+	  exn_raised := exn_m[opra];
+	  if (!exn_raised){
+	    next(r[dst]) := res;
+	    next(pc) := pc_incr;
+	  }
+	}
+	ST : {
+	  opra := r[srca];
+	  oprb := r[srcb];
+	  exn_raised := exn_m[opra];
+	  if (!exn_raised){
+	    next(m[opra]) := oprb;
+	    next(pc) := pc_incr;
+	    }
+	}
+	OUT : {
+	  dout := r[srca];
+	  next(pc) := pc_incr;
+	  exn_raised := 0;
+	}
+	INP : {
+	  next(r[dst]) := din;
+	  next(pc) := pc_incr;
+	}
+	BC : {
+	  targ := branch_pc[pc][inst];
+	  opra := r[srca];
+	  oprb := r[srcb];
+	  res := f[opra][oprb];
+	  taken := bcond[res];
+	  exn_raised := exn_f[opra][oprb];
+	  if (!exn_raised){
+	    if(taken)
+	      next(pc) := targ;
+	    else next(pc) := pc_incr;
+	  }
+	  
+	}
+	JMP : {
+	  opra := r[srca];
+	  next(pc) := opra;
+	  exn_raised := 0; /* No exceptions possible */
+ 	}
+      default :{
+	next(pc) := pc_incr;
+	exn_raised := 0;
+      }
+      }
+    } in {
+      if (exn_raised) {
+	next(pc) := exn_handler_pc;
+      }
+    }
+
+  
+  }
+
+
+  /**************************************************************/
+  /* the implementation model                                   */
+  /**************************************************************/
+
+  ipc : WORD;  /* the implemenatation pc */
+
+  /* instruction fetch stage */
+
+  iinst : WORD; iinst := pm[ipc];  /* single cycle fetch -- not very realistic */
+
+  /* instruction decode  */
+
+  iopin : opcode;                /* opcode field */
+  isrca,isrcb,idst : REG;        /* source and dest index fields */
+
+  iopin := opdec[iinst];  /* decode the opcode */
+  isrca := sadec[iinst];  /* decode the srca operand */
+  isrcb := sbdec[iinst];  /* decode the srcb operand */
+  idst  := ddec[iinst];   /* decode the dst operand */
+
+  /* pc update */
+
+  itaken : boolean;
+  itaken := {0,1};        /* the branch predictor -- any function can be plugged in here */
+
+  flush : boolean;        /* from completion unit */
+  old_pc : WORD;          /* pc to roll back to */
+  itarg, ipc_incr : WORD;
+  
+  itarg := branch_pc[ipc][iinst];
+  ipc_incr := next_pc[ipc];
+
+  if(flush) next(ipc) := old_pc;
+  else if(~stallout)
+    next(ipc) := 
+      (iopin = BC & itaken) ? itarg : 
+	((iopin = JMP) ? ir[isrca].val : ipc_incr);
+
+  /* the registers and reservation stations */
+
+  ir: array REG of
+    struct{
+      resvd : boolean;
+      tag : TAG;
+      val : WORD;
+    }
+
+  st : array TAG of
+    struct{
+      valid : boolean;
+      mem : boolean;        /* is it a memory op? */
+      ld : boolean;         /* is it a load operation? */
+      branch : boolean;     /* is a branch op? */
+      taken : boolean;      /* was the branch taken? */
+      pc : WORD;            /* alternative pc if bad branch */
+      opra, oprb : st_opr;
+      dst : REG;
+      issued : boolean;
+      completed : boolean;
+      res : WORD;
+      exn : boolean;        /* Did this cause an exception */
+      mq : MEMQ;            /* Which mq does this go to, for easy commit update */
+    }
+
+
+  pout : struct{
+    valid : boolean;
+    tag : TAG;
+    val : WORD;
+    exn : boolean;          /* Is the bus returning an exception */
+  }
+
+  st_choice : TAG;
+  issue_choice : TAG;
+  complete_st : TAG;
+
+  forall(i in TAG)
+    init(st[i].valid) := 0;
+  forall(i in REG)
+    init(ir[i].resvd) := 0;
+
+  /* if the instruction that is retiring is a misdirected
+     branch, flush the machine! Note, this is suboptimal,
+     since we could flush at completion rather than retirement
+     and save wasted work, but this is simpler. */
+
+  flush := st[complete_st].valid & 
+    ((st[complete_st].completed
+      & ((st[complete_st].branch & st[complete_st].taken ~= bcond[st[complete_st].res])
+	 | st[complete_st].exn)) 
+     | (st[complete_st].issued & st[complete_st].mem & !st[complete_st].ld & st[complete_st].exn)
+     );
+
+  /* If an exn causes the flush then take the exn_handler else take the st.._pc */
+  old_pc := st[complete_st].exn ? exn_handler_pc : st[complete_st].pc;
+
+  retiring, writeback : boolean;
+  retiring := st[complete_st].valid & (st[complete_st].completed | st[complete_st].mem & (st[complete_st].ld=0) & st[complete_st].issued);
+  
+  writeback := retiring & (!st[complete_st].branch & !(st[complete_st].mem & !st[complete_st].ld)) & (!st[complete_st].exn);
+  /* All retiring instructions other than branch and store cause writeback...If there was an exception then there is no writeback ...*/
+ 
+  default {
+    /* result writeback logic. instructions write back their
+       results in order.
+       */
+
+   write, unreserve : array REG of boolean;
+   
+   if(writeback ){
+     forall(i in REG){
+       write[i] := st[complete_st].dst = i & ir[i].resvd ;
+       unreserve[i] := ir[i].tag = complete_st;
+       if (write[i]) {
+	 /* write the data from the retiring instruction into its dst reg */
+	 next(ir[i].val) := st[complete_st].res;
+	 if(unreserve[i]){
+	   /* if its also the st the reg was waiting for, unset the resvd bit*/
+	   next(ir[i].resvd) := 0;
+	 }
+       }
+     }
+   }
+   if (retiring)
+     next(st[complete_st].valid) := 0;
+    
+    
+  } in default {
+    /* instruction completion logic */
+
+    if(pout.valid){
+      forall(i in TAG){
+        if(~st[i].opra.valid & st[i].opra.tag = pout.tag){
+          next(st[i].opra.valid) := 1;
+          next(st[i].opra.val) := pout.val;
+        }
+        if(~st[i].oprb.valid & st[i].oprb.tag = pout.tag){
+          next(st[i].oprb.valid) := 1;
+          next(st[i].oprb.val) := pout.val;
+        }
+        if(st[i].issued && pout.tag = i){
+          next(st[i].completed) := 1;
+          next(st[i].res) := pout.val;
+	  next(st[i].exn) := pout.exn ;
+	}
+      }
+    }
+  
+  } in default {
+    /* incoming instruction logic */
+  
+    if(~stallout)
+      switch(iopin){
+        {ALU,LD,ST,BC,INP} : {
+          /* store the instruction in an RS */
+
+          if (!(iopin in {ST,BC})){
+            next(ir[idst].resvd) := 1;
+            next(ir[idst].tag) := st_choice;
+	    next(st[st_choice].dst) := idst; 
+	  }
+
+          next(st[st_choice].valid) := 1;
+	  next(st[st_choice].exn) := 0;      /* reset to no exception */
+          next(st[st_choice].mem) := iopin in {LD,ST};
+          next(st[st_choice].ld) := iopin = LD;
+          next(st[st_choice].issued) := 0;
+          next(st[st_choice].completed) := 0;
+          next(st[st_choice].branch) := iopin = BC;
+          next(st[st_choice].taken) := itaken;
+          /* note, this is the branch *not* taken */
+          next(st[st_choice].pc) :=
+            (~itaken) ? itarg : ipc_incr;
+	  next(st[st_choice].mq) := mq_tail;
+
+          /* fetch the a operand (with bypass) */
+	  if (iopin = INP){  /* INP is not used in this architecture -- this is historical */
+	    next(st[st_choice].opra.valid) := 1;
+	    next(st[st_choice].opra.val) := din;
+	  } else if(pout.valid & ir[isrca].resvd & pout.tag = ir[isrca].tag){
+            next(st[st_choice].opra.valid) := 1;
+            next(st[st_choice].opra.tag) := ir[isrca].tag;
+            next(st[st_choice].opra.val) := pout.val;
+          } else if(ir[isrca].resvd & st[ir[isrca].tag].completed){
+            next(st[st_choice].opra.valid) := 1;
+            next(st[st_choice].opra.tag) := ir[isrca].tag;
+            next(st[st_choice].opra.val) := st[ir[isrca].tag].res;
+          } else {
+            next(st[st_choice].opra.valid) := ~ir[isrca].resvd;
+            next(st[st_choice].opra.tag) := ir[isrca].tag;
+            next(st[st_choice].opra.val) := ir[isrca].val;
+          }
+
+          /* fetch the b operand (with bypass) */
+
+          if(pout.valid & ir[srcb].resvd & pout.tag = ir[srcb].tag){
+            next(st[st_choice].oprb.valid) := 1;
+            next(st[st_choice].oprb.tag) := ir[srcb].tag;
+            next(st[st_choice].oprb.val) := pout.val;
+          } else if(ir[srcb].resvd & st[ir[srcb].tag].completed){
+            next(st[st_choice].oprb.valid) := 1;
+            next(st[st_choice].oprb.tag) := ir[srcb].tag;
+            next(st[st_choice].oprb.val) := st[ir[srcb].tag].res;
+          } else {
+            next(st[st_choice].oprb.valid) := ~ir[srcb].resvd;
+            next(st[st_choice].oprb.tag) := ir[srcb].tag;
+            next(st[st_choice].oprb.val) := ir[srcb].val;
+          }
+        }
+
+        OUT : dout := ir[isrca].val;
+	
+      
+      }
+
+  } in default {
+    /* instruction issue logic */
+
+    default {exe_valid := 0; mem_valid := 0;}
+    in if(st[issue_choice].valid
+       & st[issue_choice].opra.valid
+       & st[issue_choice].oprb.valid
+       & ~st[issue_choice].issued){
+      if(~st[issue_choice].mem){
+        if(exe_rdy){
+          exe_valid := 1;
+          next(st[issue_choice].issued) := 1;
+        }
+      }
+    
+      else { /* a memory op */
+        if(mem_rdy){
+          mem_valid := 1;
+          next(st[issue_choice].issued) := 1;
+	  next(st[issue_choice].exn) := exn_m[st[issue_choice].opra.val];  
+        }
+      }
+    }
+  
+    exe_tag  := issue_choice;
+    exe_opra :=  st[issue_choice].opra.val;
+    exe_oprb :=  st[issue_choice].oprb.val;
+  } in {
+
+    /* finally, notwithstanding all the above, if we are flushing the
+       machine, then clear all the valid bits, and all the reserved
+       bits */
+
+    if(flush){
+      forall(i in TAG)
+        next(st[i].valid) := 0;
+      forall(i in REG){
+        next(ir[i].resvd) := 0;
+
+  /*the value of the regs stays unchanged .. should not be changed by the retiring instruction if it caused a flush */
+      }
+    }
+  }
+
+  /* round-robin reservation station allocation */
+
+  init(st_choice) := 0;
+  init(complete_st) := 0;
+
+  if(flush){
+    next(st_choice) := 0;
+    next(complete_st) := 0;
+  } else {
+    if(~stallout & iopin in {ALU,LD,ST,BC})
+	/* since st_choice is a bounded ordset, these increments is modular */
+      next(st_choice) :=  (st_choice + 1);
+    if(retiring)
+      next(complete_st) :=  (complete_st + 1);
+  }
+  /* the stall signal */
+
+  stallout : boolean;
+  ASSIGN stallout :=
+    iopin in {ALU,LD,ST,BC} & st[st_choice].valid
+    | iopin = OUT & ir[isrca].resvd
+    | iopin = JMP & ir[isrca].resvd
+    | iopin in {LD,ST} & mem_full;
+
+  /* the execution units */
+
+  complete_mem : boolean;    /* true if returning result from mem */
+  
+  issue_eu, complete_eu : EU;
+  
+  eu : array EU of struct{
+    valid, ready : boolean;
+    res : WORD;
+    exn : boolean;
+    tag : TAG;
+  }
+  
+   exe_rdy,exe_valid : boolean;
+   exe_tag : TAG;
+   exe_opra, exe_oprb : WORD;
+
+   forall(i in EU)
+     init(eu[i].valid) := 0;
+  
+   default{
+     if(~eu[issue_eu].valid){
+       next(eu[issue_eu].valid) := exe_valid;
+       next(eu[issue_eu].res) := f[exe_opra][exe_oprb];
+       next(eu[issue_eu].exn) := exn_f[exe_opra][exe_oprb];
+       next(eu[issue_eu].tag) := exe_tag;
+     }
+   } in default {
+     if(complete_mem){
+       ASSIGN pout.valid := mem_ld & mem_done;
+       pout.val :=  mem_rd_data;
+       pout.exn :=  mem_exn;                         
+       ASSIGN pout.tag := mem_tag;
+     }
+     else {
+       ASSIGN pout.valid := eu[complete_eu].valid & eu[complete_eu].ready;
+       pout.val := eu[complete_eu].res;
+       pout.exn := eu[complete_eu].exn;
+       ASSIGN pout.tag := eu[complete_eu].tag;
+       if(pout.valid)
+         next(eu[complete_eu].valid) := 0;
+     }
+   
+   } in {
+
+     /* ...but, if flush, then clear all the valid bits */
+
+     if(flush)
+       forall(i in EU)
+         next(eu[i].valid) := 0;
+   }
+  
+
+  /* the memory unit */
+  
+   mem_valid, mem_rdy, mem_full : boolean;
+   mem_enable, mem_ld, mem_stall, mem_done : boolean;
+   mem_addr, mem_wr_data, mem_rd_data : WORD;
+   mem_tag : TAG;
+  
+  
+   /* mem queue holds pending mem ops in order */
+  
+   mq : array MEMQ of struct{
+     valid, ready : boolean;
+     commit : boolean; /* is this op "committed" */
+     ld : boolean;  /* is it a load operation? */
+     tag : TAG;
+     addr : WORD;
+     data : WORD;
+     done : boolean; /* Is this op done */
+   }
+  
+   mq_head, mq_tail : MEMQ;
+   init(mq_tail) := 0;
+
+   ldst : boolean;
+   ldst := {0,1};
+   
+   can_store, can_load, fwd_pred : array MEMQ of boolean;
+   load_from_mem : boolean;
+   mq_fwd : MEMQ;
+
+   forall(i in MEMQ){
+     
+     /* Can store if all the elements before this have completed or are of another address -- def all should know their address */
+     
+     can_store[i] := mq[i].valid & !mq[i].ld & !mq[i].done 
+       & &[j < i & mq[j].valid -> (mq[j].done | mq[j].ready & mq[j].addr ~= mq[i].addr) : j in MEMQ];
+     
+     /* Can load if all previous stores are ready */
+     
+     can_load[i] := mq[i].valid & mq[i].ld & !mq[i].done 
+       & &[j < i & mq[j].valid & ~mq[j].ld -> mq[j].ready: j in MEMQ];
+   }
+   
+   /* current load or store is chosen among all that are available */
+   
+   mq_head := ldst ? {i: i in MEMQ, can_store[i]}: {i: i in MEMQ, can_load[i]};
+   
+   /* load from memory if all previous writes have completed, else forward */
+   
+   load_from_mem := &[j < mq_head & mq[j].valid & ~mq[j].ld -> (mq[j].done | mq[j].ready & mq[j].addr ~= mq[mq_head].addr) : j in MEMQ];
+   
+   /* if forwarding, pick the most recent write to forward from */
+   
+   forall(j in MEMQ)
+     fwd_pred[j] := j < mq_head & mq[j].valid & ~mq[j].ld & mq[j].addr = mq[mq_head].addr;
+   
+   /* initially, the mq is empty */
+
+   forall(i in MEMQ) {
+     init(mq[i].valid) := 0;
+     init(mq[i].commit) := 0;
+     init(mq[i].done) := 0;
+   }
+
+   /* handshake with op input and RS's */
+     
+   mem_rdy := 1;
+   mem_full := mq[mq_tail].valid;
+
+   /* read out the mem op at head of mem queue */
+
+   mem_enable := (ldst ? can_store[mq_head]: can_load[mq_head]) &
+     & mq[mq_head].valid & mq[mq_head].ready & ((~mem_ld) -> mq[mq_head].commit )
+     & (mem_ld & ~load_from_mem -> fwd_pred[mq_fwd] & &[fwd_pred[k] -> k <= mq_fwd : k in MEMQ]);
+   mem_ld := mq[mq_head].ld;
+   mem_addr := mq[mq_head].addr;
+   mem_wr_data := mq[mq_head].data;
+   mem_tag := mq[mq_head].tag;
+
+   /* op completes if following condition */
+
+   mem_done := mem_enable & ~mem_stall;
+   complete_mem := mem_ld & mem_done;
+
+   default{
+
+     /* load fetched operands into memory queue */
+
+     /* The last clause so that a later instruction doesn't overwrite the ops in the mq */
+     forall(i in MEMQ){
+       if(mem_valid & exe_tag = mq[i].tag & !mq[i].ready){
+         next(mq[i].ready) := 1;
+         next(mq[i].addr) := exe_opra;
+         if(~mq[i].ld) next(mq[i].data) := exe_oprb;
+       }
+     }
+   }
+  
+   in default{
+   
+     /* load a new instruction into memory queue */
+
+     if(~stallout & iopin in {LD,ST}){
+       next(mq[mq_tail].valid) := 1;
+       next(mq[mq_tail].ready) := 0;
+       next(mq[mq_tail].tag) := st_choice;
+       next(mq[mq_tail].ld) := (iopin = LD);
+       next(mq_tail) :=  mq_tail + 1;
+     }
+     
+     /* load/store commit logic */
+
+     forall(i in MEMQ){
+       if (retiring & !flush & mq[i].tag=complete_st & mq[i].valid  & !st[complete_st].exn & !mq[i].ld){
+	 next(mq[i].commit) := 1;
+       }
+     }
+   }
+     
+   /* free item in memory queue when completed - no need to do so now, only the counter is incremented*/
+   
+   in default{
+       if(mem_done){
+	 next(mq[mq_head].done) := 1;
+       }
+   }
+   in {
+     
+     /* ...but if flush, clear the queue */
+     
+     if(flush){
+       forall(i in MEMQ)
+	 if (!mq[i].commit){
+	   next(mq[i].valid) := 0;
+	   next(mq[i].done) := 0;
+	 }
+     }
+   }
+   
+   /* the memory (pretty simple, really)*/
+
+   im : array WORD of WORD;
+   
+   mem_exn : boolean;
+   mem_exn := exn_m[mem_addr];
+
+   mem_rd_data := load_from_mem ? im[mem_addr] : mq[mq_fwd].data;
+   
+   if(mem_enable & ~mem_ld & ~mem_stall & !mem_exn) next(im[mem_addr]) := mem_wr_data;
+
+   
+
+   /**************************************************************/
+   /* everything after here is the proof                         */
+   /**************************************************************/
+
+
+   /******************************************** auxiliary state */
+
+   /* first, we must keep track of when we are
+      executing after a misprediceted branch. */
+  
+   shadow : boolean;
+   
+   init(shadow) := 0;
+   next(shadow) := ~flush & (shadow | ~stallarch & ( exn_raised | (opin = BC & taken ~= itaken)));
+   auxShadowRS : TAG;
+   auxShadowRes : WORD;
+   prev_srca : REG;
+   
+   if (~shadow & ~stallarch & ( exn_raised | (opin = BC & taken ~= itaken))){
+     next(auxShadowRS) := st_choice;
+     next(auxShadowRes) := res;
+   }
+   
+   aux : array TAG of struct {
+     opra, oprb, res : WORD;
+     srca, srcb : REG;
+     eu : EU; mq : MEMQ;
+     shadow : boolean;  /* remember if instruction is shadowed */
+     exn : boolean;     /* remember if instruction caused an exception */
+   }
+
+     
+   if(~stallout & iopin in {ALU,LD,ST,BC,INP}){
+     next(aux[st_choice].opra) := opra;
+     next(aux[st_choice].oprb) := oprb;
+     next(aux[st_choice].res)  := res;
+     next(aux[st_choice].srca) := isrca;
+     next(aux[st_choice].srcb) := isrcb;
+     next(aux[st_choice].shadow) := shadow ;
+     next(aux[st_choice].mq) := mq_tail;
+     next(aux[st_choice].exn) := exn_raised;
+   }
+  
+  /* to keep track of the last RS that actually wrote to a REG */
+   auxLastWriterRS: array REG of TAG;
+   forall(i in REG){
+     init(auxLastWriterRS[i]) := 0;
+   }
+  
+   if (writeback){
+     forall(i in REG){
+       if (write[i]){
+	 next(auxLastWriterRS[i]):=complete_st;
+       } 
+     } 
+   }  
+   /* To split cases for ipc//opok */
+   auxlastFlush : boolean;
+   next(auxlastFlush) := flush;
+  
+   
+   /* to keep track of the last non-shadowed/non-stalled - i.e. the RS corresponding to the last issued instruction that will write a REG*/
+   auxLastIssuedRS : array REG of TAG;
+   forall(i in REG){
+     init(auxLastIssuedRS[i]) := 0;
+   }
+
+   forall(i in REG)
+     if (~stallarch & i=idst & iopin in {ALU,LD,INP} & !exn_raised)
+       next(auxLastIssuedRS[i]):= st_choice;
+
+  
+   mqaux : array MEMQ of struct{
+     data, addr : WORD;
+     lastWrite : MEMQ; /* for loads, this will remember the correct last store... when this elt is at the head of the queue, we check that imtag[addr] = lastwrite */
+     prevWrite : boolean;
+     write: boolean;
+     ld: boolean;
+     shadow : boolean;
+   }
+
+   forall(i in MEMQ){
+     init(mqaux[i].write) := 0;
+     init(mqaux[i].shadow) := 0 ;
+     init(mqaux[i].prevWrite) := 0;
+     init(mqaux[i].lastWrite) := 0;
+   }
+   
+   if(~stallout & iopin in {LD,ST}){
+     next(mqaux[mq_tail].addr) := opra;
+     next(mqaux[mq_tail].data) := iopin = LD ? res : oprb;
+     next(mqaux[mq_tail].lastWrite) := mtag[opra];
+     next(mqaux[mq_tail].prevWrite) := mwr[opra];
+     next(mqaux[mq_tail].ld) := (iopin=LD) ? 1:0 ;
+     next(mqaux[mq_tail].shadow) := shadow ;
+     if (!exn_raised & !shadow & iopin=ST){
+       next(mqaux[mq_tail].write) := 1;
+     }
+     else 
+       next(mqaux[mq_tail].write) := 0;
+   }
+
+   if(exe_valid)next(aux[issue_choice].eu) := issue_eu;
+
+   /* remember the MEMQ entry of last store to any given memory
+      location */
+
+   mtag, imtag : array WORD of MEMQ;
+   mwr : array WORD of boolean;
+
+   forall(a in WORD){
+     init(imtag[a]) := 0;
+     init(mtag[a]) := 0;
+   }
+
+   /* this checks whether or not an address has been written to at all ...*/
+
+   forall(i in WORD)  init(mwr[i]) := 0;
+   if(~shadow & ~stallout & iopin = ST & ~exn_raised){
+     next(mwr[opra]) := 1;
+     next(mtag[opra]) := mq_tail;
+   }
+
+   if(~mem_ld & mem_done & ~mem_exn){
+     next(imtag[mem_addr]) := mq_head;
+   }
+   
+   /* remember which RS the pc was loaded from on last flush, also the
+      previous pc value.*/
+
+   ftag : TAG;
+   if(flush) next(ftag) := complete_st;
+
+   prev_pc : WORD;
+   if(~stallarch)next(prev_pc) := pc;
+   next(prev_srca) := srca;
+
+   /******************************************** witness functions */
+
+   layer arch: {
+     forall(i in REG)
+       init(r[i]) := ir[i].val;
+     forall(i in WORD)
+       init(m[i]) := im[i];
+     init(pc) := ipc;
+   }
+
+   /* stall the spec if the impl either stalls, or is
+      operating after a misprediction */
+
+   stallarch := stallout | shadow;
+    
+   /****************************************** the refinement maps */
+
+   layer opok :          /* decoded instruction is O.K. */
+     if(~shadow){
+       ipc := pc;
+       iopin := opin;
+       isrca := srca;
+       isrcb := srcb;
+       idst := dst;
+       ipc_incr := pc_incr;
+     }
+
+   layer targok :
+     if (~shadow & ~stallarch & opin=BC){
+       itarg := targ;
+     }
+
+   forall(k in TAG)
+     layer lemma1 :
+      if(st[k].valid & st[k].opra.valid & ~aux[k].shadow)
+        st[k].opra.val := aux[k].opra;
+
+   forall(k in TAG)
+     layer lemma1 :
+      if(st[k].valid & st[k].oprb.valid & ~aux[k].shadow)
+        st[k].oprb.val := aux[k].oprb;
+
+   forall (i in TAG)
+     layer lemma2[i] : 
+       if(pout.tag = i & pout.valid & ~aux[i].shadow){
+	 pout.val := aux[i].res;
+	 pout.exn := aux[i].exn;
+       }
+
+   forall (i in TAG)
+     layer lemma2a :{
+     if(st[i].valid & st[i].completed & ~aux[i].shadow)
+       st[i].res := aux[i].res;
+
+     if(st[i].valid & (st[i].completed | (st[i].mem & st[i].issued)) & ~aux[i].shadow)
+       st[i].exn := aux[i].exn;
+   }
+   
+   forall (i in MEMQ)
+     layer mqlemma :
+       {
+         if(mq[i].valid & mq[i].ready){
+	   if(mqaux[i].write) {
+	     mq[i].data := mqaux[i].data;
+	     mq[i].ld := 0 ;
+	   }
+	   else {
+	     mq[i].commit := 0;
+	     mq[i].ld := mqaux[i].ld;
+	   }
+	   if (!mqaux[i].shadow) 
+	     mq[i].addr := mqaux[i].addr;
+	 }
+	 else {
+	   if (mq[i].valid)
+	     mq[i].ld := mqaux[i].ld;
+	   mq[i].commit := 0;
+	 }
+       }
+   
+   forall (i in REG)
+     layer uptodateReg : 
+       if (~ir[i].resvd) {
+	 ir[i].val := r[i];
+       }
+   
+   
+   /************************************** noninterference lemmas */
+
+
+   /* results to not return from unexpected execution units */
+
+   lemma3 : assert G (pout.valid & ~complete_mem ->
+                      (~st[pout.tag].mem & complete_eu = aux[pout.tag].eu));
+
+   lemma3m : assert G (pout.valid & complete_mem ->
+                      (st[pout.tag].ld & st[pout.tag].mem & mq_head = aux[pout.tag].mq));
+   
+
+   /* memory returns correct data */
+
+   lemma4 : assert G ( ~mqaux[mq_head].shadow & mem_ld & mem_enable & load_from_mem
+		       ->  mem_rd_data = mqaux[mq_head].data);
+
+   lemma4a : assert G ( ~mqaux[mq_head].shadow & mem_ld & mem_enable & load_from_mem
+			-> (imtag[mem_addr] >= mqaux[mq_head].lastWrite ));
+
+   lemma4b : assert G ( mem_enable & !mem_ld -> mq_head >= imtag[mem_addr]);
+   /* Stores in monotonically increasing order ...*/
+
+   forall(i in MEMQ)
+     lemma4c[i] : assert G (flush -> shadow & (mq[i].valid & mqaux[i].write -> mq[i].commit));
+   
+   /* load forwarding path returns correct data */
+
+   lemma4f : assert G ( ~mqaux[mq_head].shadow & mem_ld & mem_enable & ~load_from_mem
+		       ->  mem_rd_data = mqaux[mq_head].data);
+
+   lemma4fa : assert G ( ~mqaux[mq_head].shadow & mem_ld & mem_enable & ~load_from_mem
+			-> (mqaux[mq_head].lastWrite >= mq_fwd) & mqaux[mq_head].prevWrite);
+
+   /* no RS causes a flush when there is still a nonshadowed instruction */
+
+   forall(i in TAG)
+     lemma5[i] : assert G (flush -> shadow & (complete_st~=i -> ~(st[i].valid & ~aux[i].shadow)));
+
+   /* No shadowed instruction should be committed !  */
+   lemma6 : assert G ( retiring -> ~aux[complete_st].shadow);
+
+   /* Hack lemma to get around ipc circularity problem !!!! */
+   ipc_opok_lemma : assert G (~shadow -> ipc=pc);
+   
+   /* The following is just a rewrite of pout.val//memcase[i] as a temporal property.
+      We can't prove pout.val//memcase[i] because of a bug in SMV (an assert can't prove
+      a layer with delay zero) so we prove this instead. */
+
+   forall(i in TAG)
+     lemma2_memcase[i]: assert G
+     (complete_mem & pout.tag = i & pout.valid & ~aux[i].shadow -> 
+      (pout.val = aux[i].res & pout.exn = aux[i].exn));
+   
+   /************************* case split and prove all properties */
+
+#define free_opin opin//free, srca//free, srcb//free, dst//free, bcond//free, enum(iopin)
+#define undef_uf f//undefined,exn_f//undefined, exn_m//undefined, bcond//undefined
+
+   /* operand correctness and output correctness */
+
+   forall (i in TAG) forall (j in REG) forall (k in TAG) forall(c in WORD){
+     subcase lemma1[i][j][c] of st[k].opra.val//lemma1 
+       for st[k].opra.tag = i & aux[k].srca = j & aux[k].opra = c;
+     subcase lemma1[i][j][c] of st[k].oprb.val//lemma1 
+       for st[k].oprb.tag = i & aux[k].srcb = j & aux[k].oprb = c;
+     subcase arch[j][c] of dout//arch
+       for srca = j & r[j] = c;
+     subcase uptodateReg[i][k][c] of ir[j].val//uptodateReg 
+       for auxLastIssuedRS[j]=i & auxLastWriterRS[j]=k & r[j]=c;
+     
+     using  res//free, pout.valid//free, pout.tag//free, pout//lemma2[i], free_opin, exn_raised//free, 
+       (lemma5[i]), st[i]//free if i ~= k, 
+       st[i].valid, st[i].res//lemma2a, st[i].exn//lemma2a, st[i].branch, st[i].mem, st[i].ld, st[i].dst, st[i].completed,
+       scalarset(TAG) prove st[k]//lemma1[i][j][c];
+     
+     using res//free, pout//free, opin//free, srca//free, srcb//free, dst//free, (lemma5[i]),
+       enum(iopin), exn_raised//free, bcond//free, st[i].opra//free, st[i].oprb//free, st[k].opra//free,
+       st[k].oprb//free, (lemma6) prove ir[j].val//uptodateReg[i][k][c];
+   }
+
+   /* first, split result correctness into load/store case and alu op case */
+   
+   forall(i in TAG)forall(c in WORD){
+     subcase lemma2a[c] of st[i].res//lemma2a for aux[i].res = c;
+       subcase lemma2a[c] of st[i].exn//lemma2a for aux[i].opra = c;
+       using scalarset(TAG), res//free, pout.valid//free, pout//lemma2[i], free_opin prove st[i]//lemma2a[c]; 
+   }
+  
+   forall(i in TAG){
+     subcase alucase[i] of pout.val//lemma2[i] for complete_mem = 0;
+     subcase alucase[i] of pout.exn//lemma2[i] for complete_mem = 0;  
+     subcase memcase[i] of pout.val//lemma2[i] for complete_mem = 1;
+     subcase memcase[i] of pout.exn//lemma2[i] for complete_mem = 1;
+   }
+
+   /* split the alu case on RS, EU and data values */
+
+   forall(i in TAG) forall(j in EU) forall(a in WORD) forall(b in WORD)
+     forall(c in WORD){
+     subcase alucase[i][j][a][b][c] of pout.val//alucase[i]
+       for aux[i].opra = a & aux[i].oprb = b & aux[i].res = c
+                & complete_eu = j;
+     subcase alucase[i][j][a][b] of pout.exn//alucase[i]
+       for aux[i].opra = a & aux[i].oprb = b & complete_eu = j;
+     using free_opin, opra//free, oprb//free, st[i]//lemma1,
+       f//undefined, undef_uf, f[a][b], exn_f[a][b], (lemma3), (lemma3m), scalarset(TAG),
+       complete_mem//free, mem_rd_data//free, mem_tag//free, mem_full//free,
+       mem_done//free, mem_ld//free, mq_head//free,
+       mem_enable//free, mem_rdy//free, mem_valid//free, m//undefined
+       prove pout.val//alucase[i][j][a][b][c], pout.exn//alucase[i][j][a][b];
+   }
+
+   /* split the memory case on RS, address, the memory tag
+      (last RS to write address) and the correct value */
+
+
+   forall(i in TAG) forall(a in WORD) forall(k in MEMQ) forall(c in WORD){
+
+     subcase mqlemma[i][c] of mq[k].data//mqlemma
+       for mq[k].tag = i & mqaux[k].data = c;
+     
+     subcase mqlemma[i][c] of mq[k].addr//mqlemma
+       for mq[k].tag = i & mqaux[k].addr = c;
+
+     subcase mqlemma[i] of mq[k].ld//mqlemma
+       for mq[k].tag = i;
+      
+     subcase mqlemma[i] of mq[k].commit//mqlemma
+       for mq[k].tag = i;
+
+     using free_opin, opra//free, oprb//free, f//undefined, (lemma6)
+       prove mq[k].data//mqlemma[i][c],mq[k].addr//mqlemma[i][c], mq[k].ld//mqlemma[i],mq[k].commit//mqlemma[i];
+ 
+     assume pout.val//memcase[i];  /* see comment above about lemm2_memcase */
+
+     subcase memcase[i][a][k] of pout.exn//memcase[i]
+	  for aux[i].opra = a & mq_head = k;
+     subcase lemma2_memcase[i][k][c] of lemma2_memcase[i]
+       for mq_head = k & aux[i].res = c;
+
+     using free_opin, opra//free, oprb//free, res//free, (lemma3), (lemma3m) prove pout.exn//memcase[i][a][k];
+     using free_opin, opra//free, oprb//free, res//free, (lemma3), (lemma3m), lemma4, lemma4f prove lemma2_memcase[i][k][c];
+
+   }
+
+   /* split the EU noninterference lemma on th RS and EU */
+
+   forall(i in TAG) forall(j in EU){
+     subcase lemma3[i][j]
+       of lemma3 for pout.tag = i & complete_eu = j;
+     using free_opin, (lemma3), (lemma3m),scalarset(TAG) prove lemma3[i][j];
+   }
+   
+   forall(i in TAG) forall(j in MEMQ){
+     subcase lemma3m[i][j]
+       of lemma3m for pout.tag = i & mq_head = j;
+     using free_opin, (lemma3), (lemma3m), scalarset(TAG) prove lemma3m[i][j];
+   }
+   
+   /* split the write ordering property on the reader and most recent writer */
+
+   forall(i in MEMQ) forall(j in MEMQ)forall(a in WORD)forall(t in TAG)forall(d in WORD){
+     subcase lemma4[i][j][a][d] of lemma4
+       for mq_head = i & mem_addr = a & imtag[a] = j & mem_rd_data=d;
+     using 
+       lemma4a, free_opin, f//undefined, opra//free, lemma4c[j], enum(iopin), enum(mq[j].commit),
+       imtag//undefined, imtag[a], im//undefined, im[a], m//undefined, m[a]//arch, exn_m//undefined, exn_m[a],
+       mtag//undefined, mtag[a], exn_f//undefined
+       prove lemma4[i][j][a][d];
+
+
+     forall(k in MEMQ){
+       subcase lemma4a[i][k][a] of lemma4a 
+	 for mq_head = i & mem_addr = a & mqaux[i].lastWrite = k ;
+       using lemma4b, opra//free, res//free, enum(iopin), lemma4c[k], enum(mq[k].commit) prove lemma4a[i][k][a];
+       subcase lemma4b[i][j][a] of lemma4b
+	 for mq_head = i & mem_addr = a & imtag[a] = j;
+       using enum(mq[i].commit), res//free prove lemma4b[i][j][a];
+       subcase lemma4c[i][t] of lemma4c[i] for mq[i].tag=t;
+       using free_opin, opra//free, oprb//free, res//free, (lemma3), (lemma3m), lemma5[t], mq[i].commit prove lemma4c[i][t];
+     }
+   }
+
+   forall(i in MEMQ) forall(j in MEMQ)forall(a in WORD)forall(t in TAG)forall(d in WORD){
+     subcase lemma4f[i][j][a][d] of lemma4f
+       for mq_head = i & mem_addr = a & mqaux[i].lastWrite = j & mem_rd_data=d;
+     using 
+       lemma4fa, free_opin, f//undefined, opra//free, lemma4c[j], enum(iopin), enum(mq[j].commit),
+       imtag//undefined, imtag[a], im//undefined, im[a], m//undefined, m[a]//arch, exn_m//undefined, exn_m[a],
+       mtag//undefined, mtag[a], exn_f//undefined
+       prove lemma4f[i][j][a][d];
+
+
+     forall(k in MEMQ){
+       subcase lemma4fa[i][k][a] of lemma4fa 
+	 for mq_head = i & mem_addr = a & mq_fwd = k ;
+       using opra//free, res//free, enum(iopin), lemma4c[k], enum(mq[k].commit) prove lemma4fa[i][k][a];
+     }
+   }
+  
+
+   /* for pc, split cases on the tag of the last RS to flush */
+   /* first a manual case split on whether there was a flush on the last cycle or no ...*/
+   
+   subcase opok_flush of ipc//opok for auxlastFlush = 1;
+   subcase opok_prevpc of ipc//opok for auxlastFlush = 0;
+
+   forall(a in WORD)forall(b in WORD)forall(c in REG){
+     subcase opok_prevpc[a][b][c] of ipc//opok_prevpc for prev_pc = a & pc = b & prev_srca = c;
+       using free_opin, res//free, enum(flush), enum(taken),enum(itaken), enum(exn_raised), enum(targ),enum(pc_incr), (ipc_opok_lemma), scalarset(TAG)
+       prove ipc//opok_prevpc[a][b][c];
+    }
+
+   forall(i in TAG)forall(a in WORD)forall(b in WORD){
+     subcase opok_flush[i][a][b] of ipc//opok_flush for ftag = i & pc = a & aux[i].res = b;
+       using opin//free, srca//free, srcb//free, dst//free, enum(iopin), enum(flush), enum(taken),enum(itaken), enum(exn_raised), enum(targ),enum(pc_incr),  
+       res//free, pout//free, pout.val//lemma2[i],
+       (lemma5[i]), (ipc_opok_lemma), (lemma6), scalarset(TAG)
+       prove ipc//opok_flush[i][a][b];
+   }
+
+       
+   forall(a in WORD){
+     subcase ipc_opok_lemma[a] of ipc_opok_lemma for pc=a;
+     using ipc//opok prove ipc_opok_lemma[a];
+   }
+
+
+   /* for correctness of fetched opcode fields, split cases
+      on the PC, the instruction and the correct value. */
+
+   forall(a in WORD) forall(i in WORD) forall(j in REG) {
+     subcase fldok[a][i][j] of isrca//opok
+       for pc = a & inst = i & sadec[i] = j;
+     subcase fldok[a][i][j] of isrcb//opok
+       for pc = a & inst = i & sbdec[i] = j;
+     subcase fldok[a][i][j] of idst//opok
+       for pc = a & inst = i & ddec[i] = j;
+     subcase pciok[a][i] of ipc_incr//opok
+       for pc = a & pc_incr = i;
+     
+     using pc//free,shadow//free
+       prove isrca//fldok[a][i][j],isrcb//fldok[a][i][j],idst//fldok[a][i][j],ipc_incr//pciok[a][i];
+       }
+   
+   forall(a in WORD)forall(b in WORD)forall(c in WORD){
+     subcase targok[a][b][c] of itarg//targok
+       for pc=a & inst=b & targ=c;
+     using pc//free,shadow//free,enum(targ) prove itarg//targok[a][b][c];
+       }
+
+   forall(a in WORD) forall(i in WORD) {
+     subcase opinok[a][i] of iopin//opok
+       for pc = a & inst = i;
+     using pc//free,shadow//free prove iopin//opinok[a][i];
+   }
+
+
+   forall(i in TAG)forall(j in TAG)forall(c in WORD){
+     subcase lemma5[i][j][c] of lemma5[i] for complete_st = j & aux[complete_st].res = c;
+     using res//free, pout//free, opin//free, srca//free, srcb//free, dst//free, enum(iopin), exn_raised//free,
+       st[i].opra//free, st[i].oprb//free, st[j].opra//free, st[j].oprb//free, (lemma5) prove lemma5[i][j][c];
+       }
+   
+   forall(i in TAG)forall(j in TAG)forall(c in WORD){
+     subcase lemma6[i][j][c] of lemma6 for complete_st = i & auxShadowRS=j & auxShadowRes = c;
+     using res//free, pout//free, opin//free, srca//free, srcb//free, dst//free, enum(iopin), exn_f//undefined, exn_m//undefined,
+       enum(exn_raised), st[i].opra//free, st[i].oprb//free, st[j].opra//free, st[j].oprb//free, (lemma6) prove lemma6[i][j];
+       }
+
+}

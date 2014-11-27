@@ -1,0 +1,1 @@
+vp_proc1.scr -NODC 1 -S ../src/XGXSPCS/XGXSSYNTH_ENC_8B10B.v -T XGXSSYNTH_ENC_8B10B -I ../src/XGXSPCS -B 10 -Input encode_data_in -Input konstant -Output encode_data_out

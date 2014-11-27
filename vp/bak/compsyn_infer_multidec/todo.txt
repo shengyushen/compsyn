@@ -1,0 +1,13 @@
+OK	1	to verify with formality
+OK	2 to process case statement in comb
+OK	3 to process dff with async set / reset
+OK	4 to process combinational always logic
+
+
+OK	1	clock posedge disappear , only reset remain
+5 to process module instance
+6	array access in combine and sequent reg
+
+7	clock and reset print incorrectly
+8	UNSPEC appear
+9	unique of always comb list

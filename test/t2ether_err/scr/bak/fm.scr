@@ -1,0 +1,7 @@
+read_verilog -container r -libname WORK -01 { /home/ssy/ocaml_prog/test/T2_pcs/src/t2src/filelist.v } 
+set_top r:/WORK/pcs_tx_dpath 
+read_verilog -container i -libname WORK -01 { /home/ssy/ocaml_prog/test/T2_pcs/src/t2src_modified/filelist.v } 
+set_top i:/WORK/pcs_tx_dpath 
+match
+verify
+

@@ -1,0 +1,286 @@
+"caddieBdd.ml" 60 2487 2495 "caddieBdd.ml" 60 2487 2522
+type(
+  string -> exn -> unit
+)
+ident(
+  ext_ref Callback.register_exception
+)
+"caddieBdd.ml" 60 2487 2523 "caddieBdd.ml" 60 2487 2536
+type(
+  string
+)
+"caddieBdd.ml" 60 2487 2537 "caddieBdd.ml" 60 2487 2549
+type(
+  exn
+)
+"caddieBdd.ml" 60 2487 2495 "caddieBdd.ml" 60 2487 2549
+call(
+  stack
+)
+type(
+  unit
+)
+"caddieBdd.ml" 61 2550 2558 "caddieBdd.ml" 61 2550 2585
+type(
+  string -> exn -> unit
+)
+ident(
+  ext_ref Callback.register_exception
+)
+"caddieBdd.ml" 61 2550 2586 "caddieBdd.ml" 61 2550 2596
+type(
+  string
+)
+"caddieBdd.ml" 61 2550 2597 "caddieBdd.ml" 61 2550 2612
+type(
+  exn
+)
+"caddieBdd.ml" 61 2550 2558 "caddieBdd.ml" 61 2550 2612
+call(
+  stack
+)
+type(
+  unit
+)
+"caddieBdd.ml" 119 5386 5394 "caddieBdd.ml" 119 5386 5402
+type(
+  ddMgr -> int list -> varSet
+)
+ident(
+  def fromList "caddieBdd.ml" 119 5386 5386 "caddieBdd.ml" 1 0 -1
+)
+"caddieBdd.ml" 119 5386 5403 "caddieBdd.ml" 119 5386 5404
+type(
+  ddMgr
+)
+ident(
+  def m "caddieBdd.ml" 119 5386 5405 "caddieBdd.ml" 122 5452 5504
+)
+"caddieBdd.ml" 119 5386 5405 "caddieBdd.ml" 119 5386 5410
+type(
+  int list
+)
+ident(
+  def ilist "caddieBdd.ml" 120 5414 5416 "caddieBdd.ml" 122 5452 5504
+)
+"caddieBdd.ml" 120 5414 5422 "caddieBdd.ml" 120 5414 5427
+type(
+  int list
+)
+ident(
+  int_ref ilist "caddieBdd.ml" 119 5386 5405 "caddieBdd.ml" 119 5386 5410
+)
+"caddieBdd.ml" 121 5434 5438 "caddieBdd.ml" 121 5434 5440
+type(
+  int list
+)
+"caddieBdd.ml" 121 5434 5444 "caddieBdd.ml" 121 5434 5449
+type(
+  ddMgr -> varSet
+)
+ident(
+  int_ref empty "caddieBdd.ml" 116 5209 5209 "caddieBdd.ml" 116 5209 5257
+)
+"caddieBdd.ml" 121 5434 5450 "caddieBdd.ml" 121 5434 5451
+type(
+  ddMgr
+)
+ident(
+  int_ref m "caddieBdd.ml" 119 5386 5403 "caddieBdd.ml" 119 5386 5404
+)
+"caddieBdd.ml" 121 5434 5444 "caddieBdd.ml" 121 5434 5451
+type(
+  varSet
+)
+"caddieBdd.ml" 122 5452 5456 "caddieBdd.ml" 122 5452 5460
+type(
+  int
+)
+ident(
+  def head "caddieBdd.ml" 122 5452 5472 "caddieBdd.ml" 122 5452 5504
+)
+"caddieBdd.ml" 122 5452 5464 "caddieBdd.ml" 122 5452 5468
+type(
+  int list
+)
+ident(
+  def tail "caddieBdd.ml" 122 5452 5472 "caddieBdd.ml" 122 5452 5504
+)
+"caddieBdd.ml" 122 5452 5456 "caddieBdd.ml" 122 5452 5468
+type(
+  int list
+)
+"caddieBdd.ml" 122 5452 5472 "caddieBdd.ml" 122 5452 5481
+type(
+  varSet -> int -> varSet
+)
+ident(
+  int_ref insertVar "caddieBdd.ml" 117 5258 5258 "caddieBdd.ml" 117 5258 5320
+)
+"caddieBdd.ml" 122 5452 5483 "caddieBdd.ml" 122 5452 5491
+type(
+  ddMgr -> int list -> varSet
+)
+ident(
+  int_ref fromList "caddieBdd.ml" 119 5386 5394 "caddieBdd.ml" 119 5386 5402
+)
+"caddieBdd.ml" 122 5452 5492 "caddieBdd.ml" 122 5452 5493
+type(
+  ddMgr
+)
+ident(
+  int_ref m "caddieBdd.ml" 119 5386 5403 "caddieBdd.ml" 119 5386 5404
+)
+"caddieBdd.ml" 122 5452 5494 "caddieBdd.ml" 122 5452 5498
+type(
+  int list
+)
+ident(
+  int_ref tail "caddieBdd.ml" 122 5452 5464 "caddieBdd.ml" 122 5452 5468
+)
+"caddieBdd.ml" 122 5452 5482 "caddieBdd.ml" 122 5452 5499
+call(
+  stack
+)
+type(
+  varSet
+)
+"caddieBdd.ml" 122 5452 5500 "caddieBdd.ml" 122 5452 5504
+type(
+  int
+)
+ident(
+  int_ref head "caddieBdd.ml" 122 5452 5456 "caddieBdd.ml" 122 5452 5460
+)
+"caddieBdd.ml" 122 5452 5472 "caddieBdd.ml" 122 5452 5504
+type(
+  varSet
+)
+"caddieBdd.ml" 120 5414 5416 "caddieBdd.ml" 122 5452 5504
+type(
+  varSet
+)
+"caddieBdd.ml" 128 5698 5702 "caddieBdd.ml" 128 5698 5707
+type(
+  ddMgr -> (int * int) list -> varMap
+)
+ident(
+  def toMap "caddieBdd.ml" 132 5796 5796 "caddieBdd.ml" 1 0 -1
+)
+"caddieBdd.ml" 128 5698 5708 "caddieBdd.ml" 128 5698 5709
+type(
+  ddMgr
+)
+ident(
+  def m "caddieBdd.ml" 128 5698 5710 "caddieBdd.ml" 130 5744 5794
+)
+"caddieBdd.ml" 128 5698 5710 "caddieBdd.ml" 128 5698 5712
+type(
+  (int * int) list
+)
+ident(
+  def pl "caddieBdd.ml" 129 5715 5716 "caddieBdd.ml" 130 5744 5794
+)
+"caddieBdd.ml" 129 5715 5721 "caddieBdd.ml" 129 5715 5722
+type(
+  int list
+)
+ident(
+  def o "caddieBdd.ml" 130 5744 5748 "caddieBdd.ml" 130 5744 5794
+)
+"caddieBdd.ml" 129 5715 5723 "caddieBdd.ml" 129 5715 5724
+type(
+  int list
+)
+ident(
+  def n "caddieBdd.ml" 130 5744 5748 "caddieBdd.ml" 130 5744 5794
+)
+"caddieBdd.ml" 129 5715 5720 "caddieBdd.ml" 129 5715 5725
+type(
+  int list * int list
+)
+"caddieBdd.ml" 129 5715 5729 "caddieBdd.ml" 129 5715 5739
+type(
+  (int * int) list -> int list * int list
+)
+ident(
+  ext_ref List.split
+)
+"caddieBdd.ml" 129 5715 5740 "caddieBdd.ml" 129 5715 5742
+type(
+  (int * int) list
+)
+ident(
+  int_ref pl "caddieBdd.ml" 128 5698 5710 "caddieBdd.ml" 128 5698 5712
+)
+"caddieBdd.ml" 129 5715 5728 "caddieBdd.ml" 129 5715 5743
+call(
+  stack
+)
+type(
+  int list * int list
+)
+"caddieBdd.ml" 130 5744 5749 "caddieBdd.ml" 130 5744 5755
+type(
+  ddMgr -> int array -> int array -> varMap
+)
+ident(
+  int_ref toMap_ "caddieBdd.ml" 127 5621 5621 "caddieBdd.ml" 127 5621 5697
+)
+"caddieBdd.ml" 130 5744 5756 "caddieBdd.ml" 130 5744 5757
+type(
+  ddMgr
+)
+ident(
+  int_ref m "caddieBdd.ml" 128 5698 5708 "caddieBdd.ml" 128 5698 5709
+)
+"caddieBdd.ml" 130 5744 5759 "caddieBdd.ml" 130 5744 5772
+type(
+  int list -> int array
+)
+ident(
+  ext_ref Array.of_list
+)
+"caddieBdd.ml" 130 5744 5773 "caddieBdd.ml" 130 5744 5774
+type(
+  int list
+)
+ident(
+  int_ref o "caddieBdd.ml" 129 5715 5721 "caddieBdd.ml" 129 5715 5722
+)
+"caddieBdd.ml" 130 5744 5758 "caddieBdd.ml" 130 5744 5775
+call(
+  stack
+)
+type(
+  int array
+)
+"caddieBdd.ml" 130 5744 5777 "caddieBdd.ml" 130 5744 5790
+type(
+  int list -> int array
+)
+ident(
+  ext_ref Array.of_list
+)
+"caddieBdd.ml" 130 5744 5791 "caddieBdd.ml" 130 5744 5792
+type(
+  int list
+)
+ident(
+  int_ref n "caddieBdd.ml" 129 5715 5723 "caddieBdd.ml" 129 5715 5724
+)
+"caddieBdd.ml" 130 5744 5776 "caddieBdd.ml" 130 5744 5793
+call(
+  stack
+)
+type(
+  int array
+)
+"caddieBdd.ml" 130 5744 5748 "caddieBdd.ml" 130 5744 5794
+type(
+  varMap
+)
+"caddieBdd.ml" 129 5715 5716 "caddieBdd.ml" 130 5744 5794
+type(
+  varMap
+)

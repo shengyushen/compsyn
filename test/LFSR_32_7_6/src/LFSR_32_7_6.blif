@@ -1,0 +1,125 @@
+# Benchmark "LFSR_32_7_6" written by ABC on Wed Nov 28 12:29:28 2012
+.model LFSR_32_7_6
+.inputs in
+.outputs out
+
+.latch         n5     reg[1]  0
+.latch        n10     n8_inv  0
+.latch        n15     reg[3]  0
+.latch        n20     reg[4]  0
+.latch        n25     reg[5]  0
+.latch        n30     reg[6]  0
+.latch        n35     reg[7]  0
+.latch        n40     reg[8]  0
+.latch        n45     reg[9]  0
+.latch        n50    reg[10]  0
+.latch        n55    reg[11]  0
+.latch        n60    reg[12]  0
+.latch        n65    reg[13]  0
+.latch        n70    reg[14]  0
+.latch        n75    reg[15]  0
+.latch        n80    reg[16]  0
+.latch        n85    reg[17]  0
+.latch        n90    reg[18]  0
+.latch        n95    reg[19]  0
+.latch       n100    reg[20]  0
+.latch       n105    reg[21]  0
+.latch       n110    reg[22]  0
+.latch       n115    reg[23]  0
+.latch       n120    reg[24]  0
+.latch       n125    reg[25]  0
+.latch       n130    reg[26]  0
+.latch       n135    reg[27]  0
+.latch       n140    reg[28]  0
+.latch       n145    reg[29]  0
+.latch       n150    reg[30]  0
+.latch       n155    reg[31]  0
+.latch       n160    reg[32]  0
+
+.names in reg[1] n98
+01 1
+.names in reg[1] n99
+10 1
+.names n98 n99 out
+00 0
+.names reg[7] reg[32] n101
+11 1
+.names reg[7] reg[32] n102
+00 1
+.names n101 n102 n103
+00 1
+.names reg[6] n103 n104
+11 1
+.names reg[6] n103 n105_1
+00 1
+.names n104 n105_1 n106
+00 1
+.names n8_inv n106 n107
+11 1
+.names n8_inv n106 n108
+00 1
+.names n107 n108 n160
+00 1
+.names reg[32] n155
+0 1
+.names n8_inv n5
+1 1
+.names reg[3] n10
+1 1
+.names reg[4] n15
+1 1
+.names reg[5] n20
+1 1
+.names reg[6] n25
+1 1
+.names reg[7] n30
+1 1
+.names reg[8] n35
+1 1
+.names reg[9] n40
+1 1
+.names reg[10] n45
+1 1
+.names reg[11] n50
+1 1
+.names reg[12] n55
+1 1
+.names reg[13] n60
+1 1
+.names reg[14] n65
+1 1
+.names reg[15] n70
+1 1
+.names reg[16] n75
+1 1
+.names reg[17] n80
+1 1
+.names reg[18] n85
+1 1
+.names reg[19] n90
+1 1
+.names reg[20] n95
+1 1
+.names reg[21] n100
+1 1
+.names reg[22] n105
+1 1
+.names reg[23] n110
+1 1
+.names reg[24] n115
+1 1
+.names reg[25] n120
+1 1
+.names reg[26] n125
+1 1
+.names reg[27] n130
+1 1
+.names reg[28] n135
+1 1
+.names reg[29] n140
+1 1
+.names reg[30] n145
+1 1
+.names reg[31] n150
+1 1
+.end

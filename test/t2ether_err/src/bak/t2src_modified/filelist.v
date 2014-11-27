@@ -1,0 +1,11 @@
+`include "../src/t2src_modified/pcs_tx_dpath.v"
+`include "../src/t2src_modified/pcs_tx_disparity.v"
+`include "../src/t2src_modified/pcs_encoder.v"
+
+//`include "../src/t2src/RREG.v"
+//`include "../src/t2src/REG.v"
+`include "../src/t2src/MUX2TO1.v"
+`include "../src/t2src/SYNC_CELL.v"
+`include "../src/t2src/SYNCREG.v"
+//`include "../src/t2src/MUX4TO1.v"
+`include "../src/t2src/MUX3TO1.v"

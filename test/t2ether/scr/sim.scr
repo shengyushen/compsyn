@@ -1,0 +1,18 @@
+if [ $# -ge 1 ] ; then 
+ if [ -f resulting_dual_cnf_[$1].v ] ; then 
+  cp resulting_dual_cnf_[$1].v resulting_dual_cnf.v
+ else
+  echo "resulting_dual_cnf_$1.v does not exist"
+  return
+ fi
+else
+ if [ ! -f resulting_dual_cnf.v ] ; then 
+  echo "resulting_dual_cnf.v does not exist"
+  return
+ fi
+fi
+ncprep ../src/filelist.v +incdir+../src/t2src +overwrite
+ncvlog -f ncvlog.args  
+ncelab tb            -access +rwc  -NOSPECIFY -NOTIMINGCHECKS  -SNAPSHOT worklib.tb:v -TIMESCALE 1ns/1ps 
+ncsim  worklib.tb:v   -input ../scr/restore.tcl -gui 
+

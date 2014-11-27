@@ -1,0 +1,1 @@
+vp_proc1.scr -S ../src/t2src/filelist.v -T pcs_tx_dpath -I ../src/t2src -B 20 -Input txd -Input tx_enc_ctrl_sel -Output tx_10bdata

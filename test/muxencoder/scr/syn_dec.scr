@@ -1,0 +1,2 @@
+dc_shell-t -f ../scr/syn_hand.tcl |tee syn_hand.log
+dc_shell-t -f ../scr/syn_xor.tcl |tee syn_xor.log

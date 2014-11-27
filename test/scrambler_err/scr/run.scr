@@ -1,0 +1,1 @@
+vp_proc1.scr -S ../src/scrambler.v -T scrambler -B 10 -Input data_66b_tpg -Output data_scrambled

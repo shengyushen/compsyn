@@ -1,0 +1,9 @@
+rm -f /tmp/fms.tcl
+echo "read_verilog -container r -libname WORK  -01 { $1 } " >> /tmp/fms.tcl
+echo "read_db { ../../../lib/ssy.db } " >> /tmp/fms.tcl
+echo "set_top r:/WORK/$3 " >> /tmp/fms.tcl
+echo "read_verilog -container i -libname WORK  -01 { $2 } " >> /tmp/fms.tcl
+echo "set_top i:/WORK/$3 " >> /tmp/fms.tcl
+echo "match " >> /tmp/fms.tcl
+echo "verify " >> /tmp/fms.tcl
+formality -64 -f /tmp/fms.tcl

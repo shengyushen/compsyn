@@ -1,0 +1,191 @@
+	method gen_IA (p1:int) (l1:int) (d1:int) infered_assertion_array_lst_old clist = begin
+		(*printf "len of clist %d\n" (List.length (clist)) ;
+		flush stdout;*)
+		(*construct the relation of f*)
+		self#gen_relation_pld p1 l1 d1 infered_assertion_array_lst_old;
+		
+		(*printf "fd_test 1 last_index %d\n" last_index;
+		flush stdout;*)
+		clause_list_multiple_f <- clause_list_multiple ;
+		last_index_f <- last_index ;
+		
+		(*restore the clause_list_multiple to init*)
+		clause_list_multiple <- [];
+		last_index <- final_index_oneinst;
+		
+		(*construct a list of relation for clist by shifting
+		but their output seq should not be shifted*)
+		(*printf "fd_test 2\n" ;
+		flush stdout;*)
+		let ov=bv_outstrlist
+		and outputframe_idx= self#lr2list (p1+1+d1-1-l1+1) (p1+1+d1-1)
+		in
+		let ov_b_1 = List.concat (List.map (fun frmidx -> (List.map (fun x -> x+ frmidx*final_index_oneinst) ov) ) outputframe_idx)
+		in begin
+			self#encode_clist_R 0 clist ov_b_1;
+			
+				(*printf "last_index %d ought to be %d\n" last_index ((List.length clist)*last_index_f);
+				flush stdout;*)
+			
+			(*encode the relation of standalone f*)
+			let shiftnum_standalone_f = (List.length clist)*last_index_f
+			in begin
+				clause_list_multiple <- (shiftclslst clause_list_multiple_f ov_b_1 shiftnum_standalone_f) @ clause_list_multiple;
+				last_index <- (((List.length clist)+1)*last_index_f)
+			end
+			;
+			
+			(*enforce the clist*)
+			self#encode_clist_C 0 clist;
+			
+			let shiftnum_standalone_f = (List.length clist)*last_index_f
+			in
+			let bv_C = List.map (fun x -> x+ shiftnum_standalone_f) bv_non_proctocol_input_list
+			in
+			let iv_p= List.map (fun x -> x+ p1*final_index_oneinst) bv_instrlist
+			and notshift_rng_lst= self#lr2list 0 ((List.length clist)-1)
+			in
+			let proc_iv_p ip = begin
+				let dont_shift_iv_n1_n = bv_C @ (List.map (fun r -> ip + r*last_index_f) notshift_rng_lst)
+				and target_R = ip+(List.length clist)*last_index_f
+				in
+				let (_,new_assertion_preBDD)=characterization_interp clause_list_multiple [] dont_shift_iv_n1_n target_R
+				in
+				let rrrrrrr=self#simplify_withBDD new_assertion_preBDD 
+				in begin
+					(*printf "\n-----------new_assertion_preBDD-------------\n";*)
+					(*self#check_itpo new_assertion_preBDD;*)
+					(*List.iter (fun x -> printf "%s\n" (self#idx2name x)) dont_shift_iv_n1_n;
+					printf "\n-----------end of new_assertion_preBDD-------------\n";
+					flush stdout;*)
+					rrrrrrr
+				end
+			end
+			in
+			let asslst=List.map (proc_iv_p) iv_p
+			in
+			let  proc_c r = begin
+				let proc_c_ass ass = begin
+					let proc_comp_c_ass i = begin
+						List.map (fun ip-> ip+(i*last_index_f)) iv_p
+					end
+					in
+					let tobeclearlist=List.filter (fun x -> if (x==r) then false else true) notshift_rng_lst
+					in begin
+						let allidxlst=List.concat (List.map (proc_comp_c_ass) tobeclearlist)
+						in
+						let assumptionlist1=List.map (fun x -> -x) allidxlst
+						and assumptionlist2=List.map (fun x -> x+(r*last_index_f)) iv_p
+						in
+						self#simplify_withBDD_withassumption ass (assumptionlist2 @ assumptionlist1)
+					end
+				end
+				in
+				let r_asslst=List.map (proc_c_ass) asslst
+				in 
+				let (newitpoarr,newrandlst)=self#construct_ITPLST r_asslst
+				in 
+				let finalrand=Array.make 1 TiterpCircuit_none
+				in begin
+					Array.set finalrand 0 (TiterpCircuit_and(List.map (fun x -> TiterpCircuit_refcls(x)) newrandlst));
+					let randitpoarr=Array.append newitpoarr finalrand
+					in
+					self#simplify_withBDD randitpoarr 
+				end
+			end
+			in
+			List.map (proc_c) notshift_rng_lst
+		end
+		
+	end
+
+	method fd_test (p1:int) (l1:int) (d1:int) infered_assertion_array_lst_old clist = begin
+		(*printf "len of clist %d\n" (List.length (clist)) ;
+		flush stdout;*)
+		(*construct the relation of f*)
+		self#gen_relation_pld p1 l1 d1 infered_assertion_array_lst_old;
+		
+		(*printf "fd_test 1 last_index %d\n" last_index;
+		flush stdout;*)
+		clause_list_multiple_f <- clause_list_multiple ;
+		last_index_f <- last_index ;
+		
+		(*restore the clause_list_multiple to init*)
+		clause_list_multiple <- [];
+		last_index <- final_index_oneinst;
+		
+		(*construct a list of relation for clist by shifting
+		but their output seq should not be shifted*)
+		(*printf "fd_test 2\n" ;
+		flush stdout;*)
+		let ov=bv_outstrlist
+		and outputframe_idx= self#lr2list (p1+1+d1-1-l1+1) (p1+1+d1-1)
+		in
+		let ov_b_1 = List.concat (List.map (fun frmidx -> (List.map (fun x -> x+ frmidx*final_index_oneinst) ov) ) outputframe_idx)
+		in begin
+			self#encode_clist_R 0 clist ov_b_1;
+			
+				(*printf "last_index %d ought to be %d\n" last_index ((List.length clist)*last_index_f);
+				flush stdout;*)
+			
+			(*encode the relation of standalone f*)
+			let shiftnum_standalone_f = (List.length clist)*last_index_f
+			in begin
+				clause_list_multiple <- (shiftclslst clause_list_multiple_f ov_b_1 shiftnum_standalone_f) @ clause_list_multiple;
+				last_index <- (((List.length clist)+1)*last_index_f)
+			end
+		end
+		;
+		
+		(*printf "fd_test 4\n" ;
+		flush stdout;*)
+		(*enforce the clist*)
+		self#encode_clist_C 0 clist;
+		
+		(*printf "fd_test 5\n" ;
+		flush stdout;*)
+		(*now we already have a box
+		we need to construct another box by shifting
+		but the C for the standalone f should be shared*)
+		let shiftnum_standalone_f = (List.length clist)*last_index_f
+		in
+		let bv_C = List.map (fun x -> x+ shiftnum_standalone_f) bv_non_proctocol_input_list
+		and shift_box_num = last_index
+		and bv_I_p = List.map (fun x -> x+ p1*final_index_oneinst) bv_instrlist
+		and bv_I_rangelist = self#lr2list 0 ((List.length clist)-1)
+		in
+		let proc_bv_rng x = begin
+			let proc_bvp y = begin
+				y+x*last_index_f
+			end
+			in
+			List.map proc_bvp bv_I_p
+		end
+		in
+		let bv_I_all = List.concat (List.map proc_bv_rng bv_I_rangelist)
+		in begin
+			let shift_box = shiftclslst clause_list_multiple (bv_I_all@bv_C) shift_box_num
+			in begin
+				clause_list_multiple <-  shift_box @ clause_list_multiple;
+				last_index <- last_index*2
+			end
+			;
+			(*todo we need to make the two standaalone f's out not equ*)
+			let bv_I_p_standalone_f = List.map (fun x -> x+shiftnum_standalone_f) bv_I_p
+			in
+			let bv_I_p_standalone_f_shiftbox = List.map (fun x -> x+shift_box_num) bv_I_p_standalone_f
+			in
+			let clslst_inev=self#encode_INEV bv_I_p_standalone_f bv_I_p_standalone_f_shiftbox
+			in
+			clause_list_multiple <- clslst_inev @ clause_list_multiple
+			;
+			
+			(*printf "fd_test 6\n" ;
+			flush stdout;*)
+			(*now we need to test its SAT*)
+			let satres=self#dump_sat 
+			in
+			(satres,bv_C)
+		end
+		
+	end

@@ -1,0 +1,48 @@
+.model Convolutional_Code_13
+.inputs in
+.outputs out1 out2
+.clock clk
+.latch in r0 re clk 0
+.latch r0 r1 re clk 0 
+.latch r1 r2 re clk 0
+.latch r2 r3 re clk 0
+.latch r3 r4 re clk 0
+.latch r4 r5 re clk 0
+.latch r5 r6 re clk 0
+.latch r6 r7 re clk 0
+.latch r7 r8 re clk 0
+.latch r8 r9 re clk 0
+.latch r9 r10 re clk 0
+.latch r10 r11 re clk 0
+.latch r11 r12 re clk 0
+.subckt CC_1 a=r0 b=r1 c=r2 d=r3 e=r4 f=r5 g=r6 h=r7 i=r8 j=r9 k=r10 l=r11 m=r12 s=out1
+.subckt CC_2 a=r0 b=r1 c=r2 d=r3 e=r4 f=r5 g=r6 h=r7 i=r8 j=r9 k=r10 l=r11 m=r12 s=out2
+.end
+
+.model CC_1
+.inputs a b c d e f g h i j k l m
+.outputs s
+.subckt XOR_3 i1=a i2=e i3=g o=o1
+.subckt XOR_3 i1=i i2=j i3=l o=o2
+.subckt XOR_3 i1=o1 i2=o2 i3=m o=s
+.end
+
+.model CC_2
+.inputs a b c d e f g h i j k l m
+.outputs s
+.subckt XOR_3 i1=a i2=b i3=c o=o1
+.subckt XOR_3 i1=d i2=e i3=f o=o2
+.subckt XOR_3 i1=h i2=i i3=m o=o3
+.subckt XOR_3 i1=o1 i2=o2 i3=o3 o=s
+.end
+
+.model XOR_3
+.inputs i1 i2 i3
+.outputs o
+.names i1 i2 i3 o
+100 1
+010 1
+001 1
+111 1
+.end
+

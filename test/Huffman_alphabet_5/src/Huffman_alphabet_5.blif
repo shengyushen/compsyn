@@ -1,0 +1,237 @@
+.model Huffman_alphabet_5
+.inputs in[0] in[1] in[2] in[3] in[4]
+.outputs carestate out
+.latch reg[0]_next reg[0] 0
+.latch reg[1]_next reg[1] 0
+.latch reg[2]_next reg[2] 0
+.latch reg[3]_next reg[3] 0
+.latch reg[4]_next reg[4] 0
+.latch counter[0]_next counter[0] 0
+.latch counter[1]_next counter[1] 0
+.latch counter[2]_next counter[2] 0
+.latch counter[3]_next counter[3] 0
+.names counter[0] counter[1] counter[2] counter[3] ALL_ZERO
+0000 1
+.names ALL_ZERO in[0] reg[0] reg[0]_next
+11- 1
+0-1 1
+.names ALL_ZERO in[1] reg[1] reg[1]_next
+11- 1
+0-1 1
+.names ALL_ZERO in[2] reg[2] reg[2]_next
+11- 1
+0-1 1
+.names ALL_ZERO in[3] reg[3] reg[3]_next
+11- 1
+0-1 1
+.names ALL_ZERO in[4] reg[4] reg[4]_next
+11- 1
+0-1 1
+.names in[0] in[1] in[2] in[3] in[4] LEN-1[0]
+00011 1
+01111 1
+10101 1
+.names in[0] in[1] in[2] in[3] in[4] LEN-1[1]
+00010 1
+00100 1
+00110 1
+00111 1
+01000 1
+01100 1
+01101 1
+10011 1
+10100 1
+10110 1
+11000 1
+11001 1
+11010 1
+11011 1
+.names in[0] in[1] in[2] in[3] in[4] LEN-1[2]
+00000 1
+00001 1
+00100 1
+00101 1
+01001 1
+01110 1
+10001 1
+10010 1
+10110 1
+10111 1
+11100 1
+.names in[0] in[1] in[2] in[3] in[4] LEN-1[3]
+00000 1
+00001 1
+00010 1
+00011 1
+00100 1
+00101 1
+01100 1
+01110 1
+01111 1
+10001 1
+10010 1
+10100 1
+11010 1
+11011 1
+11100 1
+.names C[4]
+0
+.names counter[3] C[4] C[3]
+-1 1
+1- 1
+.names counter[2] C[3] C[2]
+-1 1
+1- 1
+.names counter[1] C[2] C[1]
+-1 1
+1- 1
+.names counter[0] C[1] SUM[0]
+00 1
+11 1
+.names counter[1] C[2] SUM[1]
+00 1
+11 1
+.names counter[2] C[3] SUM[2]
+00 1
+11 1
+.names counter[3] C[4] SUM[3]
+00 1
+11 1
+.names ALL_ZERO LEN-1[0] SUM[0] counter[0]_next
+11- 1
+0-1 1
+.names ALL_ZERO LEN-1[1] SUM[1] counter[1]_next
+11- 1
+0-1 1
+.names ALL_ZERO LEN-1[2] SUM[2] counter[2]_next
+11- 1
+0-1 1
+.names ALL_ZERO LEN-1[3] SUM[3] counter[3]_next
+11- 1
+0-1 1
+.names in[0] reg[0] equal[0]
+00 1
+11 1
+.names in[1] reg[1] equal[1]
+00 1
+11 1
+.names in[2] reg[2] equal[2]
+00 1
+11 1
+.names in[3] reg[3] equal[3]
+00 1
+11 1
+.names in[4] reg[4] equal[4]
+00 1
+11 1
+.names equal[0] equal[1] equal[2] equal[3] equal[4] EQUAL
+11111 1
+.names in[0] in[1] in[2] in[3] in[4] code[0]_is_2
+01010 1
+01011 1
+10000 1
+11101 1
+11110 1
+11111 1
+.names ALL_ZERO code[0]_is_2 EQUAL carestate
+11- 0
+0-0 0
+.names in[0] in[1] in[2] in[3] in[4] out_ALL_ZERO
+00011 1
+00100 1
+01000 1
+01001 1
+01010 1
+01011 1
+01111 1
+10000 1
+10010 1
+10011 1
+10100 1
+10101 1
+10110 1
+10111 1
+11000 1
+11001 1
+11010 1
+11011 1
+11101 1
+11110 1
+11111 1
+.names counter[0] counter[1] counter[2] counter[3] reg[0] reg[1] reg[2] reg[3] reg[4] out_not_ALL_ZERO
+000100001 1
+010000010 1
+001100010 1
+100100011 1
+100000011 1
+011100011 1
+011000011 1
+010100011 1
+001000011 1
+000100011 1
+011100100 1
+011000100 1
+010100100 1
+010000100 1
+001100100 1
+000100100 1
+001100101 1
+000100101 1
+010000110 1
+001100110 1
+010000111 1
+001100111 1
+000100111 1
+001101000 1
+001001000 1
+000101000 1
+001001001 1
+010001100 1
+001101100 1
+000101100 1
+001101101 1
+001001101 1
+000101101 1
+001101110 1
+100101111 1
+100001111 1
+011101111 1
+011001111 1
+010101111 1
+001001111 1
+001110001 1
+001010001 1
+000110001 1
+001110010 1
+001010010 1
+010010011 1
+001110011 1
+001010011 1
+010110100 1
+010010100 1
+001110100 1
+001010100 1
+100010101 1
+011110101 1
+011010101 1
+010110101 1
+010010101 1
+011010110 1
+010110110 1
+010010110 1
+001110110 1
+001010110 1
+000110110 1
+001111000 1
+001111001 1
+000111001 1
+010011010 1
+001111010 1
+010011011 1
+001111011 1
+000111011 1
+001011100 1
+.names ALL_ZERO out_ALL_ZERO out_not_ALL_ZERO out
+11- 1
+0-1 1
+.end

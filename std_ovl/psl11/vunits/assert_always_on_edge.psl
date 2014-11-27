@@ -1,0 +1,65 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_always_on_edge_assert_vunit (assert_always_on_edge_assert)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_ALWAYS_ON_EDGE_NOEDGE_P = always (
+           reset_n && noedge_type -> test_expr); 
+
+  property ASSERT_ALWAYS_ON_EDGE_POSEDGE_P = always (
+           reset_n && posedge_type && rose(sampling_event) -> test_expr);
+
+  property ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P = always (
+           reset_n && negedge_type && fell(sampling_event) -> test_expr);
+
+  property ASSERT_ALWAYS_ON_EDGE_ANYEDGE_P = always (
+           reset_n && anyedge_type && (sampling_event != prev(sampling_event)) -> test_expr);
+
+  A_ASSERT_ALWAYS_ON_EDGE_NOEDGE_P:
+  assert ASSERT_ALWAYS_ON_EDGE_NOEDGE_P
+  report "VIOLATION: ASSERT_ALWAYS_ON_EDGE Checker Fires : Test expression is FALSE irrespective of sampling event";
+
+  A_ASSERT_ALWAYS_ON_EDGE_POSEDGE_P:
+  assert ASSERT_ALWAYS_ON_EDGE_POSEDGE_P
+  report "VIOLATION: ASSERT_ALWAYS_ON_EDGE Checker Fires : Test expression is FALSE on posedge of sampling event";
+
+  A_ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P:
+  assert ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P
+  report "VIOLATION: ASSERT_ALWAYS_ON_EDGE Checker Fires : Test expression is FALSE on negedge of sampling event";
+                                                                                                                                           
+  A_ASSERT_ALWAYS_ON_EDGE_ANYEDGE_P:
+  assert ASSERT_ALWAYS_ON_EDGE_ANYEDGE_P
+  report "VIOLATION: ASSERT_ALWAYS_ON_EDGE Checker Fires : Test expression is FALSE on any edge of sampling event";
+}
+
+vunit assert_always_on_edge_assume_vunit (assert_always_on_edge_assume)
+{
+  default clock = (posedge clk);
+  
+  property ASSERT_ALWAYS_ON_EDGE_NOEDGE_P = always (
+           reset_n && noedge_type -> test_expr);
+                                                                                                                                           
+  property ASSERT_ALWAYS_ON_EDGE_POSEDGE_P = always (
+           reset_n && posedge_type && rose(sampling_event) -> test_expr);
+                                                                                                                                           
+  property ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P = always (
+           reset_n && negedge_type && fell(sampling_event) -> test_expr);
+                                                                                                                                           
+  property ASSERT_ALWAYS_ON_EDGE_ANYEDGE_P = always (
+           reset_n && anyedge_type && (sampling_event != prev(sampling_event)) -> test_expr);
+                                                                                                                                           
+  M_ASSERT_ALWAYS_ON_EDGE_NOEDGE_P:
+  assume ASSERT_ALWAYS_ON_EDGE_NOEDGE_P;
+                                                                                                                                           
+  M_ASSERT_ALWAYS_ON_EDGE_POSEDGE_P:
+  assume ASSERT_ALWAYS_ON_EDGE_POSEDGE_P;
+                                                                                                                                           
+  M_ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P:
+  assume ASSERT_ALWAYS_ON_EDGE_NEGEDGE_P;
+                                                                                                                                           
+  M_ASSERT_ALWAYS_ON_EDGE_ANYEDGE_P:
+  assume ASSERT_ALWAYS_ON_EDGE_NOEDGE_P;
+}
+

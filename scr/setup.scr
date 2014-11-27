@@ -1,0 +1,17 @@
+export PATH=~/compsyn/other/MiniSat-p_v1.14:$PATH
+export PATH=~/compsyn/other/zchaff:$PATH
+export PATH=~/compsyn/other/nl_const_zchaff:$PATH
+export PATH=~/compsyn/other/nl_const_minisat:$PATH
+export PATH=~/compsyn/other/aiger:$PATH
+
+
+export PATH=~/compsyn/scr:$PATH
+export PATH=~/compsyn/vp/scr:$PATH
+currentd=`pwd`
+for i in `find ${currentd}/vp/ -maxdepth 1 -mindepth 1 -type d|grep -v "\.svn\|vp\/scr\|vp\/bak"|sort`
+do
+  export PATH=$i:$PATH
+done
+
+
+

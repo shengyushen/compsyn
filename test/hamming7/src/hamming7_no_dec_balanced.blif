@@ -1,0 +1,119 @@
+# Benchmark "hamming" written by ABC on Thu Jul 28 22:21:30 2011
+.model hamming
+.inputs in1 in2 in3 in4
+.outputs out2 out3 out4 out5 out6 out7
+
+.latch        n21         c2  2
+.latch        n26         c1  2
+.latch        n31         c0  2
+.latch        n36         r0  2
+.latch        n41         r1  2
+.latch        n46         r2  2
+
+.names c2 r0 n28
+10 1
+.names r1 n28 n29
+11 1
+.names r2 n29 n30
+01 1
+.names in3 in4 n31_1
+10 1
+.names in3 in4 n32
+01 1
+.names n31_1 n32 n33
+00 1
+.names in1 n33 n34
+01 1
+.names in1 n33 n35
+10 1
+.names n34 n35 n36_1
+00 1
+.names n30 n36_1 n37
+11 1
+.names n30 n36_1 n38
+00 1
+.names n37 n38 out2
+00 1
+.names c2 r0 n40
+11 1
+.names r1 n40 n41_1
+11 1
+.names r2 n41_1 n42
+01 1
+.names in1 n42 n43
+10 1
+.names in1 n42 n44
+01 1
+.names n43 n44 n45
+00 1
+.names r1 r2 n46_1
+01 1
+.names n28 n46_1 n47
+11 1
+.names in2 n33 n48
+01 1
+.names in2 n33 n49
+10 1
+.names n48 n49 n50
+00 1
+.names n47 n50 n51
+11 1
+.names n47 n50 n52
+00 1
+.names n51 n52 out4
+00 1
+.names n40 n46_1 n54
+11 1
+.names in2 n54 n55
+01 1
+.names in2 n54 n56
+10 1
+.names n55 n56 n57
+00 1
+.names r2 n29 n58
+11 1
+.names in3 n58 n59
+10 1
+.names in3 n58 n60
+01 1
+.names n59 n60 n61
+00 1
+.names r2 n41_1 n62
+11 1
+.names in4 n62 n63
+10 1
+.names in4 n62 n64
+01 1
+.names n63 n64 n65
+00 1
+.names c1 c0 n66
+11 1
+.names c2 n66 n67
+10 1
+.names c2 n66 n68
+01 1
+.names n67 n68 n69
+00 1
+.names c1 c0 n70
+00 1
+.names n66 n70 n26
+00 1
+.names n45 out3
+0 1
+.names n57 out5
+0 1
+.names n61 out6
+0 1
+.names n65 out7
+0 1
+.names n69 n21
+0 1
+.names c0 n31
+0 1
+.names r0 n36
+1 1
+.names r1 n41
+1 1
+.names r2 n46
+1 1
+.end

@@ -1,0 +1,65 @@
+# Benchmark "LFSR_12_6_4" written by ABC on Tue Nov 27 23:17:25 2012
+.model LFSR_12_6_4
+.inputs in
+.outputs out
+
+.latch         n5     reg[1]  0
+.latch        n10     reg[2]  0
+.latch        n15     reg[3]  0
+.latch        n20     reg[4]  0
+.latch        n25     reg[5]  0
+.latch        n30     reg[6]  0
+.latch        n35     reg[7]  0
+.latch        n40     reg[8]  0
+.latch        n45     reg[9]  0
+.latch        n50    reg[10]  0
+.latch        n55    reg[11]  0
+.latch        n60    reg[12]  0
+
+.names in reg[1] n38
+00 1
+.names in reg[1] n39
+11 1
+.names n38 n39 out
+00 0
+.names reg[6] reg[12] n41
+10 1
+.names reg[6] reg[12] n42
+01 1
+.names n41 n42 n43
+00 1
+.names reg[4] n43 n44
+11 1
+.names reg[4] n43 n45_1
+00 1
+.names n44 n45_1 n46
+00 1
+.names reg[1] n46 n47
+01 1
+.names reg[1] n46 n48
+10 1
+.names n47 n48 n60
+00 0
+.names reg[2] n5
+0 1
+.names reg[3] n10
+1 1
+.names reg[4] n15
+1 1
+.names reg[5] n20
+1 1
+.names reg[6] n25
+1 1
+.names reg[7] n30
+1 1
+.names reg[8] n35
+1 1
+.names reg[9] n40
+1 1
+.names reg[10] n45
+1 1
+.names reg[11] n50
+1 1
+.names reg[12] n55
+1 1
+.end

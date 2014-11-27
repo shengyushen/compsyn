@@ -1,0 +1,14 @@
+// Accellera Standard V1.6 Open Verification Library (OVL).
+// Accellera Copyright (c) 2005-2006. All rights reserved.
+
+vunit assert_never_unknown_async_assert_vunit (assert_never_unknown_async_assert)
+{
+  //unclocked property, asynchronous component
+  property ASSERT_NEVER_UNKNOWN_ASYNC_P = always (
+           reset_n && xzcheck_enable && (test_expr ^ test_expr == {width{1'b0}}));
+
+  A_ASSERT_NEVER_UNKNOWN_ASYNC_P:
+  assert ASSERT_NEVER_UNKNOWN_ASYNC_P
+  report "VIOLATION: ASSERT_NEVER_UNKNOWN_ASYNC Checker Fires : Test expression contains contains X/Z value";
+}
+

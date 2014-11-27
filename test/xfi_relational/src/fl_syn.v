@@ -1,0 +1,6 @@
+`include "../src/XFIPCS/XFIPCS_64B66B_ENC.v"
+`include "../src/XFIPCS/XFIPCS_ASYNC_DRS.v"
+`include "../src/XFIPCS/XFIPCS_TX_FLOW.v"
+`include "../src/XFIPCS/XFIPCS_TX_FSM.v"
+`include "../src/XFIPCS/XFIPCS_TX_LPI_FSM.v"
+`include "../src/XFIPCS/XFIPCS_TX_PCS.v"

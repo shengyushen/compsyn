@@ -1,0 +1,39 @@
+# Benchmark "Convolutional_Code_4" written by ABC on Thu Jul 28 22:20:21 2011
+.model Convolutional_Code_4
+.inputs in
+.outputs out1 out2
+
+.latch        n10 Convolutional_Code_4|r0  0
+.latch        n13 Convolutional_Code_4|r1  0
+.latch        n16 Convolutional_Code_4|r2  0
+.latch        n19 Convolutional_Code_4|r3  0
+
+.names Convolutional_Code_4|r1 Convolutional_Code_4|r3 n15
+01 1
+.names Convolutional_Code_4|r1 Convolutional_Code_4|r3 n16_1
+10 1
+.names n15 n16_1 n17_1
+00 1
+.names Convolutional_Code_4|r0 n17_1 n18
+10 1
+.names Convolutional_Code_4|r0 n17_1 n19_1
+01 1
+.names n18 n19_1 out1
+00 1
+.names Convolutional_Code_4|r2 out1 n21
+10 1
+.names Convolutional_Code_4|r2 out1 n22
+01 1
+.names n21 n22 n23
+00 1
+.names n23 out2
+0 1
+.names in n10
+1 1
+.names Convolutional_Code_4|r0 n13
+1 1
+.names Convolutional_Code_4|r1 n16
+1 1
+.names Convolutional_Code_4|r2 n19
+1 1
+.end

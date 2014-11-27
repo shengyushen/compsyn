@@ -1,0 +1,120 @@
+	method print dumpout = begin
+		fprintf dumpout "module %s (\n" name;
+		list_iter_interleave (fun x -> fprintf dumpout "   %s " (get_str_from_strlst x)) (fun x -> fprintf dumpout " , \n") portlist;
+		fprintf dumpout "\n);\n";
+		
+		(*print out all input*)
+		let print_input key cont = begin
+			match cont#get_obj with
+			Tobj_input_declaration(rng) -> begin
+				fprintf dumpout "   input ";
+				print_v_range dumpout rng;
+				fprintf dumpout "   %s ; \n" key
+			end
+			| _ -> ()
+		end
+		in
+		Hashtbl.iter print_input circuit_hst
+		;
+		
+		(*print out all output*)
+		let print_output key cont = begin
+			match cont#get_obj with
+			Tobj_output_declaration(rng) -> begin
+				fprintf dumpout "   output ";
+				print_v_range dumpout rng;
+				fprintf dumpout "   %s ; \n" key
+			end
+			| _ -> ()
+		end
+		in
+		Hashtbl.iter print_output circuit_hst
+		;
+		
+		(*print out all wire*)
+		let print_wire key cont = begin
+			match cont#get_obj with
+			Tobj_net_declaration(rng) -> begin
+				fprintf dumpout "   wire ";
+				print_v_range dumpout rng;
+				fprintf dumpout "   %s ; \n" key
+			end
+			| _ -> ()
+		end
+		in
+		Hashtbl.iter print_wire circuit_hst
+		;
+		
+		(*print out all reg*)
+		let print_reg key cont = begin
+			match cont#get_obj with
+			Tobj_reg_declaration(rng) -> begin
+				fprintf dumpout "   reg ";
+				print_v_range dumpout rng;
+				fprintf dumpout "   %s ; \n" key
+			end
+			| Tobj_dff_declaration(rng) -> begin
+				fprintf dumpout "   reg ";
+				print_v_range dumpout rng;
+				fprintf dumpout "   %s ; \n" key
+			end
+			| _ -> ()
+		end
+		in
+		Hashtbl.iter print_reg circuit_hst
+		;
+		
+		(*print out all seq*)
+		let print_seq seq_always = begin
+			match seq_always with
+			(stat,reglist) -> begin
+				fprintf dumpout "always  @(posedge %s) begin\n" clkname;
+				print_v_statement dumpout stat;
+				fprintf dumpout "end \n" 
+			end
+			| _ -> ()
+		end
+		in
+		List.iter print_seq seq_always_list
+		;
+		
+		(*print out all comb*)
+		let print_comb comb_always = begin
+			match comb_always with
+			(stat,reglist) -> begin
+				fprintf dumpout "always  @(\n";
+				
+				let deplist= dep_statement stat
+				in
+				list_iter_interleave (fun x -> fprintf dumpout " %s " x) (fun x -> fprintf dumpout " or ") deplist
+				;
+				
+				fprintf dumpout ") begin\n";
+				print_v_statement dumpout stat;
+				fprintf dumpout "end \n" 
+			end
+			| _ -> ()
+		end
+		in
+		List.iter print_comb comb_always_list
+		;
+		
+		(*print out all cont assign*)
+		let print_cont_ass cont_ass = begin
+			match cont_ass with
+			T_assignment(lv,exp) -> begin
+				fprintf dumpout "assign  ";
+				print_v_lvalue dumpout lv;
+				fprintf dumpout " = ";
+				print_v_expression dumpout exp;
+				fprintf dumpout ";\n"
+			end
+			| _ -> ()
+		end
+		in
+		List.iter print_cont_ass cont_ass_list
+		;
+		
+		
+		fprintf dumpout "endmodule\n"
+	end

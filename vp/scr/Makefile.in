@@ -1,0 +1,275 @@
+default : 
+	@echo "usage : make xxx in which xxx is one of the following cases:"
+	@echo "clean                : delete all but the design compiler generated intermdediate files, you dont need to call DC again"
+	@echo "distclean            : delete all files"
+	@echo "encoderarea          : computing the hand written encoder's area in mcgn.genlib"
+	@echo "decoderarea          : computing the hand written decoder's area in mcgn.genlib"
+	@echo "naive                : incomplete approach in ICCAD'09 and TCAD'10"
+	@echo "halting              : complete approach in TCAD'11"
+	@echo "halting_fast         : faster complete approach in the revisied TCAD'11"
+	@echo "infer_multidec       : generating multiple decoders using functional dependence test, the assertion inferring part is presented in ICCAD11, while the functional dependence test part is presented in TCAD 12"
+	@echo "infer_multidec_not   : generating multiple decoders by replacing functional dependence test with not equal test"
+	@echo "infer_multidec_not_charfirst   : generating multiple decoders by first characterizing the inverse function and use it with original relation"
+	@echo "infer_multidec_not_charfirst_nowall   : generating multiple decoders without wall condition, lots of bugs are corrected"
+	@echo "infer_multidec_not_charfirst_nowall_cnt : new code"
+	@echo "relational 					: relational uniqueness for TODAES 14"
+	@echo "relational_plr 					: relational uniqueness with plr reduction for rev1 of TODAES14"
+	@echo "relational_plr_fast 					: incremental SAT with assumption in finding control flow vars"
+	@echo "relational_plr_inc 					: incremental SAT with assumption in characterizing"
+	@echo "relational_plr_inc_plr1by1 					: find out plr by increcing them one by one"
+	@echo "relational_plr_inc_nominlr 					: dont minimize LR"
+	@echo "multisat 					: support using multiple SAT solver"
+
+# this is the TCAD 10 version with:
+# 1 incomplete approach to discover the existence of decoder
+# 2 BFL+XORMIN+UNSAT to characterize the bool function of decoder
+naive : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+# this is the TCAD 11 version with:
+# 1 Halting approach based on double ring detection
+# 2 use stand alone nl_const_minisat written in C 
+# to characterize the bool function with Craig interpolant
+# it is much faster(more than 10 times on xfi) than c4interp
+halting : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_halting.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+# this is the improved TCAD 11 version with:
+# 1 to take advantage of rmred, we dont enumerate all combination of p d and l, instead, they are set to the same
+# this is much faster than halting
+# 2 use nl_const_zchaff instead of nl_const_minisat, because its timing and area are better
+halting_fast : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_halting_fast.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+
+# clean up the code structure 
+# generate multiple decoder if they actually exist
+# wall case
+infer_multidec : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_infer_multidec.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+infer_multidec_not : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_infer_multidec_not.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+infer_multidec_not_charfirst : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_infer_multidec_not_charfirst.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+infer_multidec_not_charfirst_nowall : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_infer_multidec_not_charfirst_nowall.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+infer_multidec_not_charfirst_nowall_cnt : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_infer_multidec_not_charfirst_nowall_cnt.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	@if [ -f continue.scr ] ; then  \
+		chmod a+x ./continue.scr; \
+		./continue.scr  > continue.log; \
+		echo "to simulate the result, source ../scr/sim.scr";\
+	fi
+
+relational: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+
+relational_plr: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational_plr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+
+relational_plr_fast: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational_plr_fast.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	# then synthesize a version to be translated into blif
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+relational_plr_inc: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational_plr_inc.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	# then synthesize a version to be translated into blif
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+ 
+
+relational_plr_inc_plr1by1: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational_plr_inc_plr1by1.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	# then synthesize a version to be translated into blif
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+relational_plr_inc_nominlr: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational_plr_inc_nominlr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	# then synthesize a version to be translated into blif
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+	
+multisat: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	# then synthesize a version to be translated into blif
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+
+
+
+sed_res.v : lsi10k2rtl_res.v 
+	sed -r -e s/[\\]\([a-zA-Z0-9_]\+\)[\[]\([0-9]\+\)[\]]/\\1_\\2_ssyssyssyssy/g lsi10k2rtl_res.v > sed_res.v
+
+lsi10k2rtl_res.v : dc_synres.v
+	lsi10k2rtl.exe dc_synres.v  ${TOPMOD} > lsi10k2rtl.log
+
+
+dc_synres.v : 
+	# first generate the syn.tcl
+	m4  -D FILELIST=${SRCFILE}  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=${TOPMOD} ../../../vp/scr/syn.tcl.m4 > syn.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn.tcl > syn.log
+
+encoderarea : 
+	# first generate the syn.tcl
+	m4  -D FILELIST=${SRCFILE}  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=${TOPMOD} ../../../vp/scr/syn_blif.tcl.m4 > syn_blif.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_blif.tcl > syn.log
+	# converting to blif
+	lsi10k2blif.exe dc_synres_blif.v ${TOPMOD}
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+decoderarea:
+	# first generate the syn.tcl
+	m4  -D FILELIST=${DECSRCFILE}  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=${DECTOPMOD} ../../../vp/scr/syn_blif.tcl.m4 > syn_blif.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_blif.tcl > syn.log
+	# converting to blif
+	lsi10k2blif.exe dc_synres_blif.v ${TOPMOD}
+	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+
+
+  
+
+
+clean : 
+	@rm -rf  *.log cds.lib continue.scr dependent hdl.var INCA_libs container_c1 lsi10k2rtl RUN_NC waves.shm WORK *.args ncsim.key *.tcl ncverilog.key resolve_trace
+	@rm -rf  lsi10k2* resulting_dual_cnf.v sed_res.v alib*
+	@rm -f gmon.out sdf bbbb
+	@rm -f dc_res.v backup.cnf
+	@rm -f resulting_dual_cnf*.v
+	@rm -rf FM_WORK* fm_shell_command* formality* *.svf
+	@rm -f alllog complog
+	@rm -f report*
+	@rm -rf .simvision
+	@rm -rf *.aag *.aig
+	@rm -rf *.dot *.ps
+	@rm -f *.tmp *.v
+
+distclean : 
+	@rm -rf  *.log cds.lib continue.scr dependent hdl.var INCA_libs container_c1 lsi10k2rtl RUN_NC waves.shm WORK *.args ncsim.key *.tcl ncverilog.key resolve_trace
+	@rm -rf  lsi10k2* resulting_dual_cnf.v sed_res.v alib*
+	@rm -rf *.v alib*
+	@rm -f gmon.out sdf bbbb
+	@rm -f dc_res.v backup.cnf
+	@rm -rf dc_synres*
+	@rm -f resulting_dual_cnf*.v
+	@rm -rf FM_WORK* fm_shell_command* formality* *.svf
+	@rm -f alllog complog
+	@rm -f report*
+	@rm -rf .simvision
+	@rm -rf *.aag *.aig
+	@rm -rf *.dot *.ps
+	@rm -f *.tmp *.v
+

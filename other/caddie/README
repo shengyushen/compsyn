@@ -1,0 +1,32 @@
+CADDIE : The CAml cuDD InterfacE 
+------ 
+Our CAML chews the CUDD
+
+********************************************
+
+Installation Notes:
+------------------
+Before compiling CADDIE, you need to compile:
+1) CUDD. We've tested CADDIE with CUDD version 2.3.0
+2) OCAML. The version we've used is 3.00
+
+Quick Install Guide
+1. Modify BDDDIR in Makefile to point to the directory where
+   you have installed CUDD
+2. Modify CAMLINC in Makefile to point to the directory where
+   you have installed OCAML
+3. make
+
+Options for make
+
+1. make all: creates 'caddie', a top level CAML shell with the
+             CUDD support built in, and 'runCaddie.cma'
+             
+2. make caddie : creates only the toplevel system 'caddie'
+3. make runtime : creates only 'runCaddie.cma'
+
+
+Documentation :
+-------------
+
+For a brief overview read UserManual.
