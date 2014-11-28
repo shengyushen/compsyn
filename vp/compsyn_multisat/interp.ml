@@ -6,319 +6,196 @@ open Clauseman
 open Bddssy
 open Aig
 open MiniSATcommondef
-let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin 
-		assert ((List.length oidxlst)>0);
-		let memHash=Intlist.list2Hash oidxlst
-		in
-		let isBvar varidx = begin
-			let absvaridx=(abs varidx)
-			in begin
-				if absvaridx>max_index then true 
-				else if (Hashtbl.mem memHash absvaridx) then true
-				else false
-			end
+let rec proc_ass ass = begin
+	match ass with
+	(idx,true)-> begin
+		([idx],"")
+	end
+	| (idx,false)-> begin
+		([-idx],"")
+	end
+end
+let rec proc_ass2 ass = begin
+	match ass with
+	(idx,true)-> begin
+		idx
+	end
+	| (idx,false)-> begin
+		-idx
+	end
+end
+let rec shift_ass shiftamount ass  = begin
+  assert (ass!=0);
+	assert (shiftamount>0);
+	if(ass>0) then ass+ shiftamount
+	else           ass- shiftamount
+end
+and finddep_wrapper oidxlst max_index trace = begin
+	let memHash=Intlist.list2Hash oidxlst
+	in
+	let isBvar varidx = begin
+		let absvaridx=(abs varidx)
+		in begin
+			if absvaridx>max_index then true 
+			else if (Hashtbl.mem memHash absvaridx) then true
+			else false
 		end
-		in
-		let totalclslst= clslst_1A @ clslst_0B
-		in
-		begin
-			(*reset with proof generator*)
-			let solverIdx=MultiMiniSAT.allocSolver ()
-			and max_index_all=get_largest_varindex_inclslst totalclslst in 
-			let trace=begin
-			  MultiMiniSAT.allocProof solverIdx;
-				Dumpsat.procClauseandAdd solverIdx totalclslst;
-
-				(*dbg_print "    before solve";*)
-				 match MultiMiniSAT.solve solverIdx with
-				 UNSAT -> begin
-					(*dbg_print "    after solve";*)
-
-					let proofarray=MultiMiniSAT.save_proof solverIdx
+	end 
+	in
+	let size=Array.length trace in
+	let arr_itpo= Array.make size TiterpCircuit_none
+	in
+	let rec find_dep pos = begin
+		let trace_elem=trace.(pos)
+		and itpo_elem=arr_itpo.(pos)
+		in begin
+			match itpo_elem with
+			TiterpCircuit_none -> begin
+				match trace_elem with
+				(*Tproofitem_0B(_) -> Array.set arr_itpo pos TiterpCircuit_true*)
+				Tproofitem_0B -> Array.set arr_itpo pos TiterpCircuit_true
+				| Tproofitem_1A(intlst) -> begin
+					let lst_onlyB=intlst
 					in begin
-						MultiMiniSAT.closeSolver solverIdx;
-						
-						(*dbg_print "    after save_proof";*)
-						read_proof_classfyAB proofarray max_index oidxlst
+						if (List.length lst_onlyB) > 1 then 
+							Array.set arr_itpo pos (TiterpCircuit_or(List.map (fun x -> TiterpCircuit_refvar(x)) lst_onlyB))
+						else if (List.length lst_onlyB) == 1 then 
+							Array.set arr_itpo pos (TiterpCircuit_refvar(List.nth lst_onlyB 0))
+						else Array.set arr_itpo pos TiterpCircuit_false
 					end
 				end
-				| SAT   -> begin 
-					printf "FATAL : it is SAT in characterization_interp_AB\n";
-					printf "often this is caused by not enough assumption in generating interpolant\n";
-					printf "max_index %d\n" max_index;
-					printf "max_index_all %d\n" max_index_all;
-					printf "max_index %d\n" max_index;
-					printf "cls size %d\n" (List.length totalclslst);
-					exit 0
-				end
-				
-			end
-			in
-			let size=Array.length trace
-			in
-			let arr_itpo=begin
-				(*dbg_print (sprintf "    characterization_interp_AB 4 trace size %d" size);*)
-				Array.make size TiterpCircuit_none
-			end
-			in begin
-				let rec find_dep pos = begin
-					let trace_elem=trace.(pos)
-					and itpo_elem=arr_itpo.(pos)
-					in begin
-						match itpo_elem with
-						TiterpCircuit_none -> begin
-							match trace_elem with
-							(*Tproofitem_0B(_) -> Array.set arr_itpo pos TiterpCircuit_true*)
-							Tproofitem_0B -> Array.set arr_itpo pos TiterpCircuit_true
-							| Tproofitem_1A(intlst) -> begin
-								let lst_onlyB=intlst
-								in begin
-									if (List.length lst_onlyB) > 1 then 
-										Array.set arr_itpo pos (TiterpCircuit_or(List.map (fun x -> TiterpCircuit_refvar(x)) lst_onlyB))
-									else if (List.length lst_onlyB) == 1 then 
-										Array.set arr_itpo pos (TiterpCircuit_refvar(List.nth lst_onlyB 0))
-									else Array.set arr_itpo pos TiterpCircuit_false
-								end
-							end
-							| Tproofitem_chain(original_clsix,varcls_lst) -> begin
-								List.iter (fun x -> match x with (_,cls_prev)-> find_dep cls_prev) varcls_lst;
-								find_dep original_clsix;
-								let rec reduce_only1refcls itpo2red = begin
-									match itpo2red with
-									TiterpCircuit_refcls(itponxt_idx) -> begin
-										let itponxt = arr_itpo.(itponxt_idx)
-										in begin
-											match itponxt with
-											TiterpCircuit_refcls(_) -> reduce_only1refcls itponxt
-											| TiterpCircuit_true -> itponxt
-											| TiterpCircuit_false -> itponxt
-											| TiterpCircuit_refvar(_) -> itponxt
-											|_ -> itpo2red
-										end
-									end
-									| _ -> itpo2red
-								end
-								in
-								let rec do_varcls_lst interp_original_clsix_red varcls_lst_red = begin
-									match varcls_lst_red with
-									[] -> interp_original_clsix_red
-									| (var_hd,clsid_hd)::varcls_tl -> begin
-										let current_interp_res= begin
-											if(isBvar var_hd) then begin
-												let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_true-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
-												in
-												let len_itpolst_filtered=List.length itpolst_filtered
-												in begin
-													if (len_itpolst_filtered>1) then begin
-														let andelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_and(sublst) -> sublst | _ -> []) itpolst_filtered)
-														and noneandlst=List.filter (fun x -> match x with TiterpCircuit_and(_) -> false | _ -> true) itpolst_filtered
-														in
-														TiterpCircuit_and(((List.map reduce_only1refcls (andelementlst @ noneandlst))))
-													end
-													else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
-													else TiterpCircuit_true
-												end
-											end
-											else begin
-												let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_false-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
-												in
-												let len_itpolst_filtered=List.length itpolst_filtered
-												in begin
-													if (len_itpolst_filtered>1) then begin
-														let orelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_or(sublst) -> sublst | _ -> []) itpolst_filtered)
-														and noneorlst=List.filter (fun x -> match x with TiterpCircuit_or(_) -> false | _ -> true) itpolst_filtered
-														in
-														TiterpCircuit_or(((List.map reduce_only1refcls (orelementlst @ noneorlst))))
-													end
-													else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
-													else TiterpCircuit_false
-												end
-											end
-										end
-										in
-										do_varcls_lst current_interp_res varcls_tl
-									end
-								end
-								in
-								Array.set arr_itpo pos (do_varcls_lst (reduce_only1refcls (TiterpCircuit_refcls(original_clsix))) varcls_lst)
+				| Tproofitem_chain(original_clsix,varcls_lst) -> begin
+					List.iter (fun x -> match x with (_,cls_prev)-> find_dep cls_prev) varcls_lst;
+					find_dep original_clsix;
+					let rec reduce_only1refcls itpo2red = begin
+						match itpo2red with
+						TiterpCircuit_refcls(itponxt_idx) -> begin
+							let itponxt = arr_itpo.(itponxt_idx)
+							in begin
+								match itponxt with
+								TiterpCircuit_refcls(_) -> reduce_only1refcls itponxt
+								| TiterpCircuit_true -> itponxt
+								| TiterpCircuit_false -> itponxt
+								| TiterpCircuit_refvar(_) -> itponxt
+								|_ -> itpo2red
 							end
 						end
-						| _ -> ()
+						| _ -> itpo2red
 					end
-				end
-				in begin
-					find_dep (size-1);
-					arr_itpo
+					in
+					let rec do_varcls_lst interp_original_clsix_red varcls_lst_red = begin
+						match varcls_lst_red with
+						[] -> interp_original_clsix_red
+						| (var_hd,clsid_hd)::varcls_tl -> begin
+							let current_interp_res= begin
+								if(isBvar var_hd) then begin
+									let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_true-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
+									in
+									let len_itpolst_filtered=List.length itpolst_filtered
+									in begin
+										if (len_itpolst_filtered>1) then begin
+											let andelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_and(sublst) -> sublst | _ -> []) itpolst_filtered)
+											and noneandlst=List.filter (fun x -> match x with TiterpCircuit_and(_) -> false | _ -> true) itpolst_filtered
+											in
+											TiterpCircuit_and(((List.map reduce_only1refcls (andelementlst @ noneandlst))))
+										end
+										else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
+										else TiterpCircuit_true
+									end
+								end
+								else begin
+									let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_false-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
+									in
+									let len_itpolst_filtered=List.length itpolst_filtered
+									in begin
+										if (len_itpolst_filtered>1) then begin
+											let orelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_or(sublst) -> sublst | _ -> []) itpolst_filtered)
+											and noneorlst=List.filter (fun x -> match x with TiterpCircuit_or(_) -> false | _ -> true) itpolst_filtered
+											in
+											TiterpCircuit_or(((List.map reduce_only1refcls (orelementlst @ noneorlst))))
+										end
+										else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
+										else TiterpCircuit_false
+									end
+								end
+							end
+							in
+							do_varcls_lst current_interp_res varcls_tl
+						end
+					end
+					in
+					Array.set arr_itpo pos (do_varcls_lst (reduce_only1refcls (TiterpCircuit_refcls(original_clsix))) varcls_lst)
 				end
 			end
+			| _ -> ()
 		end
+	end
+	in begin
+		find_dep (size-1);
+		arr_itpo
+	end
+end
+and characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin 
+	assert ((List.length oidxlst)>0);
+	let totalclslst= clslst_1A @ clslst_0B in
+	(*reset with proof generator*)
+	let solverIdx=MultiMiniSAT.allocSolver () in begin
+	  MultiMiniSAT.allocProof solverIdx;
+		Dumpsat.procClauseandAdd solverIdx totalclslst;
+    let res=solveWithAssumptionReturnInferredFormula solverIdx [] max_index oidxlst in begin
+			MultiMiniSAT.closeSolver solverIdx;
+			res
+		end
+	end
+end
+and solveWithAssumptionReturnInferredFormula solverIdx assump max_index oidxlst= begin
+		let mappedAssump=Dumpsat.proc_cls assump in
+		let trace=begin
+			(*dbg_print "    before solve_mass";*)
+
+			 match MultiMiniSAT.solve_with_assumption solverIdx mappedAssump  with
+			 UNSAT -> begin
+				(*dbg_print "    after solve_mass";*)
+
+				let proofarray=MultiMiniSAT.save_proof solverIdx
+				in begin
+					(*dbg_print "    after save_proof";*)
+					(*clear proof will only delete trav, not delete proof, and the new trav will be alloced in save_proof*)
+					MultiMiniSAT.clear_proof solverIdx;
+					
+					(*dbg_print "    after clear_proof";*)
+					read_proof_classfyAB proofarray max_index oidxlst
+				end
+			end
+			| SAT   -> begin 
+			  assert false;
+			end
+		end
+		in 
+		finddep_wrapper oidxlst max_index trace 
 end
 and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidxlst = begin 
-		assert ((List.length oidxlst)>0);
-		let memHash=Intlist.list2Hash oidxlst
-		in
-		let isBvar varidx = begin
-			let absvaridx=(abs varidx)
-			in begin
-				if absvaridx>max_index then true 
-				else if (Hashtbl.mem memHash absvaridx) then true
-				else false
-			end
-		end in
-		let totalclslst= clslst_1A @ clslst_0B in
-		let procCharInputDecFunction solverIdx ib = begin
-			let shiftedibA= (ib+shift) in
-			let shiftedibB = (-(shiftedibA+max_index)) in
-			let assump=[shiftedibA;shiftedibB] in
-			let mappedAssump=Dumpsat.proc_cls assump in
-			let trace=begin
-				(*dbg_print "    before solve_mass";*)
-
-				 match MultiMiniSAT.solve_with_assumption solverIdx mappedAssump  with
-				 UNSAT -> begin
-					(*dbg_print "    after solve_mass";*)
-
-					let proofarray=MultiMiniSAT.save_proof solverIdx
-					in begin
-						(*dbg_print "    after save_proof";*)
-						(*clear proof will only delete trav, not delete proof, and the new trav will be alloced in save_proof*)
-						MultiMiniSAT.clear_proof solverIdx;
-						
-						(*dbg_print "    after clear_proof";*)
-						read_proof_classfyAB proofarray max_index oidxlst
-					end
-				end
-				| SAT   -> begin 
-					printf "FATAL : it is SAT in characterization_interp_AB\n";
-					printf "often this is caused by not enough assumption in generating interpolant\n";
-					printf "max_index %d\n" max_index;
-					let max_index_all=get_largest_varindex_inclslst totalclslst in begin
-						printf "max_index_all %d\n" max_index_all
-					end;
-					printf "max_index %d\n" max_index;
-					printf "cls size %d\n" (List.length totalclslst);
-					exit 0
-				end
-			end in
-			let size=Array.length trace in
-			let arr_itpo=begin
-				(*dbg_print (sprintf "    characterization_interp_AB_mass 4 trace size %d" size);*)
-				Array.make size TiterpCircuit_none
-			end
-			in begin
-				let rec find_dep pos = begin
-					let trace_elem=trace.(pos)
-					and itpo_elem=arr_itpo.(pos)
-					in begin
-						match itpo_elem with
-						TiterpCircuit_none -> begin
-							match trace_elem with
-							(*Tproofitem_0B(_) -> Array.set arr_itpo pos TiterpCircuit_true*)
-							Tproofitem_0B -> Array.set arr_itpo pos TiterpCircuit_true
-							| Tproofitem_1A(intlst) -> begin
-								let lst_onlyB=intlst
-								in begin
-									if (List.length lst_onlyB) > 1 then 
-										Array.set arr_itpo pos (TiterpCircuit_or(List.map (fun x -> TiterpCircuit_refvar(x)) lst_onlyB))
-									else if (List.length lst_onlyB) == 1 then 
-										Array.set arr_itpo pos (TiterpCircuit_refvar(List.nth lst_onlyB 0))
-									else Array.set arr_itpo pos TiterpCircuit_false
-								end
-							end
-							| Tproofitem_chain(original_clsix,varcls_lst) -> begin
-								List.iter (fun x -> match x with (_,cls_prev)-> find_dep cls_prev) varcls_lst;
-								find_dep original_clsix;
-								let rec reduce_only1refcls itpo2red = begin
-									match itpo2red with
-									TiterpCircuit_refcls(itponxt_idx) -> begin
-										let itponxt = arr_itpo.(itponxt_idx)
-										in begin
-											match itponxt with
-											TiterpCircuit_refcls(_) -> reduce_only1refcls itponxt
-											| TiterpCircuit_true -> itponxt
-											| TiterpCircuit_false -> itponxt
-											| TiterpCircuit_refvar(_) -> itponxt
-											|_ -> itpo2red
-										end
-									end
-									| _ -> itpo2red
-								end
-								in
-								let rec do_varcls_lst interp_original_clsix_red varcls_lst_red = begin
-									match varcls_lst_red with
-									[] -> interp_original_clsix_red
-									| (var_hd,clsid_hd)::varcls_tl -> begin
-										let current_interp_res= begin
-											if(isBvar var_hd) then begin
-												let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_true-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
-												in
-												let len_itpolst_filtered=List.length itpolst_filtered
-												in begin
-													if (len_itpolst_filtered>1) then begin
-														let andelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_and(sublst) -> sublst | _ -> []) itpolst_filtered)
-														and noneandlst=List.filter (fun x -> match x with TiterpCircuit_and(_) -> false | _ -> true) itpolst_filtered
-														in
-														TiterpCircuit_and(((List.map reduce_only1refcls (andelementlst @ noneandlst))))
-													end
-													else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
-													else TiterpCircuit_true
-												end
-											end
-											else begin
-												let itpolst_filtered=List.filter (fun x -> match x with TiterpCircuit_false-> false | _ -> true) ([interp_original_clsix_red;reduce_only1refcls (TiterpCircuit_refcls(clsid_hd))]) 
-												in
-												let len_itpolst_filtered=List.length itpolst_filtered
-												in begin
-													if (len_itpolst_filtered>1) then begin
-														let orelementlst=List.concat (List.map (fun x -> match x with TiterpCircuit_or(sublst) -> sublst | _ -> []) itpolst_filtered)
-														and noneorlst=List.filter (fun x -> match x with TiterpCircuit_or(_) -> false | _ -> true) itpolst_filtered
-														in
-														TiterpCircuit_or(((List.map reduce_only1refcls (orelementlst @ noneorlst))))
-													end
-													else if (len_itpolst_filtered==1) then reduce_only1refcls (List.nth itpolst_filtered 0)
-													else TiterpCircuit_false
-												end
-											end
-										end
-										in
-										do_varcls_lst current_interp_res varcls_tl
-									end
-								end
-								in
-								Array.set arr_itpo pos (do_varcls_lst (reduce_only1refcls (TiterpCircuit_refcls(original_clsix))) varcls_lst)
-							end
-						end
-						| _ -> ()
-					end
-				end
-				in begin
-					find_dep (size-1);
-					(ib,arr_itpo)
-				end
-			end
-		end in
-		let solverIdx=MultiMiniSAT.allocSolver () in begin
-		  MultiMiniSAT.allocProof solverIdx;
-  		(*reset with proof generator*)
-	  	Dumpsat.procClauseandAdd solverIdx totalclslst;
-		  let res=List.map (procCharInputDecFunction solverIdx) iv in begin
-		    MultiMiniSAT.closeSolver solverIdx;
-				res
-  		end
+	assert ((List.length oidxlst)>0);
+	let totalclslst= clslst_1A @ clslst_0B in
+	let procCharInputDecFunction solverIdx ib = begin
+		let shiftedibA= (ib+shift) in
+		let shiftedibB = (-(shiftedibA+max_index)) in
+		let assump=[shiftedibA;shiftedibB] in
+		let arr_itpo=solveWithAssumptionReturnInferredFormula solverIdx  assump  in
+		(ib,arr_itpo)
+	end in
+	let solverIdx=MultiMiniSAT.allocSolver () in begin
+	  MultiMiniSAT.allocProof solverIdx;
+		(*reset with proof generator*)
+  	Dumpsat.procClauseandAdd solverIdx totalclslst;
+	  let res=List.map (procCharInputDecFunction solverIdx) iv in begin
+	    MultiMiniSAT.closeSolver solverIdx;
+			res
 		end
+	end
 end
 and characterization_interp clslst_noass assumption_lst oidxlst iidx = begin
 		assert (iidx>0) ;
-		let proc_ass ass = begin
-			match ass with
-			(idx,true)-> begin
-				([idx],"")
-			end
-			| (idx,false)-> begin
-				([-idx],"")
-			end
-		end
-		in
 		let ass_clslst=List.map proc_ass assumption_lst
 		in
 		let clslst = ass_clslst @ clslst_noass
@@ -524,25 +401,28 @@ and allsat_interp_BDD_loop
 begin
 	(*check the clause list for membership of variables*)
 	let maxidx_R=get_largest_varindex_inclslst clslst_R
+ 	and solverIdxExpanding=MultiMiniSAT.allocSolver ()
+ 	and res= ref SATISFIABLE
+ 	and infered_assertion_array_lst_new = ref []
+ 	and clslst_R_new = ref [] 
 	in begin
 		assert (target<=maxidx_R);
-		List.iter (fun x -> assert(x<=maxidx_R)) (important_varlst @ non_important_varlst)
-	end
-	;
-	
-	assert((isEmptyList non_important_varlst)==false);
-	(*a loop to infer*)
-	let res= ref SATISFIABLE
-	and infered_assertion_array_lst_new = ref []
-	and clslst_R_new = ref [] in begin
-		clslst_R_new := clslst_R;
-		
-		while ((!res)!=UNSATISFIABLE) do
-			(*dbg_print "  start loop";*)
-			Gc.compact();
-			(*dbg_print "  start dump_sat";*)
-			
-			let solverIdx=MultiMiniSAT.allocSolver () in begin
+		List.iter (fun x -> assert(x<=maxidx_R)) (important_varlst @ non_important_varlst);
+  	assert((isEmptyList non_important_varlst)==false);
+
+
+    MultiMiniSAT.allocProof solverIdxExpanding;
+    (*adding clslst_R and its shifted version to clause database*)
+		let clslst_shift = shiftclslst clslst_R important_varlst  maxidx_R in
+  	Dumpsat.procClauseandAdd solverIdxExpanding (clslst_R@clslst_shift);
+
+  	clslst_R_new := clslst_R;
+
+  	(*a loop to infer*)
+  	while ((!res)!=UNSATISFIABLE) do
+  		let solverIdx=MultiMiniSAT.allocSolver () in begin
+  		  Gc.compact();
+
   			(*find out whether it is SAT*)
   			res:=Dumpsat.dump_sat solverIdx (([target],"allsat_interp target")::(!clslst_R_new));
   			(*use dunp_sat without reset because we still need to get it assignment below
@@ -554,54 +434,46 @@ begin
     			end
     			| _ -> begin
     				assert((!res)==SATISFIABLE);
-    				(*dbg_print (sprintf "  found result in  allsat_interp %d" (List.length (!infered_assertion_array_lst_new)));*)
-    				(*construct the list of all S0 and protocol input*)
+
     				(*get all their value, and construct the assumption list*)
-    				let all_index_value_list = List.map  (Dumpsat.get_assignment solverIdx) non_important_varlst
+    				let all_index_value_list = List.map  (Dumpsat.get_assignment solverIdx) non_important_varlst in
+						let all_assumption=List.map proc_ass2 all_index_value_list in
+            let shiftedassumption=List.map (shift_ass maxidx_R) all_assumption in
+						let all_ass_target=(-target-maxidx_R)::(target::(all_assumption@shiftedassumption))
+    				in
+    				let new_assertion_preBDD =  solveWithAssumptionReturnInferredFormula solverIdxExpanding all_ass_target maxidx_R important_varlst
+    				in
+    				let new_assertion = begin
+    					(*dbg_print "  TIME of characterization_interp";*)
+    					if(simplifyOrnot) then
+    						simplify_withBDD new_assertion_preBDD ddM
+    					else new_assertion_preBDD
+    				end
     				in begin
-    					(*generate the circuit*)
-    						(*let res=characterization_interp (!clslst_R_new) all_index_value_list important_varlst target*)
-    						(*it is used for enlarging, so no need to rule out assignments enumerated
-    							simply use clslst_R*)
-    					let new_assertion_preBDD = characterization_interp 
-    																			clslst_R 
-    																			all_index_value_list 
-    																			important_varlst 
-    																			target 
-    																			in
-    					let new_assertion = begin
-    						(*dbg_print "  TIME of characterization_interp";*)
-    						if(simplifyOrnot) then
-    							simplify_withBDD new_assertion_preBDD ddM
-    						else new_assertion_preBDD
+    					(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
+    					(*check that all var referenced in new_assertion are npi*)
+    					check_itpo_var_membership new_assertion important_varlst ;
+    					(*increamental encoding the new_assertion*)
+    					let (_,clslst_2beappend)=
+    						force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
+    					begin
+    						clslst_R_new := clslst_2beappend@(!clslst_R_new);
     					end
-    					in begin
-    						(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
-    						(*check that all var referenced in new_assertion are npi*)
-    						check_itpo_var_membership new_assertion important_varlst ;
-    						(*increamental encoding the new_assertion*)
-    						let (_,clslst_2beappend)=
-    							force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
-    						begin
-    							clslst_R_new := clslst_2beappend@(!clslst_R_new);
-    						end
-    						;
-    						let litcnt=Intlist.listSum (List.map (fun x -> List.length (fst x)) (!clslst_R_new)) in
-    						(*dbg_print (sprintf "  after force_assertion_alone %d %n" (List.length (!clslst_R_new)) litcnt);*)
-    						
-    						infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
-    					end
+    					;
+    					
+    					infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
     				end
     			end
-				end
-				;
+  			end
+  			;
         MultiMiniSAT.closeSolver solverIdx;
-			end
-			;
-		done
-		;
-		Gc.compact();
-		((!res),(!infered_assertion_array_lst_new))
-	end
+  		end
+  		;
+  	done
+  	;
+  	Gc.compact();
+    MultiMiniSAT.closeSolver solverIdxExpanding;
+  	((!res),(!infered_assertion_array_lst_new))
+  end
 end
 

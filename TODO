@@ -5,6 +5,6 @@ OK	3	supporting multiple sat solver at the same time
 5	faster interpolant pack
 OK	6	interpolant pack can use two sat solver to run, one for detecting un coverred solution, must rule out exact formula, the other for enlarging, no rule out need
 7	use abc to replace dc as much as possible, dc should only used in rtl source code
-8	meger AB and AB_mass
+OK	8	meger AB and AB_mass
 9	allsat_interp_BDD_loop use incremental SAT to replace individual characterization_interp
-9	in AB_mass use incremental SAT
+OK	10	in AB_mass use incremental SAT
