@@ -424,7 +424,9 @@ begin
   		  Gc.compact();
 
   			(*find out whether it is SAT*)
+				dbg_print "pre dump_sat";
   			res:=Dumpsat.dump_sat solverIdx (([target],"allsat_interp target")::(!clslst_R_new));
+				dbg_print "post dump_sat";
   			(*use dunp_sat without reset because we still need to get it assignment below
   			after that we will reset it*)
   			begin
@@ -454,13 +456,15 @@ begin
     					(*check that all var referenced in new_assertion are npi*)
     					check_itpo_var_membership new_assertion important_varlst ;
     					(*increamental encoding the new_assertion*)
-    					let (_,clslst_2beappend)=
+    					let (maxiii,clslst_2beappend)=
     						force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
     					begin
+    					  printf "old max %d maxiii %d\n" maxidx_R maxiii;
+							  flush stdout;
     						clslst_R_new := clslst_2beappend@(!clslst_R_new);
     					end
     					;
-    					
+
     					infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
     				end
     			end

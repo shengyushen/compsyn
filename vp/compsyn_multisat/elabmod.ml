@@ -1398,9 +1398,10 @@ object (self)
 	
 	method inferSATFormula_plr (p:int) (r:int) (l:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin
 		(*sent two empty list to inferSATFormula_plr_nonloop such that it can discover a whole new set to replace the current one*)
+			dbg_print "pre inferSATFormula_plr_nonloop";
 		let (result_p,infered_assertion_array_lst_new_nonloop)= self#inferSATFormula_plr_nonloop p l r infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI 
 		in begin
-			(*dbg_print "exiting inferSATFormula_plr_nonloop";*)
+			dbg_print "exiting inferSATFormula_plr_nonloop";
 			assert(lock_multiple == true);
 			if (result_p == UNSATISFIABLE) then begin
 				(*we only need to check here that 
@@ -1429,10 +1430,8 @@ object (self)
 				(RES_UNIQ,p,l,r,infered_assertion_array_lst_new_nonloop,infered_assertion_array_lst_old_loop) (* output uniquely determine input*)
 			end
 			else begin
-			(*dbg_print "pre inferSATFormula_plr_loop";*)
 				let (result_p_loop,infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop p l r infered_assertion_array_lst_new_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI(*in this case I dont need to encode common again*)
 				in begin
-			dbg_print "exiting inferSATFormula_plr_loop";
 					assert (result_p_loop == UNSATISFIABLE) ;
 					(RES_UNK,p,l,r,infered_assertion_array_lst_new_nonloop,(infered_assertion_array_lst_new_loop@infered_assertion_array_lst_old_loop))
 				end
@@ -1702,6 +1701,8 @@ object (self)
 
 	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin
 		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" p l r (List.length infered_assertion_array_lst_old_loop);
+		flush stdout;
+
 		if(p<2 || l<2 || r<2) then (UNSATISFIABLE,infered_assertion_array_lst_old_loop)
 		else begin
 			let target = self#construct_nonloop_bitIs p l r  infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI
