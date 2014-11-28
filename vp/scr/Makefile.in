@@ -13,12 +13,10 @@ default :
 	@echo "infer_multidec_not_charfirst_nowall   : generating multiple decoders without wall condition, lots of bugs are corrected"
 	@echo "infer_multidec_not_charfirst_nowall_cnt : new code"
 	@echo "relational 					: relational uniqueness for TODAES 14"
-	@echo "relational_plr 					: relational uniqueness with plr reduction for rev1 of TODAES14"
-	@echo "relational_plr_fast 					: incremental SAT with assumption in finding control flow vars"
-	@echo "relational_plr_inc 					: incremental SAT with assumption in characterizing"
-	@echo "relational_plr_inc_plr1by1 					: find out plr by increcing them one by one"
-	@echo "relational_plr_inc_nominlr 					: dont minimize LR"
-	@echo "multisat 					: support using multiple SAT solver"
+	@echo "relational_plr_inc 					: incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
+	@echo "relational_plr_inc_plr1by1 					: find out plr by increcing them one by one, only for comparing to relational_plr_inc"
+	@echo "relational_plr_inc_nominlr 					: dont minimize LR, only for comparing to relational_plr_inc"
+	@echo "multisat 					: support using multiple SAT solver and incremental SAT"
 
 # this is the TCAD 10 version with:
 # 1 incomplete approach to discover the existence of decoder
@@ -124,35 +122,14 @@ relational: sed_res.v
 	# then run syn.tcl in design compiler
 	dc_shell-t -f syn_dual.tcl > syn_dual.log
 
-relational_plr: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational_plr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
-
-relational_plr_fast: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational_plr_fast.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
-	# then synthesize a version to be translated into blif
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
 
 relational_plr_inc: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_relational_plr_inc.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	  # then run syn.tcl in design compiler
+	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
 	# then synthesize a version to be translated into blif
 	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
@@ -166,9 +143,9 @@ relational_plr_inc_plr1by1: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_relational_plr_inc_plr1by1.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	  # then run syn.tcl in design compiler
+	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
 	# then synthesize a version to be translated into blif
 	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
@@ -180,9 +157,9 @@ relational_plr_inc_nominlr: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_relational_plr_inc_nominlr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
+    #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	  # then run syn.tcl in design compiler
+	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
 	# then synthesize a version to be translated into blif
 	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
@@ -195,10 +172,11 @@ multisat: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
-	# then synthesize a version to be translated into blif
+     	# no need for dc synthesis report of the decoder now, we only need it from ABC
+      #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+     	# then run syn.tcl in design compiler
+      #	dc_shell-t -f syn_dual.tcl > syn_dual.log
+  # then synthesize a version to be translated into blif
 	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
 	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
