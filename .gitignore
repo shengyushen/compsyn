@@ -1,0 +1,7 @@
+*.o
+*.cmx
+*.cmi
+parser.ml
+parser.mli
+parser.output
+very.ml
