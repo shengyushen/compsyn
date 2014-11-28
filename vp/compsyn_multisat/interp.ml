@@ -181,7 +181,7 @@ and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidx
 		let shiftedibA= (ib+shift) in
 		let shiftedibB = (-(shiftedibA+max_index)) in
 		let assump=[shiftedibA;shiftedibB] in
-		let arr_itpo=solveWithAssumptionReturnInferredFormula solverIdx  assump  in
+		let arr_itpo=solveWithAssumptionReturnInferredFormula solverIdx  assump  max_index oidxlst in
 		(ib,arr_itpo)
 	end in
 	let solverIdx=MultiMiniSAT.allocSolver () in begin

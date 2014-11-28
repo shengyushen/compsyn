@@ -373,7 +373,7 @@ caseitem2stm	misc2.ml	/^and caseitem2stm ci = begin$/;
 cat_string	misc2.ml	/^and cat_string str1 str2 = begin$/;
 chain	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void ssyChecker::chain  (const vec<ClauseId>& cs, const vec<Var>& xs) {$/;"	f	class:ssyChecker
 characterization_interp	interp.ml	/^and characterization_interp clslst_noass assumption_lst oidxlst iidx = begin$/;
-characterization_interp_AB	interp.ml	/^let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin $/;
+characterization_interp_AB	interp.ml	/^and characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin $/;
 characterization_interp_AB_mass	interp.ml	/^and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidxlst = begin $/;
 charge_strength	typedef.ml	/^and	charge_strength	=$/;
 checkClosed	MultiMiniSAT.ml	/^external checkClosed : unit -> unit                                  = "multisat_checkClosed"$/;
@@ -501,6 +501,7 @@ files	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^    vec
 final_index_oneinst	elabmod.ml	/^	val mutable final_index_oneinst = 0$/;
 findOneModuleInVerystruct	rtl.ml	/^	method findOneModuleInVerystruct modName = begin$/;
 findco	elabmod.ml	/^	method findco str = begin$/;
+finddep_wrapper	interp.ml	/^and finddep_wrapper oidxlst max_index trace = begin$/;
 force_assertion	elabmod.ml	/^	method force_assertion arr_itpo1= begin$/;
 force_assertion_alone	aig.ml	/^and force_assertion_alone arr_itpo1 last_index_old= begin$/;
 gate_instance	typedef.ml	/^and	gate_instance	=$/;
@@ -732,6 +733,8 @@ proc_T_input_declaration	elabmod.ml	/^	method proc_T_input_declaration range nam
 proc_T_net_declaration	elabmod.ml	/^	method proc_T_net_declaration nettypename exprng namelst = begin$/;
 proc_T_output_declaration	elabmod.ml	/^	method proc_T_output_declaration range namelst = begin$/;
 proc_T_reg_declaration	elabmod.ml	/^	method proc_T_reg_declaration  rng regvarlst = begin$/;
+proc_ass	interp.ml	/^let rec proc_ass ass = begin$/;
+proc_ass2	interp.ml	/^let rec proc_ass2 ass = begin$/;
 proc_cls	dumpsat.ml	/^let proc_cls cls = begin$/;
 proc_int	dumpsat.ml	/^let proc_int var = begin$/;
 progressEstimate	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^double Solver::progressEstimate()$/;"	f	class:Solver
@@ -777,6 +780,7 @@ set_unlock_multiple	elabmod.ml	/^	method set_unlock_multiple = begin$/;
 set_unlock_oneinst	elabmod.ml	/^	method set_unlock_oneinst = begin$/;
 setcomment	misc2.ml	/^and setcomment str cls = begin$/;
 shiftAssertion	aig.ml	/^and shiftAssertion arr_itpo shiftint = begin$/;
+shift_ass	interp.ml	/^let rec shift_ass shiftamount ass  = begin$/;
 shiftcls	clauseman.ml	/^and shiftcls dontShiftIdxLst shiftnum cls = begin$/;
 shiftcls_shiftsomevar	clauseman.ml	/^and shiftcls_shiftsomevar shiftIdxLst shiftnum cls = begin$/;
 shiftcls_simple	clauseman.ml	/^and shiftcls_simple shiftnum cls = begin$/;
@@ -796,6 +800,7 @@ simplify_withBDD_withassumption	bddssy.ml	/^and simplify_withBDD_withassumption 
 solution	MiniSATcommondef.ml	/^type solution = SAT | UNSAT$/;
 solve	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::solve(const vec<Lit>& assumps)$/;"	f	class:Solver
 solve	MultiMiniSAT.ml	/^external solve       : solverIndex -> solution                       = "multisat_solve"$/;
+solveWithAssumptionReturnInferredFormula	interp.ml	/^and solveWithAssumptionReturnInferredFormula solverIdx assump max_index oidxlst= begin$/;
 solve_with_assumption	MultiMiniSAT.ml	/^external solve_with_assumption : solverIndex -> lit list -> solution = "multisat_solve_with_assumption"$/;
 solverIndex	MiniSATcommondef.ml	/^type solverIndex = int$/;
 source_text	parser.ml	/^let source_text (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =$/;
