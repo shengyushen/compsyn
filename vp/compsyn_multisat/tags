@@ -334,10 +334,10 @@ __ocaml_lex_tables	very.ml	/^let __ocaml_lex_tables = {$/;
 __ocaml_lex_verilog_rec	very.ml	/^and __ocaml_lex_verilog_rec lexbuf __ocaml_lex_state =$/;
 addGuard	elabmod.ml	/^	method addGuard clslist pred = begin$/;
 addRoot	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^ClauseId Proof::addRoot(vec<Lit>& cl)$/;"	f	class:Proof
-add_clause	MultiMiniSAT.ml	/^external add_clause  : solverIndex -> lit list -> unit               = "multisat_add_clause"$/;
+add_clause	MultiMiniSAT.ml	/^external add_clause            : solverIndex -> lit list -> unit               = "multisat_add_clause"$/;
 addco	elabmod.ml	/^	method addco str co = begin$/;
-allocProof	MultiMiniSAT.ml	/^external allocProof  : solverIndex -> unit                           = "multisat_allocProof"$/;
-allocSolver	MultiMiniSAT.ml	/^external allocSolver : unit -> solverIndex                           = "multisat_allocSolver"$/;
+allocProof	MultiMiniSAT.ml	/^external allocProof            : solverIndex -> unit                           = "multisat_allocProof"$/;
+allocSolver	MultiMiniSAT.ml	/^external allocSolver           : unit -> solverIndex                           = "multisat_allocSolver"$/;
 alloc_and_equ_res	elabmod.ml	/^	method alloc_and_equ_res ov_pair_lst = begin$/;
 alloc_index	elabmod.ml	/^	method alloc_index num = begin$/;
 allsat_interp_BDD_direct	interp.ml	/^and allsat_interp_BDD_direct $/;
@@ -376,7 +376,7 @@ characterization_interp	interp.ml	/^and characterization_interp clslst_noass ass
 characterization_interp_AB	interp.ml	/^and characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin $/;
 characterization_interp_AB_mass	interp.ml	/^and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidxlst = begin $/;
 charge_strength	typedef.ml	/^and	charge_strength	=$/;
-checkClosed	MultiMiniSAT.ml	/^external checkClosed : unit -> unit                                  = "multisat_checkClosed"$/;
+checkClosed	MultiMiniSAT.ml	/^external checkClosed           : unit -> unit                                  = "multisat_checkClosed"$/;
 checkProof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^vec<long>& Proof::checkProof(char * proofname)$/;"	f	class:Proof
 check_assertion_satisfiable	aig.ml	/^and check_assertion_satisfiable posAssertion invAssertionList last_index ddM= begin$/;
 check_cls_dump	clauseman.ml	/^and check_cls_dump cls = begin$/;
@@ -395,11 +395,11 @@ clause_list_multiple	elabmod.ml	/^	val mutable clause_list_multiple : ((int list
 clause_list_multiple_f	elabmod.ml	/^	val mutable clause_list_multiple_f : ((int list)*string) list = [([1],"truepred");([-2],"falsepred")]$/;
 clause_list_multiple_genia	elabmod.ml	/^	val mutable clause_list_multiple_genia : ((int list)*string) list = [([1],"truepred");([-2],"falsepred")]$/;
 clear_proof	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void Proof::clear_proof()$/;"	f	class:Proof
-clear_proof	MultiMiniSAT.ml	/^external clear_proof : solverIndex -> unit                           = "multisat_clear_proof"$/;
+clear_proof	MultiMiniSAT.ml	/^external clear_proof           : solverIndex -> unit                           = "multisat_clear_proof"$/;
 clkname	elabmod.ml	/^	val mutable clkname = "" $/;
 close	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::close(void)$/;"	f	class:File
-closeProof	MultiMiniSAT.ml	/^external closeProof  : solverIndex -> unit                           = "multisat_closeProof"$/;
-closeSolver	MultiMiniSAT.ml	/^external closeSolver : solverIndex -> unit                           = "multisat_closeSolver"$/;
+closeProof	MultiMiniSAT.ml	/^external closeProof            : solverIndex -> unit                           = "multisat_closeProof"$/;
+closeSolver	MultiMiniSAT.ml	/^external closeSolver           : solverIndex -> unit                           = "multisat_closeSolver"$/;
 comb_always_list	elabmod.ml	/^	val mutable comb_always_list : (statement*(string list)) list = []$/;
 comment	very.ml	/^and comment nest lexbuf =$/;
 compose	print_v.ml	/^let compose f g = function x -> f(g(x))$/;
@@ -544,6 +544,7 @@ id2string	statement.ml	/^and id2string strlst = begin$/;
 idequ	misc2.ml	/^and idequ id1 id2 = begin$/;
 idlst_intersect	misc2.ml	/^and idlst_intersect idlst1 idlst2 = begin$/;
 idx2name	elabmod.ml	/^	method idx2name idx_unmapped = begin$/;
+incrementalAddClauseList	dumpsat.ml	/^let incrementalAddClauseList solverIdx clause_list maxiii= begin$/;
 inferPredicateUniq	elabmod.ml	/^	method inferPredicateUniq listUniqBitI listNonuniqBitI maxN = begin$/;
 inferSATFormula_plr	elabmod.ml	/^	method inferSATFormula_plr (p:int) (r:int) (l:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin$/;
 inferSATFormula_plr_loop	elabmod.ml	/^	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin$/;
@@ -608,7 +609,7 @@ lv2regnamelist	statement.ml	/^and lv2regnamelist lv = begin$/;
 lvalue	typedef.ml	/^and	lvalue 		=$/;
 lvalue2idlst	misc2.ml	/^and lvalue2idlst lv = begin$/;
 map_lv2index	elabmod.ml	/^	method map_lv2index lv = begin (*return the list of index from left to right*)$/;
-mass_new_var	MultiMiniSAT.ml	/^external mass_new_var: solverIndex -> var -> var                     = "multisat_mass_new_var"$/;
+mass_new_var	MultiMiniSAT.ml	/^external mass_new_var          : solverIndex -> var -> var                     = "multisat_mass_new_var"$/;
 minimizeL	elabmod.ml	/^	method minimizeL p l r assLst = begin$/;
 minimizeLR	elabmod.ml	/^	method minimizeLR p l r assLst = begin$/;
 minimizeR	elabmod.ml	/^	method minimizeR p l r assLst = begin$/;
@@ -640,10 +641,10 @@ name2range	elabmod.ml	/^	method name2range name = begin$/;
 nameInportlist	elabmod.ml	/^	method nameInportlist name1 = begin$/;
 name_index_lst	elabmod.ml	/^	val mutable name_index_lst : (string*(int*int)) list = []  $/;
 named_port_connection	typedef.ml	/^and	named_port_connection	=$/;
-neg_lit	MultiMiniSAT.ml	/^external neg_lit     : solverIndex -> var -> lit                     = "multisat_neg_lit"$/;
+neg_lit	MultiMiniSAT.ml	/^external neg_lit               : solverIndex -> var -> lit                     = "multisat_neg_lit"$/;
 newClause	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::newClause(const vec<Lit>& ps_, bool learnt, ClauseId id)$/;"	f	class:Solver
 newVar	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^Var Solver::newVar() {$/;"	f	class:Solver
-new_var	MultiMiniSAT.ml	/^external new_var     : solverIndex -> var                            = "multisat_new_var"$/;
+new_var	MultiMiniSAT.ml	/^external new_var               : solverIndex -> var                            = "multisat_new_var"$/;
 non_blocking_assignment	typedef.ml	/^and	non_blocking_assignment	=$/;
 non_blocking_assignment2regnamelist	statement.ml	/^and non_blocking_assignment2regnamelist nba = begin$/;
 non_proctocol_input_list	elabmod.ml	/^	val mutable non_proctocol_input_list = []$/;
@@ -667,7 +668,7 @@ port	typedef.ml	/^and	port		=$/;
 portlist	elabmod.ml	/^	val mutable portlist = []$/;
 pos_cn	parser.mly	/^let pos_cn = ref 0;;$/;
 pos_fn	parser.mly	/^let pos_fn = ref "";;$/;
-pos_lit	MultiMiniSAT.ml	/^external pos_lit     : solverIndex -> var -> lit                     = "multisat_pos_lit"$/;
+pos_lit	MultiMiniSAT.ml	/^external pos_lit               : solverIndex -> var -> lit                     = "multisat_pos_lit"$/;
 pos_ln	parser.mly	/^let pos_ln = ref 0;;$/;
 prfptr	MiniSATcommondef.ml	/^type prfptr = string$/;
 prim2int_simple	expression.ml	/^and prim2int_simple prim = begin$/;
@@ -764,8 +765,9 @@ root	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^void ssy
 rplco	elabmod.ml	/^	method rplco str co = begin$/;
 rtl	rtl.ml	/^class rtl  = fun very_struct_init tmpdirname1  ->$/;
 satAssumption	dumpsat.ml	/^let satAssumption solverIdx assumptionList = begin$/;
+satSolve	dumpsat.ml	/^let satSolve solverIdx  = begin$/;
 save	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Proof.C	/^vec<long>& Proof::save(cchar* prooffilename)$/;"	f	class:Proof
-save_proof	MultiMiniSAT.ml	/^external save_proof  : solverIndex -> (int array)                    = "multisat_save_proof"$/;
+save_proof	MultiMiniSAT.ml	/^external save_proof            : solverIndex -> (int array)                    = "multisat_save_proof"$/;
 search	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^lbool Solver::search(int nof_conflicts, int nof_learnts, const SearchParams& params)$/;"	f	class:Solver
 seek	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/File.C	/^void File::seek(int64 file_pos, int whence)$/;"	f	class:File
 seq_always_list	elabmod.ml	/^	val mutable seq_always_list : (statement*(string list)) list = [] (*string list is the list of result*)$/;
@@ -793,15 +795,15 @@ shiftint_shiftsomevar	clauseman.ml	/^and shiftint_shiftsomevar shiftIdxLst shift
 shiftint_simple	clauseman.ml	/^and shiftint_simple shiftnum i = begin$/;
 simplify	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::simplify(Clause* c) const$/;"	f	class:Solver
 simplifyDB	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::simplifyDB()$/;"	f	class:Solver
-simplify_db	MultiMiniSAT.ml	/^external simplify_db : solverIndex -> unit                           = "multisat_simplify_db"$/;
+simplify_db	MultiMiniSAT.ml	/^external simplify_db           : solverIndex -> unit                           = "multisat_simplify_db"$/;
 simplify_withBDD	bddssy.ml	/^and simplify_withBDD arr_itpo ddM = begin$/;
 simplify_withBDD_forced	bddssy.ml	/^and simplify_withBDD_forced arr_itpo ddM = begin$/;
 simplify_withBDD_withassumption	bddssy.ml	/^and simplify_withBDD_withassumption itpcircuit assumptionlist ddM= begin$/;
 solution	MiniSATcommondef.ml	/^type solution = SAT | UNSAT$/;
 solve	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^bool Solver::solve(const vec<Lit>& assumps)$/;"	f	class:Solver
-solve	MultiMiniSAT.ml	/^external solve       : solverIndex -> solution                       = "multisat_solve"$/;
+solve	MultiMiniSAT.ml	/^external solve                 : solverIndex -> solution                       = "multisat_solve"$/;
 solveWithAssumptionReturnInferredFormula	interp.ml	/^and solveWithAssumptionReturnInferredFormula solverIdx assump max_index oidxlst= begin$/;
-solve_with_assumption	MultiMiniSAT.ml	/^external solve_with_assumption : solverIndex -> lit list -> solution = "multisat_solve_with_assumption"$/;
+solve_with_assumption	MultiMiniSAT.ml	/^external solve_with_assumption : solverIndex -> lit list -> solution           = "multisat_solve_with_assumption"$/;
 solverIndex	MiniSATcommondef.ml	/^type solverIndex = int$/;
 source_text	parser.ml	/^let source_text (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =$/;
 specify_item	typedef.ml	/^and	specify_item	= int$/;
@@ -834,7 +836,7 @@ try_assertion	elabmod.ml	/^	method try_assertion start_i end_i = begin$/;
 uniqlst	misc.ml	/^let rec uniqlst lst =begin$/;
 uniquify_idlst	misc2.ml	/^and uniquify_idlst idlst = begin$/;
 value	MiniSATcommondef.ml	/^type value = int (* F | T | X *)$/;
-value_of	MultiMiniSAT.ml	/^external value_of    : solverIndex -> var -> value                   = "multisat_value_of"$/;
+value_of	MultiMiniSAT.ml	/^external value_of              : solverIndex -> var -> value                   = "multisat_value_of"$/;
 var	MiniSATcommondef.ml	/^type var = int$/;
 varRescaleActivity	../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src/Solver.C	/^void Solver::varRescaleActivity()$/;"	f	class:Solver
 verilog	very.ml	/^let rec verilog lexbuf =$/;

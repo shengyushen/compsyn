@@ -402,81 +402,77 @@ begin
 	(*check the clause list for membership of variables*)
 	let maxidx_R=get_largest_varindex_inclslst clslst_R
  	and solverIdxExpanding=MultiMiniSAT.allocSolver ()
+	and solverIdx=MultiMiniSAT.allocSolver () 
  	and res= ref SATISFIABLE
- 	and infered_assertion_array_lst_new = ref []
- 	and clslst_R_new = ref [] 
+ 	and infered_assertion_array_lst_new = ref [] 
+  and tmpmaxidx= ref 0
 	in begin
+	  tmpmaxidx:=maxidx_R;
 		assert (target<=maxidx_R);
 		List.iter (fun x -> assert(x<=maxidx_R)) (important_varlst @ non_important_varlst);
   	assert((isEmptyList non_important_varlst)==false);
 
-
     MultiMiniSAT.allocProof solverIdxExpanding;
-    (*adding clslst_R and its shifted version to clause database*)
+    (*adding clslst_R and its shifted version to clause database for expanding*)
 		let clslst_shift = shiftclslst clslst_R important_varlst  maxidx_R in
   	Dumpsat.procClauseandAdd solverIdxExpanding (clslst_R@clslst_shift);
+		(*addiing clslst_R to clause database for finding not covered case*)
+  	Dumpsat.procClauseandAdd solverIdx (([target],"allsat_interp target")::clslst_R);
 
-  	clslst_R_new := clslst_R;
-
-  	(*a loop to infer*)
   	while ((!res)!=UNSATISFIABLE) do
-  		let solverIdx=MultiMiniSAT.allocSolver () in begin
-  		  Gc.compact();
+  	  Gc.compact();
 
-  			(*find out whether it is SAT*)
-				dbg_print "pre dump_sat";
-  			res:=Dumpsat.dump_sat solverIdx (([target],"allsat_interp target")::(!clslst_R_new));
-				dbg_print "post dump_sat";
-  			(*use dunp_sat without reset because we still need to get it assignment below
-  			after that we will reset it*)
-  			begin
-    			match (!res) with
-    			UNSATISFIABLE -> begin
-    				(*dbg_print "  no result in  allsat_interp";*)
+  		(*find out whether it is SAT*)
+			(*dbg_print "pre dump_sat";*)
+  		res:=Dumpsat.satSolve solverIdx;
+			(*dbg_print "post dump_sat";*)
+  		begin
+    		match (!res) with
+    		UNSATISFIABLE -> begin
+    			(*dbg_print "  no result in  allsat_interp";*)
+    		end
+    		| _ -> begin
+    			assert((!res)==SATISFIABLE);
+
+    			(*get all their value, and construct the assumption list*)
+    			let all_index_value_list = List.map  (Dumpsat.get_assignment solverIdx) non_important_varlst in
+					let all_assumption=List.map proc_ass2 all_index_value_list in
+          let shiftedassumption=List.map (shift_ass maxidx_R) all_assumption in
+					let all_ass_target=(-target-maxidx_R)::(target::(all_assumption@shiftedassumption))
+    			in
+    			let new_assertion_preBDD =  solveWithAssumptionReturnInferredFormula solverIdxExpanding all_ass_target maxidx_R important_varlst
+    			in
+    			let new_assertion = begin
+    				(*dbg_print "  TIME of characterization_interp";*)
+    				if(simplifyOrnot) then
+    					simplify_withBDD new_assertion_preBDD ddM
+    				else new_assertion_preBDD
     			end
-    			| _ -> begin
-    				assert((!res)==SATISFIABLE);
-
-    				(*get all their value, and construct the assumption list*)
-    				let all_index_value_list = List.map  (Dumpsat.get_assignment solverIdx) non_important_varlst in
-						let all_assumption=List.map proc_ass2 all_index_value_list in
-            let shiftedassumption=List.map (shift_ass maxidx_R) all_assumption in
-						let all_ass_target=(-target-maxidx_R)::(target::(all_assumption@shiftedassumption))
-    				in
-    				let new_assertion_preBDD =  solveWithAssumptionReturnInferredFormula solverIdxExpanding all_ass_target maxidx_R important_varlst
-    				in
-    				let new_assertion = begin
-    					(*dbg_print "  TIME of characterization_interp";*)
-    					if(simplifyOrnot) then
-    						simplify_withBDD new_assertion_preBDD ddM
-    					else new_assertion_preBDD
+    			in begin
+    				(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
+    				(*check that all var referenced in new_assertion are npi*)
+    				check_itpo_var_membership new_assertion important_varlst ;
+    				(*increamental encoding the new_assertion*)
+    				let (maxiii,clslst_2beappend)=
+    					force_assertion_alone (invert_assertion new_assertion) (!tmpmaxidx) in
+    				begin
+    				  printf "old max %d maxiii %d\n" maxidx_R maxiii;
+						  flush stdout;
+							tmpmaxidx:=maxiii;
+							Dumpsat.incrementalAddClauseList solverIdx clslst_2beappend maxiii;
     				end
-    				in begin
-    					(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
-    					(*check that all var referenced in new_assertion are npi*)
-    					check_itpo_var_membership new_assertion important_varlst ;
-    					(*increamental encoding the new_assertion*)
-    					let (maxiii,clslst_2beappend)=
-    						force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
-    					begin
-    					  printf "old max %d maxiii %d\n" maxidx_R maxiii;
-							  flush stdout;
-    						clslst_R_new := clslst_2beappend@(!clslst_R_new);
-    					end
-    					;
+    				;
 
-    					infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
-    				end
+    				infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
     			end
-  			end
-  			;
-        MultiMiniSAT.closeSolver solverIdx;
+    		end
   		end
   		;
   	done
   	;
   	Gc.compact();
     MultiMiniSAT.closeSolver solverIdxExpanding;
+    MultiMiniSAT.closeSolver solverIdx;
   	((!res),(!infered_assertion_array_lst_new))
   end
 end

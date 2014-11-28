@@ -40,9 +40,32 @@ let procClauseandAdd solverIdx clause_list = begin
 end
 ;;
 
-let dump_sat solverIdx clause_list = begin
-	procClauseandAdd solverIdx clause_list;
-	
+let incrementalAddClauseList solverIdx clause_list maxiii= begin
+	let max_index=get_largest_varindex_inclslst clause_list
+	and curridx=ref 0 in begin
+		(*printf "max_index %d maxiii %d\n" max_index maxiii;
+		flush stdout ;*)
+	  assert ((max_index+1)==maxiii);
+		while((MultiMiniSAT.new_var solverIdx)<maxiii) do
+		  curridx:=0
+		done;
+
+		(*add all cls*)
+		let proc_addcls cls = begin
+			match cls with
+			(intlst,_) -> begin
+				let clscreated=	proc_cls intlst
+				in 
+				MultiMiniSAT.add_clause solverIdx clscreated
+			end
+		end
+		in
+		List.iter proc_addcls  clause_list
+	end
+end
+;;
+
+let satSolve solverIdx  = begin
 	(*solve it*)
 	(*dbg_print "before MultiMiniSAT.solve";*)
 	 match MultiMiniSAT.solve solverIdx with
@@ -54,6 +77,13 @@ let dump_sat solverIdx clause_list = begin
 		(*dbg_print "after MultiMiniSAT.solve";*)
 		SATISFIABLE
 	end
+end
+;;
+
+
+let dump_sat solverIdx clause_list = begin
+	procClauseandAdd solverIdx clause_list;
+	satSolve solverIdx
 end
 ;;
 
@@ -77,6 +107,7 @@ let satAssumption solverIdx assumptionList = begin
 	end
 end
 ;;
+
 let get_assignment solverIdx idx = begin
 	assert (idx > 0) ;
 	let v=MultiMiniSAT.value_of solverIdx idx
