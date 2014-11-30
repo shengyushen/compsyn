@@ -176,11 +176,11 @@ multisat: sed_res.v
       #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
      	# then run syn.tcl in design compiler
       #	dc_shell-t -f syn_dual.tcl > syn_dual.log
-  # then synthesize a version to be translated into blif
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+      # then synthesize a version to be translated into blif
+      #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+	    # dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+	    # sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+	    # lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
 	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
 
 
@@ -233,7 +233,7 @@ clean :
 	@rm -rf .simvision
 	@rm -rf *.aag *.aig
 	@rm -rf *.dot *.ps
-	@rm -f *.tmp *.v
+	@rm -f *.tmp 
 
 distclean : 
 	@rm -rf  *.log cds.lib continue.scr dependent hdl.var INCA_libs container_c1 lsi10k2rtl RUN_NC waves.shm WORK *.args ncsim.key *.tcl ncverilog.key resolve_trace

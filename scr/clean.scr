@@ -14,7 +14,6 @@ do
   pushd .
   cd $i
   make clean 
-  make distclean 
   popd
 done
 

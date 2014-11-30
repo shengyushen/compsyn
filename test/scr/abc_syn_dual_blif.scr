@@ -1,4 +1,4 @@
-read_blif lsi10k2blif_res.blif ; strash ; cleanup; 
+read_verilog resulting_dual_cnf.v ; strash ; cleanup; 
 dsd ; strash ; dc2 ; dc2 ; dch 
 read_library ../../scr/mcnc.genlib ; map ; show ;show -g ; print_gates ; print_level ; print_latch ; quit
 

@@ -2,9 +2,13 @@
 2	recovering as much as possible
 OK	3	supporting multiple sat solver at the same time
 4	removing redundency in reducing l to neg number
-5	faster interpolant pack
+OK	5	faster interpolant pack
+	already fast enough
 OK	6	interpolant pack can use two sat solver to run, one for detecting un coverred solution, must rule out exact formula, the other for enlarging, no rule out need
 OK	7	use abc to replace dc as much as possible, dc should only used in rtl source code
 OK	8	meger AB and AB_mass
 OK	9	allsat_interp_BDD_loop use incremental SAT to replace individual characterization_interp
 OK	10	in AB_mass use incremental SAT
+11	multi step uniqueness for block code
+12	unique way to handle ecc and crc
+

@@ -1208,21 +1208,19 @@ object (self)
 			fprintf decoderVerilog  "  clk);\n";
 
 
+			fprintf decoderVerilog  "input  clk;\n";
+
 			(*generating input specification*)
 			let prtbit x = begin
 				match x with 
 				(nm,-1,r) -> begin
 					assert (r =(-1));
 					fprintf decoderVerilog "input  %s;\n" nm;
-					fprintf decoderVerilog "wire   cycle%d_%s ;\n" (prefix+left+right) nm;
-					fprintf decoderVerilog "assign   cycle%d_%s =%s;\n" (prefix+left+right) nm nm
 				end
 				| (nm,l,r) -> begin
 					assert(l!=(-1));
 					assert(r!=(-1));
 					fprintf decoderVerilog "input [%d:%d]  %s;\n" l r nm;
-					fprintf decoderVerilog "wire  [%d:%d]  cycle%d_%s ;\n" l r (prefix+left+right) nm ;
-					fprintf decoderVerilog "assign  cycle%d_%s =%s;\n"  (prefix+left+right) nm nm
 				end
 			end in
 			List.iter prtbit bvo;
@@ -1242,7 +1240,41 @@ object (self)
 			end in
 			List.iter prtbit bvi;
 
-			fprintf decoderVerilog  "input  clk;\n";
+			(*all the decoder's input's wire definition*)
+			let prtbit x = begin
+				match x with 
+				(nm,-1,r) -> begin
+					assert (r =(-1));
+					fprintf decoderVerilog "wire   cycle%d_%s ;\n" (prefix+left+right) nm;
+				end
+				| (nm,l,r) -> begin
+					assert(l!=(-1));
+					assert(r!=(-1));
+					fprintf decoderVerilog "wire  [%d:%d]  cycle%d_%s ;\n" l r (prefix+left+right) nm ;
+				end
+			end in
+			List.iter prtbit bvo;
+
+      (*all the wire declaration for each itpo*)
+			let findVisited  idx2decfun = begin
+				(*find out the visited pos in decfun*)
+				match idx2decfun with
+				(idx,decfun) -> begin
+					let visitedPosList=self#getVisitedPosList decfun in
+					(idx,decfun, visitedPosList)
+				end
+			end
+			in
+			let idx2decfun2VisitedList=List.map findVisited idx2decfunList in
+			let prtWire idx2decfun = begin
+				match idx2decfun with
+				(idx,decfun,visitedPos) -> 
+					List.iter (fun x -> fprintf decoderVerilog "wire w_%d_%d ;\n" idx x) visitedPos
+			end
+			in begin
+				List.iter prtWire idx2decfun2VisitedList;
+			end;
+
 
 			(*generaing the pipelined registers*)
 			if(prefix<=(prefix+left+right-1)) then begin
@@ -1265,9 +1297,18 @@ object (self)
   			let lrlst = lr2list prefix (prefix+left+right-1) in begin
   				let prtbit frm x = begin
   					match x with
-  					(nm,_,_) -> begin
+  					(nm,-1,r) -> begin
+  						assert (r =(-1));
   						fprintf decoderVerilog "always @(posedge clk) begin\n";
   						fprintf decoderVerilog "  cycle%d_%s <= cycle%d_%s;\n" frm nm (frm+1) nm;
+  						fprintf decoderVerilog "end\n\n";
+  					end
+  					| (nm,l,r) -> begin
+						  assert(l>=r);
+  						fprintf decoderVerilog "always @(posedge clk) begin\n";
+							for i = r to l do
+  						  fprintf decoderVerilog "  cycle%d_%s[%d] <= cycle%d_%s[%d];\n" frm nm i (frm+1) nm i;
+							done;
   						fprintf decoderVerilog "end\n\n";
   					end
   				end in
@@ -1276,6 +1317,26 @@ object (self)
   			;
 			end
 			;
+
+      (*all the decoder's input's assignment to the last cycles*)
+			let prtbit x = begin
+				match x with 
+				(nm,-1,r) -> begin
+					assert (r =(-1));
+					fprintf decoderVerilog "assign   cycle%d_%s =%s;\n" (prefix+left+right) nm nm
+				end
+				| (nm,l,r) -> begin
+					assert(l!=(-1));
+					assert(r!=(-1));
+					assert(l>=r);
+
+					for i = r to l do
+				  	fprintf decoderVerilog "assign  cycle%d_%s[%d] =%s[%d];\n"  (prefix+left+right) nm i nm i
+					done;
+				end
+			end in
+			List.iter prtbit bvo;
+
 			let findVisited  idx2decfun = begin
 				(*find out the visited pos in decfun*)
 				match idx2decfun with
@@ -1286,11 +1347,6 @@ object (self)
 			end
 			in
 			let idx2decfun2VisitedList=List.map findVisited idx2decfunList in
-			let prtWire idx2decfun = begin
-				match idx2decfun with
-				(idx,decfun,visitedPos) -> 
-					List.iter (fun x -> fprintf decoderVerilog "wire w_%d_%d ;\n" idx x) visitedPos
-			end in
 			let prtFunction idx2decfun = begin
 				match idx2decfun with
 				(idx,decfun,visitedPos) -> begin
@@ -1299,7 +1355,6 @@ object (self)
 				end
 			end 
 			in begin
-				List.iter prtWire idx2decfun2VisitedList;
 				List.iter prtFunction idx2decfun2VisitedList;
 			end;
 

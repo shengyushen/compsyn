@@ -23,17 +23,7 @@ To use these program, some other linux programs are need:
 
 3 Usage:
 
-3.1	installing the ocaml develop environement
-	cd ~
-	mkdir ~/usr/local/lib/ocaml -p
-	mkdir -p ~/usr/local/lib/ocaml/caml
-	tar -zxvf ocaml-3.11.2.tar.gz
-	cd ocaml-3.11.2
-	./configure
-	make world.opt
-	make install
-	
-3.2	modifying the Ocaml-C interface files
+3.1	modifying the Ocaml-C interface files. This step is only needed before ocaml 4.0.0
 	cd ~
 	tar -zxvf compsyn_xx.tgz
 change to root user, and : 
@@ -55,7 +45,7 @@ change to root user, and :
 		TCAD'11 : halting approach based on loop like detection + interpolant based characterization
 			make halting
 		ICCAD'11 : inferring assertion, this option has been further developed to include multiple decoder discovering in following TCAD12 option
-		TCAD'12 and TACAS'12	: inferring assertion, and discovering multiple decoder 
+		TCAD'12 : inferring assertion, and discovering multiple decoder 
 			there are 5 directories in ~/compsyn/test/:
 			pcie_noass
 			scrambler_noass
@@ -67,7 +57,7 @@ change to root user, and :
 			so only dc_synres.v is provided to replace source code.
 			Please DONT run "make distclean", which will clean this intermediate file.
 
-			each of these these directories contains a benchmark without assertions. 
+			each of these directories contains a benchmark without assertions. 
 			For example, 
 			to infer assertion and generate decoders for pcie_noass, just run following commands :
 			cd pcie_noass/run
@@ -85,4 +75,21 @@ change to root user, and :
 			simulation result will show the value of signal "correct",
 			if it is always 1, then the generated decoder match exactly the functionality of its encoder.
 			
-		OCAMLRUNPARAM=b 	
+		TODAES'14 : handling flow control mechanism
+			there are three dir in ~/compsyn/test/
+			pcie_relational
+			t2ether_relational
+			xgxs_relational
+
+			these are encoders with flow control mechanism, to run these benchmark
+				make relational
+			it will generate the decoder with flow control mechanism
+
+		TODAES'14 revision 1 : handling flow control mechanism faster with incremental SAT
+			make relational_plr_inc
+
+		newer version : converting minisat interface to support multiple sat solver at the same time,
+		                also dont need deisgn compiler after generating decoder's verilog code that can directly 
+										read by ABC
+			make multisat
+
