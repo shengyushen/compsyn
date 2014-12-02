@@ -1,22 +1,18 @@
 default : 
 	@echo "usage : make xxx in which xxx is one of the following cases:"
-	@echo "clean                : delete all but the design compiler generated intermdediate files, you dont need to call DC again"
-	@echo "distclean            : delete all files"
-	@echo "encoderarea          : computing the hand written encoder's area in mcgn.genlib"
-	@echo "decoderarea          : computing the hand written decoder's area in mcgn.genlib"
-	@echo "naive                : incomplete approach in ICCAD'09 and TCAD'10"
-	@echo "halting              : complete approach in TCAD'11"
-	@echo "halting_fast         : faster complete approach in the revisied TCAD'11"
-	@echo "infer_multidec       : generating multiple decoders using functional dependence test, the assertion inferring part is presented in ICCAD11, while the functional dependence test part is presented in TCAD 12"
-	@echo "infer_multidec_not   : generating multiple decoders by replacing functional dependence test with not equal test"
-	@echo "infer_multidec_not_charfirst   : generating multiple decoders by first characterizing the inverse function and use it with original relation"
-	@echo "infer_multidec_not_charfirst_nowall   : generating multiple decoders without wall condition, lots of bugs are corrected"
-	@echo "infer_multidec_not_charfirst_nowall_cnt : new code"
-	@echo "relational 					: relational uniqueness for TODAES 14"
-	@echo "relational_plr_inc 					: incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
-	@echo "relational_plr_inc_plr1by1 					: find out plr by increcing them one by one, only for comparing to relational_plr_inc"
-	@echo "relational_plr_inc_nominlr 					: dont minimize LR, only for comparing to relational_plr_inc"
-	@echo "multisat 					: support using multiple SAT solver and incremental SAT"
+	@echo "clean                      : delete all but the design compiler generated intermdediate files, you dont need to call DC again"
+	@echo "distclean                  : delete all files"
+	@echo "encoderarea                : computing the hand written encoder's area in mcgn.genlib"
+	@echo "decoderarea                : computing the hand written decoder's area in mcgn.genlib"
+	@echo "naive                      : incomplete approach in ICCAD'09 and TCAD'10"
+	@echo "halting_fast               : faster complete approach in the revisied TCAD'11"
+	@echo "infer_multidec_not_charfirst_nowall_cnt : inferring assertion and all possible decoders in TCAD'12"
+	@echo "relational                 : relational uniqueness for TODAES 14"
+	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
+	@echo "relational_plr_inc_plr1by1 : find out plr by increcing them one by one, only for comparing to relational_plr_inc"
+	@echo "relational_plr_inc_nominlr : dont minimize LR, only for comparing to relational_plr_inc"
+	@echo "multisat                   : support using multiple SAT solver and incremental SAT"
+	@echo "pdr                        : based on multisat, apply ic3/pdr to infer reachable state set, and also decoding as much as possible by inferring all input that can not be uniquely determined"
 
 # this is the TCAD 10 version with:
 # 1 incomplete approach to discover the existence of decoder
@@ -169,6 +165,11 @@ multisat: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+
+pdr : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 
 decoderarea: resulting_dual_cnf.v

@@ -1,5 +1,10 @@
 1	try ic3
 2	recovering as much as possible
+	find out the init state
+		specify the reset signal
+		specify the reset value
+	do not enforce the assertion
+	develop the pdr algorithm
 OK	3	supporting multiple sat solver at the same time
 4	removing redundency in reducing l to neg number
 OK	5	faster interpolant pack
