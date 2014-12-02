@@ -7,10 +7,6 @@ open Misc2
 open Sys
 open Elabmod
 
-exception No_such_clock
-
-type eventype=Noedge | Edge
-
 class rtl  = fun very_struct_init tmpdirname1  ->
 object (self)
 
@@ -30,13 +26,6 @@ object (self)
 		end
 		;*)
 		(*find this exact module definition*)
-		let module2beElaborated = self#findOneModuleInVerystruct elabModName
-		in 
-		let newElabModule = new elabmod 
-		in begin
-			newElabModule#init module2beElaborated tmpdirname;
-			elaboratedModuleList <- newElabModule::elaboratedModuleList
-		end
 	end
 (*
 	method link elabModName = begin
@@ -46,28 +35,6 @@ object (self)
 		*)
 	end
 *)
-	method findOneModuleInVerystruct modName = begin
-		let matchModuleName mn = fun md -> begin
-			match md with 
-			T_module_def(mn1,_,_) -> string_equ mn mn1
-			| _ -> begin
-				Printf.printf "fatal error: %s\n" "findOneModuleInVerystruct should not find anything other than T_module_def";
-				print_string modName;
-				exit 1
-			end
-		end
-		in
-		let matchedModuleList=List.filter (matchModuleName modName) very_struct
-		in begin
-			if (List.length matchedModuleList)!=1 then begin
-				Printf.printf "fatal error : %s\n" "0 means nothing found , more then 1 means too many";
-				Printf.printf "%s\n"modName;
-				print_int (List.length matchedModuleList);
-				exit 1
-			end
-			else List.hd matchedModuleList
-		end
-	end
 	
 	method print_rtl modName dumpout = begin
 		let matchModName emod = begin

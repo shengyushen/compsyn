@@ -1,8 +1,7 @@
 open Printf
 open Misc
 open Clauseman
-open Typedefcommon
-open MiniSATcommondef
+open Typedef
 
 (*the following are all for one SAT solver only*)
 let proc_int var = begin

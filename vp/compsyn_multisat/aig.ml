@@ -1,6 +1,5 @@
 open Printf
 open Typedef
-open Typedefcommon
 open Clauseman
 open Misc
 

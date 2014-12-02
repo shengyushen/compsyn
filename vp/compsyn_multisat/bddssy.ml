@@ -1,7 +1,6 @@
 open Printf
 open CaddieBdd
 open Typedef
-open Typedefcommon
 open Misc
 
 type bddssyType = T_bddssy_non

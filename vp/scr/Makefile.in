@@ -135,7 +135,6 @@ relational_plr_inc: sed_res.v
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
 	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
 	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
 
  
 
@@ -151,7 +150,6 @@ relational_plr_inc_plr1by1: sed_res.v
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
 	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
 	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
 
 relational_plr_inc_nominlr: sed_res.v
 	@rm -rf container_c* ./continue.scr
@@ -165,25 +163,16 @@ relational_plr_inc_nominlr: sed_res.v
 	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
 	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
 	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
 
 	
 multisat: sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-     	# no need for dc synthesis report of the decoder now, we only need it from ABC
-      #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-     	# then run syn.tcl in design compiler
-      #	dc_shell-t -f syn_dual.tcl > syn_dual.log
-      # then synthesize a version to be translated into blif
-      #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	    # dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	    # sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	    # lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+
+
+decoderarea: resulting_dual_cnf.v
 	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
-
-
 
 
 sed_res.v : lsi10k2rtl_res.v 
@@ -207,16 +196,6 @@ encoderarea :
 	# converting to blif
 	lsi10k2blif.exe dc_synres_blif.v ${TOPMOD}
 	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
-
-decoderarea:
-	# first generate the syn.tcl
-	m4  -D FILELIST=${DECSRCFILE}  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=${DECTOPMOD} ../../../vp/scr/syn_blif.tcl.m4 > syn_blif.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_blif.tcl > syn.log
-	# converting to blif
-	lsi10k2blif.exe dc_synres_blif.v ${TOPMOD}
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
-
 
   
 

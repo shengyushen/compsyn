@@ -5,19 +5,16 @@
 
 open Printf
 open Typedef
-open Typedefcommon
 open Circuit_obj
 open Print_v
-open Misc2
 open Misc
 open Statement
-open Misc2
-open Dependent
 open Str
 open Clauseman
 open Interp
 open Bddssy
 open Aig
+open Statement
 
 exception UNSAT
 
@@ -174,7 +171,7 @@ object (self)
 			(stat,reglist) -> begin
 				fprintf dumpout "always  @(\n";
 				
-				let deplist = dep_statement stat
+				let deplist = dep_statement_wrap stat
 				in
 				list_iter_interleave (fun x -> fprintf dumpout " %s " x) (fun x -> fprintf dumpout " or ") deplist
 				;
@@ -428,7 +425,7 @@ object (self)
 				end
 				;
 				(*extract the reg name list*)
-				let regnamelist = statement2regnamelist stat_sub
+				let regnamelist = statement2regnamelist_wrap stat_sub
 				in begin
 					(*add these reg's definition to list*)
 					seq_always_list <- (stat_sub,regnamelist) :: seq_always_list
@@ -472,7 +469,7 @@ object (self)
 	method proc_T_always_statement_comb stat = begin
 		match stat with
 		T_event_statement(evctl,stat_sub) -> begin
-			let regnamelist = statement2regnamelist stat_sub
+			let regnamelist = statement2regnamelist_wrap stat_sub
 			in
 			comb_always_list <- (stat_sub,regnamelist) :: comb_always_list
 		end
@@ -939,8 +936,8 @@ object (self)
 		(*****************************************)
 		(*write out the encoded CNF*)
 		(*****************************************)
-		let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
-		self#dumpCNF cnfname_1inst ;
+		(*let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
+		self#dumpCNF cnfname_1inst ;*)
 
 		(*dont allow to change the clause_list_multiple *)
 		self#set_lock_multiple;
@@ -2262,7 +2259,7 @@ object (self)
 				in  x1
 			end
 			and rng = self#name2range name
-			and off = Expression.exp2int_simple exp
+			and off = exp2int_simple exp
 			in begin
 				if is_inrange rng off then begin
 					let (left,right)= rng2lr rng
@@ -2281,8 +2278,8 @@ object (self)
 				in  x1
 			end
 			and rng = self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst = lr2list li ri
 			and (left,right)= rng2lr rng
@@ -2312,7 +2309,7 @@ object (self)
 	method encode_number num = begin
 		match num with
 		T_number_unsign(i) -> begin
-			let strlst =(List.rev (Misc2.int2bin i))
+			let strlst =(List.rev (int2bin i))
 			in begin
 				let rec proc_intlst slst = begin
 					match slst with
@@ -3225,7 +3222,7 @@ object (self)
 				end
 			end
 			and rng = self#name2range name
-			and off = Expression.exp2int_simple exp
+			and off = exp2int_simple exp
 			in begin
 				if is_inrange rng off then begin
 					let (left,right)= rng2lr rng
@@ -3247,8 +3244,8 @@ object (self)
 				end
 			end
 			and rng = self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst = lr2list li ri
 			and (left,right)= rng2lr rng

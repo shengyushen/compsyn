@@ -1,5 +1,6 @@
 %{
 open Typedef
+open Statement
 
 let pos_fn = ref "";;
 let pos_ln = ref 0;;
@@ -48,7 +49,7 @@ let string2base_number strg =
 			end
 			| 'h' -> begin
 				Printf.printf "NOTE : to convert %s 1\n" strg;
-				let newnum = Misc2.hexstring2binstring num
+				let newnum = hexstring2binstring num
 				in
 				let lennum = String.length newnum
 				in begin
@@ -62,7 +63,7 @@ let string2base_number strg =
 			end
 			| 'H' -> begin
 				Printf.printf "NOTE : to convert %s 2\n" strg;
-				let newnum = Misc2.hexstring2binstring num
+				let newnum = hexstring2binstring num
 				in
 				let lennum = String.length newnum
 				in begin
@@ -75,7 +76,7 @@ let string2base_number strg =
 				end
 			end
 			| 'd' -> begin
-				let newnum = Misc2.decstring2binstring num
+				let newnum = decstring2binstring num
 				in
 				let lennum = String.length newnum
 				in begin
@@ -88,7 +89,7 @@ let string2base_number strg =
 				end
 			end
 			| 'D' -> begin
-				let newnum = Misc2.decstring2binstring num
+				let newnum = decstring2binstring num
 				in
 				let lennum = String.length newnum
 				in begin

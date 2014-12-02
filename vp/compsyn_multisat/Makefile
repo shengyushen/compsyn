@@ -1,7 +1,7 @@
 MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
 OCAMLC	= ocamlopt 
 OCAMLC_OPT = str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/
-OBJS	=  MultiMiniSAT.cmx intlist.cmx typedef.cmx typedefcommon.cmx misc.cmx bddssy.cmx clauseman.cmx dumpsat.cmx aig.cmx  dependent.cmx statement.cmx expression.cmx print_v.cmx  misc2.cmx interp.cmx very.cmx  parser.cmx circuit_obj.cmx elabmod.cmx rtl.cmx main.cmx 
+OBJS	=  MultiMiniSAT.cmx intlist.cmx typedef.cmx misc.cmx bddssy.cmx clauseman.cmx dumpsat.cmx aig.cmx print_v.cmx statement.cmx  interp.cmx very.cmx  parser.cmx circuit_obj.cmx elabmod.cmx main.cmx 
 CUDD_DIR = ../../other/cudd
 GPP_OPT =  -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
 TAGPROG = otags
@@ -9,7 +9,7 @@ CTAGS   = ctags
 
 all : compsyn_multisat.exe
 
-compsyn_multisat.exe: File.o Proof.o Solver.o MiniSATcommondef.cmx MultiMiniSATWrap.o MultiMiniSAT.cmi $(OBJS) 
+compsyn_multisat.exe: File.o Proof.o Solver.o MultiMiniSATWrap.o $(OBJS) 
 	$(OCAMLC)     \
 		-cclib -lstdc++ -cclib -lasmrun -cc g++ \
 		-o $@ \
@@ -38,10 +38,6 @@ File.o: $(MINISATDIR)/File.C
 MultiMiniSATWrap.o: MultiMiniSATWrap.C
 	g++ $(GPP_OPT) -c  MultiMiniSATWrap.C
 
-MultiMiniSAT.cmi: MultiMiniSAT.mli
-	ocamlopt -c MultiMiniSAT.mli
-
-
 %.cmx: %.ml
 	$(OCAMLC) ${OCAMLC_OPT} -c $< 
 	
@@ -62,5 +58,4 @@ parser.ml: parser.mly typedef.ml
 
 
 clean : 
-	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_multisat  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe
-
+	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_multisat  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe  tags TAGS *.session *.wv log

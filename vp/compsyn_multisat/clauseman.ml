@@ -1,7 +1,6 @@
 open Misc
 open Printf
 open Typedef
-open Typedefcommon
 
 let rec get_largest_varindex_incls cls = begin
 	match cls with

@@ -1,5 +1,6 @@
 open Print_v
 open Typedef
+open Statement
 
 class hierachcal_name = fun strlst1 ->
 object (self)
@@ -54,16 +55,16 @@ object (self)
 			Printf.printf "fatal error:should not get width from Tobj_parameter_declaration \n";
 			exit 1
 		end
-		| Tobj_input_declaration(rng) -> Misc2.get_rng_width rng
-		| Tobj_output_declaration(rng) -> Misc2.get_rng_width rng
-		| Tobj_net_declaration(rng) -> Misc2.get_rng_width rng
+		| Tobj_input_declaration(rng) -> get_rng_width rng
+		| Tobj_output_declaration(rng) -> get_rng_width rng
+		| Tobj_net_declaration(rng) -> get_rng_width rng
 		| Tobj_pred_declaration(_) -> 1
-		| Tobj_reg_declaration(rng) -> Misc2.get_rng_width rng
-		| Tobj_regarray_declaration(rng,_) -> Misc2.get_rng_width rng
-		| Tobj_latch_declaration(rng,_) -> Misc2.get_rng_width rng
-		| Tobj_latcharray_declaration(rng,_) -> Misc2.get_rng_width rng
-		| Tobj_dff_declaration(rng) -> Misc2.get_rng_width rng
-		| Tobj_dffarray_declaration(rng,_) -> Misc2.get_rng_width rng
+		| Tobj_reg_declaration(rng) -> get_rng_width rng
+		| Tobj_regarray_declaration(rng,_) -> get_rng_width rng
+		| Tobj_latch_declaration(rng,_) -> get_rng_width rng
+		| Tobj_latcharray_declaration(rng,_) -> get_rng_width rng
+		| Tobj_dff_declaration(rng) -> get_rng_width rng
+		| Tobj_dffarray_declaration(rng,_) -> get_rng_width rng
 		| Tobj_integer_declaration(_) -> 32
 		| Tobj_real_declaration(_) -> begin
 			Printf.printf "fatal error:should not get width from Tobj_real_declaration \n";

@@ -1,11 +1,9 @@
 open Printf
-open Typedefcommon
 open Misc
-open Misc2
 open Clauseman
 open Bddssy
 open Aig
-open MiniSATcommondef
+open Typedef
 let rec proc_ass ass = begin
 	match ass with
 	(idx,true)-> begin
