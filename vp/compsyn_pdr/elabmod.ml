@@ -207,12 +207,12 @@ object (self)
 	method getname = name
 
 	method addco str co = begin
-		(*Printf.printf "adding %s\n" hn#getname ;*)
+		(*Printf.printf "adding %s\n" str ;*)
 		Hashtbl.add circuit_hst str co
 	end
 
 	method rplco str co = begin
-		(*Printf.printf "replacing %s\n" hn#getname ;*)
+		(*Printf.printf "replacing %s\n" str ;*)
 		Hashtbl.replace circuit_hst str co
 	end
 
@@ -954,7 +954,7 @@ object (self)
 		(*****************************************)
     (*parsing the reset condition*)
 		(*****************************************)
-		let regexpResetCondition=Str.regexp "\\([a-zA-Z0-9_]+\\)[ \t]+==[ \t]+1'b\\([01]\\)" in
+		let regexpResetCondition=Str.regexp "\\([a-zA-Z0-9_]+\\)==1'b\\([01]\\)" in
 		let resetSignalName=begin
 			let res=Str.string_match regexpResetCondition resetCondition 0 in begin
 				if(res==false) then begin
@@ -963,11 +963,14 @@ object (self)
 				end;
 			end;
 			let name=Str.replace_first regexpResetCondition "\\1" resetCondition in begin
-				try 
-					List.assoc name name_index_lst
-				with Not_found -> begin
-					dbg_print "FATAL : invalid reset signal name";
-					exit 1;
+				begin
+  				try 
+	  				List.assoc name name_index_lst
+		  		with Not_found -> begin
+					  printf "%s+++\n" name;
+			  		dbg_print "FATAL : invalid reset signal name";
+				  	exit 1;
+  				end
 				end;
 				name
 			end
@@ -3201,6 +3204,7 @@ object (self)
 			let rng = self#name2range key
 			and dff = self#isdff key
 			in begin
+				(*printf "adding %s\n" key;*)
 				(*the index is for left side of range*)
 				if dff then begin(*dff will has two index, one for current state, the other for next state*)
 					name_index_lst <- (key,(last_index,last_index+(get_rng_width rng)))::name_index_lst;

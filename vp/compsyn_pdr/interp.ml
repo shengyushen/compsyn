@@ -4,6 +4,8 @@ open Clauseman
 open Bddssy
 open Aig
 open Typedef
+open MultiMiniSAT
+
 let rec proc_ass ass = begin
 	match ass with
 	(idx,true)-> begin

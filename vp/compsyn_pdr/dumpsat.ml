@@ -2,6 +2,7 @@ open Printf
 open Misc
 open Clauseman
 open Typedef
+open MultiMiniSAT
 
 (*the following are all for one SAT solver only*)
 let proc_int var = begin
