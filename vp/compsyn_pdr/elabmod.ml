@@ -1053,111 +1053,14 @@ object (self)
 				end
 			end
 		end in 
-		let dff_idx_ass_lst=self#inferInitState resetSignalName resetValue in
 		(*****************************************)
-		(*finding out the bits that are uniquely determined*)
+		(*finding out init state*)
 		(*****************************************)
-		let list_tf_BitI_n = self#procDetermineUniqueInputs bv_instrlist in 
-		let (listUniqBitITmp,listNonuniqBitITmp) = begin
-			(*partiion them into two list*)
-			List.partition (fun x -> match x with (tf,_,_) -> tf) list_tf_BitI_n
-		end in
-		let maxN = begin
-			(*find out the largest one that make the flow control vars to be uniquely determind*)
-			let listN = List.map (fun b -> match b with (_,_,n) -> n) listUniqBitITmp in
-			begin
-				if((List.length listN)=0) then begin
-					dbg_print "Non of the input bits can be uniquely determined, no decoder exists for this encoder";
-					exit 0
-				end;
-        Intlist.listMax listN
-			end
-		end(*find out the bit index*)
-		and listUniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listUniqBitITmp 
-		and listNonuniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listNonuniqBitITmp in 
-		let (pres,
-				p_pre,
-				l1,
-				r1,
-				_,
-				infered_assertion_array_lst_new_loop)	= 
-		begin 
-		(*****************************************)
-		(*infer the predicate valid(f)*)
-		(*****************************************)
-			printf "maxN %d\n" maxN;
-			dbg_print "time of finding flow control ";
-			assert((List.length listUniqBitITmp)>0);
+		let dff_idx_ass_lst_InitState=self#inferInitState resetSignalName resetValue in
+		self#inferPredicateUniq dff_idx_ass_lst_InitState;
+		;
 
-			self#inferPredicateUniq listUniqBitI listNonuniqBitI maxN 
-		end in 
-		let finalass = begin
-		(*****************************************)
-		(*simplifying valid(f)*)
-		(*****************************************)
-			dbg_print "time of inferPredicateUniq";
-			assert (pres == RES_UNIQ);
-
-			if (List.length infered_assertion_array_lst_new_loop)!=0 then 
-				simplify_withBDD (invert_assertion (or_assertion infered_assertion_array_lst_new_loop)) ddM
-			else 
-				Array.make 1 TiterpCircuit_true
-		end in 
-		let (l,r)=begin
-			self#minimizeLR p_pre l1 r1 [finalass] 
-		end in 
-		let instCNF = begin
-		(*****************************************)
-		(*the CNF for characterizing flow control vars*)
-		(*****************************************)
-			dbg_print "time of minimizeLR" ;
-			printf "the assertion before conjunct with TR\n";
-			printf "++++++++++++++++++++++++++\n";
-			self#print_itpo finalass;
-			printf "\n++++++++++++++++++++++++++\n";
-			printf "p_pre %d l %d r %d: \n" p_pre l r;
-			printf "\n++++++++++++++++++++++++++\n";
-			self#construct_nonloop_1copy p_pre l r [] [];
-			clause_list_multiple 
-		end in 
-		let instCNF2 = begin
-		(*****************************************)
-		(*the CNF for characterizing data vars*)
-		(*****************************************)
-			(*self#construct_nonloop_1copy p_pre l r [finalass_conjunct] [];*)
-			self#construct_nonloop_1copy p_pre l r [finalass] [];
-			clause_list_multiple
-		end in 
-		let lrlst = lr2list p_pre (p_pre+l+r) in
-		let ov = begin
-			let xxxx=List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) lrlst in
-			List.concat  xxxx
-		end in
-		(*new way to char*)
-		let decgen1 lst = begin
-			(*all should be true, which mean uniq and flow control *)
-			List.for_all (fun x -> match x with (tf,_,_) -> tf) lst;
-			let iv=List.map (fun x -> match x with (_,idx,_)-> idx) lst in
-			self#genDecoderFunction iv ((p_pre+l)*final_index_oneinst) ov instCNF 
-		end in
-		let decgen2 lst = begin
-			(*all should be true, which mean uniq and flow control *)
-			List.for_all (fun x -> match x with (tf,_,_) -> tf) lst;
-			let iv=List.map (fun x -> match x with (_,idx,_)-> idx) lst in
-			self#genDecoderFunction iv ((p_pre+l)*final_index_oneinst) ov instCNF2 
-		end in
-		let idx2decfunList_fv = decgen1 listUniqBitITmp 
-		and idx2decfunList_dv = decgen2 listNonuniqBitITmp in 
-		begin
-			dbg_print "time of generating decoder function";
-		(*****************************************)
-		(*characterizing all input vars decoder function*)
-		(*****************************************)
-			let idx2decfunList=idx2decfunList_fv@idx2decfunList_dv in
-			self#generateDecoderVerilog p_pre l r idx2decfunList;
-			dbg_print "time of writing verilog";
-			MultiMiniSAT.checkClosed ();
-		end
+		MultiMiniSAT.checkClosed ();
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
@@ -1508,44 +1411,8 @@ object (self)
 					infered_assertion_array_lst_old_loop    := infered_assertion_array_lst_old1_loop ;
 				end
 				;
-				(*2014/11/16 Shen just for debug no need to show it here*)
-				(*if((!res)!= RES_UNIQ) then begin
-					assert ((List.length (!infered_assertion_array_lst_old_nonloop))!=0) ;
-					let infass = begin
-						if ((List.length (!infered_assertion_array_lst_old_loop))!=0) then begin
-							if ((List.length (!infered_assertion_array_lst_old_nonloop))!=0) then begin
-								let posass = simplify_withBDD (or_assertion (!infered_assertion_array_lst_old_nonloop)) ddM
-								in
-								let negass = simplify_withBDD (invert_assertion (or_assertion (!infered_assertion_array_lst_old_loop))) ddM
-								in
-								simplify_withBDD (and_assertion [posass;negass]) ddM
-							end
-							else begin
-								assert false;
-							end
-						end
-						else begin
-							if ((List.length (!infered_assertion_array_lst_old_nonloop))!=0) then begin
-								(*or_assertion (!infered_assertion_array_lst_old_nonloop)*)
-								assert false;
-							end
-							else begin
-								assert false;
-							end
-						end
-					end
-					in begin
-						printf "the current remained configuration set : \n";
-						printf "++++++++++++++++++++++++++\n";
-						self#print_itpo infass;
-						printf "\n++++++++++++++++++++++++++\n";
-					end 
-				end
-				;*)
 			done
 			;
-			(*dbg_print "end of loop"
-			;*)
 			((!res),(!p),(!l),(!r),(!infered_assertion_array_lst_old_nonloop),(!infered_assertion_array_lst_old_loop))
 		end
 	end
