@@ -1,6 +1,6 @@
-			README
+#README
 
-1 Introduction
+##1 Introduction
 
 This package provide a set of program to synthesis decoder automatically
 from encoder.  The set of program is in vp/ and other/ directories.
@@ -8,7 +8,7 @@ from encoder.  The set of program is in vp/ and other/ directories.
 All related paper can be found in
 https://github.com/shengyushen/dualsyn_paper
 
-2 Pre-requirement
+##2 Pre-requirement
 
 To use these program, some other linux programs are need:
 
@@ -20,16 +20,16 @@ our programes.	2 gnu develope environment : it include gcc and glibc and
 so on. it is used to compile our program.  3 Ocaml develop environement:
 it is used to compile our program.
 
-3 Usage:
+##3 Usage:
 
-3.1 adding new path setting into PATH environment
+###3.1 adding new path setting into PATH environment
  source ~/compsyn/scr/setup.scr
 
 
-3.2 building our programs
+###3.2 building our programs
   d ~/compsyn/ source scr/makeall.scr
 
-3.3 to try our testbenchs, please go into every sub-dir of ~/compsyn/test/
+###3.3 to try our testbenchs, please go into every sub-dir of ~/compsyn/test/
 and there will be a run dir, cd into it, and some options avialable to you
 
     ICCAD'09 and TCAD'10: Incomplete appraoch to check existence of
