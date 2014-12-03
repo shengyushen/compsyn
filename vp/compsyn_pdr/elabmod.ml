@@ -618,7 +618,7 @@ object (self)
 		rng_baseidx_2_idxlist rng baseidx	
 	end
 
-	method is_assertion name_index = begin
+	method is_assertion (name_index:(string*int)) = begin
 		match name_index with 
 		(nm,_) -> begin
 			string_equ nm assertion_shengyushen
@@ -892,6 +892,73 @@ object (self)
 		printf "\n";
 		flush stdout;
 	end
+  
+	method inferInitState resetSignalName resetValue = begin
+	  (*by default we use a 10 step unrolling and infer the final state value*)
+		(*unroll for 10 steps*)
+		self#set_unlock_multiple;
+		let (clause_list_multiple_aux,last_index_aux) = self#gen_multiple_instance_step2 10
+		in begin
+			self#set_clause_list_multiple clause_list_multiple_aux;
+			self#set_last_index last_index_aux;
+			()
+		end
+		;
+
+		(*connecting them*)
+		let clslst =(self#connect_multiple_instance_step3 0 9) in begin
+			self#append_clause_list_multiple  clslst ;
+		end
+		;
+    
+		(*forcing the resetSignalName*)
+    let lrlst=lr2list 0 9 in
+		let resetSignalIndex= begin
+			try
+				fst (List.assoc resetSignalName name_index_lst)  
+			with  Not_found  -> begin
+				dbg_print "FATAL : not found";
+				dbg_print resetSignalName;
+				exit 1;
+			end
+		end in
+		let cls=begin
+			match resetValue with 
+			1 -> ([resetSignalIndex],"") 
+			|0 ->([-resetSignalIndex],"") 
+			|_-> assert false
+		end in
+		let clslst=List.map (fun shiftidx -> shiftcls [] (shiftidx*final_index_oneinst) cls) lrlst in begin
+			self#append_clause_list_multiple clslst;
+		end
+		;
+
+		self#set_lock_multiple;
+
+
+		let dff_idxpairlst = List.filter (isdff_name_index) name_index_lst in
+    let dff_idxlst=List.map (fun x -> match x with (_,(idx,_))-> idx) dff_idxpairlst in
+    let solverIdx = MultiMiniSAT.allocSolver () in 
+  	let res=Dumpsat.dump_sat solverIdx clause_list_multiple in
+		let dff_idx_ass_lst=begin
+			assert (res==SATISFIABLE);
+			List.map (fun x -> Dumpsat.get_assignment solverIdx (x+9*final_index_oneinst)) dff_idxlst
+		end
+		in begin
+		  MultiMiniSAT.closeSolver solverIdx;
+			let proc_prt idx_ass = begin
+				match idx_ass with 
+				(idx,true) -> begin
+					printf " init %s(%d) = 1\n" (self#idx2name idx) idx
+				end
+				| (idx,false) -> begin
+					printf " init %s(%d) = 0\n" (self#idx2name idx) idx
+				end
+			end in
+			List.iter proc_prt dff_idx_ass_lst;
+			dff_idx_ass_lst
+		end
+	end
 
 	method compsyn  (instrlist1:string list) (outstrlist1:string list) (resetCondition:string) = begin
 		(*++++++++++++++++*)
@@ -986,6 +1053,7 @@ object (self)
 				end
 			end
 		end in 
+		let dff_idx_ass_lst=self#inferInitState resetSignalName resetValue in
 		(*****************************************)
 		(*finding out the bits that are uniquely determined*)
 		(*****************************************)
@@ -1664,13 +1732,14 @@ object (self)
 		;
 
 		(*constrain the assertion wire*)
-		if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
+		(*2014Dec03 Shen we will not use assertion any more*)
+		(*if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
 			self#append_clause_list_multiple (self#try_assertion 0 (p+(max l 0 )+1+r-1))
 		else begin
 			printf "             warning : not found assertion_shengyushen\n";
 			flush stdout;
 		end
-		;
+		;*)
 		
 		(*connect the first p+1+r instance*)
 		let clslst =(self#connect_multiple_instance_step3 0 (p+(max l 0 )+r)) in begin
@@ -1733,13 +1802,14 @@ object (self)
 		;
 
 		(*constrain the assertion wire*)
-		if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
+		(*2014Dec03 Shen we will not use assertion any more*)
+		(*if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
 			self#append_clause_list_multiple (self#try_assertion 0 ((p+(max l 0 )+1+r)*2-1))
 		else  begin
 			printf "              warning : not found assertion_shengyushen\n";
 			flush stdout;
 		end
-		;
+		;*)
 		
 		(*connect the first p+1+r instance*)
 		let clslst =(self#connect_multiple_instance_step3 0 (p+(max l 0)+r)) in begin

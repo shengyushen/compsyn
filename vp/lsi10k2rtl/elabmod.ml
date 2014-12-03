@@ -546,10 +546,10 @@ object (self)
 							()
 						end
 						| _ -> begin
-							let regname=String.concat "" ["regssy_";(string_of_int(regcnt))]
+							(*let regname=String.concat "" ["regssy_";(string_of_int(regcnt))]*)
 (*above is used to hide the reg name
 following is used to expose them for debugging*)
-						(*	let regname=instname*)
+							let regname=instname
 							in begin
 								regcnt <- regcnt +1 
 								;
@@ -566,10 +566,10 @@ following is used to expose them for debugging*)
 						end
 					end
 					| _ -> begin
-						let regname=String.concat "" ["regssy_";(string_of_int(regcnt))]
+						(*let regname=String.concat "" ["regssy_";(string_of_int(regcnt))]*)
 (*above is used to hide the reg name
 following is used to expose them for debugging*)
-(*						let regname=instname*)
+						let regname=instname
 						in begin
 							regcnt <- regcnt +1 
 							;
