@@ -1378,43 +1378,7 @@ object (self)
 	end
 
 
-	method inferPredicateUniq listUniqBitI listNonuniqBitI maxN = begin
-		assert (maxN>=2);
-		let b = ref (maxN-1)
-		and res = ref RES_UNK
-		and infered_assertion_array_lst_old_nonloop = ref []
-		and infered_assertion_array_lst_old_loop = ref []
-		and p = ref 0
-		and l = ref 0
-		and r = ref 0
-		and xxx = ref (RES_UNK,0,0,0,[],[])
-		in begin
-			while ( (!res) != RES_UNIQ ) do
-				b := (!b)+1 ;
-				dbg_print "pre self#inferSATFormula_plr";
-				xxx := self#inferSATFormula_plr 
-									(!b) 
-									(!b) 
-									(!b) 
-									(!infered_assertion_array_lst_old_nonloop) 
-									(!infered_assertion_array_lst_old_loop) 
-									listUniqBitI 
-									listNonuniqBitI ;
-				dbg_print "after self#inferSATFormula_plr";
-				match (!xxx) with
-				(res1,p1,l1,r1,infered_assertion_array_lst_old1_nonloop,infered_assertion_array_lst_old1_loop) -> begin
-					res := res1 ;
-					p := p1 ;
-					l := l1 ;
-					r := r1 ;
-					infered_assertion_array_lst_old_nonloop := infered_assertion_array_lst_old1_nonloop ;
-					infered_assertion_array_lst_old_loop    := infered_assertion_array_lst_old1_loop ;
-				end
-				;
-			done
-			;
-			((!res),(!p),(!l),(!r),(!infered_assertion_array_lst_old_nonloop),(!infered_assertion_array_lst_old_loop))
-		end
+	method inferPredicateUniq dff_idx_ass_lst_InitState = begin
 	end
 
 

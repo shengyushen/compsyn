@@ -290,6 +290,8 @@ namespace IC3 {
     struct Frame {
       size_t k;             // steps from initial state
       CubeSet borderCubes;  // additional cubes in this and previous frames
+			//Shen : actually each cube in borderCubes means that the ~cube is an inductive one
+			//that is, each cube is a hole to be dig
       Minisat::Solver * consecution;
     };
     vector<Frame> frames;
@@ -639,7 +641,7 @@ namespace IC3 {
       for (LitVec::const_iterator i = cube.begin(); i != cube.end(); ++i)
         cls.push(~*i);
       for (size_t i = toAll ? 1 : level; i <= level; ++i)
-        frames[i].consecution->addClause(cls);
+        frames[i].consecution->addClause(cls); //Shen : add to all frame from level
       if (toAll && !silent) updateLitOrder(cube, level);
     }
 
@@ -647,9 +649,9 @@ namespace IC3 {
     // we can do better.
     size_t generalize(size_t level, LitVec cube) {
       // generalize
-      mic(level, cube);
+      mic(level, cube);//Shen : enlarge the cube as large as possible in level
       // push
-      do { ++level; } while (level <= k && consecution(level, cube));
+      do { ++level; } while (level <= k && consecution(level, cube));//Shen : push forward to the last level that still make cube inductive
       addCube(level, cube);
       return level;
     }
@@ -669,9 +671,9 @@ namespace IC3 {
           // Yes, so generalize and possibly produce a new obligation
           // at a higher level.
           obls.erase(obli);
-          size_t n = generalize(obl.level, core);
+          size_t n = generalize(obl.level, core);//Shen : make core larger and push forward
           if (n <= k)
-            obls.insert(Obligation(obl.state, n, obl.depth));
+            obls.insert(Obligation(obl.state, n, obl.depth));//Shen : n is the last frame that make core inductive
         }
         else if (obl.level == 0) {
           // No, in fact an initial state is a predecessor.
@@ -686,7 +688,10 @@ namespace IC3 {
       }
       return true;
     }
-
+//Shen : trivial only used in propagate, which is after strengthen, 
+// So only when the frontie can not reach bad state
+// the trivial can have true
+// and thus the propagate can use trivial == true
     bool trivial;  // indicates whether strengthening was required
                    // during major iteration
 
@@ -699,12 +704,13 @@ namespace IC3 {
         ++nQuery; startTimer();  // stats
         bool rv = frontier.consecution->solve(model.primedError());
         endTimer(satTime);
-        if (!rv) return true;
+        if (!rv) return true;//Shen : the frontier can not reach bad states
         // handle CTI with error successor
         ++nCTI;  // stats
         trivial = false;
         PriorityQueue pq;
         // enqueue main obligation and handle
+				// Shen frontier is at k, so will k-1 reach frontier?
         pq.insert(Obligation(stateOf(frontier), k-1, 1));
         if (!handleObligations(pq))
           return false;
@@ -721,8 +727,8 @@ namespace IC3 {
     bool propagate() {
       if (verbose > 1) cout << "propagate" << endl;
       // 1. clean up: remove c in frame i if c appears in frame j when i < j
-      CubeSet all;
-      for (size_t i = k+1; i >= earliest; --i) {
+      CubeSet all;//Shen : all seen in frame larger than i
+      for (size_t i = k+1; i >= earliest; --i) {//Shen : only do from earliest to k+1, because all frames smaller than that is not modified
         Frame & fr = frames[i];
         CubeSet rem, nall;
         set_difference(fr.borderCubes.begin(), fr.borderCubes.end(),
@@ -730,11 +736,11 @@ namespace IC3 {
                        inserter(rem, rem.end()), LitVecComp());
         if (verbose > 1)
           cout << i << " " << fr.borderCubes.size() << " " << rem.size() << " ";
-        fr.borderCubes.swap(rem);
+        fr.borderCubes.swap(rem);//Shen : remove all seen 
         set_union(rem.begin(), rem.end(),
                   all.begin(), all.end(), 
                   inserter(nall, nall.end()), LitVecComp());
-        all.swap(nall);
+        all.swap(nall);//Shen : record the newly seen
         for (CubeSet::const_iterator i = fr.borderCubes.begin(); 
              i != fr.borderCubes.end(); ++i)
           assert (all.find(*i) != all.end());
