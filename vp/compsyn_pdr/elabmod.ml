@@ -72,19 +72,24 @@ object (self)
 	val mutable bv_instrlist = []
 	val mutable bv_outstrlist = []
 	val mutable bv_non_proctocol_input_list = []
+
+	val mutable rstSigName = ""
+	val mutable rstValue = 3
+	val mutable initStateClauseList = []
 	
-	(*used to store the clause list of f's relation
-	we will use them to expand to fd test*)
-	val mutable clause_list_multiple_f : ((int list)*string) list = [([1],"truepred");([-2],"falsepred")]
-	val mutable last_index_f = 3 (*1 is preserved for true predicate, 2 preserved for falsepred*)
-
-	(*used to store the clause list of f's relation
-	we will use them to expand to fd test*)
-	val mutable clause_list_multiple_genia : ((int list)*string) list = [([1],"truepred");([-2],"falsepred")]
-	val mutable last_index_genia = 3 (*1 is preserved for true predicate, 2 preserved for falsepred*)
-
 	val mutable ddM = CaddieBdd.init 0 64 256 512
 
+  method getResetSignalIndex = begin
+		assert(rstSigName<>"");
+		assert(rstValue==0 || rstValue ==1);
+		try
+			fst (List.assoc rstSigName name_index_lst)  
+		with  Not_found  -> begin
+			dbg_print "FATAL : not found";
+			dbg_print rstSigName;
+			exit 1;
+		end
+	end
 
 	method print dumpout = begin
 		fprintf dumpout "module %s (\n" name;
@@ -658,127 +663,11 @@ object (self)
 	
 	(*from here on is the list of method of complementary synthesis*)
 
-	method procDetermineUniqueInputs inlst = begin
-		dbg_print "procDetermineUniqueInputs";
-		let inlst2 = List.map (fun x -> (x,RES_UNK,0,0,0)) inlst in
-		let arrlist2 = Array.of_list inlst2 (*the list of index and whether they can be uniquely determined*) in
-		let procBitnonloop solverIdx bnd idx x  = begin
-			(*testing for nonloop uniqness*)
-			match x with 
-			(bitI,res,_,_,_) -> begin
-				match res with 
-				RES_UNK -> begin
-					let p =bnd
-					and l =bnd
-					and r =bnd in
-					let o0 = bitI + (p+l)*final_index_oneinst
-					and ob = bitI + (p+l+1+r+p+l)*final_index_oneinst in
-					let nonloopres = Dumpsat.satAssumption solverIdx [-o0;ob] in begin	
-						if(nonloopres == UNSATISFIABLE) then begin
-							(*uniquelly determined*)
-							let name = self#idx2name bitI in 
-							printf "uniq %s @ %d\n" name bitI;
-							flush stdout;
-							Array.set arrlist2 idx (bitI,RES_UNIQ,bnd,bnd,bnd);
-						end
-					end
-				end
-				| _ -> ()
-			end
-		end 
-		and procBitloop solverIdx bnd idx x  = begin
-			(*testing for loop non-uniqness*)
-			match x with 
-			(bitI,res,_,_,_) -> begin
-				match res with 
-				RES_UNK -> begin
-					let p =bnd
-					and l =bnd
-					and r =bnd in
-					let o0 = bitI + (p+l)*final_index_oneinst
-					and ob = bitI + (p+l+1+r+p+l)*final_index_oneinst in
-					let nonloopres = Dumpsat.satAssumption solverIdx [-o0;ob] in begin	
-						if(nonloopres == SATISFIABLE) then begin
-							(*non-uniquelly determined*)
-							(*find out all index with diff value*)
-							let procdiffv id2 xx = begin
-								match xx with
-								(bitIxx,resxx,_,_,_) -> begin
-									let o0xx = bitIxx + (p+l)*final_index_oneinst
-									and obxx = bitIxx + (p+l+1+r+p+l)*final_index_oneinst in
-									let (idx1xx,vo0xx)= Dumpsat.get_assignment solverIdx o0xx
-									and (idx2xx,vobxx)= Dumpsat.get_assignment solverIdx obxx in begin
-										assert (idx1xx == o0xx);
-										assert (idx2xx == obxx);
-										if(resxx == RES_UNK) then begin
-											if(vo0xx!= vobxx) then begin
-												let name = self#idx2name bitIxx in 
-												printf "nouniq %s @ %d\n" name bitIxx;
-												flush stdout;
-												Array.set arrlist2 id2 (bitIxx,RES_NONU,0,0,0);
-											end
-										end
-										else if(resxx == RES_UNIQ) then begin
-											assert (vobxx == vo0xx);
-										end
-									end
-								end
-							end in
-							Array.iteri (procdiffv) arrlist2;
-						end
-					end
-				end
-				| _ -> ()
-			end
-		end
-		in 
-		let bndd=ref 2
-		in begin
-			(*loop until we have all determined or not, and no unknown case*)
-			while((self#arrayexists (fun x -> match x with (_,res,_,_,_) -> (res == RES_UNK)) arrlist2)) do
-				(*or else we increase bound by 1 and test all RES_UNK*)
-				bndd:=(!bndd)+1;
-				printf "trying bound %d\n" (!bndd);
-				flush stdout;
-
-				(**********************)
-				(*nonloop case*)
-				(**********************)
-				let target_nonloop = self#construct_nonloop (!bndd) (!bndd) (!bndd) [] [] in 
-				let nonloop_clslst=(([target_nonloop],"target")::clause_list_multiple) in 
-				let solverIdx=MultiMiniSAT.allocSolver () in begin
-					(*add the clasue for one time into the minisat clause database*)
-					Dumpsat.procClauseandAdd solverIdx nonloop_clslst;
-					(*test for all bits for uniqness without loop*)
-					Array.iteri (procBitnonloop solverIdx (!bndd)) arrlist2;
-					MultiMiniSAT.closeSolver solverIdx;
-				end;
-				(**********************)
-				(*loop case*)
-				(**********************)
-
-				if((self#arrayexists (fun x -> match x with (_,res,_,_,_) -> (res == RES_UNK)) arrlist2)) then begin
-					let target_loop = self#construct_loop (!bndd) (!bndd) (!bndd)  target_nonloop in 
-					let loop_clslst=(([target_loop],"target")::clause_list_multiple) in 
-  				let solverIdx=MultiMiniSAT.allocSolver () in begin
-						(*add the clasue for one time into the minisat clause database*)
-						Dumpsat.procClauseandAdd solverIdx loop_clslst;
-						(*test for all bits for uniqness without loop*)
-						Array.iteri (procBitloop solverIdx (!bndd)) arrlist2;
-					  MultiMiniSAT.closeSolver solverIdx;
-					end;
-				end
-			done;
-			(*map the result from array back to list*)
-			let lstres=(Array.to_list arrlist2) in
-			List.map (fun x -> match x with (bitii,res,p,l,r) -> assert ((p == l) && (l == r) && (res!= RES_UNK));((res == RES_UNIQ),bitii,p)) lstres
-		end
-	end (*of procDetermineUniqueInputs*)
 
 	method tryPCSAT p l r assLst = begin
 		(*dbg_print (sprintf "tryPCSAT p %d l %d r %d" p l r);*)
 		(*this do not include the input constrain*)
-		let target=self#construct_nonloop p l r assLst [] in begin
+		let target=self#construct_nonloop p l r assLst  in begin
 			self#set_unlock_multiple;
 			self#append_clause_list_multiple  [([target],"target")]
 		end
@@ -853,9 +742,8 @@ object (self)
 
 	method getNonProtocolInputList allinputs  = begin
 		(*non protocol inputs*)
-		let is_non_protocol x = begin
-			match x with
-			key -> not (List.mem key instrlist)
+		let is_non_protocol key = begin
+			((List.mem key instrlist)==false) && ((string_equ key rstSigName)==false)
 		end
 		in
 		List.filter is_non_protocol allinputs
@@ -893,7 +781,7 @@ object (self)
 		flush stdout;
 	end
   
-	method inferInitState resetSignalName resetValue = begin
+	method inferInitState  = begin
 	  (*by default we use a 10 step unrolling and infer the final state value*)
 		(*unroll for 10 steps*)
 		self#set_unlock_multiple;
@@ -913,17 +801,9 @@ object (self)
     
 		(*forcing the resetSignalName*)
     let lrlst=lr2list 0 9 in
-		let resetSignalIndex= begin
-			try
-				fst (List.assoc resetSignalName name_index_lst)  
-			with  Not_found  -> begin
-				dbg_print "FATAL : not found";
-				dbg_print resetSignalName;
-				exit 1;
-			end
-		end in
+		let resetSignalIndex= self#getResetSignalIndex in
 		let cls=begin
-			match resetValue with 
+			match rstValue with 
 			1 -> ([resetSignalIndex],"") 
 			|0 ->([-resetSignalIndex],"") 
 			|_-> assert false
@@ -940,10 +820,11 @@ object (self)
     let dff_idxlst=List.map (fun x -> match x with (_,(idx,_))-> idx) dff_idxpairlst in
     let solverIdx = MultiMiniSAT.allocSolver () in 
   	let res=Dumpsat.dump_sat solverIdx clause_list_multiple in
-		let dff_idx_ass_lst=begin
+		let dff_idx_ass_lst1=begin
 			assert (res==SATISFIABLE);
 			List.map (fun x -> Dumpsat.get_assignment solverIdx (x+9*final_index_oneinst)) dff_idxlst
-		end
+		end in
+		let dff_idx_ass_lst = List.map (fun x -> match x with (idx,v)-> (idx-9*final_index_oneinst,v)) dff_idx_ass_lst1 
 		in begin
 		  MultiMiniSAT.closeSolver solverIdx;
 			let proc_prt idx_ass = begin
@@ -1052,15 +933,26 @@ object (self)
 					exit 1;
 				end
 			end
-		end in 
+		end 
+		in begin
 		(*****************************************)
 		(*finding out init state*)
 		(*****************************************)
-		let dff_idx_ass_lst_InitState=self#inferInitState resetSignalName resetValue in
-		self#inferPredicateUniq dff_idx_ass_lst_InitState;
-		;
-
-		MultiMiniSAT.checkClosed ();
+			rstSigName <- resetSignalName ;
+			rstValue   <- resetValue ;
+			let dff_idx_ass_lst_InitState = self#inferInitState  in 
+			let proc_idx_ass2Literal idxass = begin
+				match idxass with
+				(idx,false) -> ([-idx],"init")
+				| (idx,true) -> ([idx],"init")
+				|_-> assert false
+			end in
+			let initclauselist=List.map proc_idx_ass2Literal dff_idx_ass_lst_InitState in begin
+				initStateClauseList <- initclauselist
+			end;
+			self#inferPredicateUniq ;
+			MultiMiniSAT.checkClosed ();
+		end 
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
@@ -1368,172 +1260,94 @@ object (self)
 		end
 	end
 
-	method arrayexists pred arr = begin
-		let procpred a b = begin
-			if(a == true) then true
-			else if(pred b) then true
-			else false
-		end in
-		Array.fold_left procpred false arr 
-	end
-
-
-	method inferPredicateUniq dff_idx_ass_lst_InitState = begin
-	end
-
-
-	
-	method inferSATFormula_plr (p:int) (r:int) (l:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin
-		(*sent two empty list to inferSATFormula_plr_nonloop such that it can discover a whole new set to replace the current one*)
-			dbg_print "pre inferSATFormula_plr_nonloop";
-		let (result_p,infered_assertion_array_lst_new_nonloop)= self#inferSATFormula_plr_nonloop p l r infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI 
-		in begin
-			dbg_print "exiting inferSATFormula_plr_nonloop";
-			assert(lock_multiple == true);
-			if (result_p == UNSATISFIABLE) then begin
-				(*we only need to check here that 
-				the assertion still have a valuation for parameters
-				because the unsatisfiable assertions will also lead to the UNSAT of findLR_checkO*)
-				check_clslst_maxidx clause_list_multiple last_index;
-
-				(*2014/11/16 Shen dont simply it here to speedup*)
-				(*if((List.length infered_assertion_array_lst_old_loop)>0) then begin
-					let loopsimass =	simplify_withBDD (or_assertion infered_assertion_array_lst_old_loop) ddM in begin
-						printf "loopsimass\n";
-						self#print_itpo loopsimass;
-						printf "\n";
-					end;
-				end;
-
-				if((List.length infered_assertion_array_lst_new_nonloop)>0) then begin
-					let nonloopsimass =	simplify_withBDD (or_assertion infered_assertion_array_lst_new_nonloop) ddM in begin
-						printf "nonloopsimass\n";
-						self#print_itpo nonloopsimass;
-						printf "\n";
-					end;
-				end;*)
-
-				check_inverted_assertion_satisfiable infered_assertion_array_lst_old_loop last_index ;
-				(RES_UNIQ,p,l,r,infered_assertion_array_lst_new_nonloop,infered_assertion_array_lst_old_loop) (* output uniquely determine input*)
-			end
-			else begin
-				let (result_p_loop,infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop p l r infered_assertion_array_lst_new_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI(*in this case I dont need to encode common again*)
-				in begin
-					assert (result_p_loop == UNSATISFIABLE) ;
-					(RES_UNK,p,l,r,infered_assertion_array_lst_new_nonloop,(infered_assertion_array_lst_new_loop@infered_assertion_array_lst_old_loop))
+	method inferPredicateUniq  = begin
+	  (**********************)
+		(* increacing bound*)
+	  (**********************)
+		let bnd= ref 1 
+		and stop = ref false 
+		and inferedAssertionList = ref [] in begin
+  		while ((!stop)==false) do
+				bnd := (!bnd) +1 ;
+        let (resNonloop,targetNonloop)=self#checkNonloop (!bnd) (!bnd) (!bnd) (!inferedAssertionList) in begin
+					match resNonloop with
+					UNSATISFIABLE  -> begin
+						stop := true;
+					end
+					| _ -> begin
+						assert(resNonloop==SATISFIABLE);
+						(*continue to loop case*)
+						let (resLoop,newInferedAssertion) = self#checkLoop 
+						                                          (!bnd) 
+																											(!bnd) 
+																											(!bnd) 
+																											(!inferedAssertionList) 
+																											targetNonloop
+						in begin
+							assert(resLoop==UNSATISFIABLE);
+							inferedAssertionList := newInferedAssertion @ (!inferedAssertionList);
+						end
+					end
 				end
-			end
+	  	done;
+			((!bnd),(!inferedAssertionList))
 		end
 	end
 
-	method inferSATFormula_plr_nonloop 
-					(p:int) 
-					(l:int) 
-					(r:int) 
-					infered_assertion_array_lst_old_nonloop 
-					infered_assertion_array_lst_old_loop 
-					listUniqBitI 
-					listNonuniqBitI 
-	= begin
-		Printf.printf "  inferSATFormula_plr_nonloop : p %d l %d r %d nonloop %d loop %d\n" 
-			p 
-			l 
-			r 
-			(List.length infered_assertion_array_lst_old_nonloop) 
-			(List.length infered_assertion_array_lst_old_loop);
-		flush stdout;
-		let target = self#construct_nonloop_bitIs 
+	method checkNonloop p l r inferedAssertionList = begin
+		let target = self#construct_nonloop
 										p 
 										l 
-										r  
-										infered_assertion_array_lst_old_nonloop 
-										infered_assertion_array_lst_old_loop 
-										listUniqBitI 
-										listNonuniqBitI (*TODO: dont forget to shift the variables*)
+										r 
+										inferedAssertionList
 		in 
-		let res = Dumpsat.dump_sat_withclear (([target],"target")::clause_list_multiple)
-		in begin
-			if(res == UNSATISFIABLE) then 
-				(res,infered_assertion_array_lst_old_nonloop) (*it is ok already*)
-			else begin
-				let listUniqBitI_shifted = List.map (fun x -> x+(p+l)*final_index_oneinst) listUniqBitI in
-				let (res1,itplst)= allsat_interp_BDD_loop 
-															clause_list_multiple 
-															target 
-															listUniqBitI_shifted 
-															(self#construct_varlst2assumption p l r listUniqBitI) 
-															ddM 
-															true
-				in
-				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in begin
-					assert (res1== UNSATISFIABLE);
-					List.iter (fun x -> check_itpo_var_membership x listUniqBitI ) itplst_shiftback;
-					(SATISFIABLE,itplst_shiftback)
-				end
-			end
-		end
+		let res=Dumpsat.dump_sat_withclear (([target],"target")::clause_list_multiple) in
+		(res,target)
 	end
 
-	method construct_loop (p:int) (l:int) (r:int) target = begin
+	method checkLoop p l r inferedAssertionList targetNonloop  = begin
+		let targetLoop=self#construct_loop p l r  targetNonloop  in
+    let iv_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) (bv_instrlist@bv_non_proctocol_input_list) in
+    allsat_interp_BDD_loop 
+												clause_list_multiple 
+												targetLoop 
+												iv_0
+												(self#construct_varlst2assumption p l r ) 
+												ddM 
+												true
+	end
+
+	method construct_loop (p:int) (l:int) (r:int) target  = begin
 		(*this one assume all > 0*)
 		assert(p>=0);
 		assert(l>=0);
 		assert(r>=0);
-			self#set_unlock_multiple ;
-			let target_loop_p = self#double_loop p l r 0 p
-			and target_loop_l = self#double_loop p l r p (p+l)
-			and target_loop_r = self#double_loop p l r (p+l+1) (p+l+1+r-1)
-			in
-			let target_all = self#alloc_index 1
-			in
-			let cls_red_and_all = self#encode_Red_AND target_all [target;target_loop_p;target_loop_l;target_loop_r]
-			in begin
-				assert (target_loop_p!= target_loop_l);
-				assert (target_loop_p!= target_loop_r);
-				assert (target_loop_l!= target_loop_r);
-				self#append_clause_list_multiple cls_red_and_all ;
-				self#set_lock_multiple ;
-				target_all
-			end
-	end
-
-	method construct_nonloop_bitIs (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI  = begin
-		(*this one assume all > 0*)
-		assert(p>=0);
-		assert(l>=0);
-		assert(r>=0);
-		let res = self#construct_nonloop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop in begin
-
-		assert (Intlist.isLst1inLst2 listUniqBitI bv_instrlist);
-		assert ((Intlist.isIntersect listUniqBitI listNonuniqBitI)== false);
-		(*force the uniq input of p+l and p+l+1+r+p+l to be the same *)
-		let ov = listUniqBitI
-		in 
-		let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) ov
-		and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) ov
-		in begin
-			self#set_unlock_multiple;
-			self#append_clause_list_multiple  (self#encode_EQUV (ov_0) (ov_b)) 
-		end
-		;
-		check_clslst_maxidx clause_list_multiple last_index;
-
-		(*force the nonuniq input of p+l and p+l+1+r+p+l to be diff*)
-		(*checking that listNonuniqBitI is in bv_input*)
-		assert (Intlist.isLst1inLst2 listNonuniqBitI bv_instrlist);
-		let ov = listNonuniqBitI
-		in 
-		let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) ov
-		and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) ov
+		self#set_unlock_multiple ;
+		let target_loop_p = self#double_loop p l r 0 p
+		and target_loop_l = self#double_loop p l r p (p+l)
+		and target_loop_r = self#double_loop p l r (p+l+1) (p+l+1+r-1)
 		in
-		self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b)) 
-		;
-		self#set_lock_multiple;
-		check_clslst_maxidx clause_list_multiple last_index;
+		let target_all = self#alloc_index 1
+		in
+		let cls_red_and_all = self#encode_Red_AND target_all [target;target_loop_p;target_loop_l;target_loop_r]
+		in begin
+			assert (target_loop_p!= target_loop_l);
+			assert (target_loop_p!= target_loop_r);
+			assert (target_loop_l!= target_loop_r);
+			self#append_clause_list_multiple cls_red_and_all ;
 
-		res
+			(*further enforcing the init state*)
+			assert((isEmptyList initStateClauseList)==false);
+			let shiftedClauseList=List.map (shiftcls [] ((p+l+1+r)*final_index_oneinst)) initStateClauseList  in begin
+				self#append_clause_list_multiple  initStateClauseList;
+				self#append_clause_list_multiple  shiftedClauseList;
+			end;
+
+			self#set_lock_multiple ;
+			target_all
 		end
 	end
+
 
 	method construct_nonloop_1copy (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop = begin
 		(*this one allow l<0 but must > -r+1*)
@@ -1603,8 +1417,7 @@ object (self)
 						(p:int) 
 						(l:int) 
 						(r:int) 
-						infered_assertion_array_lst_old_nonloop 
-						infered_assertion_array_lst_old_loop 
+						infered_assertion_array_lst 
 	= begin
 		(*this one allow l<0 but must > -r+1*)
 		assert(p>=0);
@@ -1631,17 +1444,15 @@ object (self)
 			()
 		end
 		;
-
-		(*constrain the assertion wire*)
-		(*2014Dec03 Shen we will not use assertion any more*)
-		(*if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
-			self#append_clause_list_multiple (self#try_assertion 0 ((p+(max l 0 )+1+r)*2-1))
-		else  begin
-			printf "              warning : not found assertion_shengyushen\n";
-			flush stdout;
-		end
-		;*)
 		
+    (*enforcing the non reset consition*)
+		let clause_list_multiple_aux = (self#gen_nonreset ((p+(max l 0)+1+r)*2))
+		in begin
+			self#append_clause_list_multiple  clause_list_multiple_aux ;
+			()
+		end
+		;
+
 		(*connect the first p+1+r instance*)
 		let clslst =(self#connect_multiple_instance_step3 0 (p+(max l 0)+r)) in begin
 			self#append_clause_list_multiple  clslst ;
@@ -1654,23 +1465,33 @@ object (self)
 		end;
 		(*check_clslst_maxidx clause_list_multiple last_index;*)
 		
-
-		
 		(*TODO : shift the assertion to proper cycle*)
-		let ass_nonloop = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_nonloop 
-		and ass_loop   = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_loop   in begin
-			(*force the infered_assertion_array_lst_old to be invalid*)
-			if((List.length ass_nonloop)!=0) then begin
-				(*let orass_sim = List.map (fun x -> simplify_withBDD x ddM) ass_nonloop*)
-				(*2014/11/16 Shen dont simply it here to speedup*)
-				let orass_sim = ass_nonloop
-				in
-				self#force_assertion (or_assertion orass_sim);
-			end
-			;
-			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass_loop;
+		let ass = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst))  infered_assertion_array_lst in begin
+			(*force to be invalid*)
+			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass;
 		end
 		;
+
+		(*we again have the input constrain nonequal back*)
+    let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) bv_instrlist
+    and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) bv_instrlist in begin
+	    self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b))
+		end
+		;
+
+   (*force the npi to be the same*)
+    let npi_lst=bv_non_proctocol_input_list
+    and npi_cycle_lst = lr2list 1 ((p+l+1+r)*2-1)
+    in
+    let proc_npi_cycle i = begin
+      let npi_lst_i = List.map (fun x -> x+(i*final_index_oneinst)) npi_lst
+      in
+      self#append_clause_list_multiple (self#encode_EQUV (npi_lst) (npi_lst_i))
+    end
+    in
+    List.iter proc_npi_cycle npi_cycle_lst
+    ;
+
 		(*force the output of p to p+l+1+r-1 to be the same*)
 		(*here l can be negative, while above l must be larger than 0*)
 		let ov = bv_outstrlist
@@ -1688,51 +1509,6 @@ object (self)
 		end
 	end
 
-	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI = begin
-		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" p l r (List.length infered_assertion_array_lst_old_loop);
-		flush stdout;
-
-		if(p<2 || l<2 || r<2) then (UNSATISFIABLE,infered_assertion_array_lst_old_loop)
-		else begin
-			let target = self#construct_nonloop_bitIs p l r  infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI
-			in 
-			let target_all = self#construct_instance_loop p l r target
-			in begin
-				check_clslst_maxidx clause_list_multiple last_index;
-				let listUniqBitI_shifted = List.map (fun x -> x+(p+l)*final_index_oneinst) listUniqBitI in
-				let (res1,itplst)= allsat_interp_BDD_loop clause_list_multiple target_all listUniqBitI_shifted (self#construct_varlst2assumption p l r listUniqBitI) ddM true in
-				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in  begin
-					List.iter (fun x -> check_itpo_var_membership x listUniqBitI ) itplst_shiftback;
-					(res1,itplst_shiftback)
-				end
-			end
-		end
-	end
-
-	method construct_instance_loop (p:int) (l:int) (r:int) target_all_old = begin
-		self#set_unlock_multiple ;
-		
-		let target_common = target_all_old 
-		and target_loop_p = self#double_loop p l r 0 p
-		and target_loop_l = self#double_loop p l r p (p+l)
-		and target_loop_r = self#double_loop p l r (p+l+1) (p+l+1+r-1)
-		in
-		let target_all = self#alloc_index 1
-		in
-		let cls_red_and_all = self#encode_Red_AND target_all [target_common;target_loop_p;target_loop_l;target_loop_r]
-		in begin
-			assert (target_common!= target_loop_p);
-			assert (target_common!= target_loop_l);
-			assert (target_common!= target_loop_r);
-			assert (target_loop_p!= target_loop_l);
-			assert (target_loop_p!= target_loop_r);
-			assert (target_loop_l!= target_loop_r);
-			self#append_clause_list_multiple cls_red_and_all ;
-			self#set_lock_multiple ;
-			target_all
-		end
-	end
-	
 	method double_loop (p:int) (l:int) (r:int) starti endi = begin
 		let dff_idxpairlst = List.filter (isdff_name_index) name_index_lst
 		in
@@ -1756,6 +1532,11 @@ object (self)
 					let (res_lst_shift,cls_lstlst_shift) = List.split (List.map (self#alloc_and_equ_res) ov_pair_lst_shift)
 					and rii = self#alloc_index 1
 					in begin
+						(*List.iter (fun clslst -> printf "clslst : \n"; List.iter (fun cls -> printf "cls \n"; List.iter (fun idx -> printf " %d " idx) (fst cls); printf "\n") clslst) cls_lstlst_shift;
+						printf "last_index %d\n" last_index;
+						printf "p %d l %d r %d final_index_oneinst %d" p l r final_index_oneinst;
+						flush stdout;*)
+						check_clslst_maxidx (List.concat cls_lstlst_shift) last_index;
 						self#append_clause_list_multiple ((List.concat cls_lstlst) @ (List.concat cls_lstlst_shift) @ (self#encode_Red_AND rii (res_lst @ res_lst_shift))) ;
 						check_clslst_maxidx clause_list_multiple last_index;
 						rii
@@ -1775,28 +1556,12 @@ object (self)
 		end
 	end
 
-	method construct_varlst2assumption (p:int) (l:int) (r:int) listUniqBitI = begin
-		(*find the initial state index*)
-		let dff_idxpair = List.filter (isdff_name_index) name_index_lst in
-		let dff_name_list = List.map (fun x -> match x with (nm,_) -> nm) dff_idxpair in
-		let initial_state_index_list = List.concat (List.map (self#name2idxlist) dff_name_list) in
-		let shift2=(p+l+1+r)*final_index_oneinst in
-		let initial_state_index_list2= List.map (fun x -> x+shift2) initial_state_index_list in (*find all input index*)
+	method construct_varlst2assumption (p:int) (l:int) (r:int)  = begin
 		let ov = bv_instrlist@bv_non_proctocol_input_list
 		and cycle_list = lr2list 0 (((p+l+1+r)*2)-1) in
-		let cycle_list_filtered = List.filter (fun x -> (x!=(p+l) && x!=(p+l+1+r+p+l))) cycle_list in
-		let input_cycle_i i = begin
-			List.map (fun x -> x + i*final_index_oneinst) ov
-		end in (*expand them to every cycles*)
-		let ov_all = List.concat ( List.map input_cycle_i  cycle_list_filtered) in
-		let nonuniq =(Intlist.sublst bv_instrlist listUniqBitI)@bv_non_proctocol_input_list in
-		let nonuniq_pl = List.map (fun x -> x+(p+l)*final_index_oneinst        ) nonuniq
-		and nonuniq_pl2= List.map (fun x -> x+(p+l+1+r+p+l)*final_index_oneinst) nonuniq in begin
-			(*printf "nonuniq is \n";
-			List.iter (fun x -> printf "%s(%d)\n" (self#idx2name x) x) nonuniq;
-			printf "\n";*)
-			initial_state_index_list @ initial_state_index_list2 @ ov_all @ nonuniq_pl @ nonuniq_pl2
-		end
+		let cycle_list_filtered = List.filter (fun x -> (x!=(p+l) )) cycle_list in
+		let input_cycle_i i = List.map (fun x -> x + i*final_index_oneinst) ov in
+		List.concat ( List.map input_cycle_i  cycle_list_filtered) 
 	end
 
 	method force_assertion arr_itpo1= begin
@@ -1915,6 +1680,35 @@ object (self)
 		let clslst_lst = List.map (self#encode_instance) lrlst
 		in
 		((List.concat clslst_lst),(final_index_oneinst*num))
+	end
+
+	method encode_instance_nonreset ii = begin
+		let clause_nonrst = begin
+			let rstIdx=self#getResetSignalIndex in begin 
+				match rstValue with
+				0 -> ([rstIdx],"")
+				| 1 -> ([-rstIdx],"")
+				|_ -> assert false
+			end
+		end in
+		let off = ii*final_index_oneinst
+		in 
+		let cls_off offf cls = begin
+			let lit_off offff lit = begin
+				if lit > 0 then lit+offff
+				else lit -offff
+			end
+			in
+			(List.map (lit_off offf) (fst cls)),(snd cls)
+		end
+		in
+		cls_off off clause_nonrst
+	end
+
+	method gen_nonreset num = begin
+		let lrlst = lr2list 0 (num-1)
+		in
+		List.map (self#encode_instance_nonreset) lrlst
 	end
 
 	(* encoding the transition relation*)
@@ -3229,8 +3023,7 @@ object (self)
 	method idx2name idx_unmapped = begin
 		let idx = begin (*we must be careful that we may use idx2name before finish encoding the first instance*)
 			if final_index_oneinst ==0 then idx_unmapped
-			else if last_index_f<= final_index_oneinst then idx_unmapped mod final_index_oneinst
-			else (idx_unmapped mod last_index_f) mod final_index_oneinst
+			else idx_unmapped mod final_index_oneinst
 		end
 		in
 		(*let ssy = List.filter (fun x -> match x with (nm,(idx1,idx2)) -> if (idx1== idx || idx2== idx) then true else false) name_index_lst

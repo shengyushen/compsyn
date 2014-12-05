@@ -1,9 +1,9 @@
 MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
-OCAMLC	= ocamlopt 
+OCAMLC	= ocamlopt -g 
 OCAMLC_OPT = str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/
 OBJS	=  MultiMiniSAT.cmx intlist.cmx typedef.cmx misc.cmx bddssy.cmx clauseman.cmx dumpsat.cmx aig.cmx print_v.cmx statement.cmx  interp.cmx very.cmx  parser.cmx circuit_obj.cmx elabmod.cmx main.cmx 
 CUDD_DIR = ../../other/cudd
-GPP_OPT =  -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
+GPP_OPT =  -g -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
 TAGPROG = otags
 CTAGS   = ctags
 
