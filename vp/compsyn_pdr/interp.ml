@@ -399,6 +399,9 @@ and allsat_interp_BDD_loop
 			simplifyOrnot
 			= 
 begin
+	printf "allsat_interp_BDD_loop";
+	List.iter (printf " %d ") important_varlst;
+	printf "\n";
 	(*check the clause list for membership of variables*)
 	let maxidx_R=get_largest_varindex_inclslst clslst_R
  	and solverIdxExpanding=MultiMiniSAT.allocSolver ()
@@ -464,7 +467,9 @@ begin
 							Dumpsat.incrementalAddClauseList solverIdx clslst_2beappend maxiii;
     				end
     				;
-
+						printf "new_assertion\n";
+						print_itpo_alone new_assertion;
+						printf "\n";
     				infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
     			end
     		end

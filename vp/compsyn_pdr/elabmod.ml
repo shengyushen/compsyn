@@ -1328,6 +1328,8 @@ object (self)
 	end
 
 	method checkLoop p l r inferedAssertionList targetNonloop  = begin
+		printf "p %d l %d r %d final_index_oneinst %d\n" p l r final_index_oneinst;
+		printf "bi len %d npi leng %d\n" (List.length bv_instrlist) (List.length bv_non_proctocol_input_list);
 		dbg_print "checkLoop";
 		let targetLoop=self#construct_loop p l r  targetNonloop  in
     let iv_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) (bv_instrlist@bv_non_proctocol_input_list) in

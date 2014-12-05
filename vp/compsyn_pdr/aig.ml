@@ -349,3 +349,57 @@ and check_assertion_satisfiable posAssertion invAssertionList last_index ddM= be
 		end
 	end
 end
+and print_itpo_alone arr_itpo = begin
+	print_itpo_file_alone stdout arr_itpo
+end
+and print_itpo_file_alone fv arr_itpo = begin
+		let size = Array.length arr_itpo
+		in
+		let rec interpObj2str interpObj = begin
+			match interpObj with
+			TiterpCircuit_true -> "1'b1"
+			| TiterpCircuit_false -> "1'b0"
+			| TiterpCircuit_refcls(clsidx) -> begin
+				let itpo_nxt = arr_itpo.(clsidx)
+				in interpObj2str itpo_nxt
+			end
+			| TiterpCircuit_refvar(varidx) -> begin
+				if (varidx>0) then begin
+					sprintf "%d" varidx
+				end
+				else if (varidx<0) then begin
+					sprintf "!%d" varidx
+				end
+				else assert false
+			end
+			| TiterpCircuit_and(interpObjlst) -> begin
+				let objreslst = List.map (interpObj2str ) interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " & " objreslst);")"]
+			end
+			| TiterpCircuit_or(interpObjlst) -> begin
+				let objreslst = List.map (interpObj2str ) interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " | " objreslst);")"]
+			end
+			| TiterpCircuit_not(interpObj) -> begin
+				let objres = interpObj2str interpObj
+				in
+				sprintf "!%s" objres
+			end
+			| TiterpCircuit_printed(clsidx) -> assert false
+			| _ -> assert false
+		end
+		and prt_trace_withInterp num iter_res  = begin
+			match iter_res with
+			TiterpCircuit_none -> ()
+			| _ -> begin
+				let str_of_itpo = interpObj2str  iter_res
+				in
+				fprintf fv "%s" str_of_itpo
+			end
+		end
+		in begin
+			prt_trace_withInterp (size-1) arr_itpo.(size-1)
+		end
+end
