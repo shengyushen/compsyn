@@ -741,9 +741,15 @@ object (self)
 	end
 
 	method getNonProtocolInputList allinputs  = begin
+		assert(rstSigName<>"");
 		(*non protocol inputs*)
 		let is_non_protocol key = begin
-			((List.mem key instrlist)==false) && ((string_equ key rstSigName)==false)
+			if(((List.mem key instrlist)==false) && ((string_equ key rstSigName)==false)) then begin
+				true
+			end
+			else begin
+				false
+			end
 		end
 		in
 		List.filter is_non_protocol allinputs
@@ -770,14 +776,19 @@ object (self)
 
 	method printInOutList non_proctocol_input_list instrlist outstrlist = begin
 		printf "\n+++++ start of non protocol input list +++\n";
-		List.iter (printf " %s ") non_proctocol_input_list ;
+		List.iter (printf " ^%s^ ") non_proctocol_input_list ;
 
 		printf "\n+++++ start of protocol input list +++\n";
-		List.iter (printf " %s ")  instrlist;
+		List.iter (printf " ^%s^ ")  instrlist;
 
 		printf "\n+++++ start of protocol output list +++\n";
-		List.iter (printf " %s ")  outstrlist;
-		printf "\n";
+		List.iter (printf " ^%s^ ")  outstrlist;
+
+		printf "\n+++++reset signal ++++++++++++++\n";
+		printf "%s\n" rstSigName;
+		printf "%d\n" rstValue;
+
+
 		flush stdout;
 	end
   
@@ -842,66 +853,10 @@ object (self)
 	end
 
 	method compsyn  (instrlist1:string list) (outstrlist1:string list) (resetCondition:string) = begin
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*initalizing*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		self#set_lock_oneinst;
-
-		(*****************************************)
-		(*setting the input and output vars*)
-		(*****************************************)
-		instrlist <- instrlist1 ;
-		outstrlist <- outstrlist1 ;
-		
-		let allinputs = self#getAllInputList in begin
-			non_proctocol_input_list <- self#getNonProtocolInputList 	allinputs;
-		end;
-		self#printInOutList non_proctocol_input_list instrlist outstrlist;
-		
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*encoding the transition relation's CNF*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		dbg_print "encode_oneInstance2SAT_step1" ;
-		let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
-			self#set_unlock_oneinst;
-			(*set it into the clslst_one_inst*)
-			self#append_clause_list_oneinst clslst_one_inst ; 
-			(*record the final largest index*)
-			self#set_last_index_oneinst last_index;
-			self#set_lock_oneinst;
-		end ;
-
-		(*their var index*)
-		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
-		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
-		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
-
-
-
-		(*****************************************)
-		(*write out the encoded CNF*)
-		(*****************************************)
-		(*let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
-		self#dumpCNF cnfname_1inst ;*)
-
-		(*dont allow to change the clause_list_multiple *)
-		self#set_lock_multiple;
-		(*set the current time to be used by dbg_print*)
-		set_current_time;
-
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*following is relational code*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-
-		(*****************************************)
-    (*parsing the reset condition*)
-		(*****************************************)
+  		(*****************************************)
+      (*parsing the reset condition*)
+  		(*****************************************)
+		printf "reset condition is %s\n" resetCondition;
 		let regexpResetCondition=Str.regexp "\\([a-zA-Z0-9_]+\\)==1'b\\([01]\\)" in
 		let resetSignalName=begin
 			let res=Str.string_match regexpResetCondition resetCondition 0 in begin
@@ -910,49 +865,109 @@ object (self)
 					exit 1;
 				end;
 			end;
-			let name=Str.replace_first regexpResetCondition "\\1" resetCondition in begin
-				begin
-  				try 
-	  				List.assoc name name_index_lst
-		  		with Not_found -> begin
-					  printf "%s+++\n" name;
-			  		dbg_print "FATAL : invalid reset signal name";
-				  	exit 1;
-  				end
-				end;
-				name
-			end
-		end
-		and resetValue     = begin
-			let v=Str.replace_first regexpResetCondition "\\2" resetCondition  in begin
-				match v with 
-				"0" -> 0
-				|"1" -> 1
-				|_ -> begin
-					dbg_print "FATAL : invalid reset value";
-					exit 1;
-				end
-			end
+			Str.replace_first regexpResetCondition "\\1" resetCondition 
 		end 
 		in begin
-		(*****************************************)
-		(*finding out init state*)
-		(*****************************************)
-			rstSigName <- resetSignalName ;
-			rstValue   <- resetValue ;
-			let dff_idx_ass_lst_InitState = self#inferInitState  in 
-			let proc_idx_ass2Literal idxass = begin
-				match idxass with
-				(idx,false) -> ([-idx],"init")
-				| (idx,true) -> ([idx],"init")
-				|_-> assert false
-			end in
-			let initclauselist=List.map proc_idx_ass2Literal dff_idx_ass_lst_InitState in begin
-				initStateClauseList <- initclauselist
-			end;
-			self#inferPredicateUniq ;
-			MultiMiniSAT.checkClosed ();
-		end 
+			(*save it here such that rstSigName can be used in getNonProtocolInputList*)
+ 			rstSigName <- resetSignalName ;
+
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		(*initalizing*)
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		self#set_lock_oneinst;
+  
+  		(*****************************************)
+  		(*setting the input and output vars*)
+  		(*****************************************)
+  		instrlist <- instrlist1 ;
+  		outstrlist <- outstrlist1 ;
+  		
+  		let allinputs = self#getAllInputList in begin
+  			non_proctocol_input_list <- self#getNonProtocolInputList 	allinputs;
+  		end;
+  		
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		(*encoding the transition relation's CNF*)
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		dbg_print "encode_oneInstance2SAT_step1" ;
+  		let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
+  			self#set_unlock_oneinst;
+  			(*set it into the clslst_one_inst*)
+  			self#append_clause_list_oneinst clslst_one_inst ; 
+  			(*record the final largest index*)
+  			self#set_last_index_oneinst last_index;
+  			self#set_lock_oneinst;
+  		end ;
+  
+  		(*their var index*)
+  		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
+  		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
+  		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
+  
+  
+  
+  		(*****************************************)
+  		(*write out the encoded CNF*)
+  		(*****************************************)
+  		(*let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
+  		self#dumpCNF cnfname_1inst ;*)
+  
+  		(*dont allow to change the clause_list_multiple *)
+  		self#set_lock_multiple;
+  		(*set the current time to be used by dbg_print*)
+  		set_current_time;
+  
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		(*following is relational code*)
+  		(*++++++++++++++++*)
+  		(*++++++++++++++++*)
+  		let resetValue     = begin
+				(*try 
+					List.assoc rstSigName name_index_lst
+  			with Not_found -> begin
+				  printf "%s+++\n" rstSigName;
+	  			dbg_print "FATAL : invalid reset signal name";
+					assert false
+				end;*)
+  			let v=Str.replace_first regexpResetCondition "\\2" resetCondition  in begin
+  				match v with 
+  				"0" -> 0
+  				|"1" -> 1
+  				|_ -> begin
+  					dbg_print "FATAL : invalid reset value";
+  					exit 1;
+  				end
+  			end
+  		end 
+  		in begin
+  		(*****************************************)
+  		(*finding out init state*)
+  		(*****************************************)
+  			rstValue   <- resetValue ;
+  		  self#printInOutList non_proctocol_input_list instrlist outstrlist;
+
+  			let dff_idx_ass_lst_InitState = self#inferInitState  in 
+  			let proc_idx_ass2Literal idxass = begin
+  				match idxass with
+  				(idx,false) -> ([-idx],"init")
+  				| (idx,true) -> ([idx],"init")
+  				|_-> assert false
+  			end in
+  			let initclauselist=List.map proc_idx_ass2Literal dff_idx_ass_lst_InitState in begin
+  				initStateClauseList <- initclauselist
+  			end;
+				printf "initial clause list\n";
+				List.iter (fun x -> match x with (intlist,_) -> List.iter (printf " %d ") intlist;printf "\n") initStateClauseList ;
+				flush stdout;
+  			self#inferPredicateUniq ;
+  			MultiMiniSAT.checkClosed ();
+  		end 
+		end
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
@@ -1264,14 +1279,17 @@ object (self)
 	  (**********************)
 		(* increacing bound*)
 	  (**********************)
-		let bnd= ref 1 
+		let bnd= ref 1
 		and stop = ref false 
 		and inferedAssertionList = ref [] in begin
   		while ((!stop)==false) do
 				bnd := (!bnd) +1 ;
+				printf "bnd %d\n" (!bnd);
+				printf "inferedAssertionList len %d\n" (List.length (!inferedAssertionList));
         let (resNonloop,targetNonloop)=self#checkNonloop (!bnd) (!bnd) (!bnd) (!inferedAssertionList) in begin
 					match resNonloop with
 					UNSATISFIABLE  -> begin
+						printf "checkNonloop OK\n";
 						stop := true;
 					end
 					| _ -> begin
@@ -1285,6 +1303,9 @@ object (self)
 																											targetNonloop
 						in begin
 							assert(resLoop==UNSATISFIABLE);
+							printf "new assertion\n";
+							List.iter (fun itpo ->  self#print_itpo itpo; printf "\n") newInferedAssertion;
+							dbg_print "exiting checkLoop";
 							inferedAssertionList := newInferedAssertion @ (!inferedAssertionList);
 						end
 					end
@@ -1295,6 +1316,7 @@ object (self)
 	end
 
 	method checkNonloop p l r inferedAssertionList = begin
+		dbg_print "checkNonloop";
 		let target = self#construct_nonloop
 										p 
 										l 
@@ -1306,15 +1328,22 @@ object (self)
 	end
 
 	method checkLoop p l r inferedAssertionList targetNonloop  = begin
+		dbg_print "checkLoop";
 		let targetLoop=self#construct_loop p l r  targetNonloop  in
     let iv_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) (bv_instrlist@bv_non_proctocol_input_list) in
-    allsat_interp_BDD_loop 
+    let (res,itpolst)=allsat_interp_BDD_loop 
 												clause_list_multiple 
 												targetLoop 
 												iv_0
 												(self#construct_varlst2assumption p l r ) 
 												ddM 
 												true
+		in begin
+			(*we need to map res back to base frame*)
+			List.iter (fun itpo -> check_itpo_var_membership itpo iv_0) itpolst;
+			let itpolst_map=List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst)) ) itpolst in
+			(res,itpolst_map)
+		end
 	end
 
 	method construct_loop (p:int) (l:int) (r:int) target  = begin

@@ -420,6 +420,8 @@ begin
   	Dumpsat.procClauseandAdd solverIdx (([target],"allsat_interp target")::clslst_R);
 
   	while ((!res)!=UNSATISFIABLE) do
+			printf "len list %d\n" (List.length (!infered_assertion_array_lst_new));
+			dbg_print "loop";
   	  Gc.compact();
 
   		(*find out whether it is SAT*)
