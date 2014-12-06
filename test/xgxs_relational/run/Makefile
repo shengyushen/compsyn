@@ -9,6 +9,7 @@ DCINCPATH = ../src/XGXSPCS
 INPUT = -Input encode_data_in -Input konstant -Input bad_code
 #INPUT = -Input encode_data_in -Input konstant -Input bad_disp
 OUTPUT = -Output encode_data_out 
+RESET_CONDITION = "rst==1'b1"
 
 
 DECSRCFILE	= ../src/XGXSPCS/XGXSSYNTH_DEC_8B10B.v

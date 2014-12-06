@@ -169,7 +169,8 @@ multisat: sed_res.v
 pdr : sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
-	OCAMLRUNPARAM=b compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
+	# OCAMLRUNPARAM=b compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
+	compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 
 decoderarea: resulting_dual_cnf.v

@@ -483,4 +483,109 @@ begin
   	((!res),(!infered_assertion_array_lst_new))
   end
 end
+(*this func have an important feathure that rule out symmatry valuation*)
+and allsat_interp_BDD_loop_symmatry 
+			clslst_R 
+			target 
+			important_varlst 
+			clslst_invass (*the following two are for inv assertion*)
+			largestIdx
+			non_important_varlst 
+			ddM 
+			simplifyOrnot
+			= 
+begin
+	printf "allsat_interp_BDD_loop";
+	List.iter (printf " %d ") important_varlst;
+	printf "\n";
+	(*check the clause list for membership of variables*)
+	let maxidx_R=get_largest_varindex_inclslst clslst_R
+	and maxidx_R_invass=get_largest_varindex_inclslst clslst_invass
+ 	and solverIdxExpanding=MultiMiniSAT.allocSolver ()
+	and solverIdx=MultiMiniSAT.allocSolver () 
+ 	and res= ref SATISFIABLE
+ 	and infered_assertion_array_lst_new = ref [] 
+  and tmpmaxidx= ref largestIdx
+	in begin
+		(*distinguish the different max idx
+		maxidx_R is used only in expanding
+		largestIdx is used only for comparing
+		tmpmaxidx is used to record the max idx in discoverring uncoverred case
+		*)
+		assert (largestIdx>=maxidx_R_invass);
+		assert (largestIdx>=maxidx_R);
+		assert (target<=maxidx_R);
+		List.iter (fun x -> assert(x<=maxidx_R)) (important_varlst @ non_important_varlst);
+  	assert((isEmptyList non_important_varlst)==false);
+
+    MultiMiniSAT.allocProof solverIdxExpanding;
+    (*adding clslst_R and its shifted version to clause database for expanding*)
+		let clslst_shift = shiftclslst clslst_R important_varlst  maxidx_R in
+  	Dumpsat.procClauseandAdd solverIdxExpanding (clslst_R@clslst_shift);
+		(*addiing clslst_R to clause database for finding not covered case*)
+  	Dumpsat.procClauseandAdd solverIdx (([target],"allsat_interp target")::(clslst_invass@clslst_R));
+
+  	while ((!res)!=UNSATISFIABLE) do
+			printf "len list %d\n" (List.length (!infered_assertion_array_lst_new));
+			dbg_print "loop";
+  	  Gc.compact();
+
+  		(*find out whether it is SAT*)
+			(*dbg_print "pre dump_sat";*)
+  		res:=Dumpsat.satSolve solverIdx;
+			(*dbg_print "post dump_sat";*)
+  		begin
+    		match (!res) with
+    		UNSATISFIABLE -> begin
+    			(*dbg_print "  no result in  allsat_interp";*)
+    		end
+    		| _ -> begin
+    			assert((!res)==SATISFIABLE);
+
+    			(*get all their value, and construct the assumption list*)
+    			let all_index_value_list = List.map  (Dumpsat.get_assignment solverIdx) non_important_varlst in
+					let all_assumption=List.map proc_ass2 all_index_value_list in
+          let shiftedassumption=List.map (shift_ass maxidx_R) all_assumption in
+					let all_ass_target=(-target-maxidx_R)::(target::(all_assumption@shiftedassumption))
+    			in
+    			let new_assertion_preBDD =  solveWithAssumptionReturnInferredFormula solverIdxExpanding all_ass_target maxidx_R important_varlst
+    			in
+    			let new_assertion = begin
+    				(*dbg_print "  TIME of characterization_interp";*)
+    				if(simplifyOrnot) then
+    					simplify_withBDD new_assertion_preBDD ddM
+    				else new_assertion_preBDD
+    			end
+    			in begin
+    				(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
+    				(*check that all var referenced in new_assertion are npi*)
+    				check_itpo_var_membership new_assertion important_varlst ;
+    				(*increamental encoding the new_assertion*)
+    				let (maxiii,clslst_2beappend)=
+    					force_assertion_alone (invert_assertion new_assertion) (!tmpmaxidx) in
+    				begin
+    				  (*printf "old max %d maxiii %d\n" maxidx_R maxiii;
+						  flush stdout;*)
+							tmpmaxidx:=maxiii;
+							Dumpsat.incrementalAddClauseList solverIdx clslst_2beappend maxiii;
+    				end
+    				;
+
+						(*printf "new_assertion\n";
+						print_itpo_alone new_assertion;
+						printf "\n";*)
+    				infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
+    			end
+    		end
+  		end
+  		;
+  	done
+  	;
+  	Gc.compact();
+    MultiMiniSAT.closeSolver solverIdxExpanding;
+    MultiMiniSAT.closeSolver solverIdx;
+  	((!res),(!infered_assertion_array_lst_new))
+  end
+end
+
 

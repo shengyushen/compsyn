@@ -90,6 +90,19 @@ object (self)
 			exit 1;
 		end
 	end
+	
+	method shiftCycleIndex shift idx = begin
+		assert ( final_index_oneinst != 0 );
+		let res = idx + shift * final_index_oneinst 
+		in begin
+			assert ( res <= last_index );
+			res
+		end
+	end
+
+	method shiftCycleList shift v = begin
+		List.map (self#shiftCycleIndex shift) v
+	end
 
 	method print dumpout = begin
 		fprintf dumpout "module %s (\n" name;
@@ -664,9 +677,11 @@ object (self)
 	(*from here on is the list of method of complementary synthesis*)
 
 
-	method tryPCSAT p l r assLst = begin
+(*	method tryPCSAT p l r assLst = begin
 		(*dbg_print (sprintf "tryPCSAT p %d l %d r %d" p l r);*)
 		(*this do not include the input constrain*)
+		(*NOTICE Shen : we dont enforce the assLst in construct_nonloop now,
+		we have a new gen_invassertion for it*)
 		let target=self#construct_nonloop p l r assLst  in begin
 			self#set_unlock_multiple;
 			self#append_clause_list_multiple  [([target],"target")]
@@ -726,19 +741,7 @@ object (self)
 			(newl,newr)
 		end
 	end
-
-	method getAllInputList = begin
-		(*find out all input ports*)
-		let ext_input key cont last_res = begin
-			match cont#get_obj with
-			Tobj_input_declaration(_) -> begin
-				key::last_res
-			end
-			| _ -> last_res
-		end
-		in
-		Hashtbl.fold ext_input circuit_hst []
-	end
+*)
 
 	method getNonProtocolInputList allinputs  = begin
 		assert(rstSigName<>"");
@@ -774,24 +777,6 @@ object (self)
 		end
 	end
 
-	method printInOutList non_proctocol_input_list instrlist outstrlist = begin
-		printf "\n+++++ start of non protocol input list +++\n";
-		List.iter (printf " ^%s^ ") non_proctocol_input_list ;
-
-		printf "\n+++++ start of protocol input list +++\n";
-		List.iter (printf " ^%s^ ")  instrlist;
-
-		printf "\n+++++ start of protocol output list +++\n";
-		List.iter (printf " ^%s^ ")  outstrlist;
-
-		printf "\n+++++reset signal ++++++++++++++\n";
-		printf "%s\n" rstSigName;
-		printf "%d\n" rstValue;
-
-
-		flush stdout;
-	end
-  
 	method inferInitState  = begin
 	  (*by default we use a 10 step unrolling and infer the final state value*)
 		(*unroll for 10 steps*)
@@ -852,10 +837,7 @@ object (self)
 		end
 	end
 
-	method compsyn  (instrlist1:string list) (outstrlist1:string list) (resetCondition:string) = begin
-  		(*****************************************)
-      (*parsing the reset condition*)
-  		(*****************************************)
+	method parsingResetCondition resetCondition = begin
 		printf "reset condition is %s\n" resetCondition;
 		let regexpResetCondition=Str.regexp "\\([a-zA-Z0-9_]+\\)==1'b\\([01]\\)" in
 		let resetSignalName=begin
@@ -867,107 +849,140 @@ object (self)
 			end;
 			Str.replace_first regexpResetCondition "\\1" resetCondition 
 		end 
+		and resetValue     = begin
+			(*try 
+				List.assoc rstSigName name_index_lst
+			with Not_found -> begin
+			  printf "%s+++\n" rstSigName;
+  			dbg_print "FATAL : invalid reset signal name";
+				assert false
+			end;*)
+			let v=Str.replace_first regexpResetCondition "\\2" resetCondition  in begin
+				match v with 
+				"0" -> 0
+				|"1" -> 1
+				|_ -> assert false
+			end
+		end 
 		in begin
 			(*save it here such that rstSigName can be used in getNonProtocolInputList*)
  			rstSigName <- resetSignalName ;
+ 			rstValue   <- resetValue ;
+		end;
+	end
 
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
-  		(*initalizing*)
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
+
+	method genIOandCNF instrlist1 outstrlist1 = begin
+  	self#set_lock_oneinst;
+  
+  	(*****************************************)
+  	(*setting the input and output vars*)
+  	(*****************************************)
+  	instrlist <- instrlist1 ;
+  	outstrlist <- outstrlist1 ;
+  	
+		let getAllInputList = begin
+			(*find out all input ports*)
+			let ext_input key cont last_res = begin
+				match cont#get_obj with
+				Tobj_input_declaration(_) -> begin
+					key::last_res
+				end
+				| _ -> last_res
+			end
+			in
+			Hashtbl.fold ext_input circuit_hst []
+		end in
+  	let allinputs = getAllInputList in begin
+  		non_proctocol_input_list <- self#getNonProtocolInputList 	allinputs;
+  	end;
+  	
+  	(*++++++++++++++++*)
+  	(*++++++++++++++++*)
+  	(*encoding the transition relation's CNF*)
+  	(*++++++++++++++++*)
+  	(*++++++++++++++++*)
+  	dbg_print "encode_oneInstance2SAT_step1" ;
+  	let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
+  		self#set_unlock_oneinst;
+  		(*set it into the clslst_one_inst*)
+  		self#append_clause_list_oneinst clslst_one_inst ; 
+  		(*record the final largest index*)
+  		self#set_last_index_oneinst last_index;
   		self#set_lock_oneinst;
+  	end ;
   
-  		(*****************************************)
-  		(*setting the input and output vars*)
-  		(*****************************************)
-  		instrlist <- instrlist1 ;
-  		outstrlist <- outstrlist1 ;
-  		
-  		let allinputs = self#getAllInputList in begin
-  			non_proctocol_input_list <- self#getNonProtocolInputList 	allinputs;
-  		end;
-  		
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
-  		(*encoding the transition relation's CNF*)
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
-  		dbg_print "encode_oneInstance2SAT_step1" ;
-  		let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
-  			self#set_unlock_oneinst;
-  			(*set it into the clslst_one_inst*)
-  			self#append_clause_list_oneinst clslst_one_inst ; 
-  			(*record the final largest index*)
-  			self#set_last_index_oneinst last_index;
-  			self#set_lock_oneinst;
-  		end ;
+  	(*their var index*)
+  	bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
+  	bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
+  	bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
   
-  		(*their var index*)
-  		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
-  		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
-  		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
+  	(*****************************************)
+  	(*write out the encoded CNF*)
+  	(*****************************************)
+  	(*let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
+  	self#dumpCNF cnfname_1inst ;*)
   
-  
-  
-  		(*****************************************)
-  		(*write out the encoded CNF*)
-  		(*****************************************)
-  		(*let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
-  		self#dumpCNF cnfname_1inst ;*)
-  
-  		(*dont allow to change the clause_list_multiple *)
-  		self#set_lock_multiple;
-  		(*set the current time to be used by dbg_print*)
-  		set_current_time;
-  
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
-  		(*following is relational code*)
-  		(*++++++++++++++++*)
-  		(*++++++++++++++++*)
-  		let resetValue     = begin
-				(*try 
-					List.assoc rstSigName name_index_lst
-  			with Not_found -> begin
-				  printf "%s+++\n" rstSigName;
-	  			dbg_print "FATAL : invalid reset signal name";
-					assert false
-				end;*)
-  			let v=Str.replace_first regexpResetCondition "\\2" resetCondition  in begin
-  				match v with 
-  				"0" -> 0
-  				|"1" -> 1
-  				|_ -> begin
-  					dbg_print "FATAL : invalid reset value";
-  					exit 1;
-  				end
-  			end
-  		end 
-  		in begin
-  		(*****************************************)
-  		(*finding out init state*)
-  		(*****************************************)
-  			rstValue   <- resetValue ;
-  		  self#printInOutList non_proctocol_input_list instrlist outstrlist;
+  	(*dont allow to change the clause_list_multiple *)
+  	self#set_lock_multiple;
+		
+		(*print out the set of input, output npi and reset*)
+		printf "\n+++++ start of non protocol input list +++\n";
+		List.iter (printf " ^%s^ ") non_proctocol_input_list ;
+		printf "\n+++++ start of protocol input list +++\n";
+		List.iter (printf " ^%s^ ")  instrlist;
+		printf "\n+++++ start of protocol output list +++\n";
+		List.iter (printf " ^%s^ ")  outstrlist;
+		printf "\n+++++reset signal ++++++++++++++\n";
+		printf "%s\n" rstSigName;
+		printf "%d\n" rstValue;
+		flush stdout;
+	end
 
-  			let dff_idx_ass_lst_InitState = self#inferInitState  in 
-  			let proc_idx_ass2Literal idxass = begin
-  				match idxass with
-  				(idx,false) -> ([-idx],"init")
-  				| (idx,true) -> ([idx],"init")
-  				|_-> assert false
-  			end in
-  			let initclauselist=List.map proc_idx_ass2Literal dff_idx_ass_lst_InitState in begin
-  				initStateClauseList <- initclauselist
-  			end;
-				printf "initial clause list\n";
-				List.iter (fun x -> match x with (intlist,_) -> List.iter (printf " %d ") intlist;printf "\n") initStateClauseList ;
+	method compsyn  (instrlist1:string list) (outstrlist1:string list) (resetCondition:string) = begin
+    (*parsing the reset condition*)
+		self#parsingResetCondition resetCondition;
+  	(*initalizing*)
+		self#genIOandCNF instrlist1 outstrlist1;
+  	(*set the current time to be used by dbg_print*)
+  	set_current_time;
+  
+  	(*++++++++++++++++*)
+  	(*++++++++++++++++*)
+  	(*following is relational code*)
+  	(*++++++++++++++++*)
+  	(*++++++++++++++++*)
+  	(*****************************************)
+  	(*finding out init state*)
+  	(*****************************************)
+  	let dff_idx_ass_lst_InitState = self#inferInitState  in 
+  	let proc_idx_ass2Literal idxass = begin
+  		match idxass with
+  		(idx,false) -> ([-idx],"init")
+  		| (idx,true) -> ([idx],"init")
+  		|_-> assert false
+  	end 
+		in begin
+  		initStateClauseList <- List.map proc_idx_ass2Literal dff_idx_ass_lst_InitState ;
+			printf "initial clause list\n";
+			let proc_prt x = begin
+				match x with 
+				(intlist,_) -> begin
+					List.iter (printf " %d ") intlist;printf "\n"
+				end
+			end 
+			in begin
+				List.iter proc_prt initStateClauseList ;
 				flush stdout;
-  			self#inferPredicateUniq ;
-  			MultiMiniSAT.checkClosed ();
-  		end 
-		end
+			end
+		end;
+		
+  	(*****************************************)
+  	(*major loop of inferring predicate*)
+  	(*****************************************)
+  	self#inferPredicateUniq ;
+
+  	MultiMiniSAT.checkClosed ();
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
@@ -1286,7 +1301,12 @@ object (self)
 				bnd := (!bnd) +1 ;
 				printf "bnd %d\n" (!bnd);
 				printf "inferedAssertionList len %d\n" (List.length (!inferedAssertionList));
-        let (resNonloop,targetNonloop)=self#checkNonloop (!bnd) (!bnd) (!bnd) (!inferedAssertionList) in begin
+        let (resNonloop,targetNonloop)=self#checkNonloop 
+																					(!bnd) 
+																					(!bnd) 
+																					(!bnd) 
+																					(!inferedAssertionList) 
+				in begin
 					match resNonloop with
 					UNSATISFIABLE  -> begin
 						printf "checkNonloop OK\n";
@@ -1299,12 +1319,12 @@ object (self)
 						                                          (!bnd) 
 																											(!bnd) 
 																											(!bnd) 
-																											(!inferedAssertionList) 
 																											targetNonloop
+																											(!inferedAssertionList)
 						in begin
 							assert(resLoop==UNSATISFIABLE);
-							printf "new assertion\n";
-							List.iter (fun itpo ->  self#print_itpo itpo; printf "\n") newInferedAssertion;
+							(*printf "new assertion\n";
+							List.iter (fun itpo ->  self#print_itpo itpo; printf "\n") newInferedAssertion;*)
 							dbg_print "exiting checkLoop";
 							inferedAssertionList := newInferedAssertion @ (!inferedAssertionList);
 						end
@@ -1321,22 +1341,25 @@ object (self)
 										p 
 										l 
 										r 
-										inferedAssertionList
+		and (largestIdx,clslst_invass)=self#gen_invassertion p l r inferedAssertionList
 		in 
-		let res=Dumpsat.dump_sat_withclear (([target],"target")::clause_list_multiple) in
+		let res=Dumpsat.dump_sat_withclear (clslst_invass@(([target],"target")::clause_list_multiple)) in
 		(res,target)
 	end
 
-	method checkLoop p l r inferedAssertionList targetNonloop  = begin
+	method checkLoop p l r targetNonloop inferedAssertionList = begin
 		printf "p %d l %d r %d final_index_oneinst %d\n" p l r final_index_oneinst;
 		printf "bi len %d npi leng %d\n" (List.length bv_instrlist) (List.length bv_non_proctocol_input_list);
 		dbg_print "checkLoop";
-		let targetLoop=self#construct_loop p l r  targetNonloop  in
-    let iv_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) (bv_instrlist@bv_non_proctocol_input_list) in
-    let (res,itpolst)=allsat_interp_BDD_loop 
+		let targetLoop=self#construct_loop p l r  targetNonloop  
+		and (largestIdx_invass,clslst_invass)=self#gen_invassertion p l r inferedAssertionList in
+    let iv_0 = self#shiftCycleList (p+l) (bv_instrlist@bv_non_proctocol_input_list) in
+    let (res,itpolst)=allsat_interp_BDD_loop_symmatry 
 												clause_list_multiple 
 												targetLoop 
 												iv_0
+												clslst_invass
+												largestIdx_invass
 												(self#construct_varlst2assumption p l r ) 
 												ddM 
 												true
@@ -1444,11 +1467,37 @@ object (self)
 		end
 	end
 
+	method gen_invassertion p l r inferedAssertionList = begin
+		let currentMaxIdx= ref last_index 
+		and currentClsList = ref [] 
+		and ass = List.map (fun x -> shiftAssertion x ((p+l)*final_index_oneinst)) inferedAssertionList in
+		let force_assertion_alone arr_itpo1= begin
+			let (topidx,last_index_new,clslst_2beappend)= encode_assertion arr_itpo1 (!currentMaxIdx)
+			in begin(*this is the function enabler*)
+				assert (topidx<= last_index_new);
+				currentMaxIdx := last_index_new;
+				currentClsList :=  (([topidx],"f i")::clslst_2beappend)@(!currentClsList);
+				check_clslst_maxidx (!currentClsList) (!currentMaxIdx);
+				()
+			end
+		end 
+		in begin
+			List.iter (fun x -> force_assertion_alone (invert_assertion x)) ass;
+			((!currentMaxIdx),(!currentClsList))
+		end
+	end
+
+	(*notice that we only 
+		unroll the R, 
+		force the nonreset condition
+		input non-equ
+		output equ
+		npi all equ
+	*)
 	method construct_nonloop 
 						(p:int) 
 						(l:int) 
 						(r:int) 
-						infered_assertion_array_lst 
 	= begin
 		(*this one allow l<0 but must > -r+1*)
 		assert(p>=0);
@@ -1468,44 +1517,36 @@ object (self)
 		r instance for right expansion
 		*2 for another expansion
 		*)
-		let (clause_list_multiple_aux,last_index_aux) = (self#gen_multiple_instance_step2 ((p+(max l 0)+1+r)*2))
+		let (clslst_aux,last_index_aux) = self#gen_multiple_instance_step2 ((p+l+1+r)*2)
 		in begin
-			self#set_clause_list_multiple clause_list_multiple_aux;
+			self#set_clause_list_multiple clslst_aux;
 			self#set_last_index last_index_aux;
-			()
 		end
 		;
 		
     (*enforcing the non reset consition*)
-		let clause_list_multiple_aux = (self#gen_nonreset ((p+(max l 0)+1+r)*2))
+		let clause_list_multiple_aux = (self#gen_nonreset ((p+l+1+r)*2))
 		in begin
 			self#append_clause_list_multiple  clause_list_multiple_aux ;
-			()
 		end
 		;
 
 		(*connect the first p+1+r instance*)
-		let clslst =(self#connect_multiple_instance_step3 0 (p+(max l 0)+r)) in begin
+		let clslst =self#connect_multiple_instance_step3 0 (p+l+1+r-1) in begin
 			self#append_clause_list_multiple  clslst ;
 		end;
 		(*check_clslst_maxidx clause_list_multiple last_index;*)
 		
 		(*connect the secnod p+1+r instance*)
-		let clslst2=(self#connect_multiple_instance_step3 (p+(max l 0)+1+r) ((p+(max l 0)+1+r)*2-1)) in begin
+		let clslst2=self#connect_multiple_instance_step3 (p+l+1+r) ((p+l+1+r)*2-1) 
+		in begin
 			self#append_clause_list_multiple  clslst2 ;
 		end;
 		(*check_clslst_maxidx clause_list_multiple last_index;*)
-		
-		(*TODO : shift the assertion to proper cycle*)
-		let ass = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst))  infered_assertion_array_lst in begin
-			(*force to be invalid*)
-			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass;
-		end
-		;
 
 		(*we again have the input constrain nonequal back*)
-    let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) bv_instrlist
-    and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) bv_instrlist in begin
+    let ov_0 = self#shiftCycleList (p+l) bv_instrlist
+    and ov_b = self#shiftCycleList (p+l+1+r+p+l) bv_instrlist in begin
 	    self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b))
 		end
 		;
@@ -1515,7 +1556,7 @@ object (self)
     and npi_cycle_lst = lr2list 1 ((p+l+1+r)*2-1)
     in
     let proc_npi_cycle i = begin
-      let npi_lst_i = List.map (fun x -> x+(i*final_index_oneinst)) npi_lst
+      let npi_lst_i = self#shiftCycleList i npi_lst
       in
       self#append_clause_list_multiple (self#encode_EQUV (npi_lst) (npi_lst_i))
     end
@@ -1526,11 +1567,11 @@ object (self)
 		(*force the output of p to p+l+1+r-1 to be the same*)
 		(*here l can be negative, while above l must be larger than 0*)
 		let ov = bv_outstrlist
-		and outputframe_idx = lr2list (p-(min l 0)) (p+(max l 0)+1+r-1)
+		and outputframe_idx = lr2list p (p+l+1+r-1)
 		in
-		let ov_b_1 = List.concat (List.map (fun frmidx -> (List.map (fun x -> x+ frmidx*final_index_oneinst) ov) ) outputframe_idx)
+		let ov_b_1 = List.concat (List.map (fun frm ->  self#shiftCycleList frm ov ) outputframe_idx)
 		in
-		let ov_b_2 = List.map (fun x -> x+(p+(max l 0)+1+r)*final_index_oneinst) ov_b_1
+		let ov_b_2 = self#shiftCycleList (p+l+1+r) ov_b_1
 		in
 		let (target,oclslist)= self#encode_EQUV_res ov_b_1 ov_b_2 
 		in begin
@@ -1548,17 +1589,17 @@ object (self)
 			let lilst = lr2list starti (endi-1)
 			in
 			let proc_liequ li = begin
-				let ov_li  = List.map (fun x -> x+ li*final_index_oneinst) dff_curlst
+				let ov_li  = self#shiftCycleList li dff_curlst
 				and rilst = lr2list (li+1) endi
 				in
 				let proc_riequ ri = begin
-					let ov_ri  = List.map (fun x -> x+ ri*final_index_oneinst) dff_curlst
+					let ov_ri  = self#shiftCycleList ri dff_curlst
 					in
 					let ov_pair_lst = List.combine ov_li ov_ri
 					in
 					let (res_lst,cls_lstlst) = List.split (List.map (self#alloc_and_equ_res) ov_pair_lst)
 					in
-					let ov_pair_lst_shift = List.map (fun x -> match x with (v1,v2) -> (v1+(p+l+1+r)*final_index_oneinst,v2+(p+l+1+r)*final_index_oneinst)) ov_pair_lst
+					let ov_pair_lst_shift = List.map (fun x -> match x with (v1,v2) -> (self#shiftCycleIndex (p+l+1+r) v1,self#shiftCycleIndex (p+l+1+r) v2)) ov_pair_lst
 					in
 					let (res_lst_shift,cls_lstlst_shift) = List.split (List.map (self#alloc_and_equ_res) ov_pair_lst_shift)
 					and rii = self#alloc_index 1
@@ -1588,10 +1629,14 @@ object (self)
 	end
 
 	method construct_varlst2assumption (p:int) (l:int) (r:int)  = begin
-		let ov = bv_instrlist@bv_non_proctocol_input_list
+		(*let ov = bv_instrlist@bv_non_proctocol_input_list*)
+		(*2014 Dec 06 Shen we dont need to constrain bv_non_proctocol_input_list
+		becasue it is always the same across all steps, 
+		and we already use it as important vars on step p+l*)
+		let ov = bv_instrlist
 		and cycle_list = lr2list 0 (((p+l+1+r)*2)-1) in
 		let cycle_list_filtered = List.filter (fun x -> (x!=(p+l) )) cycle_list in
-		let input_cycle_i i = List.map (fun x -> x + i*final_index_oneinst) ov in
+		let input_cycle_i i = self#shiftCycleList i ov in
 		List.concat ( List.map input_cycle_i  cycle_list_filtered) 
 	end
 
