@@ -11,7 +11,7 @@ else
   return
  fi
 fi
-ncprep ../src/fl_xfi.v +incdir+../src/XFIPCS  +overwrite
+ncprep /home/syshen/compsyn_ips/xfi_relational/src/fl_xfi.v +incdir+/home/syshen/compsyn_ips/xfi_relational/src/XFIPCS  +overwrite
 ncvlog -f ncvlog.args  
 ncelab tb_xfi            -access +rwc  -NOSPECIFY -NOTIMINGCHECKS  -SNAPSHOT worklib.tb:v -TIMESCALE 1ns/1ps 
 ncsim  worklib.tb:v   -input ../scr/restore.tcl -gui 

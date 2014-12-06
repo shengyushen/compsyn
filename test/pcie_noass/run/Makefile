@@ -1,7 +1,7 @@
 # project depedent section to be modified by user
-SRCFILE	= ../src/verilog/filelist.v
+SRCFILE	= /home/syshen/compsyn_ips/pcie_noass/src/verilog/filelist.v
 TOPMOD = PCIEXP_TX
-DCINCPATH = ../src/verilog
+DCINCPATH = /home/syshen/compsyn_ips/pcie_noass/src/verilog
 INPUT = -Input TXDATA -Input TXDATAK
 OUTPUT = -Output HSS_TXD 
 

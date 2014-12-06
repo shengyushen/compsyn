@@ -980,9 +980,13 @@ object (self)
   	(*****************************************)
   	(*major loop of inferring predicate*)
   	(*****************************************)
-  	self#inferPredicateUniq ;
-
-  	MultiMiniSAT.checkClosed ();
+  	let (_,asslst) = self#inferPredicateUniq in
+		let simass=simplify_withBDD (invert_assertion (or_assertion asslst)) ddM in begin
+			printf "final assertion is \n";
+			self#print_itpo simass;
+			printf "\n";
+  		MultiMiniSAT.checkClosed ();
+		end
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
@@ -1470,7 +1474,8 @@ object (self)
 	method gen_invassertion p l r inferedAssertionList = begin
 		let currentMaxIdx= ref last_index 
 		and currentClsList = ref [] 
-		and ass = List.map (fun x -> shiftAssertion x ((p+l)*final_index_oneinst)) inferedAssertionList in
+		and ass1 = List.map (fun x -> shiftAssertion x ((p+l)*final_index_oneinst        )) inferedAssertionList 
+		and ass2 = List.map (fun x -> shiftAssertion x ((p+l+p+l+1+r)*final_index_oneinst)) inferedAssertionList in
 		let force_assertion_alone arr_itpo1= begin
 			let (topidx,last_index_new,clslst_2beappend)= encode_assertion arr_itpo1 (!currentMaxIdx)
 			in begin(*this is the function enabler*)
@@ -1482,7 +1487,7 @@ object (self)
 			end
 		end 
 		in begin
-			List.iter (fun x -> force_assertion_alone (invert_assertion x)) ass;
+			List.iter (fun x -> force_assertion_alone (invert_assertion x)) (ass1@ass2);
 			((!currentMaxIdx),(!currentClsList))
 		end
 	end
@@ -3268,10 +3273,12 @@ object (self)
 				end
 				| TiterpCircuit_refvar(varidx) -> begin
 					if (varidx>0) then begin
-						sprintf "%s(%d)" (self#idx2name varidx) varidx
+						(*sprintf "%s(%d)" (self#idx2name varidx) varidx*)
+						sprintf "%d" varidx
 					end
 					else if (varidx<0) then begin
-						sprintf "!%s(%d)" (self#idx2name (-varidx)) varidx
+						(*sprintf "!%s(%d)" (self#idx2name (-varidx)) varidx*)
+						sprintf "%d" varidx
 					end
 					else assert false
 				end

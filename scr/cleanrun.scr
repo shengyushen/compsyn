@@ -1,0 +1,8 @@
+for i in `find test -type d -name 'run*'`
+do
+  pushd .
+  cd $i
+  make clean 
+  popd
+done
+

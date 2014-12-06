@@ -1,8 +1,0 @@
-# project depedent section to be modified by user
-SRCFILE	= ../src/verilog/filelist.v
-TOPMOD = PCIEXP_TX
-DCINCPATH = ../src/verilog
-INPUT = -Input TXDATA -Input TXDATAK -Input CNTL_TXEnable_P0  
-OUTPUT = -Output HSS_TXD -Output HSS_TXBEACONCMD -Output HSS_TXELECIDLE
-
-include ../../../vp/scr/Makefile.in

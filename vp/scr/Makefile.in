@@ -27,21 +27,6 @@ naive : sed_res.v
 		echo "to simulate the result, source ../scr/sim.scr";\
 	fi
 
-# this is the TCAD 11 version with:
-# 1 Halting approach based on double ring detection
-# 2 use stand alone nl_const_minisat written in C 
-# to characterize the bool function with Craig interpolant
-# it is much faster(more than 10 times on xfi) than c4interp
-halting : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_halting.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	@if [ -f continue.scr ] ; then  \
-		chmod a+x ./continue.scr; \
-		./continue.scr  > continue.log; \
-		echo "to simulate the result, source ../scr/sim.scr";\
-	fi
-
 # this is the improved TCAD 11 version with:
 # 1 to take advantage of rmred, we dont enumerate all combination of p d and l, instead, they are set to the same
 # this is much faster than halting
@@ -56,49 +41,6 @@ halting_fast : sed_res.v
 		echo "to simulate the result, source ../scr/sim.scr";\
 	fi
 
-
-# clean up the code structure 
-# generate multiple decoder if they actually exist
-# wall case
-infer_multidec : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_infer_multidec.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	@if [ -f continue.scr ] ; then  \
-		chmod a+x ./continue.scr; \
-		./continue.scr  > continue.log; \
-		echo "to simulate the result, source ../scr/sim.scr";\
-	fi
-
-infer_multidec_not : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_infer_multidec_not.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	@if [ -f continue.scr ] ; then  \
-		chmod a+x ./continue.scr; \
-		./continue.scr  > continue.log; \
-		echo "to simulate the result, source ../scr/sim.scr";\
-	fi
-
-infer_multidec_not_charfirst : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_infer_multidec_not_charfirst.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	@if [ -f continue.scr ] ; then  \
-		chmod a+x ./continue.scr; \
-		./continue.scr  > continue.log; \
-		echo "to simulate the result, source ../scr/sim.scr";\
-	fi
-
-infer_multidec_not_charfirst_nowall : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_infer_multidec_not_charfirst_nowall.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	@if [ -f continue.scr ] ; then  \
-		chmod a+x ./continue.scr; \
-		./continue.scr  > continue.log; \
-		echo "to simulate the result, source ../scr/sim.scr";\
-	fi
 
 infer_multidec_not_charfirst_nowall_cnt : sed_res.v
 	@rm -rf container_c* ./continue.scr
@@ -197,7 +139,7 @@ encoderarea :
 	dc_shell-t -f syn_blif.tcl > syn.log
 	# converting to blif
 	lsi10k2blif.exe dc_synres_blif.v ${TOPMOD}
-	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
+	abc -f ../../scr/abc_syn_blif.scr |tee abc.log
 
   
 
@@ -215,6 +157,7 @@ clean :
 	@rm -rf *.aag *.aig
 	@rm -rf *.dot *.ps
 	@rm -f *.tmp 
+	@rm -rf dc_synres_dual_blif.v dc_synres_blif.v
 
 distclean : 
 	@rm -rf  *.log cds.lib continue.scr dependent hdl.var INCA_libs container_c1 lsi10k2rtl RUN_NC waves.shm WORK *.args ncsim.key *.tcl ncverilog.key resolve_trace
@@ -231,4 +174,5 @@ distclean :
 	@rm -rf *.aag *.aig
 	@rm -rf *.dot *.ps
 	@rm -f *.tmp *.v
+	@rm -rf dc_synres_dual_blif.v dc_synres_blif.v
 

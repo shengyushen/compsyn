@@ -571,6 +571,20 @@ begin
     				end
     				;
 
+						(*adding the newly discovered assertion to the second unrolling sequence 
+						because they are symmatry to each other*)
+						(*2014Dec06 Shen : but this seems to significantly slow down *)
+						(*let new_assertion_shiftedsymmatry=shiftAssertion new_assertion shiftamount in
+    				let (maxiii,clslst_2beappend)=
+    					force_assertion_alone (invert_assertion new_assertion_shiftedsymmatry) (!tmpmaxidx) in
+    				begin
+    				  (*printf "old max %d maxiii %d\n" maxidx_R maxiii;
+						  flush stdout;*)
+							tmpmaxidx:=maxiii;
+							Dumpsat.incrementalAddClauseList solverIdx clslst_2beappend maxiii;
+    				end
+    				;*)
+
 						(*printf "new_assertion\n";
 						print_itpo_alone new_assertion;
 						printf "\n";*)

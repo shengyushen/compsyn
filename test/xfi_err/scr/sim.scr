@@ -11,4 +11,4 @@ else
   return
  fi
 fi
-ncverilog ../src/fl_xfi.v  +gui +access+rwc +incdir+../src/XFIPCS -y ../../../std_ovl -y ../../../std_ovl/vlog95 +libext+.vlib +incdir+../../../std_ovl +tcl+../scr/restore.tcl
+ncverilog /home/syshen/compsyn_ips/xfi_err/src/fl_xfi.v  +gui +access+rwc +incdir+/home/syshen/compsyn_ips/xfi_err/src/XFIPCS -y ../../../std_ovl -y ../../../std_ovl/vlog95 +libext+.vlib +incdir+../../../std_ovl +tcl+../scr/restore.tcl
