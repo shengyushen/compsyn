@@ -1,6 +1,6 @@
 OCAMLC	= ocamlopt
 OCAMLC_OPT = str.cmxa unix.cmxa  -I /usr/local/lib  
-OBJS	= misc.cmx typedef.cmx dependent.cmx statement.cmx expression.cmx print_v.cmx  misc2.cmx very.cmx  parser.cmx circuit_obj.cmx elabmod.cmx rtl.cmx main.cmx 
+OBJS	= misc.cmx typedef.cmx dependent.cmx statement.cmx expression.cmx print_v.cmx  misc2.cmx very.cmx  parser.cmx circuit_obj.cmx main.cmx 
 CUDD_DIR = ../../other/cudd
 TAGPROG = otags
 CTAGS   = ctags

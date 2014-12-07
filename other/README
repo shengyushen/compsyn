@@ -1,0 +1,19 @@
+not used :
+	blast   
+	IC3ref-master
+	iimc-1.3
+	minisat220
+
+
+used in simplifBDD :
+caddie
+cudd
+
+MiniSat114_enhance : used in nl_const_minisat
+nl_const_minisat : used in infer
+nl_const_zchaff : used in haling_fast
+zchaff	: used in naive
+
+
+MiniSat-ocaml-0.2.v1.14  : used in halting fast
+MiniSat-ocaml-0.2.v1.14_simproof : used in infer and relational and multisat and pdr

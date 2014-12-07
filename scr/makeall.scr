@@ -2,8 +2,6 @@ for i in \
   other/cudd \
   other/caddie \
   other/zchaff \
-  other/zchaff_enhance \
-  other/MiniSat-p_v1.14 \
   other/MiniSat114_enhance \
   other/nl_const_zchaff \
   other/nl_const_minisat \

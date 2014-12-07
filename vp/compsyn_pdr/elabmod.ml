@@ -981,11 +981,20 @@ object (self)
   	(*major loop of inferring predicate*)
   	(*****************************************)
   	let (_,asslst) = self#inferPredicateUniq in
-		let simass=simplify_withBDD (invert_assertion (or_assertion asslst)) ddM in begin
+		let simass     = simplify_withBDD (invert_assertion (or_assertion asslst)) ddM in 
+		let simass_inv = simplify_withBDD ( (or_assertion asslst)) ddM in begin
 			printf "final assertion is \n";
 			self#print_itpo simass;
 			printf "\n";
+
+			printf "final inverted assertion is \n";
+			self#print_itpo simass_inv;
+			printf "\n";
+
   		MultiMiniSAT.checkClosed ();
+
+			
+
 		end
 	end
 

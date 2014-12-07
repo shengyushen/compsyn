@@ -79,23 +79,5 @@ object (self)
 		emod#print dumpout
 	end
 	
-	method compsyn (delay:int) (length:int) (instrlist:string list) (outstrlist:string list) = begin
-		match elaboratedModuleList with
-		[topmod] -> begin
-			let (res,d,l,p,f)=topmod#compsyn delay length instrlist outstrlist
-			in begin
-				if (res==SATISFIABLE) then begin
-					Printf.printf "FINAL RESULT : FAILED:  can't found solution in provided bound"
-				end
-				else begin
-					Printf.printf "FINAL RESULT : SUCCESS:  delay = %d  length = %d prefix = %d forward = %d \n" d l p f
-				end
-			end
-		end
-		| _ -> begin
-			Printf.printf "fatal error: there should only be one module"; 
-			exit 1
-		end
-	end
 end
 ;;

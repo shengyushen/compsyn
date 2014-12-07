@@ -1,4 +1,3 @@
-open Rtl
 open Sys
 open Print_v
 
