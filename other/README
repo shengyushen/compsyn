@@ -10,6 +10,8 @@ caddie
 cudd
 
 MiniSat114_enhance : used in nl_const_minisat
+
+standalone program
 nl_const_minisat : used in infer
 nl_const_zchaff : used in haling_fast
 zchaff	: used in naive

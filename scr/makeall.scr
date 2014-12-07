@@ -1,8 +1,23 @@
+# these are used by others, so need to make first in order
 for i in \
   other/cudd \
   other/caddie \
-  other/zchaff \
   other/MiniSat114_enhance \
+;
+do 
+  pushd .
+  cd $i
+  echo "Making " $i
+  make clean
+  make distclean
+  make
+  popd
+done
+
+
+# these are used as indepedent programs, can be make parallel
+for i in \
+  other/zchaff \
   other/nl_const_zchaff \
   other/nl_const_minisat \
 ;
@@ -12,7 +27,7 @@ do
   echo "Making " $i
   make clean
   make distclean
-  make
+  make &
   popd
 done
 
