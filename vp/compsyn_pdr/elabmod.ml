@@ -1484,7 +1484,7 @@ object (self)
 		let currentMaxIdx= ref last_index 
 		and currentClsList = ref [] 
 		and ass1 = List.map (fun x -> shiftAssertion x ((p+l)*final_index_oneinst        )) inferedAssertionList 
-		and ass2 = List.map (fun x -> shiftAssertion x ((p+l+p+l+1+r)*final_index_oneinst)) inferedAssertionList in
+		(*and ass2 = List.map (fun x -> shiftAssertion x ((p+l+p+l+1+r)*final_index_oneinst)) inferedAssertionList*) in
 		let force_assertion_alone arr_itpo1= begin
 			let (topidx,last_index_new,clslst_2beappend)= encode_assertion arr_itpo1 (!currentMaxIdx)
 			in begin(*this is the function enabler*)
@@ -1496,7 +1496,7 @@ object (self)
 			end
 		end 
 		in begin
-			List.iter (fun x -> force_assertion_alone (invert_assertion x)) (ass1@ass2);
+			List.iter (fun x -> force_assertion_alone (invert_assertion x)) (ass1(*@ass2*));
 			((!currentMaxIdx),(!currentClsList))
 		end
 	end
@@ -3282,12 +3282,12 @@ object (self)
 				end
 				| TiterpCircuit_refvar(varidx) -> begin
 					if (varidx>0) then begin
-						(*sprintf "%s(%d)" (self#idx2name varidx) varidx*)
-						sprintf "%d" varidx
+						sprintf "%s(%d)" (self#idx2name varidx) varidx
+						(*sprintf "%d" varidx*)
 					end
 					else if (varidx<0) then begin
-						(*sprintf "!%s(%d)" (self#idx2name (-varidx)) varidx*)
-						sprintf "%d" varidx
+						sprintf "!%s(%d)" (self#idx2name (-varidx)) varidx
+						(*sprintf "%d" varidx*)
 					end
 					else assert false
 				end

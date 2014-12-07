@@ -59,3 +59,4 @@ parser.ml: parser.mly typedef.ml
 
 clean : 
 	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_pdr  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe  tags TAGS *.session *.wv log
+
