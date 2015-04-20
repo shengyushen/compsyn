@@ -895,7 +895,10 @@ object (self)
 		flush stdout;
 	end
 
-	method compsyn stepList = begin
+	method compsyn (stepList:((string*int) list) list) = begin
+		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
+		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
+		List.iter procPrintStep stepList;*)
 		
 	end
 

@@ -77,7 +77,6 @@ end in
 begin
 	getStepHead 1;
 	let stepList=getStepIter 1 in begin
-		List.iter (fun x -> Printf.printf "xxxx\n" ; List.iter (fun y -> Printf.printf "	%s %d\n" (fst y) (snd y)) x) stepList;
 		objRTL#compsyn stepList;
 		exit 0
 	end
