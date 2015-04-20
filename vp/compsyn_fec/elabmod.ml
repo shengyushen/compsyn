@@ -38,6 +38,7 @@ object (self)
 	val mutable seq_always_list : (statement*(string list)) list = [] (*string list is the list of result*)
 	val mutable comb_always_list : (statement*(string list)) list = []
 	val mutable cont_ass_list : assignment list = []
+	val mutable mod_list : (string*module_instance) list = []
 
 	(*these will be generatesd in encode_oneInstance2SAT_step1 method*)
 	(*
@@ -557,9 +558,10 @@ object (self)
 			Printf.printf "fatal error : not supported T_gate_declaration\n";
 			exit 1
 		end
-		| T_module_instantiation(_) -> begin
-			Printf.printf "fatal error : not supported T_module_instantiation\n";
-			exit 1
+		| T_module_instantiation(name,_,_,milst) -> begin
+			assert ((List.length milst)==1) ;
+			mod_list <- (name,List.hd milst)::mod_list;
+			()
 		end
 		| T_parameter_override(_) -> begin
 			Printf.printf "fatal error : not supported T_parameter_override\n";
@@ -893,166 +895,8 @@ object (self)
 		flush stdout;
 	end
 
-	method compsyn (*(bound_dl:int)*) (instrlist1:string list) (outstrlist1:string list) = begin
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*initalizing*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		self#set_lock_oneinst;
-
-		(*****************************************)
-		(*setting the input and output vars*)
-		(*****************************************)
-		instrlist <- instrlist1 ;
-		outstrlist <- outstrlist1 ;
+	method compsyn stepList = begin
 		
-		let allinputs = self#getAllInputList in begin
-			non_proctocol_input_list <- self#getNonProtocolInputList 	allinputs;
-		end;
-		self#printInOutList non_proctocol_input_list instrlist outstrlist;
-		
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*encoding the transition relation's CNF*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		dbg_print "encode_oneInstance2SAT_step1" ;
-		let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
-			self#set_unlock_oneinst;
-			(*set it into the clslst_one_inst*)
-			self#append_clause_list_oneinst clslst_one_inst ; 
-			(*record the final largest index*)
-			self#set_last_index_oneinst last_index;
-			self#set_lock_oneinst;
-		end ;
-
-		(*their var index*)
-		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
-		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
-		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
-
-
-		(*****************************************)
-		(*write out the encoded CNF*)
-		(*****************************************)
-		let cnfname_1inst = String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"] in
-		self#dumpCNF cnfname_1inst ;
-
-		(*dont allow to change the clause_list_multiple *)
-		self#set_lock_multiple;
-		(*set the current time to be used by dbg_print*)
-		set_current_time;
-
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-		(*following is relational code*)
-		(*++++++++++++++++*)
-		(*++++++++++++++++*)
-
-		(*****************************************)
-		(*finding out the bits that are uniquely determined*)
-		(*****************************************)
-		let list_tf_BitI_n = self#procDetermineUniqueInputs bv_instrlist in 
-		let (listUniqBitITmp,listNonuniqBitITmp) = begin
-			(*partiion them into two list*)
-			List.partition (fun x -> match x with (tf,_,_) -> tf) list_tf_BitI_n
-		end in
-		let maxN = begin
-			(*find out the largest one that make the flow control vars to be uniquely determind*)
-			let listN = List.map (fun b -> match b with (_,_,n) -> n) listUniqBitITmp in
-			begin
-				if((List.length listN)=0) then begin
-					dbg_print "Non of the input bits can be uniquely determined, no decoder exists for this encoder";
-					exit 0
-				end;
-        Intlist.listMax listN
-			end
-		end(*find out the bit index*)
-		and listUniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listUniqBitITmp 
-		and listNonuniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listNonuniqBitITmp in 
-		let (pres,
-				p_pre,
-				l1,
-				r1,
-				_,
-				infered_assertion_array_lst_new_loop)	= 
-		begin 
-		(*****************************************)
-		(*infer the predicate valid(f)*)
-		(*****************************************)
-			printf "maxN %d\n" maxN;
-			dbg_print "time of finding flow control ";
-			assert((List.length listUniqBitITmp)>0);
-
-			self#inferPredicateUniq listUniqBitI listNonuniqBitI maxN 
-		end in 
-		let finalass = begin
-		(*****************************************)
-		(*simplifying valid(f)*)
-		(*****************************************)
-			dbg_print "time of inferPredicateUniq";
-			assert (pres == RES_UNIQ);
-
-			if (List.length infered_assertion_array_lst_new_loop)!=0 then 
-				simplify_withBDD (invert_assertion (or_assertion infered_assertion_array_lst_new_loop)) ddM
-			else 
-				Array.make 1 TiterpCircuit_true
-		end in 
-		let (l,r)=begin
-			self#minimizeLR p_pre l1 r1 [finalass] 
-		end in 
-		let instCNF = begin
-		(*****************************************)
-		(*the CNF for characterizing flow control vars*)
-		(*****************************************)
-			dbg_print "time of minimizeLR" ;
-			printf "the assertion before conjunct with TR\n";
-			printf "++++++++++++++++++++++++++\n";
-			self#print_itpo finalass;
-			printf "\n++++++++++++++++++++++++++\n";
-			printf "p_pre %d l %d r %d: \n" p_pre l r;
-			printf "\n++++++++++++++++++++++++++\n";
-			self#construct_nonloop_1copy p_pre l r [] [];
-			clause_list_multiple 
-		end in 
-		let instCNF2 = begin
-		(*****************************************)
-		(*the CNF for characterizing data vars*)
-		(*****************************************)
-			(*self#construct_nonloop_1copy p_pre l r [finalass_conjunct] [];*)
-			self#construct_nonloop_1copy p_pre l r [finalass] [];
-			clause_list_multiple
-		end in 
-		let lrlst = lr2list p_pre (p_pre+l+r) in
-		let ov = begin
-			let xxxx=List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) lrlst in
-			List.concat  xxxx
-		end in
-		(*new way to char*)
-		let decgen1 lst = begin
-			(*all should be true, which mean uniq and flow control *)
-			List.for_all (fun x -> match x with (tf,_,_) -> tf) lst;
-			let iv=List.map (fun x -> match x with (_,idx,_)-> idx) lst in
-			self#genDecoderFunction iv ((p_pre+l)*final_index_oneinst) ov instCNF 
-		end in
-		let decgen2 lst = begin
-			(*all should be true, which mean uniq and flow control *)
-			List.for_all (fun x -> match x with (tf,_,_) -> tf) lst;
-			let iv=List.map (fun x -> match x with (_,idx,_)-> idx) lst in
-			self#genDecoderFunction iv ((p_pre+l)*final_index_oneinst) ov instCNF2 
-		end in
-		let idx2decfunList_fv = decgen1 listUniqBitITmp 
-		and idx2decfunList_dv = decgen2 listNonuniqBitITmp in 
-		begin
-			dbg_print "time of generating decoder function";
-		(*****************************************)
-		(*characterizing all input vars decoder function*)
-		(*****************************************)
-			let idx2decfunList=idx2decfunList_fv@idx2decfunList_dv in
-			self#generateDecoderVerilog p_pre l r idx2decfunList;
-			dbg_print "time of writing verilog";
-		end
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin

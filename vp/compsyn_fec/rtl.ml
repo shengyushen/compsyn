@@ -80,9 +80,9 @@ object (self)
 		emod#print dumpout
 	end
 	
-	method compsyn (*(bound:int)*)  (instrlist:string list) (outstrlist:string list) = begin
+	method compsyn stepList = begin
 		match elaboratedModuleList with
-		[topmod] -> topmod#compsyn (*bound*) instrlist outstrlist
+		[topmod] -> topmod#compsyn stepList
 	end
 end
 ;;

@@ -51,3 +51,7 @@ and	dbg_print str = begin
 		oldtime := current_time
 	end
 end
+and errorMessageQuit msg = begin
+	Printf.printf "Error : %s\n" msg;
+	exit 0
+end
