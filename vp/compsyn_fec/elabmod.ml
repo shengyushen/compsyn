@@ -39,6 +39,7 @@ object (self)
 	val mutable comb_always_list : (statement*(string list)) list = []
 	val mutable cont_ass_list : assignment list = []
 	val mutable mod_list : (string*module_instance) list = []
+	val mutable mod_array :(string*string*)
 
 	(*these will be generatesd in encode_oneInstance2SAT_step1 method*)
 	(*
@@ -899,6 +900,7 @@ object (self)
 		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
 		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
 		List.iter procPrintStep stepList;*)
+		(*expanding the noreg_toponly.v*)
 		
 	end
 
