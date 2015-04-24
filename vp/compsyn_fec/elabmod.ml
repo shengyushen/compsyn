@@ -19,6 +19,7 @@ open Interp
 open Bddssy
 open Aig
 open Dumpsat
+open Gftype
 
 exception UNSAT
 
@@ -38,8 +39,6 @@ object (self)
 	val mutable seq_always_list : (statement*(string list)) list = [] (*string list is the list of result*)
 	val mutable comb_always_list : (statement*(string list)) list = []
 	val mutable cont_ass_list : assignment list = []
-	val mutable mod_list : (string*module_instance) list = []
-	val mutable mod_array :(string*string*)
 
 	(*these will be generatesd in encode_oneInstance2SAT_step1 method*)
 	(*
@@ -90,6 +89,13 @@ object (self)
 	val mutable last_index_genia = 3 (*1 is preserved for true predicate, 2 preserved for falsepred*)
 
 	val mutable ddM = CaddieBdd.init 0 64 256 512
+
+	(*adding new mod list for parsing fec module*)
+	val mutable mod_list : (string*module_instance) list = []
+	(*change mod_list to array of type_flat connected by wire array*)
+	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
+	val mutable last_pointer : int =0
+	val mutable flat_wire_array : (int list) array = Array.make 1 []
 
 
 	method print dumpout = begin
@@ -895,12 +901,228 @@ object (self)
 		printf "\n";
 		flush stdout;
 	end
+	
+	method getZ1 colist = begin
+		let zlist=self#getZ colist in begin
+			match zlist with
+			[z] -> z
+			| _ -> assert false
+		end
+	end
+
+	method getA1 colist = begin
+		let zlist=self#getA colist in begin
+			match zlist with
+			[z] -> z
+			| _ -> assert false
+		end
+	end
+
+	method getB1 colist = begin
+		let zlist=self#getB colist in begin
+			match zlist with
+			[z] -> z
+			| _ -> assert false
+		end
+	end
+
+	method extExp exp = begin
+		match exp with
+		T_named_port_connection(_,exp1) -> begin
+      match exp1 with
+      T_primary(T_primary_concat(explst)) -> begin
+  			List.map (fun x -> match x with T_primary(T_primary_id([str]))-> str | _ -> assert false) explst;
+      end
+      | T_primary(T_primary_id(x)) -> x
+      | T_primary(T_primary_num(_)) -> assert false
+      | T_primary(T_primary_arrbit([nm],ee)) -> begin
+			  let off = Expression.exp2int_simple ee in begin
+                Printf.printf "%s [%d]\n" nm off;
+                flush stdout;
+                assert false;
+        end
+      end
+      | T_primary(T_primary_arrrange(_,_,_)) -> assert false
+      | T_primary(_) -> assert false
+      | _ -> assert false
+		end
+		| _ -> assert false
+	end
+
+	method getZ colist = begin
+		let isZ x = begin
+			match x with
+			T_named_port_connection("Z",zexp) -> true
+			|_ -> false
+		end in
+		begin
+			match colist with
+			T_list_of_module_connections_named(clist) -> begin
+				let exp=List.find isZ clist in
+				self#extExp exp
+			end
+			|_ -> assert false
+		end
+	end
+
+	method getA colist = begin
+		let isZ x = begin
+			match x with
+			T_named_port_connection("A",zexp) -> true
+			|_ -> false
+		end in
+		begin
+			match colist with
+			T_list_of_module_connections_named(clist) -> begin
+				let exp=List.find isZ clist in
+				self#extExp exp
+			end
+			|_ -> assert false
+		end
+	end
+
+	method getB colist = begin
+		let isZ x = begin
+			match x with
+			T_named_port_connection("B",zexp) -> true
+			|_ -> false
+		end in
+		begin
+			match colist with
+			T_list_of_module_connections_named(clist) -> begin
+				let exp=List.find isZ clist in
+				self#extExp exp
+			end
+			|_ -> assert false
+		end
+	end
+
+
+	method infer_gftype_flat = begin
+		let proc_mod m = begin
+			match m with
+			(defname,T_module_instance(instname,colist)) -> begin
+				match defname with
+				"gfadd_mod" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					and bconlist = self#getB(colist)
+					in
+					let newmod=TYPE_FLAT_GFADD(instname,zconlist,aconlist,bconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "gfmult_flat_mod" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					and bconlist = self#getB(colist)
+					in
+					let newmod=TYPE_FLAT_GFMULTFLAT(instname,zconlist,aconlist,bconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "gfmult_mod" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					and bconlist = self#getB(colist)
+					in
+					let newmod=TYPE_FLAT_GFMULT(instname,zconlist,aconlist,bconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "gfdiv_mod" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					and bconlist = self#getB(colist)
+					in
+					let newmod=TYPE_FLAT_GFDIV(instname,zconlist,aconlist,bconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "tower2flat" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					in
+					let newmod=TYPE_FLAT_TOWER2FLAT(instname,zconlist,aconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "flat2tower" -> begin
+					let zconlist = self#getZ(colist)
+					and aconlist = self#getA(colist)
+					in
+					let newmod=TYPE_FLAT_FLAT2TOWER(instname,zconlist,aconlist) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "EO" -> begin
+					let zcon = self#getZ1(colist)
+					and acon = self#getA1(colist)
+					and bcon = self#getB1(colist)
+					in
+					let newmod=TYPE_FLAT_EO(instname,zcon,acon,bcon) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "AN2" -> begin
+					let zcon = self#getZ1(colist)
+					and acon = self#getA1(colist)
+					and bcon = self#getB1(colist)
+					in
+					let newmod=TYPE_FLAT_AN2(instname,zcon,acon,bcon) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "OR2" -> begin
+					let zcon = self#getZ1(colist)
+					and acon = self#getA1(colist)
+					and bcon = self#getB1(colist)
+					in
+					let newmod=TYPE_FLAT_OR2(instname,zcon,acon,bcon) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| "IV" -> begin
+					let zcon = self#getZ1(colist)
+					and acon = self#getA1(colist)
+					in
+					let newmod=TYPE_FLAT_IV(instname,zcon,acon) in begin
+						Array.set type_flat_array last_pointer newmod;
+						last_pointer <- last_pointer +1 ;
+					end
+				end
+				| _ -> begin
+					Printf.printf "Error : invalid module name %s and instname %s\n" defname instname;
+					flush stdout;
+					exit 0;
+				end
+			end
+		end in
+		List.iter proc_mod mod_list;
+	end
 
 	method compsyn (stepList:((string*int) list) list) = begin
 		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
 		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
 		List.iter procPrintStep stepList;*)
+		
+		(*first infer gftype_flat*)
+		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
+		last_pointer <- 0;
+		self#infer_gftype_flat ;
+		assert (last_pointer==(List.length mod_list));
+		
 		(*expanding the noreg_toponly.v*)
+
 		
 	end
 

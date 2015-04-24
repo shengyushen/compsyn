@@ -22,6 +22,7 @@ end
 
 let procSetMaxVar max_index = begin
 	MiniSAT.mass_new_var max_index;
+  ()
 end
 ;;
 
