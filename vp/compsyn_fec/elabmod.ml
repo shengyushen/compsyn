@@ -20,6 +20,7 @@ open Bddssy
 open Aig
 open Dumpsat
 open Gftype
+open Printf
 
 exception UNSAT
 
@@ -95,7 +96,9 @@ object (self)
 	(*change mod_list to array of type_flat connected by wire array*)
 	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
 	val mutable last_pointer : int =0
-	val mutable flat_wire_array : (int list) array = Array.make 1 []
+
+	val gfdata_hash : (type_gfdata, bool) Hashtbl.t = Hashtbl.create 100000 
+	val mutable gfdata_array : type_gfdata array = Array.make 1 TYPE_GFDATA_NULL
 
 
 	method print dumpout = begin
@@ -926,22 +929,37 @@ object (self)
 		end
 	end
 
+        method str2ion str = begin
+                if(List.mem str instrlist) then (TYPE_CONNECTION_IN,TYPE_NET_ID(str))
+                else if (List.mem str outstrlist) then (TYPE_CONNECTION_OUT,TYPE_NET_ID(str))
+                else (TYPE_CONNECTION_NET,TYPE_NET_ID(str))
+        end
+
+        method stridx2ion str idx = begin
+                if(List.mem str instrlist) then (TYPE_CONNECTION_IN,TYPE_NET_ARRAYBIT(str,idx))
+                else if (List.mem str outstrlist) then (TYPE_CONNECTION_OUT,TYPE_NET_ARRAYBIT(str,idx))
+                else (TYPE_CONNECTION_NET,TYPE_NET_ARRAYBIT(str,idx))
+        end
+
 	method extExp exp = begin
 		match exp with
 		T_named_port_connection(_,exp1) -> begin
       match exp1 with
-      T_primary(T_primary_concat(explst)) -> begin
-  			List.map (fun x -> match x with T_primary(T_primary_id([str]))-> str | _ -> assert false) explst;
+      T_primary(T_primary_concat(explst)) -> begin 
+				let proc_exp x = begin 
+					match x with 
+					T_primary(T_primary_id([str]))-> self#str2ion str 
+					| T_primary(T_primary_arrbit([str],idx)) -> self#stridx2ion str (Expression.exp2int_simple idx)
+					|  T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> (TYPE_CONNECTION_NET,TYPE_NET_CONST(0))
+					|  T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> (TYPE_CONNECTION_NET,TYPE_NET_CONST(1))
+					| _ -> assert false
+        end in
+  			List.map proc_exp explst;
       end
-      | T_primary(T_primary_id(x)) -> x
-      | T_primary(T_primary_num(_)) -> assert false
-      | T_primary(T_primary_arrbit([nm],ee)) -> begin
-			  let off = Expression.exp2int_simple ee in begin
-                Printf.printf "%s [%d]\n" nm off;
-                flush stdout;
-                assert false;
-        end
-      end
+			| T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(0))]
+			| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))]
+      | T_primary(T_primary_id([str])) -> [self#str2ion str]
+      | T_primary(T_primary_arrbit([str],idx)) -> [self#stridx2ion str (Expression.exp2int_simple idx)]
       | T_primary(T_primary_arrrange(_,_,_)) -> assert false
       | T_primary(_) -> assert false
       | _ -> assert false
@@ -949,56 +967,36 @@ object (self)
 		| _ -> assert false
 	end
 
-	method getZ colist = begin
-		let isZ x = begin
-			match x with
-			T_named_port_connection("Z",zexp) -> true
+  method getX x colist = begin
+		let isX x1 = begin
+			match x1 with
+			T_named_port_connection(xx,zexp) -> xx=x
 			|_ -> false
 		end in
 		begin
 			match colist with
 			T_list_of_module_connections_named(clist) -> begin
-				let exp=List.find isZ clist in
+				let exp=List.find isX clist in
 				self#extExp exp
 			end
 			|_ -> assert false
 		end
+  end
+
+	method getZ colist = begin
+          self#getX "Z" colist
 	end
 
 	method getA colist = begin
-		let isZ x = begin
-			match x with
-			T_named_port_connection("A",zexp) -> true
-			|_ -> false
-		end in
-		begin
-			match colist with
-			T_list_of_module_connections_named(clist) -> begin
-				let exp=List.find isZ clist in
-				self#extExp exp
-			end
-			|_ -> assert false
-		end
+          self#getX "A" colist
 	end
 
 	method getB colist = begin
-		let isZ x = begin
-			match x with
-			T_named_port_connection("B",zexp) -> true
-			|_ -> false
-		end in
-		begin
-			match colist with
-			T_list_of_module_connections_named(clist) -> begin
-				let exp=List.find isZ clist in
-				self#extExp exp
-			end
-			|_ -> assert false
-		end
+          self#getX "B" colist
 	end
 
 
-	method infer_gftype_flat = begin
+	method construct_boolonly_netlist = begin
 		let proc_mod m = begin
 			match m with
 			(defname,T_module_instance(instname,colist)) -> begin
@@ -1008,7 +1006,8 @@ object (self)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_GFADD(instname,zconlist,aconlist,bconlist) in begin
+					let newmod=TYPE_FLAT_2OPGF(GFADD,instname,zconlist,aconlist,bconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1018,7 +1017,8 @@ object (self)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_GFMULTFLAT(instname,zconlist,aconlist,bconlist) in begin
+					let newmod=TYPE_FLAT_2OPGF(GFMULTFLAT,instname,zconlist,aconlist,bconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1028,7 +1028,8 @@ object (self)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_GFMULT(instname,zconlist,aconlist,bconlist) in begin
+					let newmod=TYPE_FLAT_2OPGF(GFMULT,instname,zconlist,aconlist,bconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1038,7 +1039,8 @@ object (self)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_GFDIV(instname,zconlist,aconlist,bconlist) in begin
+					let newmod=TYPE_FLAT_2OPGF(GFDIV,instname,zconlist,aconlist,bconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1047,7 +1049,8 @@ object (self)
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					in
-					let newmod=TYPE_FLAT_TOWER2FLAT(instname,zconlist,aconlist) in begin
+					let newmod=TYPE_FLAT_1OPGF(TOWER2FLAT,instname,zconlist,aconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1056,7 +1059,8 @@ object (self)
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					in
-					let newmod=TYPE_FLAT_FLAT2TOWER(instname,zconlist,aconlist) in begin
+					let newmod=TYPE_FLAT_1OPGF(FLAT2TOWER,instname,zconlist,aconlist) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1066,7 +1070,8 @@ object (self)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_EO(instname,zcon,acon,bcon) in begin
+					let newmod=TYPE_FLAT_2OPBOOL(EO,instname,zcon,acon,bcon) 
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1076,7 +1081,8 @@ object (self)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_AN2(instname,zcon,acon,bcon) in begin
+					let newmod=TYPE_FLAT_2OPBOOL(AN2,instname,zcon,acon,bcon)
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1086,7 +1092,8 @@ object (self)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_OR2(instname,zcon,acon,bcon) in begin
+					let newmod=TYPE_FLAT_2OPBOOL(OR2,instname,zcon,acon,bcon)
+					in begin
 						Array.set type_flat_array last_pointer newmod;
 						last_pointer <- last_pointer +1 ;
 					end
@@ -1110,17 +1117,129 @@ object (self)
 		List.iter proc_mod mod_list;
 	end
 
+	method print_type_connection tc = begin
+		match tc with
+		(tion,tnet) -> begin
+			match tion with
+			TYPE_CONNECTION_NET -> Printf.printf " TYPE_CONNECTION_NET "
+			| TYPE_CONNECTION_IN -> Printf.printf " TYPE_CONNECTION_IN "
+			| TYPE_CONNECTION_OUT -> Printf.printf " TYPE_CONNECTION_OUT "
+			;
+			match tnet with
+			TYPE_NET_ID(str) -> printf " %s " str
+			| TYPE_NET_CONST(i) -> printf " %d "  i
+			| TYPE_NET_ARRAYBIT(str,idx) -> printf " %s[%d] " str idx
+		end
+	end
+
+	method print_type_connection_list tclst = begin
+		List.iter (self#print_type_connection) tclst
+	end
+
+	method print_gfdata gfdata = begin
+		match gfdata with
+		TYPE_GFDATA_GF1024(tclst) -> begin
+			Printf.printf "TYPE_GFDATA_GF1024 ";
+			self#print_type_connection_list tclst;
+			printf "\n";
+		end
+		| TYPE_GFDATA_GF3232(tclst) -> begin
+			Printf.printf "TYPE_GFDATA_GF3232 ";
+			self#print_type_connection_list tclst;
+			printf "\n";
+		end
+		| TYPE_GFDATA_BOOL(tc) -> begin
+			Printf.printf "TYPE_GFDATA_BOOL ";
+			self#print_type_connection tc;
+			printf "\n";
+		end
+		| TYPE_GFDATA_NULL -> assert false
+	end
+
+
 	method compsyn (stepList:((string*int) list) list) = begin
 		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
 		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
 		List.iter procPrintStep stepList;*)
 		
-		(*first infer gftype_flat*)
+		(*first construct the data structure with bool only*)
+		printf "start building type_flat_array\n";
+		flush stdout;
 		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
 		last_pointer <- 0;
-		self#infer_gftype_flat ;
+		self#construct_boolonly_netlist ;
 		assert (last_pointer==(List.length mod_list));
 		
+		(*then find out all gfdata type instance 
+		and construct gfdata_list*)
+		let isLstIn tclst = begin
+			(Hashtbl.mem gfdata_hash (TYPE_GFDATA_GF1024(tclst))) || (Hashtbl.mem gfdata_hash (TYPE_GFDATA_GF3232(tclst)))
+		end 
+		in
+		let isTcIn tc = begin
+			Hashtbl.mem gfdata_hash (TYPE_GFDATA_BOOL(tc))
+		end 
+		in
+		let addLstIn tclst = begin
+			Hashtbl.add gfdata_hash tclst true
+		end
+		in
+		let addTcIn tc = begin
+			Hashtbl.add gfdata_hash tc true
+		end
+		in
+		let proc_type_flat tf = begin
+			printf "dealing\n";
+			flush stdout;
+			match tf with 
+			TYPE_FLAT_2OPGF(_,_,ztclst,atclst,btclst) -> begin
+				if(isLstIn ztclst)=false then begin
+					addLstIn (TYPE_GFDATA_GF1024(ztclst));
+				end;
+				if(isLstIn atclst)=false then begin
+					addLstIn (TYPE_GFDATA_GF1024(atclst));
+				end;
+				if(isLstIn btclst)=false then begin
+					addLstIn (TYPE_GFDATA_GF1024(btclst));
+				end;
+			end
+			| TYPE_FLAT_1OPGF(_,_,ztclst,atclst) -> begin
+				if(isLstIn ztclst)=false then begin
+					addLstIn (TYPE_GFDATA_GF1024(ztclst));
+				end;
+				if(isLstIn atclst)=false then begin
+					addLstIn (TYPE_GFDATA_GF1024(atclst));
+				end;
+			end
+			| TYPE_FLAT_2OPBOOL(_,_,ztc,atc,btc) -> begin
+				if(isTcIn ztc)=false then begin
+					addTcIn (TYPE_GFDATA_BOOL(ztc));
+				end;
+				if(isTcIn atc)=false then begin
+					addTcIn (TYPE_GFDATA_BOOL(atc));
+				end;
+				if(isTcIn btc)=false then begin
+					addTcIn (TYPE_GFDATA_BOOL(btc));
+				end;
+			end
+			| TYPE_FLAT_IV(_,ztc,atc)  -> begin
+				if(isTcIn ztc)=false then begin
+					addTcIn (TYPE_GFDATA_BOOL(ztc));
+				end;
+				if(isTcIn atc)=false then begin
+					addTcIn (TYPE_GFDATA_BOOL(atc));
+				end;
+			end
+			| _ -> assert false
+		end 
+		in begin
+			printf "start building gfdata_list with type_flat_array size %d\n" (Array.length type_flat_array);
+			flush stdout;
+	 		Array.iter (proc_type_flat) type_flat_array; 
+			printf "start checking gfdata_list\n";
+			flush stdout;
+		end
+
 		(*expanding the noreg_toponly.v*)
 
 		

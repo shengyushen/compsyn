@@ -1,28 +1,53 @@
-(*gf type with string list as data, instead of inferred type*)
-(*the first string is instance name, the second is Z output, the rest are inputs*)
-type type_flat =
-	TYPE_FLAT_GFADD      of string*(string list)*(string list)*(string list)
- |TYPE_FLAT_GFMULTFLAT of string*(string list)*(string list)*(string list)
- |TYPE_FLAT_GFMULT     of string*(string list)*(string list)*(string list)
- |TYPE_FLAT_GFDIV      of string*(string list)*(string list)*(string list)
- |TYPE_FLAT_TOWER2FLAT of string*(string list)*(string list)
- |TYPE_FLAT_FLAT2TOWER of string*(string list)*(string list)
- |TYPE_FLAT_EO         of string*string*string*string
- |TYPE_FLAT_IV         of string*string*string
- |TYPE_FLAT_AN2        of string*string*string*string
- |TYPE_FLAT_OR2        of string*string*string*string
- |TYPE_FLAT_NULL
+type type_net =
+	TYPE_NET_ID of string
+	| TYPE_NET_CONST of int
+	| TYPE_NET_ARRAYBIT of string*int
 ;;
 
-type type_integrated = 
-	TYPE_INT_GFADD      of int*int*int
- |TYPE_INT_GFMULTFLAT of  int*int*int
- |TYPE_INT_GFMULT     of  int*int*int
- |TYPE_INT_GFDIV      of  int*int*int
- |TYPE_INT_TOWER2FLAT of  int*int
- |TYPE_INT_FLAT2TOWER of  int*int
- |TYPE_INT_EO         of  int*int*int
- |TYPE_INT_IV         of  int*int
- |TYPE_INT_AN2        of  int*int*int
- |TYPE_INT_OR2        of  int*int*int
+type type_ion = 
+	TYPE_CONNECTION_NET 
+	| TYPE_CONNECTION_IN 
+	| TYPE_CONNECTION_OUT
 ;;
+
+type type_connection = 
+	type_ion*type_net
+
+type type_2opgf = 
+	GFADD
+	| GFMULTFLAT
+	| GFMULT
+	| GFDIV
+;;
+type type_1opgf = 
+	TOWER2FLAT
+	| FLAT2TOWER
+;;
+type type_2opbool =
+	EO 
+	| AN2
+	| OR2
+;;
+(*gf type with string list as data, instead of inferred type*)
+(*the tuple are operation type and instance name, and is Z output, the rest are inputs*)
+type type_flat =
+	TYPE_FLAT_2OPGF      of type_2opgf*string*(type_connection list)*(type_connection list)*(type_connection list)
+ |TYPE_FLAT_1OPGF      of type_1opgf*string*(type_connection list)*(type_connection list)
+ |TYPE_FLAT_2OPBOOL    of type_2opbool*string*type_connection*type_connection*type_connection
+ |TYPE_FLAT_IV         of string*type_connection*type_connection
+ |TYPE_FLAT_NULL
+;;
+(*similar to type_flat but with index to an array of type_gfdata*)
+type type_integrated = 
+	TYPE_INT_2OPGF      of type_2opgf*string*int*int*int
+ |TYPE_INT_1OPGF      of type_1opgf*string*int*int
+ |TYPE_INT_2OPBOOL    of type_2opbool*string*int*int*int
+ |TYPE_INT_IV         of string*int*int
+ |TYPE_INT_NULL
+;;
+
+type type_gfdata = 
+	TYPE_GFDATA_GF1024 of type_connection list
+	| TYPE_GFDATA_GF3232 of type_connection list
+	| TYPE_GFDATA_BOOL of type_connection
+	| TYPE_GFDATA_NULL
