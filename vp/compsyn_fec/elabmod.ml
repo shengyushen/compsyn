@@ -93,12 +93,19 @@ object (self)
 
 	(*adding new mod list for parsing fec module*)
 	val mutable mod_list : (string*module_instance) list = []
+
 	(*change mod_list to array of type_flat connected by wire array*)
 	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
 	val mutable last_pointer : int =0
 
-	val gfdata_hash : (type_gfdata, bool) Hashtbl.t = Hashtbl.create 100000 
+	(*converting flat wire to gfdata*)
+	val mutable last_hash_pointer : int =0 
+	(*mapping from type_gfdata to index *)
+	val gfdata_hash : (type_gfdata, int) Hashtbl.t = Hashtbl.create 100000 
+	(*mapping from index to type_gfdata*)
 	val mutable gfdata_array : type_gfdata array = Array.make 1 TYPE_GFDATA_NULL
+	(*modules*)
+	val mutable gfmod_array : type_gfmod array = Array.make 1 TYPE_GFMOD_NULL
 
 
 	method print dumpout = begin
@@ -1181,16 +1188,16 @@ object (self)
 		end 
 		in
 		let addLstIn tclst = begin
-			Hashtbl.add gfdata_hash tclst true
+			Hashtbl.add gfdata_hash tclst last_hash_pointer;
+			last_hash_pointer <- last_hash_pointer +1;
 		end
 		in
 		let addTcIn tc = begin
-			Hashtbl.add gfdata_hash tc true
+			Hashtbl.add gfdata_hash tc last_hash_pointer;
+			last_hash_pointer <- last_hash_pointer +1;
 		end
 		in
 		let proc_type_flat tf = begin
-			printf "dealing\n";
-			flush stdout;
 			match tf with 
 			TYPE_FLAT_2OPGF(_,_,ztclst,atclst,btclst) -> begin
 				if(isLstIn ztclst)=false then begin
@@ -1235,11 +1242,58 @@ object (self)
 		in begin
 			printf "start building gfdata_list with type_flat_array size %d\n" (Array.length type_flat_array);
 			flush stdout;
+			
+			(*building gfdata_hash*)
 	 		Array.iter (proc_type_flat) type_flat_array; 
-			printf "start checking gfdata_list\n";
-			flush stdout;
-		end
 
+			let hash_length=Hashtbl.length gfdata_hash 
+			in begin
+				assert (hash_length=last_hash_pointer);
+				gfdata_array <- Array.make last_hash_pointer TYPE_GFDATA_NULL;
+				printf "length of gfdata_hash %d\n" hash_length;
+				(*move the data from gfdata_hash to gfdata_array*)
+				let proc_gfdata_hash gfd idx = begin
+					assert (idx >=0 && idx <hash_length);
+					assert (gfdata_array.(idx)=TYPE_GFDATA_NULL);
+					Array.set gfdata_array idx gfd;
+				end in
+				Hashtbl.iter proc_gfdata_hash gfdata_hash;
+			end
+		end;
+
+		(*building gfmod_array*)
+		let proc_flat_array tf = begin
+			match tf with
+			TYPE_FLAT_2OPGF(t2gf,modname,ztclst,atclst,btclst) -> begin
+				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(ztclst))
+				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(atclst))
+				and bidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(btclst))
+				in 
+				TYPE_GFMOD_2OPGF(t2gf,modname,zidx,aidx,bidx)
+			end
+			| TYPE_FLAT_1OPGF(t1gf,modname,ztclst,atclst) -> begin
+				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(ztclst))
+				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(atclst))
+				in 
+				TYPE_GFMOD_1OPGF(t1gf,modname,zidx,aidx)
+			end
+			| TYPE_FLAT_2OPBOOL(t2b,modname,ztc,atc,btc) -> begin
+				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(ztc))
+				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(atc))
+				and bidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(btc))
+				in
+				TYPE_GFMOD_2OPBOOL(t2b,modname,zidx,aidx,bidx)
+			end
+			| TYPE_FLAT_IV(modname,ztc,atc) -> begin
+				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(ztc))
+				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(atc))
+				in
+				TYPE_GFMOD_IV(modname,zidx,aidx)
+			end
+			| _ -> assert false
+		end in begin
+			gfmod_array <- Array.map proc_flat_array type_flat_array;
+		end
 		(*expanding the noreg_toponly.v*)
 
 		

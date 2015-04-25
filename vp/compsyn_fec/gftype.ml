@@ -38,12 +38,12 @@ type type_flat =
  |TYPE_FLAT_NULL
 ;;
 (*similar to type_flat but with index to an array of type_gfdata*)
-type type_integrated = 
-	TYPE_INT_2OPGF      of type_2opgf*string*int*int*int
- |TYPE_INT_1OPGF      of type_1opgf*string*int*int
- |TYPE_INT_2OPBOOL    of type_2opbool*string*int*int*int
- |TYPE_INT_IV         of string*int*int
- |TYPE_INT_NULL
+type type_gfmod = 
+	TYPE_GFMOD_2OPGF      of type_2opgf*string*int*int*int
+ |TYPE_GFMOD_1OPGF      of type_1opgf*string*int*int
+ |TYPE_GFMOD_2OPBOOL    of type_2opbool*string*int*int*int
+ |TYPE_GFMOD_IV         of string*int*int
+ |TYPE_GFMOD_NULL
 ;;
 
 type type_gfdata = 
