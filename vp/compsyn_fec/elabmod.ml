@@ -94,9 +94,16 @@ object (self)
 	(*adding new mod list for parsing fec module*)
 	val mutable mod_list : (string*module_instance) list = []
 
+
+
+
+
 	(*change mod_list to array of type_flat connected by wire array*)
 	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
 	val mutable last_pointer : int =0
+
+	(*unfold type_flat*)
+	val mutable type_flat_unfold_array : type_flat array =Array.make 1 TYPE_FLAT_NULL
 
 	(*converting flat wire to gfdata*)
 	val mutable last_hash_pointer : int =0 
@@ -967,9 +974,12 @@ object (self)
 			| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))]
       | T_primary(T_primary_id([str])) -> [self#str2ion str]
       | T_primary(T_primary_arrbit([str],idx)) -> [self#stridx2ion str (Expression.exp2int_simple idx)]
-      | T_primary(T_primary_arrrange(_,_,_)) -> assert false
-      | T_primary(_) -> assert false
-      | _ -> assert false
+      | _ -> begin
+				print_v_expression stdout exp1;
+				printf "\n";
+				flush stdout;
+				assert false
+			end
 		end
 		| _ -> assert false
 	end
@@ -1004,6 +1014,10 @@ object (self)
 
 
 	method construct_boolonly_netlist = begin
+		printf "construct_boolonly_netlist start\n";
+		flush stdout;
+		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
+		last_pointer <- 0;
 		let proc_mod m = begin
 			match m with
 			(defname,T_module_instance(instname,colist)) -> begin
@@ -1122,6 +1136,7 @@ object (self)
 			end
 		end in
 		List.iter proc_mod mod_list;
+		assert (last_pointer==(List.length mod_list));
 	end
 
 	method print_type_connection tc = begin
@@ -1163,20 +1178,7 @@ object (self)
 		| TYPE_GFDATA_NULL -> assert false
 	end
 
-
-	method compsyn (stepList:((string*int) list) list) = begin
-		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
-		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
-		List.iter procPrintStep stepList;*)
-		
-		(*first construct the data structure with bool only*)
-		printf "start building type_flat_array\n";
-		flush stdout;
-		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
-		last_pointer <- 0;
-		self#construct_boolonly_netlist ;
-		assert (last_pointer==(List.length mod_list));
-		
+	method construct_gf_netlist = begin
 		(*then find out all gfdata type instance 
 		and construct gfdata_list*)
 		let isLstIn tclst = begin
@@ -1295,8 +1297,152 @@ object (self)
 			gfmod_array <- Array.map proc_flat_array type_flat_array;
 		end
 		(*expanding the noreg_toponly.v*)
+	end
 
+	method isQ tnet = begin
+		match tnet with
+		TYPE_NET_ID(str) -> string_match (regexp "^.*_Q$") str 0
+		| _ -> false
+	end
+	
+	method isD tnet = begin
+		match tnet with
+		TYPE_NET_ID(str) -> string_match (regexp "^.*_D$") str 0
+		| _ -> false
+	end
+
+	method mapnet idx tnet = begin
+		match tnet with
+		TYPE_NET_ID(str) -> begin
+			let newstr= sprintf "%s_inst_%d" str idx
+			in
+			TYPE_NET_ID(newstr)
+		end
+		| TYPE_NET_CONST(_) -> tnet
+		| TYPE_NET_ARRAYBIT(str,id) -> begin
+			let newstr= sprintf "%s_inst_%d" str idx
+			in
+			TYPE_NET_ARRAYBIT(newstr,id)
+		end
+	end
+
+	method map2prevInstanceDnet idx tnet = begin
+		match tnet with
+		TYPE_NET_ID(str) -> begin
+			let nonQstr=global_replace (regexp "_Q$") "_D" str 
+			in
+			TYPE_NET_ID(sprintf "%s_inst_%d" nonQstr (idx-1))
+		end
+		| _ -> assert false
+	end
+
+	method mapinstance idx tc = begin
+		match tc with
+		(tion,tnet) -> begin
+			match tion with
+			TYPE_CONNECTION_NET -> begin
+				let newtnet=self#mapnet idx tnet
+				in
+				(tion,newtnet)
+			end
+			| TYPE_CONNECTION_IN -> begin
+				if(self#isQ tnet) then begin
+					(*all Q will be used as internal nets that
+					connected to previous instance's D net*)
+					if(idx=0) then begin
+						(*for 0 instance no driving need*)
+						(TYPE_CONNECTION_NET,tnet)
+					end
+					else begin
+						let newtnet=self#map2prevInstanceDnet idx tnet
+						in
+						(TYPE_CONNECTION_NET,newtnet)
+					end
+				end
+				else begin
+					let newtnet=self#mapnet idx tnet
+					in
+					(tion,newtnet)
+				end
+			end
+			| TYPE_CONNECTION_OUT -> begin
+				if(self#isD tnet) then begin
+					let newtnet=self#mapnet idx tnet
+					in
+					(TYPE_CONNECTION_NET,newtnet)
+				end
+				else begin
+					let newtnet=self#mapnet idx tnet
+					in
+					(tion,newtnet)
+				end
+			end
+		end
+	end
+
+	method mapinstanceList idx tclst  = begin
+		List.map (self#mapinstance idx) tclst
+	end
+
+	method proc_unfold_tf idx arrayPos tf = begin
+		let newtf= begin
+			match tf with
+			TYPE_FLAT_2OPGF(type_2opgf,instname,ztclst,atclst,btclst) -> begin
+				let ztclst1=self#mapinstanceList idx ztclst
+				and atclst1=self#mapinstanceList idx atclst
+				and btclst1=self#mapinstanceList idx btclst
+				in 
+				TYPE_FLAT_2OPGF(type_2opgf,instname,ztclst1,atclst1,btclst1)
+			end
+			| TYPE_FLAT_1OPGF(type_1opgf,instname,ztclst,atclst) -> begin
+				let ztclst1=self#mapinstanceList idx ztclst
+				and atclst1=self#mapinstanceList idx atclst
+				in 
+				TYPE_FLAT_1OPGF(type_1opgf,instname,ztclst1,atclst1)
+			end
+			| TYPE_FLAT_2OPBOOL(type_2opbool,instname,ztc,atc,btc) -> begin
+				let ztc1=self#mapinstance idx ztc
+				and atc1=self#mapinstance idx atc
+				and btc1=self#mapinstance idx btc
+				in
+				TYPE_FLAT_2OPBOOL(type_2opbool,instname,ztc1,atc1,btc1)
+			end
+			| TYPE_FLAT_IV(instname,ztc,atc) -> begin
+				let ztc1=self#mapinstance idx ztc
+				and atc1=self#mapinstance idx atc
+				in
+				TYPE_FLAT_IV(instname,ztc1,atc1)
+			end
+			| _ -> assert false
+		end
+		and oldLength=Array.length type_flat_array
+		in
+		Array.set type_flat_unfold_array (idx*oldLength+arrayPos) newtf
+	end
+
+	method unfold_boolonly_netlist unfoldNumber = begin
+		printf "unfold_boolonly_netlist start\n";
+
+		let newlength=(Array.length type_flat_array)*unfoldNumber
+		in
+		type_flat_unfold_array <- Array.make newlength TYPE_FLAT_NULL;
+
+		for i=0 to (unfoldNumber-1) do
+			Array.iteri (self#proc_unfold_tf i ) type_flat_array;
+		done;
+	end
+
+	method compsyn (stepList:((string*int) list) list) unfoldNumber = begin
+		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
+		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
+		List.iter procPrintStep stepList;*)
 		
+		(*first construct the data structure with bool only*)
+		self#construct_boolonly_netlist ;
+
+		(* unfold it 		 *)
+		self#unfold_boolonly_netlist unfoldNumber ;
+
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin

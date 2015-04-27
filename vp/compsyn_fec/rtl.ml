@@ -80,9 +80,9 @@ object (self)
 		emod#print dumpout
 	end
 	
-	method compsyn stepList = begin
+	method compsyn stepList unfoldNumber= begin
 		match elaboratedModuleList with
-		[topmod] -> topmod#compsyn stepList
+		[topmod] -> topmod#compsyn stepList unfoldNumber
 	end
 end
 ;;

@@ -37,6 +37,7 @@ type type_flat =
  |TYPE_FLAT_IV         of string*type_connection*type_connection
  |TYPE_FLAT_NULL
 ;;
+
 (*similar to type_flat but with index to an array of type_gfdata*)
 type type_gfmod = 
 	TYPE_GFMOD_2OPGF      of type_2opgf*string*int*int*int

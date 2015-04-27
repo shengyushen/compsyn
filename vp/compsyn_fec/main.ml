@@ -78,7 +78,7 @@ begin
 	getStepHead 1;
 	let stepList=getStepIter 1 in begin
           Printf.printf "finished parsing\n";
-		objRTL#compsyn stepList;
+		objRTL#compsyn stepList 20;
 		exit 0
 	end
 end;
