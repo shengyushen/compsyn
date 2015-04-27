@@ -2,6 +2,7 @@ type type_net =
 	TYPE_NET_ID of string
 	| TYPE_NET_CONST of int
 	| TYPE_NET_ARRAYBIT of string*int
+	| TYPE_NET_NULL
 ;;
 
 type type_ion = 

@@ -974,6 +974,10 @@ object (self)
 			| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))]
       | T_primary(T_primary_id([str])) -> [self#str2ion str]
       | T_primary(T_primary_arrbit([str],idx)) -> [self#stridx2ion str (Expression.exp2int_simple idx)]
+			| T_expression_NOSPEC(_) -> begin
+				(*non connected*)
+				[TYPE_CONNECTION_NET,TYPE_NET_NULL]
+			end
       | _ -> begin
 				print_v_expression stdout exp1;
 				printf "\n";
@@ -1018,7 +1022,7 @@ object (self)
 		flush stdout;
 		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
 		last_pointer <- 0;
-		let proc_mod m = begin
+		let proc_mod_inner m = begin
 			match m with
 			(defname,T_module_instance(instname,colist)) -> begin
 				match defname with
@@ -1027,106 +1031,67 @@ object (self)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_2OPGF(GFADD,instname,zconlist,aconlist,bconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPGF(GFADD,instname,zconlist,aconlist,bconlist) 
 				end
 				| "gfmult_flat_mod" -> begin
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_2OPGF(GFMULTFLAT,instname,zconlist,aconlist,bconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPGF(GFMULTFLAT,instname,zconlist,aconlist,bconlist) 
 				end
 				| "gfmult_mod" -> begin
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_2OPGF(GFMULT,instname,zconlist,aconlist,bconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPGF(GFMULT,instname,zconlist,aconlist,bconlist) 
 				end
 				| "gfdiv_mod" -> begin
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					and bconlist = self#getB(colist)
 					in
-					let newmod=TYPE_FLAT_2OPGF(GFDIV,instname,zconlist,aconlist,bconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPGF(GFDIV,instname,zconlist,aconlist,bconlist) 
 				end
 				| "tower2flat" -> begin
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					in
-					let newmod=TYPE_FLAT_1OPGF(TOWER2FLAT,instname,zconlist,aconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_1OPGF(TOWER2FLAT,instname,zconlist,aconlist) 
 				end
 				| "flat2tower" -> begin
 					let zconlist = self#getZ(colist)
 					and aconlist = self#getA(colist)
 					in
-					let newmod=TYPE_FLAT_1OPGF(FLAT2TOWER,instname,zconlist,aconlist) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_1OPGF(FLAT2TOWER,instname,zconlist,aconlist) 
 				end
 				| "EO" -> begin
 					let zcon = self#getZ1(colist)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_2OPBOOL(EO,instname,zcon,acon,bcon) 
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPBOOL(EO,instname,zcon,acon,bcon) 
 				end
 				| "AN2" -> begin
 					let zcon = self#getZ1(colist)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_2OPBOOL(AN2,instname,zcon,acon,bcon)
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPBOOL(AN2,instname,zcon,acon,bcon)
 				end
 				| "OR2" -> begin
 					let zcon = self#getZ1(colist)
 					and acon = self#getA1(colist)
 					and bcon = self#getB1(colist)
 					in
-					let newmod=TYPE_FLAT_2OPBOOL(OR2,instname,zcon,acon,bcon)
-					in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_2OPBOOL(OR2,instname,zcon,acon,bcon)
 				end
 				| "IV" -> begin
 					let zcon = self#getZ1(colist)
 					and acon = self#getA1(colist)
 					in
-					let newmod=TYPE_FLAT_IV(instname,zcon,acon) in begin
-						Array.set type_flat_array last_pointer newmod;
-						last_pointer <- last_pointer +1 ;
-					end
+					TYPE_FLAT_IV(instname,zcon,acon)
 				end
 				| _ -> begin
 					Printf.printf "Error : invalid module name %s and instname %s\n" defname instname;
@@ -1134,7 +1099,27 @@ object (self)
 					exit 0;
 				end
 			end
-		end in
+		end 
+		in
+		let proc_mod m = begin
+			let newm=proc_mod_inner m 
+			in
+			let newmod=begin
+				(*all modules instance with Z not connected will become TYPE_FLAT_NULL*)
+				match newm with
+				TYPE_FLAT_2OPGF(_,_,[(_,TYPE_NET_NULL)],_,_) -> TYPE_FLAT_NULL
+				| TYPE_FLAT_1OPGF(_,_,[(_,TYPE_NET_NULL)],_) -> TYPE_FLAT_NULL
+				| TYPE_FLAT_2OPBOOL(_,_,(_,TYPE_NET_NULL),_,_) -> TYPE_FLAT_NULL
+				| TYPE_FLAT_IV(_,(_,TYPE_NET_NULL),_) -> TYPE_FLAT_NULL
+				| _ -> newm
+			end
+			in 
+			begin
+				Array.set type_flat_array last_pointer newmod;
+				last_pointer <- last_pointer +1 ;
+			end
+		end
+		in
 		List.iter proc_mod mod_list;
 		assert (last_pointer==(List.length mod_list));
 	end
@@ -1151,6 +1136,7 @@ object (self)
 			TYPE_NET_ID(str) -> printf " %s " str
 			| TYPE_NET_CONST(i) -> printf " %d "  i
 			| TYPE_NET_ARRAYBIT(str,idx) -> printf " %s[%d] " str idx
+			| TYPE_NET_NULL -> assert false
 		end
 	end
 
@@ -1324,6 +1310,7 @@ object (self)
 			in
 			TYPE_NET_ARRAYBIT(newstr,id)
 		end
+		| TYPE_NET_NULL -> assert false
 	end
 
 	method map2prevInstanceDnet idx tnet = begin
@@ -1413,6 +1400,7 @@ object (self)
 				in
 				TYPE_FLAT_IV(instname,ztc1,atc1)
 			end
+			| TYPE_FLAT_NULL -> tf
 			| _ -> assert false
 		end
 		and oldLength=Array.length type_flat_array
@@ -1442,6 +1430,10 @@ object (self)
 
 		(* unfold it 		 *)
 		self#unfold_boolonly_netlist unfoldNumber ;
+
+		assert ( (List.length seq_always_list)=0);
+		assert ( (List.length comb_always_list)=0);
+		printf "length of cont_ass_list %d\n" (List.length cont_ass_list);
 
 	end
 
