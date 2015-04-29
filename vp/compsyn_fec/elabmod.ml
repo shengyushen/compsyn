@@ -112,6 +112,7 @@ object (self)
 	val mutable assignHashR2L_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
 	val mutable hashInput_unfold  : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashOutput_unfold : (string,range) Hashtbl.t = Hashtbl.create 100
+	val mutable hashWireUnfold : (string,range) Hashtbl.t=Hashtbl.create 100000
 
 	(*converting flat wire to gfdata*)
 	val mutable last_hash_pointer : int =0 
@@ -1345,16 +1346,20 @@ object (self)
 		| _ -> false
 	end
 
+	method mapname str idx = begin
+		sprintf "%s_inst_%d" str idx
+	end
+
 	method mapnet idx tnet = begin
 		match tnet with
 		TYPE_NET_ID(str) -> begin
-			let newstr= sprintf "%s_inst_%d" str idx
+			let newstr=self#mapname str idx 
 			in
 			TYPE_NET_ID(newstr)
 		end
 		| TYPE_NET_CONST(_) -> tnet
 		| TYPE_NET_ARRAYBIT(str,id) -> begin
-			let newstr= sprintf "%s_inst_%d" str idx
+			let newstr=self#mapname str idx 
 			in
 			TYPE_NET_ARRAYBIT(newstr,id)
 		end
@@ -1366,7 +1371,7 @@ object (self)
 		TYPE_NET_ID(str) -> begin
 			let nonQstr=global_replace (regexp "_Q$") "_D" str 
 			in
-			TYPE_NET_ID(sprintf "%s_inst_%d" nonQstr (idx-1))
+			TYPE_NET_ID(self#mapname nonQstr (idx-1))
 		end
 		| _ -> assert false
 	end
@@ -1444,6 +1449,32 @@ object (self)
 		end
 	end
 
+	method procUnfoldInputs idx str rng = begin
+		if(self#isQstr str) then begin
+			(*_Q is previous register dont use it as input *)
+			()
+		end
+		else begin
+			assert ((self#isDstr str)=false);
+			let newstr=self#mapname str idx
+			in
+			Hashtbl.add hashInput_unfold newstr rng
+		end
+	end
+
+	method procUnfoldOutputs idx str rng = begin
+		if(self#isDstr str) then begin
+			(*_D is current register dont use it as output *)
+			()
+		end
+		else begin
+			assert ((self#isQstr str)=false);
+			let newstr=self#mapname str idx
+			in
+			Hashtbl.add hashOutput_unfold newstr rng
+		end
+	end
+
 	method unfold_boolonly_netlist unfoldNumber = begin
 		printf "unfold_boolonly_netlist start\n";
 
@@ -1458,6 +1489,29 @@ object (self)
 		for i=0 to (unfoldNumber-1) do
 			Hashtbl.iter (self#proc_unfold_L2R i ) assignHashL2R;
 		done;
+
+		for i=0 to (unfoldNumber-1) do
+			Hashtbl.iter (self#procUnfoldInputs i) hashInput;
+		done;
+
+		for i=0 to (unfoldNumber-1) do
+			Hashtbl.iter (self#procUnfoldOutputs i) hashOutput;
+		done;
+
+		for i=0 to (unfoldNumber-1) do
+			Hashtbl.iter (self#procUnfoldWires i) circuit_hst;
+		done;
+
+	end
+
+	method procUnfoldWires idx key cont = begin
+		match cont#get_obj with
+		Tobj_net_declaration(rng) -> begin
+			let newkey=self#mapname key idx
+			in
+			Hashtbl.add hashWireUnfold newkey rng
+		end
+		| _ -> ()
 	end
 
 	method handleAssignment = begin
@@ -1574,141 +1628,155 @@ object (self)
 		let flatNetlist=open_out  "flat.v"
 		in begin
 			fprintf flatNetlist "module %s(\n" name;
-
-			let procOutput str rng = begin
-				match rng with
-				T_range_NOSPEC -> 
-					fprintf flatNetlist "  output %s,\n" str;
-				| _ -> begin
-					let (l,r)=rng2lr rng
-					in
-					fprintf flatNetlist "  output [%d:%d] %s,\n" l r str;
-				end
-			end
-			in
-			Hashtbl.iter  procOutput hashOutput ;
-
-			let procInput str rng = begin
-				match rng with
-				T_range_NOSPEC ->
-					fprintf flatNetlist "  input %s,\n" str
-				| _ -> begin
-					let (l,r)=rng2lr rng
-					in
-					fprintf flatNetlist "  input [%d:%d] %s,\n" l r str;
-				end
-			end
-			in
-			Hashtbl.iter  procInput hashInput ;
-
+			Hashtbl.iter (self#procOutput flatNetlist) hashOutput ;
+			Hashtbl.iter (self#procInput flatNetlist) hashInput ;
 			fprintf flatNetlist "  input xx\n);\n";
-
 			(*wires*)
-			let print_wire key cont = begin
-				match cont#get_obj with
-				Tobj_net_declaration(rng) -> begin
-					fprintf flatNetlist "   wire ";
-					print_v_range flatNetlist rng;
-					fprintf flatNetlist "   %s ; \n" key
-				end
-				| _ -> ()
-			end
-			in
-			Hashtbl.iter print_wire circuit_hst
-			;
-
-
+			Hashtbl.iter (self#print_wire flatNetlist) circuit_hst;
 			(*assignments*)
-			let procPrintAssign lvnet rvnet = begin
-				fprintf flatNetlist "  assign ";
-				begin
-					match lvnet with
-					TYPE_NET_ID(str) -> 
-						fprintf flatNetlist " %s = " str;
-					| TYPE_NET_ARRAYBIT(str,idx) ->
-						fprintf flatNetlist " %s[%d] = " str idx
-					| _ -> assert false
-				end
-				;
-				begin
-					match rvnet with
-					TYPE_NET_ID(str) ->
-						fprintf flatNetlist " %s ;\n" str
-					| TYPE_NET_ARRAYBIT(str,idx) ->
-						fprintf flatNetlist " %s[%d] ;\n" str idx
-					| _ -> assert false
-				end
-			end
-			in
-			Hashtbl.iter procPrintAssign assignHashL2R;
-
+			Hashtbl.iter (self#procPrintAssign flatNetlist) assignHashL2R;
 			(*module*)
-			let printTC tc = begin
-				match tc with
-				(_,TYPE_NET_ID(str)) -> 
-					fprintf flatNetlist "%s" str
-				| (_,TYPE_NET_ARRAYBIT(str,idx)) ->
-					fprintf flatNetlist "%s[%d]" str idx
-				| (_,TYPE_NET_CONST(i)) -> begin	
-					assert (i=1||i=0);
-					fprintf flatNetlist "1'b%d" i
-				end
-				| _ -> assert false
-			end
-			in
-			let rec printTCL tcl = begin
-				match tcl with
-				[hd] -> printTC hd
-				| hd::tl -> begin
-					printTC hd;
-					fprintf flatNetlist ",";
-					printTCL tl;
-				end
-				| _ -> assert false
-			end
-			in
-			let procPrintModule tf = begin
-				match tf with
-				(modname,inm,ztcl,atcl,btcl) -> begin
-					if((self#is2OpGF modname) || (self#is2OpBool modname)) then begin
-						fprintf flatNetlist "  %s %s (\n" modname inm;
-	
-						fprintf flatNetlist ".Z({";
-						printTCL ztcl;
-						fprintf flatNetlist "}),\n";
-	
-						fprintf flatNetlist ".A({";
-						printTCL atcl;
-						fprintf flatNetlist "}),\n";
-	
-						fprintf flatNetlist ".B({";
-						printTCL btcl;
-						fprintf flatNetlist "})\n";
-	
-						fprintf flatNetlist ");\n";
-					end
-					else if((self#is1OpGF modname) || (self#is1OpBool modname)) then begin
-						fprintf flatNetlist "%s %s (\n" modname inm;
-	
-						fprintf flatNetlist ".Z({";
-						printTCL ztcl;
-						fprintf flatNetlist "}),\n";
-	
-						fprintf flatNetlist ".A({";
-						printTCL atcl;
-						fprintf flatNetlist "})\n";
-	
-						fprintf flatNetlist ");\n";
-					end
-					else if(self#is0Op modname) then  ()
-					else assert false
-				end
-			end
-			in
-			Array.iter procPrintModule type_flat_array;
-
+			Array.iter (self#procPrintModule flatNetlist)  type_flat_array;
 			fprintf flatNetlist "endmodule\n";
-			
+			close_out flatNetlist;
+		end
+	end
+
+	method procInput flatNetlist str rng = begin
+		match rng with
+		T_range_NOSPEC ->
+			fprintf flatNetlist "  input %s,\n" str
+		| _ -> begin
+			let (l,r)=rng2lr rng
+			in
+			fprintf flatNetlist "  input [%d:%d] %s,\n" l r str;
+		end
+	end
+
+	method procOutput flatNetlist str rng = begin
+		match rng with
+		T_range_NOSPEC -> 
+			fprintf flatNetlist "  output %s,\n" str;
+		| _ -> begin
+			let (l,r)=rng2lr rng
+			in
+			fprintf flatNetlist "  output [%d:%d] %s,\n" l r str;
+		end
+	end
+
+	method print_wire flatNetlist key cont = begin
+		match cont#get_obj with
+		Tobj_net_declaration(rng) -> begin
+			fprintf flatNetlist "   wire ";
+			print_v_range flatNetlist rng;
+			fprintf flatNetlist "   %s ; \n" key
+		end
+		| _ -> ()
+	end
+
+	method procPrintAssign flatNetlist lvnet rvnet = begin
+		fprintf flatNetlist "  assign ";
+		begin
+			match lvnet with
+			TYPE_NET_ID(str) -> 
+				fprintf flatNetlist " %s = " str;
+			| TYPE_NET_ARRAYBIT(str,idx) ->
+				fprintf flatNetlist " %s[%d] = " str idx
+			| _ -> assert false
+		end
+		;
+		begin
+			match rvnet with
+			TYPE_NET_ID(str) ->
+				fprintf flatNetlist " %s ;\n" str
+			| TYPE_NET_ARRAYBIT(str,idx) ->
+				fprintf flatNetlist " %s[%d] ;\n" str idx
+			| _ -> assert false
+		end
+	end
+
+	method  procPrintModule flatNetlist tf = begin
+		let printTC tc = begin
+			match tc with
+			(_,TYPE_NET_ID(str)) -> 
+				fprintf flatNetlist "%s" str
+			| (_,TYPE_NET_ARRAYBIT(str,idx)) ->
+				fprintf flatNetlist "%s[%d]" str idx
+			| (_,TYPE_NET_CONST(i)) -> begin	
+				assert (i=1||i=0);
+				fprintf flatNetlist "1'b%d" i
+			end
+			| _ -> assert false
+		end
+		in
+		let rec printTCL tcl = begin
+			match tcl with
+			[hd] -> printTC hd
+			| hd::tl -> begin
+				printTC hd;
+				fprintf flatNetlist ",";
+				printTCL tl;
+			end
+			| _ -> assert false
+		end
+		in
+		match tf with
+		(modname,inm,ztcl,atcl,btcl) -> begin
+			if((self#is2OpGF modname) || (self#is2OpBool modname)) then begin
+				fprintf flatNetlist "  %s %s (\n" modname inm;
+
+				fprintf flatNetlist ".Z({";
+				printTCL ztcl;
+				fprintf flatNetlist "}),\n";
+
+				fprintf flatNetlist ".A({";
+				printTCL atcl;
+				fprintf flatNetlist "}),\n";
+
+				fprintf flatNetlist ".B({";
+				printTCL btcl;
+				fprintf flatNetlist "})\n";
+
+				fprintf flatNetlist ");\n";
+			end
+			else if((self#is1OpGF modname) || (self#is1OpBool modname)) then begin
+				fprintf flatNetlist "%s %s (\n" modname inm;
+
+				fprintf flatNetlist ".Z({";
+				printTCL ztcl;
+				fprintf flatNetlist "}),\n";
+
+				fprintf flatNetlist ".A({";
+				printTCL atcl;
+				fprintf flatNetlist "})\n";
+
+				fprintf flatNetlist ");\n";
+			end
+			else if(self#is0Op modname) then  ()
+			else assert false
+		end
+	end
+
+	method print_wire_unfold flatNetlist str rng = begin
+		fprintf flatNetlist "   wire ";
+		print_v_range flatNetlist rng;
+		fprintf flatNetlist "   %s ; \n" str;
+	end
+
+	method writeUnfoldNetlist = begin
+		let flatNetlist=open_out  "unfold.v"
+		in begin
+			fprintf flatNetlist "module %s_unfold(\n" name;
+			Hashtbl.iter (self#procOutput flatNetlist) hashOutput_unfold ;
+			Hashtbl.iter (self#procInput flatNetlist) hashInput_unfold ;
+			fprintf flatNetlist "  input xx\n);\n";
+			(*wires*)
+			Hashtbl.iter (self#print_wire_unfold flatNetlist) hashWireUnfold;
+			(*assignments*)
+			Hashtbl.iter (self#procPrintAssign flatNetlist) assignHashL2R_unfold;
+			(*module*)
+			Array.iter (self#procPrintModule flatNetlist)  type_flat_unfold_array;
+			fprintf flatNetlist "endmodule\n";
 			close_out flatNetlist;
 		end
 	end
@@ -1724,10 +1792,12 @@ object (self)
 		then replace it with that *_Q input*)
 		self#handleAssignment;
 
-		self#writeFlattenNetlist;
+(* 		self#writeFlattenNetlist; *)
 
 		(* unfold it 		 *)
 		self#unfold_boolonly_netlist unfoldNumber ;
+
+		self#writeUnfoldNetlist;
 
 		assert ( (List.length seq_always_list)=0);
 		assert ( (List.length comb_always_list)=0);
