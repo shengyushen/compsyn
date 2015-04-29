@@ -100,10 +100,18 @@ object (self)
 
 	(*change mod_list to array of type_flat connected by wire array*)
 	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
+	val mutable hashInput  : (string,range) Hashtbl.t = Hashtbl.create 100
+	val mutable hashOutput : (string,range) Hashtbl.t = Hashtbl.create 100
+	val mutable assignHashL2R : (type_net,type_net) Hashtbl.t = Hashtbl.create 100
+	val mutable assignHashR2L : (type_net,type_net) Hashtbl.t = Hashtbl.create 100
 	val mutable last_pointer : int =0
 
 	(*unfold type_flat*)
 	val mutable type_flat_unfold_array : type_flat array =Array.make 1 TYPE_FLAT_NULL
+	val mutable assignHashL2R_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
+	val mutable assignHashR2L_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
+	val mutable hashInput_unfold  : (string,range) Hashtbl.t = Hashtbl.create 100
+	val mutable hashOutput_unfold : (string,range) Hashtbl.t = Hashtbl.create 100
 
 	(*converting flat wire to gfdata*)
 	val mutable last_hash_pointer : int =0 
@@ -943,17 +951,31 @@ object (self)
 		end
 	end
 
-        method str2ion str = begin
-                if(List.mem str instrlist) then (TYPE_CONNECTION_IN,TYPE_NET_ID(str))
-                else if (List.mem str outstrlist) then (TYPE_CONNECTION_OUT,TYPE_NET_ID(str))
-                else (TYPE_CONNECTION_NET,TYPE_NET_ID(str))
-        end
+	method isInput str = begin
+		Hashtbl.mem hashInput str
+	end
 
-        method stridx2ion str idx = begin
-                if(List.mem str instrlist) then (TYPE_CONNECTION_IN,TYPE_NET_ARRAYBIT(str,idx))
-                else if (List.mem str outstrlist) then (TYPE_CONNECTION_OUT,TYPE_NET_ARRAYBIT(str,idx))
-                else (TYPE_CONNECTION_NET,TYPE_NET_ARRAYBIT(str,idx))
-        end
+	method isOutput str = begin
+		Hashtbl.mem hashOutput str
+	end
+
+  method str2ion str = begin
+	  if(self#isInput str) then 
+			(TYPE_CONNECTION_IN,TYPE_NET_ID(str))
+    else if (self#isOutput str) then 
+			(TYPE_CONNECTION_OUT,TYPE_NET_ID(str))
+    else 
+			(TYPE_CONNECTION_NET,TYPE_NET_ID(str))
+  end
+
+  method stridx2ion str idx = begin
+    if(self#isInput str) then 
+			(TYPE_CONNECTION_IN,TYPE_NET_ARRAYBIT(str,idx))
+    else if (self#isOutput str) then 
+			(TYPE_CONNECTION_OUT,TYPE_NET_ARRAYBIT(str,idx))
+    else 
+			(TYPE_CONNECTION_NET,TYPE_NET_ARRAYBIT(str,idx))
+  end
 
 	method extExp exp = begin
 		match exp with
@@ -962,21 +984,43 @@ object (self)
       T_primary(T_primary_concat(explst)) -> begin 
 				let proc_exp x = begin 
 					match x with 
-					T_primary(T_primary_id([str]))-> self#str2ion str 
-					| T_primary(T_primary_arrbit([str],idx)) -> self#stridx2ion str (Expression.exp2int_simple idx)
-					|  T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> (TYPE_CONNECTION_NET,TYPE_NET_CONST(0))
-					|  T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> (TYPE_CONNECTION_NET,TYPE_NET_CONST(1))
+					T_primary(T_primary_id([str])) -> 
+						self#str2ion str 
+					| T_primary(T_primary_arrbit([str],idx)) -> 
+						self#stridx2ion str (Expression.exp2int_simple idx)
+					|  T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> 
+						(TYPE_CONNECTION_NET,TYPE_NET_CONST(0))
+					|  T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> 
+						(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))
 					| _ -> assert false
         end in
   			List.map proc_exp explst;
       end
-			| T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(0))]
-			| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> [(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))]
-      | T_primary(T_primary_id([str])) -> [self#str2ion str]
-      | T_primary(T_primary_arrbit([str],idx)) -> [self#stridx2ion str (Expression.exp2int_simple idx)]
+			| T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> 
+				[(TYPE_CONNECTION_NET,TYPE_NET_CONST(0))]
+			| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> 
+				[(TYPE_CONNECTION_NET,TYPE_NET_CONST(1))]
+      | T_primary(T_primary_id([str])) -> 
+				[self#str2ion str]
+      | T_primary(T_primary_arrbit([str],idx)) -> 
+				[self#stridx2ion str (Expression.exp2int_simple idx)]
 			| T_expression_NOSPEC(_) -> begin
 				(*non connected*)
 				[TYPE_CONNECTION_NET,TYPE_NET_NULL]
+			end
+			| T_primary(T_primary_arrrange([str],leftexp,rigthexp)) -> begin
+				let newion= begin
+					if(self#isInput str) then TYPE_CONNECTION_IN
+					else if(self#isOutput str) then 
+						TYPE_CONNECTION_OUT
+					else TYPE_CONNECTION_NET
+				end
+				and leftbound=Expression.exp2int_simple leftexp
+				and rightbound=Expression.exp2int_simple rigthexp
+				in
+				let lrlst=lr2list leftbound rightbound 
+				in 
+				List.map (fun x -> (newion,TYPE_NET_ARRAYBIT(str,x))) lrlst
 			end
       | _ -> begin
 				print_v_expression stdout exp1;
@@ -1016,10 +1060,27 @@ object (self)
           self#getX "B" colist
 	end
 
+	method procHandleInOut str co = begin
+		let cot=co#get_obj 
+		in 
+		begin
+			match cot with
+			Tobj_input_declaration(rng) -> 
+				Hashtbl.add hashInput str rng
+			| Tobj_output_declaration(rng) ->
+				Hashtbl.add hashOutput str rng
+			| _ -> ()
+		end
+	end
 
 	method construct_boolonly_netlist = begin
 		printf "construct_boolonly_netlist start\n";
 		flush stdout;
+
+		(*construct the input and output hash*)
+		Hashtbl.iter (self#procHandleInOut) circuit_hst;
+
+		(*then handle modules*)
 		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
 		last_pointer <- 0;
 		let proc_mod_inner m = begin
@@ -1105,12 +1166,17 @@ object (self)
 			let newm=proc_mod_inner m 
 			in
 			let newmod=begin
-				(*all modules instance with Z not connected will become TYPE_FLAT_NULL*)
+				(*all modules instance with Z not connected 
+				will become TYPE_FLAT_NULL*)
 				match newm with
-				TYPE_FLAT_2OPGF(_,_,[(_,TYPE_NET_NULL)],_,_) -> TYPE_FLAT_NULL
-				| TYPE_FLAT_1OPGF(_,_,[(_,TYPE_NET_NULL)],_) -> TYPE_FLAT_NULL
-				| TYPE_FLAT_2OPBOOL(_,_,(_,TYPE_NET_NULL),_,_) -> TYPE_FLAT_NULL
-				| TYPE_FLAT_IV(_,(_,TYPE_NET_NULL),_) -> TYPE_FLAT_NULL
+				TYPE_FLAT_2OPGF(_,_,[(_,TYPE_NET_NULL)],_,_) ->
+					TYPE_FLAT_NULL
+				| TYPE_FLAT_1OPGF(_,_,[(_,TYPE_NET_NULL)],_) ->
+					TYPE_FLAT_NULL
+				| TYPE_FLAT_2OPBOOL(_,_,(_,TYPE_NET_NULL),_,_) ->
+					TYPE_FLAT_NULL
+				| TYPE_FLAT_IV(_,(_,TYPE_NET_NULL),_) ->
+					TYPE_FLAT_NULL
 				| _ -> newm
 			end
 			in 
@@ -1128,14 +1194,20 @@ object (self)
 		match tc with
 		(tion,tnet) -> begin
 			match tion with
-			TYPE_CONNECTION_NET -> Printf.printf " TYPE_CONNECTION_NET "
-			| TYPE_CONNECTION_IN -> Printf.printf " TYPE_CONNECTION_IN "
-			| TYPE_CONNECTION_OUT -> Printf.printf " TYPE_CONNECTION_OUT "
+			TYPE_CONNECTION_NET -> 
+				Printf.printf " TYPE_CONNECTION_NET "
+			| TYPE_CONNECTION_IN -> 
+				Printf.printf " TYPE_CONNECTION_IN "
+			| TYPE_CONNECTION_OUT -> 
+				Printf.printf " TYPE_CONNECTION_OUT "
 			;
 			match tnet with
-			TYPE_NET_ID(str) -> printf " %s " str
-			| TYPE_NET_CONST(i) -> printf " %d "  i
-			| TYPE_NET_ARRAYBIT(str,idx) -> printf " %s[%d] " str idx
+			TYPE_NET_ID(str) -> 
+				printf " %s " str
+			| TYPE_NET_CONST(i) -> 
+				printf " %d "  i
+			| TYPE_NET_ARRAYBIT(str,idx) -> 
+				printf " %s[%d] " str idx
 			| TYPE_NET_NULL -> assert false
 		end
 	end
@@ -1285,15 +1357,23 @@ object (self)
 		(*expanding the noreg_toponly.v*)
 	end
 
+	method isQstr str = begin
+		string_match (regexp "^.*_Q$") str 0
+	end
+
 	method isQ tnet = begin
 		match tnet with
-		TYPE_NET_ID(str) -> string_match (regexp "^.*_Q$") str 0
+		TYPE_NET_ID(str) -> self#isQstr str
 		| _ -> false
+	end
+
+	method isDstr str = begin
+		string_match (regexp "^.*_D$") str 0
 	end
 	
 	method isD tnet = begin
 		match tnet with
-		TYPE_NET_ID(str) -> string_match (regexp "^.*_D$") str 0
+		TYPE_NET_ID(str) -> self#isDstr str
 		| _ -> false
 	end
 
@@ -1408,6 +1488,15 @@ object (self)
 		Array.set type_flat_unfold_array (idx*oldLength+arrayPos) newtf
 	end
 
+	method proc_unfold_L2R idx lvnet rvnet = begin
+		let newlvnet=self#mapnet idx lvnet
+		and newrvnet=self#map2prevInstanceDnet idx rvnet
+		in begin
+			Hashtbl.add assignHashL2R_unfold newlvnet newrvnet;
+			Hashtbl.add assignHashR2L_unfold newrvnet newlvnet;
+		end
+	end
+
 	method unfold_boolonly_netlist unfoldNumber = begin
 		printf "unfold_boolonly_netlist start\n";
 
@@ -1418,22 +1507,300 @@ object (self)
 		for i=0 to (unfoldNumber-1) do
 			Array.iteri (self#proc_unfold_tf i ) type_flat_array;
 		done;
+
+		for i=0 to (unfoldNumber-1) do
+			Hashtbl.iter (self#proc_unfold_L2R i ) assignHashL2R;
+		done;
+	end
+
+	method handleAssignment = begin
+		let procCheckAssignment conAss = begin
+			match conAss with
+			T_assignment(lv,exp) -> begin
+				let lv_tnet= begin
+					match lv with
+					T_lvalue_id([str]) -> begin
+						assert (self#isOutput str);
+						TYPE_NET_ID(str)
+					end
+					| T_lvalue_arrbit([str],idxexp) -> begin
+						if ( (self#isOutput str )=false) then begin
+							printf "%s[%d]\n" str (Expression.exp2int_simple idxexp);
+							flush stdout;
+							assert false;
+						end;
+						let idx=Expression.exp2int_simple idxexp
+						in
+						TYPE_NET_ARRAYBIT(str,idx)
+					end
+					|_ -> assert false
+				end
+				and rv_tnet=begin
+					match exp with
+					T_primary(T_primary_id([str])) -> begin
+						assert(self#isInput str);
+						assert(self#isQstr str);
+						TYPE_NET_ID(str)
+					end
+					| T_primary(T_primary_arrbit([str],idxexp)) -> begin
+						assert (self#isInput str);
+						assert(self#isQstr str);
+						let idx=Expression.exp2int_simple idxexp
+						in
+						TYPE_NET_ARRAYBIT(str,idx)
+					end
+					| _ -> assert false
+				end
+				in
+				begin
+					Hashtbl.add assignHashL2R lv_tnet rv_tnet;
+					Hashtbl.add assignHashR2L rv_tnet lv_tnet;
+				end
+			end
+		end
+		in
+		List.iter procCheckAssignment cont_ass_list;
+		
+		let procAB2In tc = begin
+			match tc with 
+			(TYPE_CONNECTION_OUT,tnet) -> (TYPE_CONNECTION_IN,Hashtbl.find assignHashL2R tnet)
+			| _ -> tc
+		end
+		in
+		let procOutputABtoInput idx tf = begin
+			let newtf= begin
+				match tf with
+				TYPE_FLAT_2OPGF(typ,instname,ztclst,atclst,btclst) -> begin
+					let atclst1=List.map procAB2In atclst
+					and btclst1=List.map procAB2In btclst
+					in
+					TYPE_FLAT_2OPGF(typ,instname,ztclst,atclst1,btclst1)
+				end
+				| TYPE_FLAT_1OPGF(typ,instname,ztclst,atclst) -> begin
+					let atclst1=List.map procAB2In atclst
+					in
+					TYPE_FLAT_1OPGF(typ,instname,ztclst,atclst1)
+				end
+				| TYPE_FLAT_2OPBOOL(typ,instname,ztc,atc,btc) -> begin
+					let atc1=procAB2In atc
+					and btc1=procAB2In btc
+					in 
+					TYPE_FLAT_2OPBOOL(typ,instname,ztc,atc1,btc1)
+				end
+				| TYPE_FLAT_IV(instname,ztc,atc) -> begin
+					let atc1=procAB2In atc
+					in 
+					TYPE_FLAT_IV(instname,ztc,atc1)
+				end
+				|_ -> tf
+			end
+			in
+			Array.set type_flat_array idx newtf
+		end
+		in
+		Array.iteri procOutputABtoInput type_flat_array;
+	end
+
+	method getTypeName2opgf typ = begin
+		match typ with
+		GFADD -> "gfmod_mod"
+		| GFMULTFLAT -> "gfmult_flat_mod"
+		| GFMULT -> "gfmult_mod"
+		| GFDIV -> "gfdiv_mod"
+	end
+
+	method getTypeName1opgf typ = begin
+		match typ with
+		TOWER2FLAT -> "tower2flat"
+		| FLAT2TOWER -> "flat2tower"
+	end
+
+	method getTypeName2opbool typ =begin
+		match typ with
+		EO -> "EO"
+		| AN2 -> "AN2"
+		| OR2 -> "OR2"
+	end
+
+	method writeFlattenNetlist = begin
+		let flatNetlist=open_out  "flat.v"
+		in begin
+			fprintf flatNetlist "module %s(" name;
+
+			let procOutput str rng = begin
+				match rng with
+				T_range_NOSPEC -> 
+					fprintf flatNetlist "output %s,\n" str;
+				| _ -> begin
+					let (l,r)=rng2lr rng
+					in
+					fprintf flatNetlist "output [%d:%d] %s,\n" l r str;
+				end
+			end
+			in
+			Hashtbl.iter  procOutput hashOutput ;
+
+			let procInput str rng = begin
+				match rng with
+				T_range_NOSPEC ->
+					fprintf flatNetlist "input %s,\n" str
+				| _ -> begin
+					let (l,r)=rng2lr rng
+					in
+					fprintf flatNetlist "input [%d:%d] %s,\n" l r str;
+				end
+			end
+			in
+			Hashtbl.iter  procInput hashInput ;
+
+			fprintf flatNetlist "input xx);\n";
+
+			(*assignments*)
+			let procPrintAssign lvnet rvnet = begin
+				fprintf flatNetlist "  assign ";
+				begin
+					match lvnet with
+					TYPE_NET_ID(str) -> 
+						fprintf flatNetlist " %s = " str;
+					| TYPE_NET_ARRAYBIT(str,idx) ->
+						fprintf flatNetlist " %s[%d] = " str idx
+					| _ -> assert false
+				end
+				;
+				begin
+					match rvnet with
+					TYPE_NET_ID(str) ->
+						fprintf flatNetlist " %s ;\n" str
+					| TYPE_NET_ARRAYBIT(str,idx) ->
+						fprintf flatNetlist " %s[%d] ;\n" str idx
+					| _ -> assert false
+				end
+			end
+			in
+			Hashtbl.iter procPrintAssign assignHashL2R;
+
+			(*module*)
+			let printTC tc = begin
+				match tc with
+				(_,TYPE_NET_ID(str)) -> 
+					fprintf flatNetlist "%s" str
+				| (_,TYPE_NET_ARRAYBIT(str,idx)) ->
+					fprintf flatNetlist "%s[%d]" str idx
+				| (_,TYPE_NET_CONST(i)) -> begin	
+					assert (i=1||i=0);
+					fprintf flatNetlist "1'b%d" i
+				end
+				| _ -> assert false
+			end
+			in
+			let rec printTCL tcl = begin
+				match tcl with
+				[hd] -> printTC hd
+				| hd::tl -> begin
+					printTC hd;
+					fprintf flatNetlist ",";
+					printTCL tl;
+				end
+				| _ -> assert false
+			end
+			in
+			let procPrintModule tf = begin
+				match tf with
+				TYPE_FLAT_2OPGF(typ,inm,ztcl,atcl,btcl) -> begin
+					let typname = self#getTypeName2opgf typ
+					in
+					fprintf flatNetlist "%s %s (\n" typname inm;
+
+					fprintf flatNetlist ".Z({";
+					printTCL ztcl;
+					fprintf flatNetlist "}),\n";
+
+					fprintf flatNetlist ".A({";
+					printTCL atcl;
+					fprintf flatNetlist "}),\n";
+
+					fprintf flatNetlist ".B({";
+					printTCL btcl;
+					fprintf flatNetlist "})\n";
+
+					fprintf flatNetlist ");\n";
+				end
+				| TYPE_FLAT_1OPGF(typ,inm,ztcl,atcl) -> begin
+					let typname=self#getTypeName1opgf typ
+					in
+					fprintf flatNetlist "%s %s (\n" typname inm;
+
+					fprintf flatNetlist ".Z({";
+					printTCL ztcl;
+					fprintf flatNetlist "}),\n";
+
+					fprintf flatNetlist ".A({";
+					printTCL atcl;
+					fprintf flatNetlist "})\n";
+
+					fprintf flatNetlist ");\n";
+				end
+				| TYPE_FLAT_2OPBOOL(typ,inm,ztc,atc,btc) -> begin
+					let typname=self#getTypeName2opbool typ 
+					in
+					fprintf flatNetlist "%s %s (\n" typname inm;
+
+					fprintf flatNetlist ".Z(";
+					printTC ztc;
+					fprintf flatNetlist "),\n";
+
+					fprintf flatNetlist ".A(";
+					printTC atc;
+					fprintf flatNetlist "),\n";
+
+					fprintf flatNetlist ".B(";
+					printTC btc;
+					fprintf flatNetlist ")\n";
+
+					fprintf flatNetlist ");\n";
+				end
+				| TYPE_FLAT_IV(inm,ztc,atc) -> begin
+					fprintf flatNetlist "IV %s (\n"  inm;
+
+					fprintf flatNetlist ".Z(";
+					printTC ztc;
+					fprintf flatNetlist "),\n";
+
+					fprintf flatNetlist ".A(";
+					printTC atc;
+					fprintf flatNetlist ")\n";
+
+					fprintf flatNetlist ");\n";
+				end
+				|_ -> () 
+			end
+			in
+			Array.iter procPrintModule type_flat_array;
+
+			fprintf flatNetlist "endmodule\n";
+		
+		end
 	end
 
 	method compsyn (stepList:((string*int) list) list) unfoldNumber = begin
-		(*let procPrintLine = fun y -> Printf.printf "	%s %d\n" (fst y) (snd y) in
-		let procPrintStep = fun x -> Printf.printf "xxxx\n" ; List.iter procPrintLine x in
-		List.iter procPrintStep stepList;*)
 		
 		(*first construct the data structure with bool only*)
 		self#construct_boolonly_netlist ;
+
+		(*make sure all assign are from *_Q input to real output
+		and for each module's input, 
+		if it is the destination of some assign, 
+		then replace it with that *_Q input*)
+		self#handleAssignment;
+
+		self#writeFlattenNetlist;
 
 		(* unfold it 		 *)
 		self#unfold_boolonly_netlist unfoldNumber ;
 
 		assert ( (List.length seq_always_list)=0);
 		assert ( (List.length comb_always_list)=0);
-		printf "length of cont_ass_list %d\n" (List.length cont_ass_list);
+
 
 	end
 
