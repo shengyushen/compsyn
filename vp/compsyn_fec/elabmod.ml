@@ -1603,7 +1603,7 @@ object (self)
 
 	method getTypeName2opgf typ = begin
 		match typ with
-		GFADD -> "gfmod_mod"
+		GFADD -> "gfadd_mod"
 		| GFMULTFLAT -> "gfmult_flat_mod"
 		| GFMULT -> "gfmult_mod"
 		| GFDIV -> "gfdiv_mod"
@@ -1625,16 +1625,16 @@ object (self)
 	method writeFlattenNetlist = begin
 		let flatNetlist=open_out  "flat.v"
 		in begin
-			fprintf flatNetlist "module %s(" name;
+			fprintf flatNetlist "module %s(\n" name;
 
 			let procOutput str rng = begin
 				match rng with
 				T_range_NOSPEC -> 
-					fprintf flatNetlist "output %s,\n" str;
+					fprintf flatNetlist "  output %s,\n" str;
 				| _ -> begin
 					let (l,r)=rng2lr rng
 					in
-					fprintf flatNetlist "output [%d:%d] %s,\n" l r str;
+					fprintf flatNetlist "  output [%d:%d] %s,\n" l r str;
 				end
 			end
 			in
@@ -1643,17 +1643,32 @@ object (self)
 			let procInput str rng = begin
 				match rng with
 				T_range_NOSPEC ->
-					fprintf flatNetlist "input %s,\n" str
+					fprintf flatNetlist "  input %s,\n" str
 				| _ -> begin
 					let (l,r)=rng2lr rng
 					in
-					fprintf flatNetlist "input [%d:%d] %s,\n" l r str;
+					fprintf flatNetlist "  input [%d:%d] %s,\n" l r str;
 				end
 			end
 			in
 			Hashtbl.iter  procInput hashInput ;
 
-			fprintf flatNetlist "input xx);\n";
+			fprintf flatNetlist "  input xx\n);\n";
+
+			(*wires*)
+			let print_wire key cont = begin
+				match cont#get_obj with
+				Tobj_net_declaration(rng) -> begin
+					fprintf flatNetlist "   wire ";
+					print_v_range flatNetlist rng;
+					fprintf flatNetlist "   %s ; \n" key
+				end
+				| _ -> ()
+			end
+			in
+			Hashtbl.iter print_wire circuit_hst
+			;
+
 
 			(*assignments*)
 			let procPrintAssign lvnet rvnet = begin
@@ -1709,7 +1724,7 @@ object (self)
 				TYPE_FLAT_2OPGF(typ,inm,ztcl,atcl,btcl) -> begin
 					let typname = self#getTypeName2opgf typ
 					in
-					fprintf flatNetlist "%s %s (\n" typname inm;
+					fprintf flatNetlist "  %s %s (\n" typname inm;
 
 					fprintf flatNetlist ".Z({";
 					printTCL ztcl;
@@ -1778,7 +1793,8 @@ object (self)
 			Array.iter procPrintModule type_flat_array;
 
 			fprintf flatNetlist "endmodule\n";
-		
+			
+			close_out flatNetlist;
 		end
 	end
 
