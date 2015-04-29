@@ -99,7 +99,7 @@ object (self)
 
 
 	(*change mod_list to array of type_flat connected by wire array*)
-	val mutable type_flat_array : type_flat array = Array.make 1 TYPE_FLAT_NULL
+	val mutable type_flat_array : type_flat array = Array.make 1 ("","",[],[],[])
 	val mutable hashInput  : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashOutput : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable assignHashL2R : (type_net,type_net) Hashtbl.t = Hashtbl.create 100
@@ -107,7 +107,7 @@ object (self)
 	val mutable last_pointer : int =0
 
 	(*unfold type_flat*)
-	val mutable type_flat_unfold_array : type_flat array =Array.make 1 TYPE_FLAT_NULL
+	val mutable type_flat_unfold_array : type_flat array =Array.make 1 ("","",[],[],[])
 	val mutable assignHashL2R_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
 	val mutable assignHashR2L_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
 	val mutable hashInput_unfold  : (string,range) Hashtbl.t = Hashtbl.create 100
@@ -927,6 +927,7 @@ object (self)
 		flush stdout;
 	end
 	
+(*
 	method getZ1 colist = begin
 		let zlist=self#getZ colist in begin
 			match zlist with
@@ -951,6 +952,7 @@ object (self)
 		end
 	end
 
+*)
 	method isInput str = begin
 		Hashtbl.mem hashInput str
 	end
@@ -1041,7 +1043,13 @@ object (self)
 		begin
 			match colist with
 			T_list_of_module_connections_named(clist) -> begin
-				let exp=List.find isX clist in
+				let exp=begin
+					try 
+						List.find isX clist 
+					with Not_found -> 
+						T_named_port_connection(x,T_expression_NOSPEC(0))
+				end
+				in
 				self#extExp exp
 			end
 			|_ -> assert false
@@ -1081,84 +1089,16 @@ object (self)
 		Hashtbl.iter (self#procHandleInOut) circuit_hst;
 
 		(*then handle modules*)
-		type_flat_array <- Array.make (List.length mod_list) TYPE_FLAT_NULL;
+		type_flat_array <- Array.make (List.length mod_list) ("","",[],[],[]);
 		last_pointer <- 0;
 		let proc_mod_inner m = begin
 			match m with
 			(defname,T_module_instance(instname,colist)) -> begin
-				match defname with
-				"gfadd_mod" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					and bconlist = self#getB(colist)
-					in
-					TYPE_FLAT_2OPGF(GFADD,instname,zconlist,aconlist,bconlist) 
-				end
-				| "gfmult_flat_mod" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					and bconlist = self#getB(colist)
-					in
-					TYPE_FLAT_2OPGF(GFMULTFLAT,instname,zconlist,aconlist,bconlist) 
-				end
-				| "gfmult_mod" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					and bconlist = self#getB(colist)
-					in
-					TYPE_FLAT_2OPGF(GFMULT,instname,zconlist,aconlist,bconlist) 
-				end
-				| "gfdiv_mod" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					and bconlist = self#getB(colist)
-					in
-					TYPE_FLAT_2OPGF(GFDIV,instname,zconlist,aconlist,bconlist) 
-				end
-				| "tower2flat" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					in
-					TYPE_FLAT_1OPGF(TOWER2FLAT,instname,zconlist,aconlist) 
-				end
-				| "flat2tower" -> begin
-					let zconlist = self#getZ(colist)
-					and aconlist = self#getA(colist)
-					in
-					TYPE_FLAT_1OPGF(FLAT2TOWER,instname,zconlist,aconlist) 
-				end
-				| "EO" -> begin
-					let zcon = self#getZ1(colist)
-					and acon = self#getA1(colist)
-					and bcon = self#getB1(colist)
-					in
-					TYPE_FLAT_2OPBOOL(EO,instname,zcon,acon,bcon) 
-				end
-				| "AN2" -> begin
-					let zcon = self#getZ1(colist)
-					and acon = self#getA1(colist)
-					and bcon = self#getB1(colist)
-					in
-					TYPE_FLAT_2OPBOOL(AN2,instname,zcon,acon,bcon)
-				end
-				| "OR2" -> begin
-					let zcon = self#getZ1(colist)
-					and acon = self#getA1(colist)
-					and bcon = self#getB1(colist)
-					in
-					TYPE_FLAT_2OPBOOL(OR2,instname,zcon,acon,bcon)
-				end
-				| "IV" -> begin
-					let zcon = self#getZ1(colist)
-					and acon = self#getA1(colist)
-					in
-					TYPE_FLAT_IV(instname,zcon,acon)
-				end
-				| _ -> begin
-					Printf.printf "Error : invalid module name %s and instname %s\n" defname instname;
-					flush stdout;
-					exit 0;
-				end
+				let zconlist = self#getZ(colist)
+				and aconlist = self#getA(colist)
+				and bconlist = self#getB(colist)
+				in
+				(defname,instname,zconlist,aconlist,bconlist) 
 			end
 		end 
 		in
@@ -1167,16 +1107,10 @@ object (self)
 			in
 			let newmod=begin
 				(*all modules instance with Z not connected 
-				will become TYPE_FLAT_NULL*)
+				will become ("","",[],[],[])*)
 				match newm with
-				TYPE_FLAT_2OPGF(_,_,[(_,TYPE_NET_NULL)],_,_) ->
-					TYPE_FLAT_NULL
-				| TYPE_FLAT_1OPGF(_,_,[(_,TYPE_NET_NULL)],_) ->
-					TYPE_FLAT_NULL
-				| TYPE_FLAT_2OPBOOL(_,_,(_,TYPE_NET_NULL),_,_) ->
-					TYPE_FLAT_NULL
-				| TYPE_FLAT_IV(_,(_,TYPE_NET_NULL),_) ->
-					TYPE_FLAT_NULL
+				(_,_,[(_,TYPE_NET_NULL)],_,_) ->
+					("","",[],[],[])
 				| _ -> newm
 			end
 			in 
@@ -1208,7 +1142,7 @@ object (self)
 				printf " %d "  i
 			| TYPE_NET_ARRAYBIT(str,idx) -> 
 				printf " %s[%d] " str idx
-			| TYPE_NET_NULL -> assert false
+			| TYPE_NET_NULL -> ()
 		end
 	end
 
@@ -1236,6 +1170,23 @@ object (self)
 		| TYPE_GFDATA_NULL -> assert false
 	end
 
+	method is2OpGF modname = begin
+		match modname with
+		"gfadd_mod" -> true
+		| "gfmult_flat_mod" -> true
+		| "gfmult_mod" -> true
+		| "gfdiv_mod" -> true
+		| _ -> false
+	end
+
+	method is1OpGF modname = begin
+		match modname with
+		"tower2flat" -> true
+		| "flat2tower" -> true
+		| _ -> false
+	end
+
+(*
 	method construct_gf_netlist = begin
 		(*then find out all gfdata type instance 
 		and construct gfdata_list*)
@@ -1259,45 +1210,61 @@ object (self)
 		in
 		let proc_type_flat tf = begin
 			match tf with 
-			TYPE_FLAT_2OPGF(_,_,ztclst,atclst,btclst) -> begin
-				if(isLstIn ztclst)=false then begin
-					addLstIn (TYPE_GFDATA_GF1024(ztclst));
-				end;
-				if(isLstIn atclst)=false then begin
-					addLstIn (TYPE_GFDATA_GF1024(atclst));
-				end;
-				if(isLstIn btclst)=false then begin
-					addLstIn (TYPE_GFDATA_GF1024(btclst));
-				end;
+			(modname,_,ztclst,atclst,btclst) -> begin
+				if (self#is2OpGF modname) then begin
+					if(isLstIn ztclst)=false then begin
+						addLstIn (TYPE_GFDATA_GF1024(ztclst));
+					end;
+					if(isLstIn atclst)=false then begin
+						addLstIn (TYPE_GFDATA_GF1024(atclst));
+					end;
+					if(isLstIn btclst)=false then begin
+						addLstIn (TYPE_GFDATA_GF1024(btclst));
+					end;
+				end
+				else if(self#is1OpGF modname) then begin
+					assert (isEmptyList btclst);
+					if(isLstIn ztclst)=false then begin
+						addLstIn (TYPE_GFDATA_GF1024(ztclst));
+					end;
+					if(isLstIn atclst)=false then begin
+						addLstIn (TYPE_GFDATA_GF1024(atclst));
+					end;
+				end
+				else if(self#is2OpBool modname) then begin
+					assert (isSingularList ztclst);
+					assert (isSingularList atclst);
+					assert (isSingularList btclst);
+					let ztc=List.hd ztclst
+					and atc=List.hd atclst
+					and btc=List.hd btclst
+					in 
+					if(isTcIn ztc)=false then begin
+						addTcIn (TYPE_GFDATA_BOOL(ztc));
+					end;
+					if(isTcIn atc)=false then begin
+						addTcIn (TYPE_GFDATA_BOOL(atc));
+					end;
+					if(isTcIn btc)=false then begin
+						addTcIn (TYPE_GFDATA_BOOL(btc));
+					end;
+				end
+				else if(self#is1OpBool modname) then begin
+					assert (isSingularList ztclst);
+					assert (isSingularList atclst);
+					assert (isEmptyList btclst);
+					let ztc=List.hd ztclst
+					and atc=List.hd atclst
+					in 
+					if(isTcIn ztc)=false then begin
+						addTcIn (TYPE_GFDATA_BOOL(ztc));
+					end;
+					if(isTcIn atc)=false then begin
+						addTcIn (TYPE_GFDATA_BOOL(atc));
+					end;
+				end
+				else assert false
 			end
-			| TYPE_FLAT_1OPGF(_,_,ztclst,atclst) -> begin
-				if(isLstIn ztclst)=false then begin
-					addLstIn (TYPE_GFDATA_GF1024(ztclst));
-				end;
-				if(isLstIn atclst)=false then begin
-					addLstIn (TYPE_GFDATA_GF1024(atclst));
-				end;
-			end
-			| TYPE_FLAT_2OPBOOL(_,_,ztc,atc,btc) -> begin
-				if(isTcIn ztc)=false then begin
-					addTcIn (TYPE_GFDATA_BOOL(ztc));
-				end;
-				if(isTcIn atc)=false then begin
-					addTcIn (TYPE_GFDATA_BOOL(atc));
-				end;
-				if(isTcIn btc)=false then begin
-					addTcIn (TYPE_GFDATA_BOOL(btc));
-				end;
-			end
-			| TYPE_FLAT_IV(_,ztc,atc)  -> begin
-				if(isTcIn ztc)=false then begin
-					addTcIn (TYPE_GFDATA_BOOL(ztc));
-				end;
-				if(isTcIn atc)=false then begin
-					addTcIn (TYPE_GFDATA_BOOL(atc));
-				end;
-			end
-			| _ -> assert false
 		end 
 		in begin
 			printf "start building gfdata_list with type_flat_array size %d\n" (Array.length type_flat_array);
@@ -1356,6 +1323,7 @@ object (self)
 		end
 		(*expanding the noreg_toponly.v*)
 	end
+*)
 
 	method isQstr str = begin
 		string_match (regexp "^.*_Q$") str 0
@@ -1390,7 +1358,7 @@ object (self)
 			in
 			TYPE_NET_ARRAYBIT(newstr,id)
 		end
-		| TYPE_NET_NULL -> assert false
+		| TYPE_NET_NULL -> tnet
 	end
 
 	method map2prevInstanceDnet idx tnet = begin
@@ -1454,34 +1422,13 @@ object (self)
 	method proc_unfold_tf idx arrayPos tf = begin
 		let newtf= begin
 			match tf with
-			TYPE_FLAT_2OPGF(type_2opgf,instname,ztclst,atclst,btclst) -> begin
+			(modname,instname,ztclst,atclst,btclst) -> begin
 				let ztclst1=self#mapinstanceList idx ztclst
 				and atclst1=self#mapinstanceList idx atclst
 				and btclst1=self#mapinstanceList idx btclst
 				in 
-				TYPE_FLAT_2OPGF(type_2opgf,instname,ztclst1,atclst1,btclst1)
+				(modname,instname,ztclst1,atclst1,btclst1)
 			end
-			| TYPE_FLAT_1OPGF(type_1opgf,instname,ztclst,atclst) -> begin
-				let ztclst1=self#mapinstanceList idx ztclst
-				and atclst1=self#mapinstanceList idx atclst
-				in 
-				TYPE_FLAT_1OPGF(type_1opgf,instname,ztclst1,atclst1)
-			end
-			| TYPE_FLAT_2OPBOOL(type_2opbool,instname,ztc,atc,btc) -> begin
-				let ztc1=self#mapinstance idx ztc
-				and atc1=self#mapinstance idx atc
-				and btc1=self#mapinstance idx btc
-				in
-				TYPE_FLAT_2OPBOOL(type_2opbool,instname,ztc1,atc1,btc1)
-			end
-			| TYPE_FLAT_IV(instname,ztc,atc) -> begin
-				let ztc1=self#mapinstance idx ztc
-				and atc1=self#mapinstance idx atc
-				in
-				TYPE_FLAT_IV(instname,ztc1,atc1)
-			end
-			| TYPE_FLAT_NULL -> tf
-			| _ -> assert false
 		end
 		and oldLength=Array.length type_flat_array
 		in
@@ -1502,7 +1449,7 @@ object (self)
 
 		let newlength=(Array.length type_flat_array)*unfoldNumber
 		in
-		type_flat_unfold_array <- Array.make newlength TYPE_FLAT_NULL;
+		type_flat_unfold_array <- Array.make newlength ("","",[],[],[]);
 
 		for i=0 to (unfoldNumber-1) do
 			Array.iteri (self#proc_unfold_tf i ) type_flat_array;
@@ -1570,29 +1517,12 @@ object (self)
 		let procOutputABtoInput idx tf = begin
 			let newtf= begin
 				match tf with
-				TYPE_FLAT_2OPGF(typ,instname,ztclst,atclst,btclst) -> begin
+				(modname,instname,ztclst,atclst,btclst) -> begin
 					let atclst1=List.map procAB2In atclst
 					and btclst1=List.map procAB2In btclst
 					in
-					TYPE_FLAT_2OPGF(typ,instname,ztclst,atclst1,btclst1)
+					(modname,instname,ztclst,atclst1,btclst1)
 				end
-				| TYPE_FLAT_1OPGF(typ,instname,ztclst,atclst) -> begin
-					let atclst1=List.map procAB2In atclst
-					in
-					TYPE_FLAT_1OPGF(typ,instname,ztclst,atclst1)
-				end
-				| TYPE_FLAT_2OPBOOL(typ,instname,ztc,atc,btc) -> begin
-					let atc1=procAB2In atc
-					and btc1=procAB2In btc
-					in 
-					TYPE_FLAT_2OPBOOL(typ,instname,ztc,atc1,btc1)
-				end
-				| TYPE_FLAT_IV(instname,ztc,atc) -> begin
-					let atc1=procAB2In atc
-					in 
-					TYPE_FLAT_IV(instname,ztc,atc1)
-				end
-				|_ -> tf
 			end
 			in
 			Array.set type_flat_array idx newtf
@@ -1620,6 +1550,24 @@ object (self)
 		EO -> "EO"
 		| AN2 -> "AN2"
 		| OR2 -> "OR2"
+	end
+
+	method is2OpBool modname = begin
+		match modname with
+		"EO"|"AN2"|"OR2" -> true
+		| _ -> false
+	end
+
+	method is1OpBool modname = begin
+		match modname with
+		"IV" -> true
+		| _ -> false
+	end
+
+	method is0Op modname = begin
+		match modname with
+		"" -> true
+		| _ -> false
 	end
 
 	method writeFlattenNetlist = begin
@@ -1721,73 +1669,40 @@ object (self)
 			in
 			let procPrintModule tf = begin
 				match tf with
-				TYPE_FLAT_2OPGF(typ,inm,ztcl,atcl,btcl) -> begin
-					let typname = self#getTypeName2opgf typ
-					in
-					fprintf flatNetlist "  %s %s (\n" typname inm;
-
-					fprintf flatNetlist ".Z({";
-					printTCL ztcl;
-					fprintf flatNetlist "}),\n";
-
-					fprintf flatNetlist ".A({";
-					printTCL atcl;
-					fprintf flatNetlist "}),\n";
-
-					fprintf flatNetlist ".B({";
-					printTCL btcl;
-					fprintf flatNetlist "})\n";
-
-					fprintf flatNetlist ");\n";
+				(modname,inm,ztcl,atcl,btcl) -> begin
+					if((self#is2OpGF modname) || (self#is2OpBool modname)) then begin
+						fprintf flatNetlist "  %s %s (\n" modname inm;
+	
+						fprintf flatNetlist ".Z({";
+						printTCL ztcl;
+						fprintf flatNetlist "}),\n";
+	
+						fprintf flatNetlist ".A({";
+						printTCL atcl;
+						fprintf flatNetlist "}),\n";
+	
+						fprintf flatNetlist ".B({";
+						printTCL btcl;
+						fprintf flatNetlist "})\n";
+	
+						fprintf flatNetlist ");\n";
+					end
+					else if((self#is1OpGF modname) || (self#is1OpBool modname)) then begin
+						fprintf flatNetlist "%s %s (\n" modname inm;
+	
+						fprintf flatNetlist ".Z({";
+						printTCL ztcl;
+						fprintf flatNetlist "}),\n";
+	
+						fprintf flatNetlist ".A({";
+						printTCL atcl;
+						fprintf flatNetlist "})\n";
+	
+						fprintf flatNetlist ");\n";
+					end
+					else if(self#is0Op modname) then  ()
+					else assert false
 				end
-				| TYPE_FLAT_1OPGF(typ,inm,ztcl,atcl) -> begin
-					let typname=self#getTypeName1opgf typ
-					in
-					fprintf flatNetlist "%s %s (\n" typname inm;
-
-					fprintf flatNetlist ".Z({";
-					printTCL ztcl;
-					fprintf flatNetlist "}),\n";
-
-					fprintf flatNetlist ".A({";
-					printTCL atcl;
-					fprintf flatNetlist "})\n";
-
-					fprintf flatNetlist ");\n";
-				end
-				| TYPE_FLAT_2OPBOOL(typ,inm,ztc,atc,btc) -> begin
-					let typname=self#getTypeName2opbool typ 
-					in
-					fprintf flatNetlist "%s %s (\n" typname inm;
-
-					fprintf flatNetlist ".Z(";
-					printTC ztc;
-					fprintf flatNetlist "),\n";
-
-					fprintf flatNetlist ".A(";
-					printTC atc;
-					fprintf flatNetlist "),\n";
-
-					fprintf flatNetlist ".B(";
-					printTC btc;
-					fprintf flatNetlist ")\n";
-
-					fprintf flatNetlist ");\n";
-				end
-				| TYPE_FLAT_IV(inm,ztc,atc) -> begin
-					fprintf flatNetlist "IV %s (\n"  inm;
-
-					fprintf flatNetlist ".Z(";
-					printTC ztc;
-					fprintf flatNetlist "),\n";
-
-					fprintf flatNetlist ".A(";
-					printTC atc;
-					fprintf flatNetlist ")\n";
-
-					fprintf flatNetlist ");\n";
-				end
-				|_ -> () 
 			end
 			in
 			Array.iter procPrintModule type_flat_array;

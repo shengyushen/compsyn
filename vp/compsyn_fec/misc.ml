@@ -40,6 +40,11 @@ and isEmptyList lst = begin
 	[] -> true
 	| _ -> false
 end
+and isSingularList lst = begin
+	match lst with
+	[z] -> true
+	| _ -> false
+end
 and set_current_time = begin
 	starttime := Unix.gettimeofday ();
 	oldtime := Unix.gettimeofday ()

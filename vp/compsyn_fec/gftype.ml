@@ -29,14 +29,11 @@ type type_2opbool =
 	| AN2
 	| OR2
 ;;
-(*gf type with string list as data, instead of inferred type*)
-(*the tuple are operation type and instance name, and is Z output, the rest are inputs*)
+(*the tuple are operation type and instance name, 
+and is Z output, the rest are inputs
+empty operation type means NULL*)
 type type_flat =
-	TYPE_FLAT_2OPGF      of type_2opgf*string*(type_connection list)*(type_connection list)*(type_connection list)
- |TYPE_FLAT_1OPGF      of type_1opgf*string*(type_connection list)*(type_connection list)
- |TYPE_FLAT_2OPBOOL    of type_2opbool*string*type_connection*type_connection*type_connection
- |TYPE_FLAT_IV         of string*type_connection*type_connection
- |TYPE_FLAT_NULL
+	string*string*(type_connection list)*(type_connection list)*(type_connection list)
 ;;
 
 (*similar to type_flat but with index to an array of type_gfdata*)
