@@ -1431,8 +1431,9 @@ object (self)
 				let ztclst1=self#mapinstanceList idx ztclst
 				and atclst1=self#mapinstanceList idx atclst
 				and btclst1=self#mapinstanceList idx btclst
+				and instname1=self#mapname instname idx 
 				in 
-				(modname,instname,ztclst1,atclst1,btclst1)
+				(modname,instname1,ztclst1,atclst1,btclst1)
 			end
 		end
 		and oldLength=Array.length type_flat_array
@@ -1441,18 +1442,20 @@ object (self)
 	end
 
 	method proc_unfold_L2R idx lvnet rvnet = begin
-		let newlvnet=self#mapnet idx lvnet
-		and newrvnet=self#map2prevInstanceDnet idx rvnet
-		in begin
-			Hashtbl.add assignHashL2R_unfold newlvnet newrvnet;
-			Hashtbl.add assignHashR2L_unfold newrvnet newlvnet;
+		(*assignmetn on inst 0 is not need*)
+		if (idx <> 0 ) then begin
+			let newlvnet=self#mapnet idx lvnet
+			and newrvnet=self#map2prevInstanceDnet idx rvnet
+			in begin
+				Hashtbl.add assignHashL2R_unfold newlvnet newrvnet;
+				Hashtbl.add assignHashR2L_unfold newrvnet newlvnet;
+			end
 		end
 	end
 
 	method procUnfoldInputs idx str rng = begin
 		if(self#isQstr str) then begin
 			(*_Q is previous register dont use it as input *)
-			()
 		end
 		else begin
 			assert ((self#isDstr str)=false);
@@ -1464,8 +1467,11 @@ object (self)
 
 	method procUnfoldOutputs idx str rng = begin
 		if(self#isDstr str) then begin
-			(*_D is current register dont use it as output *)
-			()
+			(*_D is current register,
+			use it as wire*)
+			let newstr=self#mapname str idx
+			in
+			Hashtbl.add hashWireUnfold newstr rng
 		end
 		else begin
 			assert ((self#isQstr str)=false);
