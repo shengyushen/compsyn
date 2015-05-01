@@ -1131,25 +1131,35 @@ object (self)
 		assert (last_pointer==(List.length mod_list));
 	end
 
+
+	method print_type_ion tion = begin
+				match tion with
+				TYPE_CONNECTION_NET -> 
+					Printf.printf " TYPE_CONNECTION_NET "
+				| TYPE_CONNECTION_IN -> 
+					Printf.printf " TYPE_CONNECTION_IN "
+				| TYPE_CONNECTION_OUT -> 
+					Printf.printf " TYPE_CONNECTION_OUT "
+	end
+
+	method print_type_net tnet = begin
+				match tnet with
+				TYPE_NET_ID(str) ->  begin
+					assert (str<>"");
+					printf " %s " str
+				end
+				| TYPE_NET_CONST(i) -> 
+					printf " %d "  i
+				| TYPE_NET_ARRAYBIT(str,idx) -> 
+					printf " %s[%d] " str idx
+				| TYPE_NET_NULL -> ()
+	end
+
 	method print_type_connection tc = begin
 		match tc with
 		(tion,tnet) -> begin
-			match tion with
-			TYPE_CONNECTION_NET -> 
-				Printf.printf " TYPE_CONNECTION_NET "
-			| TYPE_CONNECTION_IN -> 
-				Printf.printf " TYPE_CONNECTION_IN "
-			| TYPE_CONNECTION_OUT -> 
-				Printf.printf " TYPE_CONNECTION_OUT "
-			;
-			match tnet with
-			TYPE_NET_ID(str) -> 
-				printf " %s " str
-			| TYPE_NET_CONST(i) -> 
-				printf " %d "  i
-			| TYPE_NET_ARRAYBIT(str,idx) -> 
-				printf " %s[%d] " str idx
-			| TYPE_NET_NULL -> ()
+			self#print_type_ion tion;
+			self#print_type_net tnet;
 		end
 	end
 
@@ -1852,8 +1862,32 @@ object (self)
 
 	method getHashTnetValue tn =begin
 		try 
-			Hashtbl.find hashTnetValue tn 
-		with Not_found -> tn
+			let newtn=Hashtbl.find hashTnetValue tn 
+			in begin
+				printf "\n getnewtn from \n";
+				self#print_type_net tn;
+				printf "\n to \n";
+				self#print_type_net newtn;
+				newtn
+			end
+		with Not_found -> begin
+			printf "\n fail on\n";
+			self#print_type_net tn;
+			printf "\n";
+			tn
+		end
+	end
+
+	method getNewTcl tcl =begin
+		let maptc tc =begin
+			match tc with
+			(tion,tn) ->
+				let newtn=self#getHashTnetValue tn
+				in
+				(tion,newtn)
+		end
+		in 
+		List.map maptc tcl
 	end
 
 	method propagateConstance_Hash2Array = begin
@@ -1863,29 +1897,13 @@ object (self)
 			self#chkProperTF tf;
 			match tf with
 			(modname,inm,ztcl,atcl,btcl) -> begin
-				if(modname="EO" || modname="AN2" || modname="OR2") then begin
-					let (ation,atn)=List.hd atcl
-					and (btion,btn)=List.hd btcl
-					in 
-					let newatn=self#getHashTnetValue atn
-					and newbtn=self#getHashTnetValue btn
+				let atcl1=self#getNewTcl atcl
+				and btcl1=self#getNewTcl btcl
+				in
+				if((atcl1<>atcl) || (btcl1<>btcl)) then begin
+					let newtf=(modname,inm,ztcl,atcl1,btcl1)
 					in
-					if(newatn<>atn || newbtn<>btn) then begin
-						let newtf=(modname,inm,ztcl,[(ation,newatn)],[(btion,newbtn)])
-						in
-						Array.set type_flat_unfold_array pos newtf
-					end
-				end
-				else if(modname="IV") then begin
-					let (ation,atn)=List.hd atcl
-					in 
-					let newatn=self#getHashTnetValue atn
-					in
-					if(newatn<>atn) then begin
-						let newtf=(modname,inm,ztcl,[(ation,newatn)],btcl)
-						in
-						Array.set type_flat_unfold_array pos newtf
-					end
+					Array.set type_flat_unfold_array pos newtf
 				end
 			end
 		end
@@ -1905,6 +1923,11 @@ object (self)
 				("AN2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
 					if((atn=TYPE_NET_CONST(0)) || (btn=TYPE_NET_CONST(0))) then begin
 						(*z is always 0*)
+						printf "\nPushing to :\n";
+						self#print_type_connection (ztion,ztn);
+						printf "\n becaue of\n";
+						self#print_type_connection (ation,atn);
+						self#print_type_connection (btion,btn);
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(0))::(!tn2tnList);
 						modified := true;
@@ -1924,6 +1947,11 @@ object (self)
 				| ("OR2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
 					if((atn=TYPE_NET_CONST(1)) || (btn=TYPE_NET_CONST(1))) then begin
 						(*z is always 1*)
+						printf "\nPushing to :\n";
+						self#print_type_connection (ztion,ztn);
+						printf "\n becaue of\n";
+						self#print_type_connection (ation,atn);
+						self#print_type_connection (btion,btn);
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(1))::(!tn2tnList);
 						modified := true;
@@ -1940,10 +1968,33 @@ object (self)
 						modified := true;
 					end
 				end
+				| ("IV",instname,[(ztion,ztn)],[(ation,atn)],_) -> begin
+					if(atn=TYPE_NET_CONST(1)) then begin
+						(*z is always 0*)
+						printf "\nPushing to :\n";
+						self#print_type_connection (ztion,ztn);
+						printf "\n becaue of\n";
+						self#print_type_connection (ation,atn);
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,TYPE_NET_CONST(0))::(!tn2tnList);
+						modified := true;
+					end
+					else if(atn=TYPE_NET_CONST(0)) then begin
+						(*z is always 1*)
+						printf "\nPushing to :\n";
+						self#print_type_connection (ztion,ztn);
+						printf "\n becaue of";
+						self#print_type_connection (ation,atn);
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,TYPE_NET_CONST(1))::(!tn2tnList);
+						modified := true;
+					end
+				end
 				| _ -> ()
 			end
 			in begin
 				while(!modified) do
+					printf "again\n";
 					(*record whether there is modification 
 					in procTFArrayIn2Out*)
 					modified := false;
@@ -1968,20 +2019,22 @@ object (self)
 	end
 	
 	method handleInputStepList stepList = begin
-		let procStringInt x = begin
+		let procStringInt idx x = begin
 			match x with
 			(str,i) -> begin
 				assert (i=0 || i=1);
-				let newstr=self#mapname str i 
+				let newstr=self#mapname str idx 
 				in
 				let tnet=TYPE_NET_ID(newstr)
-				in
-				Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
+				in begin
+					printf "adding %s\n" newstr;
+					Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
+				end
 			end
 		end
 		in
 		let procStep i stp = begin
-			List.iter procStringInt stp;
+			List.iter (procStringInt i) stp;
 		end
 		in
 		let rec procStepList i stpl= begin
@@ -1994,6 +2047,67 @@ object (self)
 		end
 		in 
 		procStepList 0 stepList
+	end
+
+	method checkUnfold = begin
+		let drivingTNHash= Hashtbl.create 10000000
+		in
+		let procDriving tf = begin
+			match tf with
+			(_,_,ztcl,_,_) -> begin
+				let procTC tc= begin
+					match tc with
+					(_,tn) -> 
+						Hashtbl.add drivingTNHash tn true
+				end
+				in
+				List.iter procTC ztcl
+			end
+		end
+		in
+		let procInput str rng = begin
+			match rng with
+			T_range_NOSPEC -> 
+				Hashtbl.add drivingTNHash (TYPE_NET_ID(str)) true
+			| _ -> ()
+		end
+		in
+		let isUnfoldInput tn = begin
+			match tn with
+			TYPE_NET_ID(str) -> 
+				Hashtbl.mem hashInput_unfold str;
+			| TYPE_NET_ARRAYBIT(str,idx) ->
+				Hashtbl.mem hashInput_unfold str;
+			| _ -> false
+		end
+		in
+		let procDriven tf = begin
+			match tf with
+			(modname,instname,_,atcl,btcl) -> begin
+				let procTC tc = begin
+					match tc with
+					(_,tn) -> 
+						if((Hashtbl.mem drivingTNHash tn)=false ) then
+						begin
+							if(tn<>TYPE_NET_NULL && tn<>(TYPE_NET_CONST(0)) && tn<>(TYPE_NET_CONST(1)) && (isUnfoldInput tn)=false) then begin
+								printf "\n UNDRIVEN net of modname %s instname %s\n" modname instname;
+								self#print_type_connection tc;
+								flush stdout;
+							end
+						end
+				end
+				in begin
+					List.iter procTC atcl;
+					List.iter procTC btcl;
+				end
+			end
+		end
+		in 
+		begin
+			Array.iter procDriving type_flat_unfold_array;
+			Hashtbl.iter procInput hashInput_unfold;
+			Array.iter procDriven  type_flat_unfold_array;
+		end
 	end
 
 	method compsyn (stepList:((string*int) list) list) unfoldNumber = begin
@@ -2031,8 +2145,10 @@ object (self)
 *)
 		self#handleInputStepList stepList;
 		self#propagateConstance ;
+
 		
 		self#writeUnfoldNetlist;
+		self#checkUnfold;
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin
