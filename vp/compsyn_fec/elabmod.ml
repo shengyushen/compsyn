@@ -113,6 +113,7 @@ object (self)
 	val mutable hashInput_unfold  : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashOutput_unfold : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashWireUnfold : (string,range) Hashtbl.t=Hashtbl.create 100000
+	val mutable hashTnetValue : (type_net,type_net) Hashtbl.t=Hashtbl.create 10000
 
 	(*converting flat wire to gfdata*)
 	val mutable last_hash_pointer : int =0 
@@ -1095,9 +1096,9 @@ object (self)
 		let proc_mod_inner m = begin
 			match m with
 			(defname,T_module_instance(instname,colist)) -> begin
-				let zconlist = self#getZ(colist)
-				and aconlist = self#getA(colist)
-				and bconlist = self#getB(colist)
+				let zconlist = self#getZ colist
+				and aconlist = self#getA colist
+				and bconlist = self#getB colist
 				in
 				(defname,instname,zconlist,aconlist,bconlist) 
 			end
@@ -1112,7 +1113,12 @@ object (self)
 				match newm with
 				(_,_,[(_,TYPE_NET_NULL)],_,_) ->
 					("","",[],[],[])
-				| _ -> newm
+				| (modname,instname,ztcl,atcl,btcl) -> begin
+					if(modname="IV" || modname="tower2flat" || modname = "flat2tower") then 
+						(modname,instname,ztcl,atcl,[])
+					else
+						newm
+				end
 			end
 			in 
 			begin
@@ -1786,11 +1792,219 @@ object (self)
 			close_out flatNetlist;
 		end
 	end
+	
+(*
+	method isConstTC tc = begin
+		match tc with
+		(_,TYPE_NET_CONST(i)) -> true
+		| _ -> false
+	end
+*)
+	
+	method chkProperTF tf = begin
+		match tf with
+		("AN2",instname,[ztc],[atc],[btc]) -> ()
+		| ("OR2",instname,[ztc],[atc],[btc]) ->()
+		| ("EO" ,instname,[ztc],[atc],[btc]) -> ()
+		| ("IV" ,instname,[ztc],[atc],[]) -> ()
+		| ("gfmult_mod" ,instname,ztcl,atcl,btcl) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+			assert ((List.length btcl)=10);
+		end
+		| ("gfmult_flat_mod" ,instname,ztcl,atcl,btcl) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+			assert ((List.length btcl)=10);
+		end
+		| ("gfdiv_mod" ,instname,ztcl,atcl,btcl) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+			assert ((List.length btcl)=10);
+		end
+		| ("gfadd_mod" ,instname,ztcl,atcl,btcl) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+			assert ((List.length btcl)=10);
+		end
+		| ("tower2flat" ,instname,ztcl,atcl,[]) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+		end
+		| ("flat2tower" ,instname,ztcl,atcl,[]) -> begin
+			assert ((List.length ztcl)=10);
+			assert ((List.length atcl)=10);
+		end
+		| ("","",[],[],[]) -> ()
+		| (modname,instname,ztcl,atcl,btcl) -> begin
+			printf "modname %s\n" modname;
+			printf "instname %s\n" instname;
+			printf "zlen %d\n" (List.length ztcl);
+			printf "alen %d\n" (List.length atcl);
+			printf "blen %d\n" (List.length btcl);
+			if((snd (List.hd btcl))=TYPE_NET_NULL) then begin
+				printf "btc is TYPE_NET_NULL\n";
+			end;
+			flush stdout;
+			assert false
+		end
+	end
+
+	method getHashTnetValue tn =begin
+		try 
+			Hashtbl.find hashTnetValue tn 
+		with Not_found -> tn
+	end
+
+	method propagateConstance_Hash2Array = begin
+		(*first propagate the value in hashTnetValue 
+		to type_flat_unfold_array*)
+		let procTFArray pos tf =begin
+			self#chkProperTF tf;
+			match tf with
+			(modname,inm,ztcl,atcl,btcl) -> begin
+				if(modname="EO" || modname="AN2" || modname="OR2") then begin
+					let (ation,atn)=List.hd atcl
+					and (btion,btn)=List.hd btcl
+					in 
+					let newatn=self#getHashTnetValue atn
+					and newbtn=self#getHashTnetValue btn
+					in
+					if(newatn<>atn || newbtn<>btn) then begin
+						let newtf=(modname,inm,ztcl,[(ation,newatn)],[(btion,newbtn)])
+						in
+						Array.set type_flat_unfold_array pos newtf
+					end
+				end
+				else if(modname="IV") then begin
+					let (ation,atn)=List.hd atcl
+					in 
+					let newatn=self#getHashTnetValue atn
+					in
+					if(newatn<>atn) then begin
+						let newtf=(modname,inm,ztcl,[(ation,newatn)],btcl)
+						in
+						Array.set type_flat_unfold_array pos newtf
+					end
+				end
+			end
+		end
+		in
+		Array.iteri procTFArray type_flat_unfold_array;
+
+	end
+
+	method propagateConstance  = begin
+		let modified= ref true
+		and tn2tnList=ref []
+		in 
+		begin
+			let procTFArrayIn2Out pos tf = begin
+				self#chkProperTF tf;
+				match tf with
+				("AN2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
+					if((atn=TYPE_NET_CONST(0)) || (btn=TYPE_NET_CONST(0))) then begin
+						(*z is always 0*)
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,TYPE_NET_CONST(0))::(!tn2tnList);
+						modified := true;
+					end
+					else if(atn=TYPE_NET_CONST(1)) then begin
+						(*z is always b*)
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,btn)::(!tn2tnList);
+						modified := true;
+					end
+					else if(btn=TYPE_NET_CONST(1)) then begin
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,atn)::(!tn2tnList);
+						modified := true;
+					end
+				end
+				| ("OR2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
+					if((atn=TYPE_NET_CONST(1)) || (btn=TYPE_NET_CONST(1))) then begin
+						(*z is always 1*)
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,TYPE_NET_CONST(1))::(!tn2tnList);
+						modified := true;
+					end
+					else if(atn=TYPE_NET_CONST(0)) then begin
+						(*z is always b*)
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,btn)::(!tn2tnList);
+						modified := true;
+					end
+					else if(btn=TYPE_NET_CONST(0)) then begin
+						Array.set type_flat_unfold_array pos ("","",[],[],[]);
+						tn2tnList := (ztn,atn)::(!tn2tnList);
+						modified := true;
+					end
+				end
+				| _ -> ()
+			end
+			in begin
+				while(!modified) do
+					(*record whether there is modification 
+					in procTFArrayIn2Out*)
+					modified := false;
+					(*propagate the values from hashTnetValue 
+					to type_flat_unfold_array's inputs*)
+					self#propagateConstance_Hash2Array;
+					(*propagate the values from type_flat_unfold_array's
+					input to outputi, and record them in tn2tnList*)
+					Array.iteri procTFArrayIn2Out type_flat_unfold_array;
+					(*convert tn2tnList to hashTnetValue*)
+					let procTN2Hash x = begin
+						match x with
+						(tn1,tn2) -> 
+							Hashtbl.add hashTnetValue tn1 tn2
+					end
+					in
+					List.iter procTN2Hash (!tn2tnList);
+					tn2tnList := [];
+				done
+			end
+		end
+	end
+	
+	method handleInputStepList stepList = begin
+		let procStringInt x = begin
+			match x with
+			(str,i) -> begin
+				assert (i=0 || i=1);
+				let newstr=self#mapname str i 
+				in
+				let tnet=TYPE_NET_ID(newstr)
+				in
+				Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
+			end
+		end
+		in
+		let procStep i stp = begin
+			List.iter procStringInt stp;
+		end
+		in
+		let rec procStepList i stpl= begin
+			match stpl with
+			[] ->()
+			| hd::tl -> begin
+				procStep i hd;
+				procStepList (i+1) tl;
+			end
+		end
+		in 
+		procStepList 0 stepList
+	end
 
 	method compsyn (stepList:((string*int) list) list) unfoldNumber = begin
 		
 		(*first construct the data structure with bool only*)
 		self#construct_boolonly_netlist ;
+(*
+		printf "cheking 0\n";
+		flush stdout;
+		Array.iter (self#chkProperTF) type_flat_array;
+*)
 
 		(*make sure all assign are from *_Q input to real output
 		and for each module's input, 
@@ -1803,12 +2017,22 @@ object (self)
 		(* unfold it 		 *)
 		self#unfold_boolonly_netlist unfoldNumber ;
 
-		self#writeUnfoldNetlist;
 
 		assert ( (List.length seq_always_list)=0);
 		assert ( (List.length comb_always_list)=0);
 
-
+		(*convert all input step list to wire value*)
+(*
+		printf "cheking 1\n";
+		flush stdout;
+		Array.iter (self#chkProperTF) type_flat_unfold_array;
+		printf "cheking 2\n";
+		flush stdout;
+*)
+		self#handleInputStepList stepList;
+		self#propagateConstance ;
+		
+		self#writeUnfoldNetlist;
 	end
 
 	method genDecoderFunction iv shift ov instCNF = begin

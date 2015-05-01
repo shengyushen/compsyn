@@ -14,6 +14,14 @@ type type_ion =
 type type_connection = 
 	type_ion*type_net
 
+(*the tuple are operation type and instance name, 
+and is Z output, the rest are inputs
+empty operation type means NULL*)
+type type_flat =
+	string*string*(type_connection list)*(type_connection list)*(type_connection list)
+;;
+
+(*similar to type_flat but with index to an array of type_gfdata*)
 type type_2opgf = 
 	GFADD
 	| GFMULTFLAT
@@ -29,14 +37,6 @@ type type_2opbool =
 	| AN2
 	| OR2
 ;;
-(*the tuple are operation type and instance name, 
-and is Z output, the rest are inputs
-empty operation type means NULL*)
-type type_flat =
-	string*string*(type_connection list)*(type_connection list)*(type_connection list)
-;;
-
-(*similar to type_flat but with index to an array of type_gfdata*)
 type type_gfmod = 
 	TYPE_GFMOD_2OPGF      of type_2opgf*string*int*int*int
  |TYPE_GFMOD_1OPGF      of type_1opgf*string*int*int
