@@ -109,7 +109,7 @@ object (self)
 	(*unfold type_flat*)
 	val mutable type_flat_unfold_array : type_flat array =Array.make 1 ("","",[],[],[])
 	val mutable assignHashL2R_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
-	val mutable assignHashR2L_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000
+(* 	val mutable assignHashR2L_unfold : (type_net,type_net) Hashtbl.t = Hashtbl.create 1000 *)
 	val mutable hashInput_unfold  : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashOutput_unfold : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashWireUnfold : (string,range) Hashtbl.t=Hashtbl.create 100000
@@ -1464,7 +1464,7 @@ object (self)
 			and newrvnet=self#map2prevInstanceDnet idx rvnet
 			in begin
 				Hashtbl.add assignHashL2R_unfold newlvnet newrvnet;
-				Hashtbl.add assignHashR2L_unfold newrvnet newlvnet;
+(* 				Hashtbl.add assignHashR2L_unfold newrvnet newlvnet; *)
 			end
 		end
 	end
@@ -1909,6 +1909,25 @@ object (self)
 		end
 		in
 		Array.iteri procTFArray type_flat_unfold_array;
+	
+		let newhsh=Hashtbl.create 1000
+		in
+		let procAssign l r = begin
+			let newr=self#getHashTnetValue r
+			in
+			if(newr<>r) then begin
+				Hashtbl.add newhsh l newr
+			end
+		end
+		in
+		let procAdd l r = begin
+			Hashtbl.replace assignHashL2R_unfold l r
+		end
+		in 
+		begin
+			Hashtbl.iter procAssign assignHashL2R_unfold;
+			Hashtbl.iter procAdd newhsh;
+		end
 
 	end
 
