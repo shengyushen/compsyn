@@ -14,23 +14,33 @@ let start_time = Unix.gettimeofday ();;
 (*parsing input files*)
 let inputFileName = Sys.argv.(1) ;;
 let elabModName = Sys.argv.(2) ;;
+let stimulationFileName = Sys.argv.(3) ;;
+let expNumber = int_of_string (Sys.argv.(4)) ;;
 
-let inputFileChannle = open_in inputFileName;;
-
-let lexbuf = Lexing.from_channel inputFileChannle;;
-
-let very_struct = Parser.source_text Very.verilog lexbuf ;;
-close_in  inputFileChannle ;; 
-
-let objRTL = new rtl very_struct tempdirname ;;
-
-objRTL#elaborate elabModName ;;
 
 
 (*parsing stimulation*)
-let stimulationFileName = Sys.argv.(3) ;;
 let stimulationFileChannel = open_in stimulationFileName;;
 
+let rec getSVList sname svstr = begin
+	let len=String.length svstr
+	in 
+	if (len=0) then []
+	else begin
+		let substr=String.sub svstr 1 (len-1)
+		and c=String.get svstr 0
+		in
+		let cv= begin
+			match c with
+			'0' -> 0
+			| '1' -> 1
+			| _ -> assert false
+		end
+		in
+		(sname,len-1,cv)::(getSVList sname substr)
+	end
+end
+in
 let getSplitedLine i = begin
 	let ln=input_line stimulationFileChannel in
 	let spltln=Str.split (Str.regexp "[ \t]+") ln in
@@ -50,11 +60,21 @@ let rec getStep i = begin
 	let (strList,str)=getSplitedLine i in begin
 		match strList with
 		[signalName;signalValueString] ->  begin
-			(*assert (Str.string_match (Str.regexp "0\|1") signalValueString 0);*)
-			let signalValue = int_of_string signalValueString  in begin
-				assert (signalValue==0 || signalValue==1);
-				let restList=getStep i in
-				(signalName,signalValue)::restList
+			assert (Str.string_match (Str.regexp "[01]+") signalValueString 0);
+			if((String.length signalValueString)=1) then begin
+				let signalValue=int_of_string signalValueString
+				in begin
+					assert (signalValue==0 || signalValue==1);
+					let restList=getStep i in
+					(signalName,-1,signalValue)::restList
+				end
+			end
+			else begin
+				let signalValuePairList=getSVList signalName signalValueString
+				in
+				let restList=getStep i 
+				in
+				signalValuePairList@restList
 			end
 		end
 		| [] -> []
@@ -76,10 +96,25 @@ begin
 end in 
 begin
 	getStepHead 1;
-	let stepList=getStepIter 1 in begin
-          Printf.printf "finished parsing\n";
-		objRTL#compsyn stepList 25;
-		exit 0
+	let stepList=getStepIter 1 in begin 
+		Printf.printf "finished parsing\n";
+		flush stdout;
+
+		let inputFileChannle = open_in inputFileName
+		in
+		let lexbuf = Lexing.from_channel inputFileChannle
+		in
+		let very_struct = Parser.source_text Very.verilog lexbuf 
+		in 
+		begin
+			close_in  inputFileChannle ;
+			let objRTL = new rtl very_struct tempdirname
+			in begin
+				objRTL#elaborate elabModName ;
+				objRTL#compsyn stepList expNumber;
+				exit 0
+			end
+		end
 	end
 end;
 

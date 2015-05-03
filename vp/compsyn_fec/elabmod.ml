@@ -1389,6 +1389,11 @@ object (self)
 			in
 			TYPE_NET_ID(self#mapname nonQstr (idx-1))
 		end
+		| TYPE_NET_ARRAYBIT(str,idx) -> begin
+			printf "map2prevInstanceDnet arr bit %s[%d]\n" str idx;
+			assert false
+		end
+		| TYPE_NET_CONST(_) ->  tnet
 		| _ -> assert false
 	end
 
@@ -1572,6 +1577,10 @@ object (self)
 						in
 						TYPE_NET_ARRAYBIT(str,idx)
 					end
+					| T_primary(T_primary_num(T_number_base(1,'b',"0"))) -> 
+						TYPE_NET_CONST(0)
+					| T_primary(T_primary_num(T_number_base(1,'b',"1"))) -> 
+						TYPE_NET_CONST(1)
 					| _ -> assert false
 				end
 				in
@@ -1586,7 +1595,18 @@ object (self)
 		
 		let procAB2In tc = begin
 			match tc with 
-			(TYPE_CONNECTION_OUT,tnet) -> (TYPE_CONNECTION_IN,Hashtbl.find assignHashL2R tnet)
+			(TYPE_CONNECTION_OUT,tnet) -> begin
+				try
+					let rv= Hashtbl.find assignHashL2R tnet
+					in
+					(TYPE_CONNECTION_IN,rv)
+				with Not_found -> begin
+					printf "Warning :out not from assignment\n";
+					self#print_type_net tnet;
+					flush stdout;
+					tc
+				end
+			end
 			| _ -> tc
 		end
 		in
@@ -1713,6 +1733,8 @@ object (self)
 				fprintf flatNetlist " %s ;\n" str
 			| TYPE_NET_ARRAYBIT(str,idx) ->
 				fprintf flatNetlist " %s[%d] ;\n" str idx
+			| TYPE_NET_CONST(i) -> 
+				fprintf flatNetlist " %d ;" i
 			| _ -> assert false
 		end
 	end
@@ -1861,20 +1883,24 @@ object (self)
 	end
 
 	method getHashTnetValue tn =begin
-		try 
-			let newtn=Hashtbl.find hashTnetValue tn 
-			in begin
-				printf "\n getnewtn from \n";
+		match tn with
+		TYPE_NET_CONST(_) -> tn
+		| _ -> begin
+			try 
+				let newtn=Hashtbl.find hashTnetValue tn 
+				in begin
+					printf "\n getnewtn from \n";
+					self#print_type_net tn;
+					printf "\n to \n";
+					self#print_type_net newtn;
+					newtn
+				end
+			with Not_found -> begin
+				printf "\n fail on\n";
 				self#print_type_net tn;
-				printf "\n to \n";
-				self#print_type_net newtn;
-				newtn
+				printf "\n";
+				tn
 			end
-		with Not_found -> begin
-			printf "\n fail on\n";
-			self#print_type_net tn;
-			printf "\n";
-			tn
 		end
 	end
 
@@ -2040,15 +2066,22 @@ object (self)
 	method handleInputStepList stepList = begin
 		let procStringInt idx x = begin
 			match x with
-			(str,i) -> begin
+			(str,arridx,i) -> begin
 				assert (i=0 || i=1);
 				let newstr=self#mapname str idx 
 				in
-				let tnet=TYPE_NET_ID(newstr)
-				in begin
-					printf "adding %s\n" newstr;
-					Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
+				let tnet=begin
+					if(idx<0) then begin
+						printf "adding %s = %d\n" newstr i;
+						TYPE_NET_ID(newstr)
+					end
+					else begin
+						printf "adding %s[%d] = %d\n" newstr arridx i;
+						TYPE_NET_ARRAYBIT(newstr,arridx)
+					end
 				end
+				in 
+				Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
 			end
 		end
 		in
@@ -2129,7 +2162,7 @@ object (self)
 		end
 	end
 
-	method compsyn (stepList:((string*int) list) list) unfoldNumber = begin
+	method compsyn stepList unfoldNumber = begin
 		
 		(*first construct the data structure with bool only*)
 		self#construct_boolonly_netlist ;
