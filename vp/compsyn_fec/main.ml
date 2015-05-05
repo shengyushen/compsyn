@@ -22,83 +22,72 @@ let expNumber = int_of_string (Sys.argv.(4)) ;;
 (*parsing stimulation*)
 let stimulationFileChannel = open_in stimulationFileName;;
 
-let rec getSVList sname svstr = begin
-	let len=String.length svstr
-	in 
-	if (len=0) then []
-	else begin
-		let substr=String.sub svstr 1 (len-1)
-		and c=String.get svstr 0
-		in
-		let cv= begin
-			match c with
-			'0' -> 0
-			| '1' -> 1
+let getSteps i= begin
+	let rec getLines j = begin
+		let (newln,tf)= begin
+			try 
+				let ln=input_line stimulationFileChannel 
+				in
+				(ln,true)
+			with End_of_file ->
+				("",false)
+		end
+		in begin
+			if(tf) then newln::(getLines j)
+			else []
+		end
+	end
+	in
+	let listLines=getLines i 
+	in
+	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
+	in
+	let noEmptyList=List.filter (fun x -> (isEmptyList x)=false) splitedLinesList
+	in
+	let isStep x = begin
+		match x with
+		["step";_] -> true
+		| _ -> false
+	end
+	in
+	let (rlst1,rlst2) = listPartition isStep noEmptyList 
+	in begin
+		assert (isEmptyList rlst1);
+		let procmap y = begin
+			match y with
+			[a;b] -> (a,-1,int_of_string b)
 			| _ -> assert false
 		end
 		in
-		(sname,len-1,cv)::(getSVList sname substr)
+		let str2valueList=List.map (fun x -> List.map procmap x) rlst2
+		in
+		str2valueList
 	end
 end
 in
-let getSplitedLine i = begin
-	let ln=input_line stimulationFileChannel in
-	let spltln=Str.split (Str.regexp "[ \t]+") ln in
-	(spltln,ln)
-end in
-let rec getStepHead i = begin
-	try 
-	let (strList,str) = getSplitedLine  i in begin
-		match	strList with
-		[] -> getStepHead i
-		| ["step";_] -> true
-		| _  -> errorMessageQuit "%s\n" str
-	end
-	with  End_of_file -> false
-end in
-let rec getStep i = begin
-	let (strList,str)=getSplitedLine i in begin
-		match strList with
-		[signalName;signalValueString] ->  begin
-			assert (Str.string_match (Str.regexp "[01]+") signalValueString 0);
-			if((String.length signalValueString)=1) then begin
-				let signalValue=int_of_string signalValueString
-				in begin
-					assert (signalValue==0 || signalValue==1);
-					let restList=getStep i in
-					(signalName,-1,signalValue)::restList
-				end
-			end
-			else begin
-				let signalValuePairList=getSVList signalName signalValueString
-				in
-				let restList=getStep i 
-				in
-				signalValuePairList@restList
-			end
-		end
-		| [] -> []
-		| _ -> errorMessageQuit "%s\n" str
-	end
-end in
-let rec getStepIter i =
 begin
-	let currentStep=getStep i in 
-	begin
-		match (getStepHead i) with
-		false -> [currentStep]
-		| _ -> 
-		begin
-			let remainStepList=getStepIter i in
-			currentStep::remainStepList
-		end
-	end
-end in 
-begin
-	getStepHead 1;
-	let stepList=getStepIter 1 in begin 
+	let stepList=getSteps 1 in begin 
+(*
 		Printf.printf "finished parsing\n";
-		flush stdout;
+		let procp x = begin
+			match x with
+			(str,-1,v) -> 
+				Printf.printf "  %s %d\n" str v;
+			| _ -> assert false
+		end
+		in
+		let rec printSteps i stplst = begin
+			match stplst with
+			hd::tl -> begin
+				Printf.printf "step  %d\n" i;
+				List.iter procp hd;
+				printSteps (i+1) tl;
+			end
+			| _ -> ()
+		end
+		in
+		printSteps 0 stepList;
+*)
 
 		let inputFileChannle = open_in inputFileName
 		in

@@ -45,6 +45,21 @@ and isSingularList lst = begin
 	[z] -> true
 	| _ -> false
 end
+and listPartition iselim lst = begin
+	let rec listPartition_internal currentlist = begin
+		match currentlist with
+		hd::tl -> begin
+			let (remainCurrentList,remainList)=listPartition_internal tl
+			in begin
+				if(iselim hd) then ([],remainCurrentList::remainList)
+				else (hd::remainCurrentList,remainList)
+			end
+		end
+		| _ -> ([],[])
+	end
+	in
+	listPartition_internal lst
+end
 and set_current_time = begin
 	starttime := Unix.gettimeofday ();
 	oldtime := Unix.gettimeofday ()

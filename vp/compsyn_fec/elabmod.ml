@@ -1363,6 +1363,7 @@ object (self)
 	end
 
 	method mapname str idx = begin
+		printf "mapname %s to %s_inst_%d\n" str str idx;
 		sprintf "%s_inst_%d" str idx
 	end
 
@@ -1385,6 +1386,7 @@ object (self)
 	method map2prevInstanceDnet idx tnet = begin
 		match tnet with
 		TYPE_NET_ID(str) -> begin
+			assert (idx >=1);
 			let nonQstr=global_replace (regexp "_Q$") "_D" str 
 			in
 			TYPE_NET_ID(self#mapname nonQstr (idx-1))
@@ -1411,8 +1413,10 @@ object (self)
 					(*all Q will be used as internal nets that
 					connected to previous instance's D net*)
 					if(idx=0) then begin
-						(*for 0 instance no driving need*)
-						(TYPE_CONNECTION_NET,tnet)
+						(*for 0 instance some times I need to set init value*)
+						let newtnet=self#mapnet idx tnet
+						in
+						(TYPE_CONNECTION_IN,newtnet)
 					end
 					else begin
 						let newtnet=self#map2prevInstanceDnet idx tnet
@@ -1423,7 +1427,7 @@ object (self)
 				else begin
 					let newtnet=self#mapnet idx tnet
 					in
-					(tion,newtnet)
+					(TYPE_CONNECTION_IN,newtnet)
 				end
 			end
 			| TYPE_CONNECTION_OUT -> begin
@@ -1449,6 +1453,7 @@ object (self)
 		let newtf= begin
 			match tf with
 			(modname,instname,ztclst,atclst,btclst) -> begin
+				printf "proc_unfold_tf %s %s %d\n" modname instname idx;
 				let ztclst1=self#mapinstanceList idx ztclst
 				and atclst1=self#mapinstanceList idx atclst
 				and btclst1=self#mapinstanceList idx btclst
@@ -1477,6 +1482,12 @@ object (self)
 	method procUnfoldInputs idx str rng = begin
 		if(self#isQstr str) then begin
 			(*_Q is previous register dont use it as input *)
+			(*only the 0-th instance is used as init value*)
+			if(idx=0) then begin
+				let newstr=self#mapname str idx
+				in
+				Hashtbl.add hashInput_unfold newstr rng
+			end
 		end
 		else begin
 			assert ((self#isDstr str)=false);
@@ -1734,7 +1745,7 @@ object (self)
 			| TYPE_NET_ARRAYBIT(str,idx) ->
 				fprintf flatNetlist " %s[%d] ;\n" str idx
 			| TYPE_NET_CONST(i) -> 
-				fprintf flatNetlist " %d ;" i
+				fprintf flatNetlist " %d ;\n" i
 			| _ -> assert false
 		end
 	end
@@ -1825,13 +1836,6 @@ object (self)
 		end
 	end
 	
-(*
-	method isConstTC tc = begin
-		match tc with
-		(_,TYPE_NET_CONST(i)) -> true
-		| _ -> false
-	end
-*)
 	
 	method chkProperTF tf = begin
 		match tf with
@@ -1882,6 +1886,12 @@ object (self)
 		end
 	end
 
+	method addHashTnetValue tn1 tn2 = begin
+		let newtn2=self#getHashTnetValue tn2
+		in
+		Hashtbl.add hashTnetValue tn1 newtn2
+	end
+
 	method getHashTnetValue tn =begin
 		match tn with
 		TYPE_NET_CONST(_) -> tn
@@ -1889,16 +1899,20 @@ object (self)
 			try 
 				let newtn=Hashtbl.find hashTnetValue tn 
 				in begin
+(*
 					printf "\n getnewtn from \n";
 					self#print_type_net tn;
 					printf "\n to \n";
 					self#print_type_net newtn;
+*)
 					newtn
 				end
 			with Not_found -> begin
+(*
 				printf "\n fail on\n";
 				self#print_type_net tn;
 				printf "\n";
+*)
 				tn
 			end
 		end
@@ -1920,7 +1934,7 @@ object (self)
 		(*first propagate the value in hashTnetValue 
 		to type_flat_unfold_array*)
 		let procTFArray pos tf =begin
-			self#chkProperTF tf;
+(* 			self#chkProperTF tf; *)
 			match tf with
 			(modname,inm,ztcl,atcl,btcl) -> begin
 				let atcl1=self#getNewTcl atcl
@@ -1928,8 +1942,22 @@ object (self)
 				in
 				if((atcl1<>atcl) || (btcl1<>btcl)) then begin
 					let newtf=(modname,inm,ztcl,atcl1,btcl1)
-					in
-					Array.set type_flat_unfold_array pos newtf
+					in begin
+						printf "\npush to %s %s\n" modname inm;
+						if(atcl1<>atcl) then begin
+							printf "\nold a ";
+							List.iter (self#print_type_connection) atcl;
+							printf "\nnew a ";
+							List.iter (self#print_type_connection) atcl1;
+						end;
+						if(btcl1<>btcl) then begin
+							printf "\nold b ";
+							List.iter (self#print_type_connection) btcl;
+							printf "\nnew b ";
+							List.iter (self#print_type_connection) btcl1;
+						end;
+						Array.set type_flat_unfold_array pos newtf
+					end
 				end
 			end
 		end
@@ -1968,22 +1996,34 @@ object (self)
 				("AN2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
 					if((atn=TYPE_NET_CONST(0)) || (btn=TYPE_NET_CONST(0))) then begin
 						(*z is always 0*)
-						printf "\nPushing to :\n";
+						printf "removing AN2 %s\n" instname;
 						self#print_type_connection (ztion,ztn);
-						printf "\n becaue of\n";
+						printf "==0\n becaue of\n";
 						self#print_type_connection (ation,atn);
+						printf "\n";
 						self#print_type_connection (btion,btn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(0))::(!tn2tnList);
 						modified := true;
 					end
 					else if(atn=TYPE_NET_CONST(1)) then begin
 						(*z is always b*)
+						printf "removing AN2 %s\n" instname;
+						self#print_type_connection (ztion,ztn);
+						printf "==";
+						self#print_type_connection (btion,btn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,btn)::(!tn2tnList);
 						modified := true;
 					end
 					else if(btn=TYPE_NET_CONST(1)) then begin
+						printf "removing AN2 %s\n" instname;
+						self#print_type_connection (ztion,ztn);
+						printf "==";
+						self#print_type_connection (ation,atn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,atn)::(!tn2tnList);
 						modified := true;
@@ -1992,22 +2032,34 @@ object (self)
 				| ("OR2",instname,[(ztion,ztn)],[(ation,atn)],[(btion,btn)]) -> begin
 					if((atn=TYPE_NET_CONST(1)) || (btn=TYPE_NET_CONST(1))) then begin
 						(*z is always 1*)
-						printf "\nPushing to :\n";
+						printf "removing OR2 %s\n" instname;
 						self#print_type_connection (ztion,ztn);
-						printf "\n becaue of\n";
+						printf "==0\n becaue of\n";
 						self#print_type_connection (ation,atn);
+						printf "\n";
 						self#print_type_connection (btion,btn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(1))::(!tn2tnList);
 						modified := true;
 					end
 					else if(atn=TYPE_NET_CONST(0)) then begin
 						(*z is always b*)
+						printf "removing OR2 %s\n" instname;
+						self#print_type_connection (ztion,ztn);
+						printf "==";
+						self#print_type_connection (btion,btn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,btn)::(!tn2tnList);
 						modified := true;
 					end
 					else if(btn=TYPE_NET_CONST(0)) then begin
+						printf "removing OR2 %s\n" instname;
+						self#print_type_connection (ztion,ztn);
+						printf "==";
+						self#print_type_connection (ation,atn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,atn)::(!tn2tnList);
 						modified := true;
@@ -2016,20 +2068,22 @@ object (self)
 				| ("IV",instname,[(ztion,ztn)],[(ation,atn)],_) -> begin
 					if(atn=TYPE_NET_CONST(1)) then begin
 						(*z is always 0*)
-						printf "\nPushing to :\n";
+						printf "removing IV %s\n" instname;
 						self#print_type_connection (ztion,ztn);
-						printf "\n becaue of\n";
+						printf "==0\n";
 						self#print_type_connection (ation,atn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(0))::(!tn2tnList);
 						modified := true;
 					end
 					else if(atn=TYPE_NET_CONST(0)) then begin
 						(*z is always 1*)
-						printf "\nPushing to :\n";
+						printf "removing IV %s\n" instname;
 						self#print_type_connection (ztion,ztn);
-						printf "\n becaue of";
+						printf "==1\n";
 						self#print_type_connection (ation,atn);
+						printf "\n";
 						Array.set type_flat_unfold_array pos ("","",[],[],[]);
 						tn2tnList := (ztn,TYPE_NET_CONST(1))::(!tn2tnList);
 						modified := true;
@@ -2039,7 +2093,6 @@ object (self)
 			end
 			in begin
 				while(!modified) do
-					printf "again\n";
 					(*record whether there is modification 
 					in procTFArrayIn2Out*)
 					modified := false;
@@ -2052,8 +2105,8 @@ object (self)
 					(*convert tn2tnList to hashTnetValue*)
 					let procTN2Hash x = begin
 						match x with
-						(tn1,tn2) -> 
-							Hashtbl.add hashTnetValue tn1 tn2
+						(tn1,tn2) ->
+							self#addHashTnetValue tn1 tn2
 					end
 					in
 					List.iter procTN2Hash (!tn2tnList);
@@ -2071,7 +2124,7 @@ object (self)
 				let newstr=self#mapname str idx 
 				in
 				let tnet=begin
-					if(idx<0) then begin
+					if(arridx<0) then begin
 						printf "adding %s = %d\n" newstr i;
 						TYPE_NET_ID(newstr)
 					end
@@ -2178,7 +2231,7 @@ object (self)
 		then replace it with that *_Q input*)
 		self#handleAssignment;
 
-(* 		self#writeFlattenNetlist; *)
+ 		self#writeFlattenNetlist; 
 
 		(* unfold it 		 *)
 		self#unfold_boolonly_netlist unfoldNumber ;
