@@ -114,6 +114,8 @@ object (self)
 	val mutable hashOutput_unfold : (string,range) Hashtbl.t = Hashtbl.create 100
 	val mutable hashWireUnfold : (string,range) Hashtbl.t=Hashtbl.create 100000
 	val mutable hashTnetValue : (type_net,type_net) Hashtbl.t=Hashtbl.create 10000
+	val mutable hashWire2Sinks : (type_net,int)  Hashtbl.t=Hashtbl.create 10000000
+	val mutable hashWire2Source : (type_net,int)  Hashtbl.t=Hashtbl.create 10000000
 
 	(*converting flat wire to gfdata*)
 	val mutable last_hash_pointer : int =0 
@@ -1896,6 +1898,33 @@ object (self)
 	end
 
 	method getHashTnetValue tn =begin
+		let newtn=self#getHashTnetValue_internal tn
+		in begin
+			if(newtn!=tn) then begin
+				let finaltn=self#getHashTnetValue1 newtn
+				in begin
+					if(finaltn<>newtn) then begin
+						Hashtbl.replace hashTnetValue tn finaltn;
+						finaltn
+					end
+					else finaltn
+				end
+			end
+			else newtn
+		end
+	end
+
+	method getHashTnetValue1 tn =begin
+		let newtn=self#getHashTnetValue_internal tn
+		in begin
+			if(newtn!=tn) then begin
+				self#getHashTnetValue1 newtn
+			end
+			else newtn
+		end
+	end
+
+	method getHashTnetValue_internal  tn =begin
 		match tn with
 		TYPE_NET_CONST(_) -> tn
 		| _ -> begin
@@ -1949,6 +1978,7 @@ object (self)
 				self#addHashTnetValue ztn (TYPE_NET_CONST(0));
 				true
 			end
+(*
 			else if(atn=TYPE_NET_CONST(1)) then begin
 				(*z is always b*)
 				printf "removing AN2 %s\n" instname;
@@ -1970,8 +2000,9 @@ object (self)
 				self#addHashTnetValue ztn atn;
 				true
 			end
+*)
 			else begin
-				Array.set type_flat_unfold_array pos tf;
+ 				Array.set type_flat_unfold_array pos tf; 
 				false
 			end
 		end
@@ -1989,6 +2020,7 @@ object (self)
 				self#addHashTnetValue ztn (TYPE_NET_CONST(1));
 				true
 			end
+(*
 			else if(atn=TYPE_NET_CONST(0)) then begin
 				(*z is always b*)
 				printf "removing OR2 %s\n" instname;
@@ -2010,8 +2042,9 @@ object (self)
 				self#addHashTnetValue ztn atn;
 				true
 			end
+*)
 			else begin
-				Array.set type_flat_unfold_array pos tf;
+ 				Array.set type_flat_unfold_array pos tf; 
 				false
 			end
 		end
@@ -2039,22 +2072,30 @@ object (self)
 				true
 			end
 			else begin
-				Array.set type_flat_unfold_array pos tf;
+ 				Array.set type_flat_unfold_array pos tf; 
 				false
 			end
 		end
 		| _ -> begin
-			Array.set type_flat_unfold_array pos tf;
+ 			Array.set type_flat_unfold_array pos tf; 
 			false
 		end
 	end
 
-	method propagateConstance_Hash2Array = begin
+	method findAllSinks tnet = begin
+		Hashtbl.find_all hashWire2Sinks tnet
+	end
+
+	method propagateConstance_Hash2Array tnl= begin
 		(*first propagate the value in hashTnetValue 
 		to type_flat_unfold_array*)
-		let modified =ref false 
-		in begin
-			let procTFArray pos tf =begin
+		let modifiedTFListList=List.map (self#findAllSinks ) tnl
+		in
+		let modifiedTFList=List.concat modifiedTFListList
+		in
+		let procTFArray pos  =begin
+			let tf=type_flat_unfold_array.(pos)
+			in begin
 	 			self#chkProperTF tf;
 				match tf with
 				(modname,inm,ztcl,atcl,btcl) -> begin
@@ -2078,57 +2119,60 @@ object (self)
 								printf "\nn b ";
 								List.iter (self#print_type_connection) btcl1;
 							end;
-							self#mapTF pos newtf ;
-							modified := true;
+							let changedZ=self#mapTF pos newtf 
+							in begin
+								if(changedZ) then
+									List.map snd ztcl
+								else []
+							end
 						end
 					end
+					else []
 				end
-			end
-			in
-			Array.iteri procTFArray type_flat_unfold_array;
-		
-			let newhsh=Hashtbl.create 1000
-			in
-			let procAssign l r = begin
-				let newr=self#getHashTnetValue r
-				in
-				if(newr<>r) then begin
-					Hashtbl.add newhsh l newr;
-					modified := true;
-				end
-			end
-			in
-			let procAdd l r = begin
-				Hashtbl.replace assignHashL2R_unfold l r
-			end
-			in 
-			begin
-				Hashtbl.iter procAssign assignHashL2R_unfold;
-				Hashtbl.iter procAdd newhsh;
-				(!modified)
 			end
 		end
-	
-	end
-
-	method propagateConstance  = begin
-		dbg_print (sprintf "propagateConstance start type_flat_unfold_array length %d\n" (Array.length type_flat_unfold_array));
-		flush stdout;
-		let modified= ref true
+		in
+		let newListList=List.map procTFArray modifiedTFList
+		in
+		let newList=List.concat newListList
+		in
+		let newhsh=Hashtbl.create 1000
+		in
+		let procAssign l r = begin
+			let newr=self#getHashTnetValue r
+			in
+			if(newr<>r) then begin
+				Hashtbl.add newhsh l newr;
+			end
+		end
+		in
+		let procAdd l r = begin
+			Hashtbl.replace assignHashL2R_unfold l r
+		end
 		in 
 		begin
-			while(!modified) do
-				(*record whether there is modification 
-				in procTFArrayIn2Out*)
-				(*propagate the values from hashTnetValue 
-				to type_flat_unfold_array's inputs*)
-				dbg_print "again\n";
-				modified := self#propagateConstance_Hash2Array;
+			Hashtbl.iter procAssign assignHashL2R_unfold;
+			Hashtbl.iter procAdd newhsh;
+			newList
+		end
+	end
+
+	method propagateConstance  tnList = begin
+		dbg_print (sprintf "propagateConstance start type_flat_unfold_array length %d\n" (Array.length type_flat_unfold_array));
+		flush stdout;
+		let tnl= ref tnList
+		in 
+		begin
+			while((isEmptyList (!tnl))=false) do
+				dbg_print (sprintf "again %d \n" (List.length (!tnl)));
+				flush stdout;
+				tnl := self#propagateConstance_Hash2Array (!tnl);
 			done
 		end
 	end
 	
 	method handleInputStepList stepList = begin
+		assert ((Hashtbl.length hashTnetValue)=0);
 		let procStringInt idx x = begin
 			match x with
 			(str,arridx,i) -> begin
@@ -2145,21 +2189,25 @@ object (self)
 						TYPE_NET_ARRAYBIT(newstr,arridx)
 					end
 				end
-				in 
-				Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i))
+				in begin
+					Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i));
+					(tnet,(TYPE_NET_CONST(i)))
+				end
 			end
 		end
 		in
 		let procStep i stp = begin
-			List.iter (procStringInt i) stp;
+			List.map (procStringInt i) stp;
 		end
 		in
 		let rec procStepList i stpl= begin
 			match stpl with
-			[] ->()
+			[] ->[]
 			| hd::tl -> begin
-				procStep i hd;
-				procStepList (i+1) tl;
+				let currentList=procStep i hd
+				and remainList=procStepList (i+1) tl 
+				in
+				currentList @ remainList
 			end
 		end
 		in 
@@ -2220,11 +2268,59 @@ object (self)
 			end
 		end
 		in 
+		let procL2RDriving lnet rnet = begin
+			Hashtbl.add drivingTNHash  lnet true
+		end
+		in
+		let procL2RDriven lnet rnet = begin
+				if((Hashtbl.mem drivingTNHash rnet)=false) then begin
+					let tn=rnet 
+					in begin
+							if(tn<>TYPE_NET_NULL && tn<>(TYPE_NET_CONST(0)) && tn<>(TYPE_NET_CONST(1)) && (isUnfoldInput tn)=false) then begin
+								printf "\n UNDRIVEN assignment \n" ;
+								self#print_type_net lnet;
+								printf "\n==\n";
+								self#print_type_net rnet;
+								flush stdout;
+							end
+					end
+				end
+		end
+		in
 		begin
+			(*all driving *)
 			Array.iter procDriving type_flat_unfold_array;
 			Hashtbl.iter procInput hashInput_unfold;
+			Hashtbl.iter procL2RDriving assignHashL2R_unfold;
+
 			Array.iter procDriven  type_flat_unfold_array;
+			Hashtbl.iter procL2RDriven assignHashL2R_unfold;
 		end
+	end
+
+	method createWire2SinksHash = begin
+		let procaddsink pos tc = begin
+			match tc with
+			(_,tn) ->
+				Hashtbl.add hashWire2Sinks tn pos
+		end
+		in
+		let procaddsrc  pos tc = begin
+			match tc with
+			(_,tn) ->
+				Hashtbl.add hashWire2Source tn pos
+		end
+		in
+		let procarr pos tf = begin
+			match tf with
+			(modname,instname,ztcl,atcl,btcl) -> begin
+				List.iter (procaddsink pos) atcl ;
+				List.iter (procaddsink pos) btcl ;
+				List.iter (procaddsrc  pos) ztcl ;
+			end
+		end
+		in
+		Array.iteri procarr type_flat_unfold_array;
 	end
 
 	method compsyn (stepList :(string*int*int) list list)unfoldNumber = begin
@@ -2245,8 +2341,28 @@ object (self)
 		assert ( (List.length seq_always_list)=0);
 		assert ( (List.length comb_always_list)=0);
 
-		self#handleInputStepList stepList;
-		self#propagateConstance ;
+		dbg_print "before self#createWire2SinksHash\n";
+		self#createWire2SinksHash;
+		dbg_print "post self#createWire2SinksHash\n";
+		let constList=self#handleInputStepList stepList
+(*
+		in begin
+			let prt x = begin
+				match x with
+				(tnet,TYPE_NET_CONST(i)) -> begin
+					assert (i=0||i=1);
+					self#print_type_net tnet;
+					printf "== %d\n" i;
+				end
+				| _ -> assert false
+			end
+			in
+			List.iter prt constList
+		end;
+		exit 0;
+*)
+		in
+		self#propagateConstance (List.map fst constList);
 
 		
 		self#writeUnfoldNetlist;
