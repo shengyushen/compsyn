@@ -117,15 +117,6 @@ object (self)
 	val mutable hashWire2Sinks : (type_net,int)  Hashtbl.t=Hashtbl.create 10000000
 	val mutable hashWire2Source : (type_net,int)  Hashtbl.t=Hashtbl.create 10000000
 
-	(*converting flat wire to gfdata*)
-	val mutable last_hash_pointer : int =0 
-	(*mapping from type_gfdata to index *)
-	val gfdata_hash : (type_gfdata, int) Hashtbl.t = Hashtbl.create 100000 
-	(*mapping from index to type_gfdata*)
-	val mutable gfdata_array : type_gfdata array = Array.make 1 TYPE_GFDATA_NULL
-	(*modules*)
-	val mutable gfmod_array : type_gfmod array = Array.make 1 TYPE_GFMOD_NULL
-
 
 	method print dumpout = begin
 		fprintf dumpout "module %s (\n" name;
@@ -1061,15 +1052,15 @@ object (self)
   end
 
 	method getZ colist = begin
-          self#getX "Z" colist
+    self#getX "Z" colist
 	end
 
 	method getA colist = begin
-          self#getX "A" colist
+    self#getX "A" colist
 	end
 
 	method getB colist = begin
-          self#getX "B" colist
+    self#getX "B" colist
 	end
 
 	method procHandleInOut str co = begin
@@ -1134,332 +1125,17 @@ object (self)
 	end
 
 
-	method print_type_ion tion = begin
-				match tion with
-				TYPE_CONNECTION_NET -> 
-					Printf.printf " TYPE_CONNECTION_NET "
-				| TYPE_CONNECTION_IN -> 
-					Printf.printf " TYPE_CONNECTION_IN "
-				| TYPE_CONNECTION_OUT -> 
-					Printf.printf " TYPE_CONNECTION_OUT "
-	end
 
-	method print_type_net tnet = begin
-				match tnet with
-				TYPE_NET_ID(str) ->  begin
-					assert (str<>"");
-					printf " %s " str
-				end
-				| TYPE_NET_CONST(i) -> 
-					printf " %d "  i
-				| TYPE_NET_ARRAYBIT(str,idx) -> 
-					printf " %s[%d] " str idx
-				| TYPE_NET_NULL -> ()
-	end
-
-	method print_type_connection tc = begin
-		match tc with
-		(tion,tnet) -> begin
-(* 			self#print_type_ion tion; *)
-			self#print_type_net tnet;
-		end
-	end
-
-	method print_type_connection_list tclst = begin
-		List.iter (self#print_type_connection) tclst
-	end
-
-	method print_gfdata gfdata = begin
-		match gfdata with
-		TYPE_GFDATA_GF1024(tclst) -> begin
-			Printf.printf "TYPE_GFDATA_GF1024 ";
-			self#print_type_connection_list tclst;
-			printf "\n";
-		end
-		| TYPE_GFDATA_GF3232(tclst) -> begin
-			Printf.printf "TYPE_GFDATA_GF3232 ";
-			self#print_type_connection_list tclst;
-			printf "\n";
-		end
-		| TYPE_GFDATA_BOOL(tc) -> begin
-			Printf.printf "TYPE_GFDATA_BOOL ";
-			self#print_type_connection tc;
-			printf "\n";
-		end
-		| TYPE_GFDATA_NULL -> assert false
-	end
-
-	method is2OpGF modname = begin
-		match modname with
-		"gfadd_mod" -> true
-		| "gfmult_flat_mod" -> true
-		| "gfmult_mod" -> true
-		| "gfdiv_mod" -> true
-		| _ -> false
-	end
-
-	method is1OpGF modname = begin
-		match modname with
-		"tower2flat" -> true
-		| "flat2tower" -> true
-		| _ -> false
-	end
-
-(*
-	method construct_gf_netlist = begin
-		(*then find out all gfdata type instance 
-		and construct gfdata_list*)
-		let isLstIn tclst = begin
-			(Hashtbl.mem gfdata_hash (TYPE_GFDATA_GF1024(tclst))) || (Hashtbl.mem gfdata_hash (TYPE_GFDATA_GF3232(tclst)))
-		end 
-		in
-		let isTcIn tc = begin
-			Hashtbl.mem gfdata_hash (TYPE_GFDATA_BOOL(tc))
-		end 
-		in
-		let addLstIn tclst = begin
-			Hashtbl.add gfdata_hash tclst last_hash_pointer;
-			last_hash_pointer <- last_hash_pointer +1;
-		end
-		in
-		let addTcIn tc = begin
-			Hashtbl.add gfdata_hash tc last_hash_pointer;
-			last_hash_pointer <- last_hash_pointer +1;
-		end
-		in
-		let proc_type_flat tf = begin
-			match tf with 
-			(modname,_,ztclst,atclst,btclst) -> begin
-				if (self#is2OpGF modname) then begin
-					if(isLstIn ztclst)=false then begin
-						addLstIn (TYPE_GFDATA_GF1024(ztclst));
-					end;
-					if(isLstIn atclst)=false then begin
-						addLstIn (TYPE_GFDATA_GF1024(atclst));
-					end;
-					if(isLstIn btclst)=false then begin
-						addLstIn (TYPE_GFDATA_GF1024(btclst));
-					end;
-				end
-				else if(self#is1OpGF modname) then begin
-					assert (isEmptyList btclst);
-					if(isLstIn ztclst)=false then begin
-						addLstIn (TYPE_GFDATA_GF1024(ztclst));
-					end;
-					if(isLstIn atclst)=false then begin
-						addLstIn (TYPE_GFDATA_GF1024(atclst));
-					end;
-				end
-				else if(self#is2OpBool modname) then begin
-					assert (isSingularList ztclst);
-					assert (isSingularList atclst);
-					assert (isSingularList btclst);
-					let ztc=List.hd ztclst
-					and atc=List.hd atclst
-					and btc=List.hd btclst
-					in 
-					if(isTcIn ztc)=false then begin
-						addTcIn (TYPE_GFDATA_BOOL(ztc));
-					end;
-					if(isTcIn atc)=false then begin
-						addTcIn (TYPE_GFDATA_BOOL(atc));
-					end;
-					if(isTcIn btc)=false then begin
-						addTcIn (TYPE_GFDATA_BOOL(btc));
-					end;
-				end
-				else if(self#is1OpBool modname) then begin
-					assert (isSingularList ztclst);
-					assert (isSingularList atclst);
-					assert (isEmptyList btclst);
-					let ztc=List.hd ztclst
-					and atc=List.hd atclst
-					in 
-					if(isTcIn ztc)=false then begin
-						addTcIn (TYPE_GFDATA_BOOL(ztc));
-					end;
-					if(isTcIn atc)=false then begin
-						addTcIn (TYPE_GFDATA_BOOL(atc));
-					end;
-				end
-				else assert false
-			end
-		end 
-		in begin
-			printf "start building gfdata_list with type_flat_array size %d\n" (Array.length type_flat_array);
-			flush stdout;
-			
-			(*building gfdata_hash*)
-	 		Array.iter (proc_type_flat) type_flat_array; 
-
-			let hash_length=Hashtbl.length gfdata_hash 
-			in begin
-				assert (hash_length=last_hash_pointer);
-				gfdata_array <- Array.make last_hash_pointer TYPE_GFDATA_NULL;
-				printf "length of gfdata_hash %d\n" hash_length;
-				(*move the data from gfdata_hash to gfdata_array*)
-				let proc_gfdata_hash gfd idx = begin
-					assert (idx >=0 && idx <hash_length);
-					assert (gfdata_array.(idx)=TYPE_GFDATA_NULL);
-					Array.set gfdata_array idx gfd;
-				end in
-				Hashtbl.iter proc_gfdata_hash gfdata_hash;
-			end
-		end;
-
-		(*building gfmod_array*)
-		let proc_flat_array tf = begin
-			match tf with
-			TYPE_FLAT_2OPGF(t2gf,modname,ztclst,atclst,btclst) -> begin
-				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(ztclst))
-				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(atclst))
-				and bidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(btclst))
-				in 
-				TYPE_GFMOD_2OPGF(t2gf,modname,zidx,aidx,bidx)
-			end
-			| TYPE_FLAT_1OPGF(t1gf,modname,ztclst,atclst) -> begin
-				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(ztclst))
-				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_GF1024(atclst))
-				in 
-				TYPE_GFMOD_1OPGF(t1gf,modname,zidx,aidx)
-			end
-			| TYPE_FLAT_2OPBOOL(t2b,modname,ztc,atc,btc) -> begin
-				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(ztc))
-				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(atc))
-				and bidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(btc))
-				in
-				TYPE_GFMOD_2OPBOOL(t2b,modname,zidx,aidx,bidx)
-			end
-			| TYPE_FLAT_IV(modname,ztc,atc) -> begin
-				let zidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(ztc))
-				and aidx=Hashtbl.find gfdata_hash (TYPE_GFDATA_BOOL(atc))
-				in
-				TYPE_GFMOD_IV(modname,zidx,aidx)
-			end
-			| _ -> assert false
-		end in begin
-			gfmod_array <- Array.map proc_flat_array type_flat_array;
-		end
-		(*expanding the noreg_toponly.v*)
-	end
-*)
-
-	method isQstr str = begin
-		string_match (regexp "^.*_Q$") str 0
-	end
-
-	method isQ tnet = begin
-		match tnet with
-		TYPE_NET_ID(str) -> self#isQstr str
-		| _ -> false
-	end
-
-	method isDstr str = begin
-		string_match (regexp "^.*_D$") str 0
-	end
-	
-	method isD tnet = begin
-		match tnet with
-		TYPE_NET_ID(str) -> self#isDstr str
-		| _ -> false
-	end
-
-	method mapname str idx = begin
-(* 		printf "mapname %s to %s_inst_%d\n" str str idx; *)
-		sprintf "%s_inst_%d" str idx
-	end
-
-	method mapnet idx tnet = begin
-		match tnet with
-		TYPE_NET_ID(str) -> begin
-			let newstr=self#mapname str idx 
-			in
-			TYPE_NET_ID(newstr)
-		end
-		| TYPE_NET_CONST(_) -> tnet
-		| TYPE_NET_ARRAYBIT(str,id) -> begin
-			let newstr=self#mapname str idx 
-			in
-			TYPE_NET_ARRAYBIT(newstr,id)
-		end
-		| TYPE_NET_NULL -> tnet
-	end
-
-	method map2prevInstanceDnet idx tnet = begin
-		match tnet with
-		TYPE_NET_ID(str) -> begin
-			assert (idx >=1);
-			let nonQstr=global_replace (regexp "_Q$") "_D" str 
-			in
-			TYPE_NET_ID(self#mapname nonQstr (idx-1))
-		end
-		| TYPE_NET_ARRAYBIT(str,idx) -> begin
-			printf "map2prevInstanceDnet arr bit %s[%d]\n" str idx;
-			assert false
-		end
-		| TYPE_NET_CONST(_) ->  tnet
-		| _ -> assert false
-	end
-
-	method mapinstance idx tc = begin
-		match tc with
-		(tion,tnet) -> begin
-			match tion with
-			TYPE_CONNECTION_NET -> begin
-				let newtnet=self#mapnet idx tnet
-				in
-				(tion,newtnet)
-			end
-			| TYPE_CONNECTION_IN -> begin
-				if(self#isQ tnet) then begin
-					(*all Q will be used as internal nets that
-					connected to previous instance's D net*)
-					if(idx=0) then begin
-						(*for 0 instance some times I need to set init value*)
-						let newtnet=self#mapnet idx tnet
-						in
-						(TYPE_CONNECTION_IN,newtnet)
-					end
-					else begin
-						let newtnet=self#map2prevInstanceDnet idx tnet
-						in
-						(TYPE_CONNECTION_NET,newtnet)
-					end
-				end
-				else begin
-					let newtnet=self#mapnet idx tnet
-					in
-					(TYPE_CONNECTION_IN,newtnet)
-				end
-			end
-			| TYPE_CONNECTION_OUT -> begin
-				if(self#isD tnet) then begin
-					let newtnet=self#mapnet idx tnet
-					in
-					(TYPE_CONNECTION_NET,newtnet)
-				end
-				else begin
-					let newtnet=self#mapnet idx tnet
-					in
-					(tion,newtnet)
-				end
-			end
-		end
-	end
-
-	method mapinstanceList idx tclst  = begin
-		List.map (self#mapinstance idx) tclst
-	end
 
 	method proc_unfold_tf idx arrayPos tf = begin
 		let newtf= begin
 			match tf with
 			(modname,instname,ztclst,atclst,btclst) -> begin
 (* 				printf "proc_unfold_tf %s %s %d\n" modname instname idx; *)
-				let ztclst1=self#mapinstanceList idx ztclst
-				and atclst1=self#mapinstanceList idx atclst
-				and btclst1=self#mapinstanceList idx btclst
-				and instname1=self#mapname instname idx 
+				let ztclst1=mapinstanceList idx ztclst
+				and atclst1=mapinstanceList idx atclst
+				and btclst1=mapinstanceList idx btclst
+				and instname1=mapname instname idx 
 				in 
 				(modname,instname1,ztclst1,atclst1,btclst1)
 			end
@@ -1472,8 +1148,8 @@ object (self)
 	method proc_unfold_L2R idx lvnet rvnet = begin
 		(*assignmetn on inst 0 is not need*)
 		if (idx <> 0 ) then begin
-			let newlvnet=self#mapnet idx lvnet
-			and newrvnet=self#map2prevInstanceDnet idx rvnet
+			let newlvnet=mapnet idx lvnet
+			and newrvnet=map2prevInstanceDnet idx rvnet
 			in begin
 				Hashtbl.add assignHashL2R_unfold newlvnet newrvnet;
 (* 				Hashtbl.add assignHashR2L_unfold newrvnet newlvnet; *)
@@ -1482,34 +1158,34 @@ object (self)
 	end
 
 	method procUnfoldInputs idx str rng = begin
-		if(self#isQstr str) then begin
+		if(isQstr str) then begin
 			(*_Q is previous register dont use it as input *)
 			(*only the 0-th instance is used as init value*)
 			if(idx=0) then begin
-				let newstr=self#mapname str idx
+				let newstr=mapname str idx
 				in
 				Hashtbl.add hashInput_unfold newstr rng
 			end
 		end
 		else begin
-			assert ((self#isDstr str)=false);
-			let newstr=self#mapname str idx
+			assert ((isDstr str)=false);
+			let newstr=mapname str idx
 			in
 			Hashtbl.add hashInput_unfold newstr rng
 		end
 	end
 
 	method procUnfoldOutputs idx str rng = begin
-		if(self#isDstr str) then begin
+		if(isDstr str) then begin
 			(*_D is current register,
 			use it as wire*)
-			let newstr=self#mapname str idx
+			let newstr=mapname str idx
 			in
 			Hashtbl.add hashWireUnfold newstr rng
 		end
 		else begin
-			assert ((self#isQstr str)=false);
-			let newstr=self#mapname str idx
+			assert ((isQstr str)=false);
+			let newstr=mapname str idx
 			in
 			Hashtbl.add hashOutput_unfold newstr rng
 		end
@@ -1547,7 +1223,7 @@ object (self)
 	method procUnfoldWires idx key cont = begin
 		match cont#get_obj with
 		Tobj_net_declaration(rng) -> begin
-			let newkey=self#mapname key idx
+			let newkey=mapname key idx
 			in
 			Hashtbl.add hashWireUnfold newkey rng
 		end
@@ -1580,12 +1256,12 @@ object (self)
 					match exp with
 					T_primary(T_primary_id([str])) -> begin
 						assert(self#isInput str);
-						assert(self#isQstr str);
+						assert(isQstr str);
 						TYPE_NET_ID(str)
 					end
 					| T_primary(T_primary_arrbit([str],idxexp)) -> begin
 						assert (self#isInput str);
-						assert(self#isQstr str);
+						assert(isQstr str);
 						let idx=Expression.exp2int_simple idxexp
 						in
 						TYPE_NET_ARRAYBIT(str,idx)
@@ -1615,7 +1291,7 @@ object (self)
 					(TYPE_CONNECTION_IN,rv)
 				with Not_found -> begin
 					printf "Warning :out not from assignment\n";
-					self#print_type_net tnet;
+					print_type_net tnet;
 					flush stdout;
 					tc
 				end
@@ -1639,46 +1315,6 @@ object (self)
 		in
 		Array.iteri procOutputABtoInput type_flat_array;
 	end
-
-	method getTypeName2opgf typ = begin
-		match typ with
-		GFADD -> "gfadd_mod"
-		| GFMULTFLAT -> "gfmult_flat_mod"
-		| GFMULT -> "gfmult_mod"
-		| GFDIV -> "gfdiv_mod"
-	end
-
-	method getTypeName1opgf typ = begin
-		match typ with
-		TOWER2FLAT -> "tower2flat"
-		| FLAT2TOWER -> "flat2tower"
-	end
-
-	method getTypeName2opbool typ =begin
-		match typ with
-		EO -> "EO"
-		| AN2 -> "AN2"
-		| OR2 -> "OR2"
-	end
-
-	method is2OpBool modname = begin
-		match modname with
-		"EO"|"AN2"|"OR2" -> true
-		| _ -> false
-	end
-
-	method is1OpBool modname = begin
-		match modname with
-		"IV" -> true
-		| _ -> false
-	end
-
-	method is0Op modname = begin
-		match modname with
-		"" -> true
-		| _ -> false
-	end
-
 	method writeFlattenNetlist = begin
 		let flatNetlist=open_out  "flat.v"
 		in begin
@@ -1779,7 +1415,7 @@ object (self)
 		in
 		match tf with
 		(modname,inm,ztcl,atcl,btcl) -> begin
-			if((self#is2OpGF modname) || (self#is2OpBool modname)) then begin
+			if((is2OpGF modname) || (is2OpBool modname)) then begin
 				fprintf flatNetlist "  %s %s (\n" modname inm;
 
 				fprintf flatNetlist ".Z({";
@@ -1796,7 +1432,7 @@ object (self)
 
 				fprintf flatNetlist ");\n";
 			end
-			else if((self#is1OpGF modname) || (self#is1OpBool modname)) then begin
+			else if((is1OpGF modname) || (is1OpBool modname)) then begin
 				fprintf flatNetlist "%s %s (\n" modname inm;
 
 				fprintf flatNetlist ".Z({";
@@ -1809,7 +1445,7 @@ object (self)
 
 				fprintf flatNetlist ");\n";
 			end
-			else if(self#is0Op modname) then  ()
+			else if(is0Op modname) then  ()
 			else assert false
 		end
 	end
@@ -1933,16 +1569,16 @@ object (self)
 				in begin
 (*
 					printf "\n getnewtn from \n";
-					self#print_type_net tn;
+					print_type_net tn;
 					printf "\n to \n";
-					self#print_type_net newtn;
+					print_type_net newtn;
 *)
 					newtn
 				end
 			with Not_found -> begin
 (*
 				printf "\n fail on\n";
-				self#print_type_net tn;
+				print_type_net tn;
 				printf "\n";
 *)
 				tn
@@ -1968,11 +1604,11 @@ object (self)
 			if((atn=TYPE_NET_CONST(0)) || (btn=TYPE_NET_CONST(0))) then begin
 				(*z is always 0*)
 				printf "removing AN2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==0\n becaue of\n";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
-				self#print_type_connection (btion,btn);
+				print_type_connection (btion,btn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn (TYPE_NET_CONST(0));
@@ -1982,9 +1618,9 @@ object (self)
 			else if(atn=TYPE_NET_CONST(1)) then begin
 				(*z is always b*)
 				printf "removing AN2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==";
-				self#print_type_connection (btion,btn);
+				print_type_connection (btion,btn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn btn;
@@ -1992,9 +1628,9 @@ object (self)
 			end
 			else if(btn=TYPE_NET_CONST(1)) then begin
 				printf "removing AN2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn atn;
@@ -2010,11 +1646,11 @@ object (self)
 			if((atn=TYPE_NET_CONST(1)) || (btn=TYPE_NET_CONST(1))) then begin
 				(*z is always 1*)
 				printf "removing OR2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==1\n becaue of\n";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
-				self#print_type_connection (btion,btn);
+				print_type_connection (btion,btn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn (TYPE_NET_CONST(1));
@@ -2024,9 +1660,9 @@ object (self)
 			else if(atn=TYPE_NET_CONST(0)) then begin
 				(*z is always b*)
 				printf "removing OR2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==";
-				self#print_type_connection (btion,btn);
+				print_type_connection (btion,btn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn btn;
@@ -2034,9 +1670,9 @@ object (self)
 			end
 			else if(btn=TYPE_NET_CONST(0)) then begin
 				printf "removing OR2 %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn atn;
@@ -2052,9 +1688,9 @@ object (self)
 			if(atn=TYPE_NET_CONST(1)) then begin
 				(*z is always 0*)
 				printf "removing IV %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==0\n";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn (TYPE_NET_CONST(0));
@@ -2063,9 +1699,9 @@ object (self)
 			else if(atn=TYPE_NET_CONST(0)) then begin
 				(*z is always 1*)
 				printf "removing IV %s\n" instname;
-				self#print_type_connection (ztion,ztn);
+				print_type_connection (ztion,ztn);
 				printf "==1\n";
-				self#print_type_connection (ation,atn);
+				print_type_connection (ation,atn);
 				printf "\n";
 				Array.set type_flat_unfold_array pos ("","",[],[],[]);
 				self#addHashTnetValue ztn (TYPE_NET_CONST(1));
@@ -2109,15 +1745,15 @@ object (self)
 							printf "\npush to %s %s\n" modname inm;
 							if(atcl1<>atcl) then begin
 								printf "\no a ";
-								List.iter (self#print_type_connection) atcl;
+								List.iter (print_type_connection) atcl;
 								printf "\nn a ";
-								List.iter (self#print_type_connection) atcl1;
+								List.iter (print_type_connection) atcl1;
 							end;
 							if(btcl1<>btcl) then begin
 								printf "\no b ";
-								List.iter (self#print_type_connection) btcl;
+								List.iter (print_type_connection) btcl;
 								printf "\nn b ";
-								List.iter (self#print_type_connection) btcl1;
+								List.iter (print_type_connection) btcl1;
 							end;
 							let changedZ=self#mapTF pos newtf 
 							in begin
@@ -2177,7 +1813,7 @@ object (self)
 			match x with
 			(str,arridx,i) -> begin
 				assert (i=0 || i=1);
-				let newstr=self#mapname str idx 
+				let newstr=mapname str idx 
 				in
 				let tnet=begin
 					if(arridx<0) then begin
@@ -2261,7 +1897,7 @@ object (self)
 						begin
 							if(tn<>TYPE_NET_NULL && tn<>(TYPE_NET_CONST(0)) && tn<>(TYPE_NET_CONST(1)) && (isUnfoldInput tn)=false) then begin
 								printf "\n UNDRIVEN net of modname %s instname %s\n" modname instname;
-								self#print_type_connection tc;
+								print_type_connection tc;
 								flush stdout;
 							end
 						end;
@@ -2280,9 +1916,9 @@ object (self)
 					in begin
 							if(tn<>TYPE_NET_NULL && tn<>(TYPE_NET_CONST(0)) && tn<>(TYPE_NET_CONST(1)) && (isUnfoldInput tn)=false) then begin
 								printf "\n UNDRIVEN assignment \n" ;
-								self#print_type_net lnet;
+								print_type_net lnet;
 								printf "\n==\n";
-								self#print_type_net rnet;
+								print_type_net rnet;
 								flush stdout;
 							end
 							;
