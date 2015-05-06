@@ -2216,6 +2216,7 @@ object (self)
 
 	method checkUnfold = begin
 		let drivingTNHash= Hashtbl.create 10000000
+		and drivenTNHash= Hashtbl.create 10000000
 		in
 		let procDriving tf = begin
 			match tf with
@@ -2245,6 +2246,10 @@ object (self)
 				Hashtbl.mem hashInput_unfold str;
 			| _ -> false
 		end
+		in 
+		let procL2RDriving lnet rnet = begin
+			Hashtbl.add drivingTNHash  lnet true
+		end
 		in
 		let procDriven tf = begin
 			match tf with
@@ -2259,17 +2264,14 @@ object (self)
 								self#print_type_connection tc;
 								flush stdout;
 							end
-						end
+						end;
+						Hashtbl.add drivenTNHash tn true
 				end
 				in begin
 					List.iter procTC atcl;
 					List.iter procTC btcl;
 				end
 			end
-		end
-		in 
-		let procL2RDriving lnet rnet = begin
-			Hashtbl.add drivingTNHash  lnet true
 		end
 		in
 		let procL2RDriven lnet rnet = begin
@@ -2283,8 +2285,27 @@ object (self)
 								self#print_type_net rnet;
 								flush stdout;
 							end
+							;
+							Hashtbl.add drivenTNHash rnet true
 					end
 				end
+		end
+		in
+		let procCheckDriving  tf = begin
+			match tf with
+			(_,_,ztcl,_,_) -> begin
+				let procNotUsed tc = begin
+					match tc with
+					(_,tn) -> begin
+						let mem=Hashtbl.mem drivenTNHash tn
+						in 
+						(mem=false)
+					end
+				end
+				in
+				List.for_all procNotUsed ztcl
+			end
+
 		end
 		in
 		begin
@@ -2292,9 +2313,12 @@ object (self)
 			Array.iter procDriving type_flat_unfold_array;
 			Hashtbl.iter procInput hashInput_unfold;
 			Hashtbl.iter procL2RDriving assignHashL2R_unfold;
-
+			
+			(*generating all driven, and check whether 
+			they are not driven by some driving nets*)
 			Array.iter procDriven  type_flat_unfold_array;
 			Hashtbl.iter procL2RDriven assignHashL2R_unfold;
+
 		end
 	end
 
@@ -2345,25 +2369,8 @@ object (self)
 		self#createWire2SinksHash;
 		dbg_print "post self#createWire2SinksHash\n";
 		let constList=self#handleInputStepList stepList
-(*
-		in begin
-			let prt x = begin
-				match x with
-				(tnet,TYPE_NET_CONST(i)) -> begin
-					assert (i=0||i=1);
-					self#print_type_net tnet;
-					printf "== %d\n" i;
-				end
-				| _ -> assert false
-			end
-			in
-			List.iter prt constList
-		end;
-		exit 0;
-*)
 		in
 		self#propagateConstance (List.map fst constList);
-
 		
 		self#writeUnfoldNetlist;
 		self#checkUnfold;
