@@ -1083,6 +1083,16 @@ and rng2lr rng= begin
 	| T_range_int(li,ri) -> (li,ri)
 	| T_range_NOSPEC -> (-1,-1)
 end
+and rngsimple rng = begin
+	match rng with
+	T_range(expl,expr) -> begin
+		let idxl= exp2int_simple expl
+		and idxr= exp2int_simple expr
+		in
+		T_range_int(idxl,idxr)
+	end
+	| _ -> rng
+end
 and lr2list li ri = begin
 	if li > ri then li::(lr2list (li-1) ri)
 	else if li< ri then li::(lr2list (li+1) ri)

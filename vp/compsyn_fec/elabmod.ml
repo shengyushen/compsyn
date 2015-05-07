@@ -15,9 +15,6 @@ open Dumpsat
 open Gftype
 open Printf
 
-exception UNSAT
-
-		
 
 class elabmod = 
 object (self)
@@ -72,8 +69,9 @@ begin
 	| _ -> assert false
 end
 
-method proc_T_input_declaration range namelst = 
-begin
+method proc_T_input_declaration range namelst = begin
+	let newrng=rngsimple range
+	in
 	let proc_one_input name1 = 
 	begin
 		assert(self#nameInportlist name1);
@@ -81,20 +79,22 @@ begin
 		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 
-		Hashtbl.replace hashInputName2Range name1 range
+		Hashtbl.replace hashInputName2Range name1 newrng
 	end
 	in 
 	List.iter proc_one_input namelst
 end
 
 method proc_T_output_declaration range namelst = begin
+	let newrng=rngsimple range
+	in
 	let proc_one_output name1 = begin
 		assert(self#nameInportlist name1) ;
 		assert ((Hashtbl.mem hashInputName2Range name1)=false);
 		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 		
-		Hashtbl.replace hashOutputName2Range name1 range
+		Hashtbl.replace hashOutputName2Range name1 newrng
 	end
 	in 
 	List.iter proc_one_output namelst
@@ -115,13 +115,15 @@ method proc_T_net_declaration nettypename exprng namelst = begin
 		exit 1
 	end
 	in 
+	let newrng=rngsimple range
+	in
 	let proc_one_net name1 = begin
 		(*add it to circuit object list*)
 		assert ((Hashtbl.mem hashInputName2Range name1)=false);
 		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 
-		Hashtbl.replace hashWireName2Range name1 range
+		Hashtbl.replace hashWireName2Range name1 newrng
 	end
 	in 
 	List.iter proc_one_net namelst
@@ -217,117 +219,127 @@ method construct_boolonly_netlist = begin
 end
 
 method writeFlatNetlist = begin
-	printf "module %s (\n" name;
-	(*print list of input and outputs*)
-	let procPrintOutput str range  = begin
-		match range with
-		T_range_NOSPEC ->
-			printf "  output %s,\n" str
-		| T_range_int(lv,rv) ->
-			printf "  output [%d:%d] %s,\n" lv rv str
-		| _ -> assert false
+	let flat_c = open_out "flat.v" 
+	in begin
+		fprintf flat_c "module %s (\n" name;
+		(*print list of input and outputs*)
+		let procPrintOutput str range  = begin
+			match range with
+			T_range_NOSPEC ->
+				fprintf flat_c "  output %s,\n" str
+			| T_range_int(lv,rv) ->
+				fprintf flat_c "  output [%d:%d] %s,\n" lv rv str
+			| _ -> assert false
+		end
+		in
+		Hashtbl.iter procPrintOutput hashOutputName2Range;
+	
+		let procPrintInput str range = begin
+			match range with
+			T_range_NOSPEC -> 
+				fprintf flat_c "  input %s,\n" str
+			| T_range_int(lv,rv) -> 
+				fprintf flat_c "  input [%d:%d] %s,\n"  lv rv str
+			| _ -> assert false
+		end
+		in
+		Hashtbl.iter procPrintInput hashInputName2Range; 
+	
+		fprintf flat_c "input xx);\n";
+	
+		let procPrintWire str range = begin
+			match range with
+			T_range_NOSPEC -> 
+				fprintf flat_c "  wire %s;\n" str
+			| T_range_int(lv,rv) -> 
+				fprintf flat_c "  wire [%d:%d] %s;\n"  lv rv str
+			| _ -> assert false
+		end
+		in
+		Hashtbl.iter procPrintWire hashWireName2Range;
+	
+		let procPrintCell mi = begin
+			match mi with
+			("AN2",instname,[ztn],[atn],[btn]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				and bname=getTNname btn
+				in
+				fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
+			end
+			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				and bname=getTNname btn
+				in
+				fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
+			end
+			| ("IV",instname,[ztn],[atn],[]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				in
+				fprintf flat_c "  IV %s (.Z(%s),.A(%s));\n" instname zname aname 
+			end
+			| ("BUF","",[ztn],[atn],[]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				in
+				fprintf flat_c "  assign %s = %s;\n"  zname aname 
+			end
+			| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				in 
+				fprintf flat_c "  tower2flat %s (.Z(%s),.A(%s));\n" instname zl al
+			end
+			| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				in 
+				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
+			end
+			| ("","",[],[],[]) ->()
+			| (modname,instname,_,_,_) -> begin
+				printf "Error : improper %s %s\n" modname instname;
+				flush stdout;
+				assert false
+			end
+		end
+		in
+		Array.iter procPrintCell miArray;
+	
+		fprintf flat_c "endmodule\n";
+
+		close_out flat_c;
 	end
-	in
-	Hashtbl.iter procPrintOutput hashOutputName2Range;
-
-	let procPrintInput str range = begin
-		match range with
-		T_range_NOSPEC -> 
-			printf "  input %s,\n" str
-		| T_range_int(lv,rv) -> 
-			printf "  input [%d:%d] %s,\n"  lv rv str
-		| _ -> assert false
-	end
-	in
-	Hashtbl.iter procPrintInput hashInputName2Range; 
-
-	printf "input xx);\n";
-
-	let procPrintWire str range = begin
-		match range with
-		T_range_NOSPEC -> 
-			printf "  wire %s,\n" str
-		| T_range_int(lv,rv) -> 
-			printf "  wire [%d:%d] %s,\n"  lv rv str
-		| _ -> assert false
-	end
-	in
-	Hashtbl.iter procPrintWire hashWireName2Range;
-
-	let procPrintCell mi = begin
-		match mi with
-		("AN2",instname,[ztn],[atn],[btn]) -> begin
-			let zname=getTNname ztn
-			and aname=getTNname atn
-			and bname=getTNname btn
-			in
-			printf "  AN2 %s (.Z(%s),.A(%s),.B(%s));" instname zname aname bname
-		end
-		| ("OR2",instname,[ztn],[atn],[btn]) -> begin
-			let zname=getTNname ztn
-			and aname=getTNname atn
-			and bname=getTNname btn
-			in
-			printf "  OR2 %s (.Z(%s),.A(%s),.B(%s));" instname zname aname bname
-		end
-		| ("IV",instname,[ztn],[atn],[]) -> begin
-			let zname=getTNname ztn
-			and aname=getTNname atn
-			in
-			printf "  IV %s (.Z(%s),.A(%s));" instname zname aname 
-		end
-		| ("BUF",instname,[ztn],[atn],[]) -> begin
-			let zname=getTNname ztn
-			and aname=getTNname atn
-			in
-			printf "  assign %s = %s;"  zname aname 
-		end
-		| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			and bl=getTNLname btnl
-			in 
-			printf "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
-		end
-		| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			and bl=getTNLname btnl
-			in 
-			printf "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
-		end
-		| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			and bl=getTNLname btnl
-			in 
-			printf "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
-		end
-		| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			and bl=getTNLname btnl
-			in 
-			printf "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
-		end
-		| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			in 
-			printf "  tower2flat %s (.Z(%s),.A(%s));" instname zl al
-		end
-		| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
-			let zl=getTNLname ztnl
-			and al=getTNLname atnl
-			in 
-			printf "  flat2tower %s (.Z(%s),.A(%s));" instname zl al
-		end
-		| _ -> assert false
-	end
-	in
-	Array.iter procPrintCell miArray;
-
-	printf "endmodule\n"
 end
 
 (*

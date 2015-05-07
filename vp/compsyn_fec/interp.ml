@@ -82,7 +82,7 @@ let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin
 					else if (var<0) then (-var-var+1)
 					else begin
 						printf "FATAL : 0 literal\n";
-						flush_assert_false;
+						assert false;
 					end
 				end
 				in
@@ -121,7 +121,7 @@ let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin
 					printf "max_index_all %d\n" max_index_all;
 					printf "max_index %d\n" max_index;
 					printf "cls size %d\n" (List.length totalclslst);
-					flush_assert_false;
+					assert false;
 				end
 				
 			end
@@ -287,7 +287,7 @@ and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidx
 						end;
 						printf "max_index %d\n" max_index;
 						printf "cls size %d\n" (List.length totalclslst);
-						flush_assert_false;
+						assert false;
 					end
 				end in
 				let size=Array.length trace in
@@ -503,7 +503,7 @@ and read_proof_classfyAB (proofarray:int array) max_index dont_shift_varlst= beg
 										printf "FATAL : all cells in dont_shift_varlst\n";
 										flush stdout;
 										prtcls cls;
-										(*flush_assert_false*)
+										(*assert false*)
 										(*I think it should be A*)
 										Tproofitem_1A(cls_onlyB)
 									end*)
@@ -523,7 +523,7 @@ and read_proof_classfyAB (proofarray:int array) max_index dont_shift_varlst= beg
 					| _ -> begin
 						printf "FATAL : not 1 or 2  \n";
 						prtcls lst_int;
-						flush_assert_false;
+						assert false;
 					end
 				  end
 				  end
@@ -580,7 +580,7 @@ end
 					else begin
 						printf "FATAL : empty cls not in the heads\n";
 						prtcls cls;
-						flush_assert_false
+						assert false
 					end*)
 				end
 				else if (is_B_simple cls max_index) then Tproofitem_0B (*(cls)*)
@@ -588,7 +588,7 @@ end
 					printf "FATAL : all cells in dont_shift_varlst\n";
 					flush stdout;
 					prtcls cls;
-					(*flush_assert_false*)
+					(*assert false*)
 					(*I think it should be A*)
 					Tproofitem_1A(cls_onlyB)
 				end
@@ -602,7 +602,7 @@ and buildChain lst_str = begin
 				(List.nth lst_str 1)
 			else begin
 				Printf.printf "FATAL : buildChain too short\n";
-				flush_assert_false
+				assert false
 			end
 		end
 		and varcls_lst=build_var_cls_idx_lst (List.tl (List.tl lst_str))
@@ -627,7 +627,7 @@ and build_var_cls_idx_lst lst_str = begin
 			match tl with 
 			[] -> begin
 				printf "FATAL : build_var_cls_idx_lst have not found => yet\n" ;
-				flush_assert_false;
+				assert false;
 			end
 			| varstr2::tl2 -> begin
 				let varidx= varstr
@@ -639,7 +639,7 @@ and build_var_cls_idx_lst lst_str = begin
 		end
 		(*| _ -> begin
 			printf "FATAL : build_var_cls_idx_lst error\n" ;
-			flush_assert_false;
+			assert false;
 		end*)
 end
 and allsat_interp 
@@ -1136,7 +1136,7 @@ and check_inverted_assertion_satisfiable infered_assertion_array_lst_old last_in
 		UNSATISFIABLE -> begin
 			printf "FATAL : no solution at all\n" ;
 			printf "often means all configuration lead to nonuniqe\n" ;
-			flush_assert_false (*should always solvable*)
+			assert false (*should always solvable*)
 		end
 		| SATISFIABLE -> begin
 			printf "check_inverted_assertion_satisfiable OK ass len %d\n" (List.length infered_assertion_array_lst_old);

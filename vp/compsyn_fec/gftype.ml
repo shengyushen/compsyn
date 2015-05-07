@@ -291,12 +291,25 @@ and exp2tn exp = begin
 		TYPE_NET_ID(str)
 	| T_primary(T_primary_arrbit([str],exp)) ->
 		TYPE_NET_ARRAYBIT(str,(exp2int_simple exp))
-	| _ -> assert false
+	| _ -> begin
+		printf "FATAL : improper expression in exp2tn\n";
+		print_v_expression stdout exp;
+		flush stdout;
+		assert false
+	end
 end
 and exp2tnlst exp = begin
 	match exp with
 	T_primary(T_primary_concat(explst)) -> begin
 		List.map (exp2tn) explst
+	end
+	| T_primary(T_primary_arrrange([str],exp1,exp2)) -> begin
+		let lidx=exp2int_simple exp1
+		and ridx=exp2int_simple exp2
+		in 
+		let idxlst=lr2list lidx ridx
+		in
+		List.map (fun x -> TYPE_NET_ARRAYBIT(str,x)) idxlst
 	end
 	| _ -> [exp2tn exp]
 end

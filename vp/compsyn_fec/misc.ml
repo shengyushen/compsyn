@@ -14,8 +14,4 @@ and	dbg_print str = begin
 		oldtime := current_time
 	end
 end
-and flush_assert_false = begin
-	flush stdout;
-	assert false
-end
 
