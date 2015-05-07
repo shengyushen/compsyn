@@ -9,20 +9,28 @@ type type_net =
 	| TYPE_NET_NULL
 ;;
 
+let getTNname tn = begin
+	match tn with
+	TYPE_NET_ID(str) -> str
+	| TYPE_NET_CONST(i) -> sprintf "1'b%d" i
+	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
+	| TYPE_NET_NULL -> ""
+end
+
 type type_ion = 
 	TYPE_CONNECTION_NET 
 	| TYPE_CONNECTION_IN 
 	| TYPE_CONNECTION_OUT
 ;;
 
-type type_connection = 
-	type_ion*type_net
+
+
 
 (*the tuple are operation type and instance name, 
 and is Z output, the rest are inputs
 empty operation type means NULL*)
-type type_flat =
-	string*string*(type_connection list)*(type_connection list)*(type_connection list)
+type type_cell =
+	string*string*(type_net list)*(type_net list)*(type_net list)
 ;;
 
 (*similar to type_flat but with index to an array of type_gfdata*)

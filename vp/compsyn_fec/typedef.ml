@@ -23,6 +23,7 @@ and	module_item	=
 		| T_always_statement   of statement
 		| T_task   of string*(module_item list)*statement
 		| T_function_avoid_amb   of range_or_type*string*(module_item list)*statement
+		| T_null_declaration
 and	statement	=
 		T_blocking_assignment of blocking_assignment
 		| T_non_blocking_assignment of non_blocking_assignment

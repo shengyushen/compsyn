@@ -1,16 +1,31 @@
+open List
+
 let starttime=ref (Unix.gettimeofday ());;
 let oldtime=ref (Unix.gettimeofday ());;
 
-let string_equ str1 str2 =
+let rec string_equ str1 str2 = begin
 	if (String.compare str1 str2) ==0 then true
 	else false
-
-let rec uniqlst lst =begin
-	match lst with
-	[] -> []
-	| hd::tl -> begin
-		if (List.mem hd tl) then uniqlst tl else hd::(uniqlst tl)
+end
+and uniqlst lst =begin
+	let len=List.length lst
+	in
+	let hashMem=Hashtbl.create len
+	in 
+	let rec uniqlst_internal l = begin
+		match l with
+		hd::tl -> begin	
+			if(Hashtbl.mem hashMem hd) then
+				uniqlst_internal tl 
+			else begin
+				Hashtbl.add hashMem hd true;
+				hd::(uniqlst_internal tl)
+			end
+		end
+		| [] -> []
 	end
+	in
+	uniqlst_internal lst
 end
 and lst_lastn lst n = begin
 	match lst with
