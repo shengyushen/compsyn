@@ -1,5 +1,6 @@
 open Printf
 open Str
+open Typedef
 
 
 type type_net =
@@ -9,12 +10,30 @@ type type_net =
 	| TYPE_NET_NULL
 ;;
 
-let getTNname tn = begin
+let rec getTNname tn = begin
 	match tn with
 	TYPE_NET_ID(str) -> str
 	| TYPE_NET_CONST(i) -> sprintf "1'b%d" i
 	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
 	| TYPE_NET_NULL -> ""
+end
+and getTNLname tnl = begin
+	let nl=List.map getTNname tnl
+	in
+	let rec prt l = begin
+		match l with
+		[hd] -> hd
+		| hd::tl -> begin
+			let remain=prt tl
+			in
+			sprintf "%s,%s" hd remain
+		end
+		| _ -> assert false
+	end
+	in
+	let res=prt nl
+	in
+	sprintf "{ %s }" res
 end
 
 type type_ion = 
@@ -57,11 +76,13 @@ type type_gfmod =
  |TYPE_GFMOD_NULL
 ;;
 
+(*
 type type_gfdata = 
 	TYPE_GFDATA_GF1024 of type_connection list
 	| TYPE_GFDATA_GF3232 of type_connection list
 	| TYPE_GFDATA_BOOL of type_connection
 	| TYPE_GFDATA_NULL
+*)
 
 
 let rec mapname str idx = begin
@@ -116,6 +137,7 @@ end
 and print_type_connection_list tclst = begin
 	List.iter (print_type_connection) tclst
 end
+(*
 and print_gfdata gfdata = begin
 	match gfdata with
 	TYPE_GFDATA_GF1024(tclst) -> begin
@@ -135,6 +157,7 @@ and print_gfdata gfdata = begin
 	end
 	| TYPE_GFDATA_NULL -> assert false
 end
+*)
 and is2OpGF modname = begin
 	match modname with
 	"gfadd_mod" -> true
@@ -258,7 +281,33 @@ end
 and mapinstanceList idx tclst  = begin
 	List.map (mapinstance idx) tclst
 end
-
-
-
+and exp2tn exp = begin
+	match exp with
+	T_primary(T_primary_num(T_number_base(1,'b',"0"))) ->
+		TYPE_NET_CONST(0)
+	| T_primary(T_primary_num(T_number_base(1,'b',"1"))) ->
+		TYPE_NET_CONST(1)
+	| T_primary(T_primary_id([str])) ->
+		TYPE_NET_ID(str)
+	| T_primary(T_primary_arrbit([str],exp)) ->
+		TYPE_NET_ARRAYBIT(str,(exp2int_simple exp))
+	| _ -> assert false
+end
+and exp2tnlst exp = begin
+	match exp with
+	T_primary(T_primary_concat(explst)) -> begin
+		List.map (exp2tn) explst
+	end
+	| _ -> [exp2tn exp]
+end
+and lv2tn lv = begin
+	match lv with
+	T_lvalue_id([str]) -> TYPE_NET_ID(str)
+	| T_lvalue_arrbit([str],exp1) -> begin
+		let idx=exp2int_simple exp1
+		in
+		TYPE_NET_ARRAYBIT(str,idx)
+	end
+	| _ -> assert false
+end
 

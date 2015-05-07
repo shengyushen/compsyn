@@ -4,20 +4,13 @@
 *)
 
 open Printf
-open Typedef
-open Typedefcommon
-open Circuit_obj
-open Print_v
-open Misc2
-open Misc
-open Statement
-open Misc2
-open Dependent
+open Array
+open List
 open Str
-open Clauseman
+
+open Typedef
+open Misc
 open Interp
-open Bddssy
-open Aig
 open Dumpsat
 open Gftype
 open Printf
@@ -35,11 +28,11 @@ val mutable portlist = []
 val mutable tempdirname = ""
 
 (*these will be generated in elaborate method*)
-val mutable miArray : module_item array =  Array.make 1 ("","",[],[],[])
+val mutable miArray : (string*string*(type_net list)*(type_net list)*(type_net list)) array =  Array.make 1 ("","",[],[],[])
 val mutable miArrayPointer : int =0
-val mutable hashInputName2Range : (str,range)  Hashtbl.t= Hashtbl.create 100
-val mutable hashOutputName2Range : (str,range)  Hashtbl.t= Hashtbl.create 100
-val mutable hashWireName2Range : (str,range)  Hashtbl.t= Hashtbl.create 100
+val mutable hashInputName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
+val mutable hashOutputName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
+val mutable hashWireName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
 
 
 
@@ -56,11 +49,11 @@ begin
 		(*processing mi list*)
 		let len=length milist
 		in
-		miArrayInit len;
+		self#miArrayInit len;
 		List.iter (self#proc_MI) milist 
 	end
 	| _ -> 
-		assert fale 
+		assert false 
 end
 
 method proc_MI mi = 
@@ -108,7 +101,7 @@ method proc_T_output_declaration range namelst = begin
 end
 
 method proc_T_net_declaration nettypename exprng namelst = begin
-	if (string_equ nettypename "wire") = false then begin
+	if (nettypename="wire") = false then begin
 		Printf.printf "fatal error : only supported wire\n";
 		Printf.printf "%s\n" nettypename;
 		exit 1
@@ -135,15 +128,19 @@ method proc_T_net_declaration nettypename exprng namelst = begin
 end
 
 method getX pname npclst = begin
-	let isX npc = begin
-		match npc with
-		(str,exp) -> str=pname
-	end
-	in begin
-		try
-			List.find isX npclst
-		with Not_found -> []
-	end
+	try
+		let isX npc = begin
+			match npc with
+			T_named_port_connection(str,_) -> str=pname
+		end
+		in
+		let x=List.find isX npclst
+		in begin
+			match x with
+			T_named_port_connection(_,exp) -> 
+				exp2tnlst exp
+		end
+	with Not_found -> []
 end
 
 method proc_T_module_instantiation defname milst = begin
@@ -159,6 +156,7 @@ method proc_T_module_instantiation defname milst = begin
 			in
 			self#miArrayAdd newmi
 		end
+		| _ -> assert false
 	end
 	| _ -> assert false
 end
@@ -169,8 +167,8 @@ method miArrayInit sz = begin
 end
 
 method miArrayAdd co = begin
-	assert (miArrayPointer<(length miArray));
-	assert ((miArray.(miArrayPointer))=T_null_declaration);
+	assert (miArrayPointer<(Array.length miArray));
+	assert ((miArray.(miArrayPointer))=("","",[],[],[]));
 	Array.set miArray miArrayPointer co;
 	miArrayPointer <- miArrayPointer +1;
 end
@@ -178,7 +176,7 @@ end
 method nameInportlist name1 = begin
 	let check_portname pt = begin
 		match pt with 
-		[ptn] -> string_equ ptn name1
+		[ptn] ->  ptn=name1
 		|_ -> begin
 			Printf.printf "fatal error : port name should not be a list\n";
 			exit 1
@@ -191,31 +189,11 @@ end
 method proc_T_continuous_assign cont_ass = begin
 	match cont_ass with
 	T_continuous_assign_assign(_,_,[T_assignment(lv,exp)]) -> begin
-		let tnlv= begin
-			match lv with
-			T_lvalue_id([str]) -> TYPE_NET_ID(str)
-			| T_lvalue_arrbit([str],exp1) -> begin
-				let idx=exp2int_simple exp1
-				in
-				TYPE_NET_ARRAYBIT(str,idx)
-			end
-		end
+		let tnlv= lv2tn lv
 		in
-		let tnrexp=begin
-			match exp with
-			T_primary(T_primary_id([str]))  -> TYPE_NET_ID(str)
-			| T_primary(T_primary_num(T_number_base("1","b",0))) -> 
-				TYPE_NET_CONST(0)
-			| T_primary(T_primary_num(T_number_base("1","b",1))) -> 
-				TYPE_NET_CONST(1)
-			| T_primary(T_primary_arrbit([str],exp1)) -> begin
-				let idx=exp2int_simple exp1
-				in
-				TYPE_NET_ARRAYBIT(str,idx)
-			end
-			| _ -> assert false
-		end
-		let newmi=("BUF","",[tnlv],[tnrexp])
+		let tnrexplst=exp2tnlst exp
+		in
+		let newmi=("BUF","",[tnlv],tnrexplst,[])
 		in
 		self#miArrayAdd newmi
 	end
@@ -246,11 +224,11 @@ method writeFlatNetlist = begin
 		T_range_NOSPEC ->
 			printf "  output %s,\n" str
 		| T_range_int(lv,rv) ->
-			printf "  output [%d:%d] %s,\n" name lv rv
+			printf "  output [%d:%d] %s,\n" lv rv str
 		| _ -> assert false
 	end
 	in
-	iter procPrintOutput hashOutputName2Range;
+	Hashtbl.iter procPrintOutput hashOutputName2Range;
 
 	let procPrintInput str range = begin
 		match range with
@@ -261,7 +239,7 @@ method writeFlatNetlist = begin
 		| _ -> assert false
 	end
 	in
-	iter procPrintInput hashInputName2Range; 
+	Hashtbl.iter procPrintInput hashInputName2Range; 
 
 	printf "input xx);\n";
 
@@ -274,37 +252,80 @@ method writeFlatNetlist = begin
 		| _ -> assert false
 	end
 	in
-	iter procPrintWire hashWireName2Range;
+	Hashtbl.iter procPrintWire hashWireName2Range;
 
 	let procPrintCell mi = begin
 		match mi with
-		("AN2",instname,[ztn],[atn],[btn]) -> 
-		begin
+		("AN2",instname,[ztn],[atn],[btn]) -> begin
 			let zname=getTNname ztn
 			and aname=getTNname atn
 			and bname=getTNname btn
 			in
 			printf "  AN2 %s (.Z(%s),.A(%s),.B(%s));" instname zname aname bname
 		end
-		| ("OR2",instname,[ztn],[atn],[btn]) -> 
-		begin
+		| ("OR2",instname,[ztn],[atn],[btn]) -> begin
 			let zname=getTNname ztn
 			and aname=getTNname atn
 			and bname=getTNname btn
 			in
 			printf "  OR2 %s (.Z(%s),.A(%s),.B(%s));" instname zname aname bname
 		end
-		| ("IV",instname,[ztn],[atn],[btn]) -> 
-		begin
+		| ("IV",instname,[ztn],[atn],[]) -> begin
 			let zname=getTNname ztn
 			and aname=getTNname atn
-			and bname=getTNname btn
 			in
-			printf "  OR2 %s (.Z(%s),.A(%s),.B(%s));" instname zname aname bname
+			printf "  IV %s (.Z(%s),.A(%s));" instname zname aname 
 		end
+		| ("BUF",instname,[ztn],[atn],[]) -> begin
+			let zname=getTNname ztn
+			and aname=getTNname atn
+			in
+			printf "  assign %s = %s;"  zname aname 
+		end
+		| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			and bl=getTNLname btnl
+			in 
+			printf "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
+		end
+		| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			and bl=getTNLname btnl
+			in 
+			printf "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
+		end
+		| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			and bl=getTNLname btnl
+			in 
+			printf "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
+		end
+		| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			and bl=getTNLname btnl
+			in 
+			printf "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));" instname zl al bl
+		end
+		| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			in 
+			printf "  tower2flat %s (.Z(%s),.A(%s));" instname zl al
+		end
+		| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
+			let zl=getTNLname ztnl
+			and al=getTNLname atnl
+			in 
+			printf "  flat2tower %s (.Z(%s),.A(%s));" instname zl al
+		end
+		| _ -> assert false
 	end
 	in
-	iter procPrintCell miArray;
+	Array.iter procPrintCell miArray;
 
 	printf "endmodule\n"
 end

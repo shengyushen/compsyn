@@ -154,3 +154,28 @@ and list2lr idxlst = begin
 		lst2lsr tl hd hd
 	end
 end
+and isEmptyList lst = begin
+	match lst with
+	[] -> true
+	| _ -> false
+end
+and isSingularList lst = begin
+	match lst with
+	[z] -> true
+	| _ -> false
+end
+and listPartition iselim lst = begin
+	let rec listPartition_internal currentlist = begin
+		match currentlist with
+		hd::tl -> begin
+			let (remainCurrentList,remainList)=listPartition_internal tl
+			in begin
+				if(iselim hd) then ([],remainCurrentList::remainList)
+				else (hd::remainCurrentList,remainList)
+			end
+		end
+		| _ -> ([],[])
+	end
+	in
+	listPartition_internal lst
+end

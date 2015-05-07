@@ -1,9 +1,6 @@
 open Typedef
-open Typedefcommon
-open Circuit_obj
 open Elabmod
 open Misc
-open Misc2
 open Sys
 open Elabmod
 
@@ -49,7 +46,7 @@ object (self)
 	method findOneModuleInVerystruct modName = begin
 		let matchModuleName mn = fun md -> begin
 			match md with 
-			T_module_def(mn1,_,_) -> string_equ mn mn1
+			T_module_def(mn1,_,_) ->  mn=mn1
 			| _ -> begin
 				Printf.printf "fatal error: %s\n" "findOneModuleInVerystruct should not find anything other than T_module_def";
 				print_string modName;
@@ -69,16 +66,6 @@ object (self)
 		end
 	end
 	
-	method print_rtl modName dumpout = begin
-		let matchModName emod = begin
-			if (string_equ modName (emod#getname)) then true
-			else false
-		end
-		in
-		let emod=List.find matchModName elaboratedModuleList
-		in
-		emod#print dumpout
-	end
 	
 	method compsyn stepList unfoldNumber= begin
 		match elaboratedModuleList with
