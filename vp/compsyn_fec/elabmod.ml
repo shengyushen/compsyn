@@ -1,7 +1,3 @@
-(*correctly found the parameter, but
-1 can not characterize
-2 too slow
-*)
 
 open Printf
 open Array
@@ -15,7 +11,6 @@ open Dumpsat
 open Gftype
 open Printf
 
-
 class elabmod = 
 object (self)
 
@@ -24,15 +19,14 @@ val mutable name = ""
 val mutable portlist = []
 val mutable tempdirname = ""
 
-(*these will be generated in elaborate method*)
 val mutable miArray : (string*string*(type_net list)*(type_net list)*(type_net list)) array =  Array.make 1 ("","",[],[],[])
 val mutable miArrayPointer : int =0
-val mutable hashInputName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
-val mutable hashOutputName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
-val mutable hashWireName2Range : (string,range)  Hashtbl.t= Hashtbl.create 100
+(*using range because some wire dont have range,
+so I need T_range_NOSPEC*)
+val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
 
 
-
+(* build from construct_boolonly_netlist *)
 
 
 method init module2beElaborated tempdirname1 = 
@@ -75,11 +69,9 @@ method proc_T_input_declaration range namelst = begin
 	let proc_one_input name1 = 
 	begin
 		assert(self#nameInportlist name1);
-		assert ((Hashtbl.mem hashInputName2Range name1)=false);
-		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 
-		Hashtbl.replace hashInputName2Range name1 newrng
+		Hashtbl.replace hashWireName2Range name1 (TYPE_CONNECTION_IN,newrng)
 	end
 	in 
 	List.iter proc_one_input namelst
@@ -90,11 +82,9 @@ method proc_T_output_declaration range namelst = begin
 	in
 	let proc_one_output name1 = begin
 		assert(self#nameInportlist name1) ;
-		assert ((Hashtbl.mem hashInputName2Range name1)=false);
-		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 		
-		Hashtbl.replace hashOutputName2Range name1 newrng
+		Hashtbl.replace hashWireName2Range name1 (TYPE_CONNECTION_OUT,newrng)
 	end
 	in 
 	List.iter proc_one_output namelst
@@ -119,11 +109,9 @@ method proc_T_net_declaration nettypename exprng namelst = begin
 	in
 	let proc_one_net name1 = begin
 		(*add it to circuit object list*)
-		assert ((Hashtbl.mem hashInputName2Range name1)=false);
-		assert ((Hashtbl.mem hashOutputName2Range name1)=false);
 		assert ((Hashtbl.mem hashWireName2Range name1)=false);
 
-		Hashtbl.replace hashWireName2Range name1 newrng
+		Hashtbl.replace hashWireName2Range name1 (TYPE_CONNECTION_NET,newrng)
 	end
 	in 
 	List.iter proc_one_net namelst
@@ -208,14 +196,16 @@ method compsyn (stepList :(string*int*int) list list) (unfoldNumber:int) =
 begin
 	set_current_time;
 	(*first construct the data structure with bool only*)
-	self#construct_boolonly_netlist ;
+	self#writeFlatNetlist ;
+	self#unfold_bool_netlist unfoldNumber ;
 end
 	
-method construct_boolonly_netlist = begin
+method unfold_bool_netlist unfoldNumber= begin
 	printf "construct_boolonly_netlist start\n";
 	flush stdout;
 
-	self#writeFlatNetlist ;
+
+
 end
 
 method writeFlatNetlist = begin
@@ -223,37 +213,43 @@ method writeFlatNetlist = begin
 	in begin
 		fprintf flat_c "module %s (\n" name;
 		(*print list of input and outputs*)
-		let procPrintOutput str range  = begin
-			match range with
-			T_range_NOSPEC ->
+		let procPrintOutput str ionrange  = begin
+			match ionrange with
+			(TYPE_CONNECTION_OUT,T_range_NOSPEC) ->
 				fprintf flat_c "  output %s,\n" str
-			| T_range_int(lv,rv) ->
+			| (TYPE_CONNECTION_OUT,T_range_int(lv,rv)) ->
 				fprintf flat_c "  output [%d:%d] %s,\n" lv rv str
-			| _ -> assert false
+			| (TYPE_CONNECTION_OUT,_) -> 
+				assert false
+			| _ -> ()
 		end
 		in
-		Hashtbl.iter procPrintOutput hashOutputName2Range;
+		Hashtbl.iter procPrintOutput hashWireName2Range;
 	
-		let procPrintInput str range = begin
-			match range with
-			T_range_NOSPEC -> 
+		let procPrintInput str ionrange = begin
+			match ionrange with
+			(TYPE_CONNECTION_IN,T_range_NOSPEC) -> 
 				fprintf flat_c "  input %s,\n" str
-			| T_range_int(lv,rv) -> 
+			| (TYPE_CONNECTION_IN,T_range_int(lv,rv)) -> 
 				fprintf flat_c "  input [%d:%d] %s,\n"  lv rv str
-			| _ -> assert false
+			| (TYPE_CONNECTION_IN,_) -> 
+				assert false
+			| _ -> ()
 		end
 		in
-		Hashtbl.iter procPrintInput hashInputName2Range; 
+		Hashtbl.iter procPrintInput hashWireName2Range; 
 	
 		fprintf flat_c "input xx);\n";
 	
-		let procPrintWire str range = begin
-			match range with
-			T_range_NOSPEC -> 
+		let procPrintWire str ionrange = begin
+			match ionrange with
+			(TYPE_CONNECTION_NET,T_range_NOSPEC) -> 
 				fprintf flat_c "  wire %s;\n" str
-			| T_range_int(lv,rv) -> 
+			| (TYPE_CONNECTION_NET,T_range_int(lv,rv)) -> 
 				fprintf flat_c "  wire [%d:%d] %s;\n"  lv rv str
-			| _ -> assert false
+			| (TYPE_CONNECTION_NET,_) -> 
+				assert false
+			| _ -> ()
 		end
 		in
 		Hashtbl.iter procPrintWire hashWireName2Range;
