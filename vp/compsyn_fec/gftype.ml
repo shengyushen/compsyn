@@ -85,19 +85,19 @@ type type_gfdata =
 *)
 
 
-let rec mapname str idx = begin
+let rec mapname idx str = begin
 	sprintf "%s_inst_%d" str idx
 end
-and mapnet idx tnet = begin
+and maptnet idx tnet = begin
 	match tnet with
 	TYPE_NET_ID(str) -> begin
-		let newstr=mapname str idx 
+		let newstr=mapname idx str
 		in
 		TYPE_NET_ID(newstr)
 	end
 	| TYPE_NET_CONST(_) -> tnet
 	| TYPE_NET_ARRAYBIT(str,id) -> begin
-		let newstr=mapname str idx 
+		let newstr=mapname idx str 
 		in
 		TYPE_NET_ARRAYBIT(newstr,id)
 	end
@@ -185,20 +185,28 @@ and isD tnet = begin
 	TYPE_NET_ID(str) -> isDstr str
 	| _ -> false
 end
-and map2prevInstanceDnet idx tnet = begin
+and maptnetQ2D idx tnet = begin
 	match tnet with
 	TYPE_NET_ID(str) -> begin
-		assert (idx >=1);
-		let nonQstr=global_replace (regexp "_Q$") "_D" str 
-		in
-		TYPE_NET_ID(mapname nonQstr (idx-1))
+		if ((idx >=1) && (isQstr str)) then begin
+			let dnet=global_replace (regexp "_Q$") "_D" str 
+			in
+			let newdnet=mapname (idx-1) dnet
+			in
+			TYPE_NET_ID(newdnet)
+		end
+		else begin
+			let newstr=mapname idx str
+			in
+			TYPE_NET_ID(newstr)
+		end
 	end
-	| TYPE_NET_ARRAYBIT(str,idx) -> begin
-		printf "map2prevInstanceDnet arr bit %s[%d]\n" str idx;
-		assert false
+	| TYPE_NET_ARRAYBIT(str,idxarr) -> begin
+			let newstr=mapname idx str
+			in
+			TYPE_NET_ARRAYBIT(newstr,idxarr)
 	end
-	| TYPE_NET_CONST(_) ->  tnet
-	| _ -> assert false
+	| _ -> tnet
 end
 and getTypeName2opgf typ = begin
 	match typ with
@@ -233,6 +241,7 @@ and is0Op modname = begin
 	"" -> true
 	| _ -> false
 end
+(*
 and mapinstance idx tc = begin
 	match tc with
 	(tion,tnet) -> begin
@@ -281,6 +290,7 @@ end
 and mapinstanceList idx tclst  = begin
 	List.map (mapinstance idx) tclst
 end
+*)
 and exp2tn exp = begin
 	match exp with
 	T_primary(T_primary_num(T_number_base(1,'b',"0"))) ->
@@ -322,5 +332,110 @@ and lv2tn lv = begin
 		TYPE_NET_ARRAYBIT(str,idx)
 	end
 	| _ -> assert false
+end
+and procPrintCell flat_c mi  = begin
+			match mi with
+			("AN2",instname,[ztn],[atn],[btn]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				and bname=getTNname btn
+				in
+				fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
+			end
+			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				and bname=getTNname btn
+				in
+				fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
+			end
+			| ("IV",instname,[ztn],[atn],[]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				in
+				fprintf flat_c "  IV %s (.Z(%s),.A(%s));\n" instname zname aname 
+			end
+			| ("BUF",instname,[ztn],[atn],[]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				in
+				fprintf flat_c "  assign %s = %s;\n"  zname aname 
+			end
+			| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				in 
+				fprintf flat_c "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
+			end
+			| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				in 
+				fprintf flat_c "  tower2flat %s (.Z(%s),.A(%s));\n" instname zl al
+			end
+			| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				in 
+				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
+			end
+			| ("","",[],[],[]) ->()
+			| (modname,instname,_,_,_) -> begin
+				printf "Error : improper %s %s\n" modname instname;
+				flush stdout;
+				assert false
+			end
+end
+and procPrintWire flat_c str ionrange = begin
+			match ionrange with
+			(TYPE_CONNECTION_NET,T_range_NOSPEC) -> 
+				fprintf flat_c "  wire %s;\n" str
+			| (TYPE_CONNECTION_NET,T_range_int(lv,rv)) -> 
+				fprintf flat_c "  wire [%d:%d] %s;\n"  lv rv str
+			| (TYPE_CONNECTION_NET,_) -> 
+				assert false
+			| _ -> ()
+end
+and procPrintOutput flat_c str ionrange  = begin
+			match ionrange with
+			(TYPE_CONNECTION_OUT,T_range_NOSPEC) ->
+				fprintf flat_c "  output %s,\n" str
+			| (TYPE_CONNECTION_OUT,T_range_int(lv,rv)) ->
+				fprintf flat_c "  output [%d:%d] %s,\n" lv rv str
+			| (TYPE_CONNECTION_OUT,_) -> 
+				assert false
+			| _ -> ()
+end
+let procPrintInput flat_c str ionrange = begin
+			match ionrange with
+			(TYPE_CONNECTION_IN,T_range_NOSPEC) -> 
+				fprintf flat_c "  input %s,\n" str
+			| (TYPE_CONNECTION_IN,T_range_int(lv,rv)) -> 
+				fprintf flat_c "  input [%d:%d] %s,\n"  lv rv str
+			| (TYPE_CONNECTION_IN,_) -> 
+				assert false
+			| _ -> ()
 end
 

@@ -70,6 +70,7 @@ object (self)
 	method compsyn stepList unfoldNumber= begin
 		match elaboratedModuleList with
 		[topmod] -> topmod#compsyn stepList unfoldNumber
+		| _ -> assert false
 	end
 end
 ;;

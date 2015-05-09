@@ -1,6 +1,7 @@
 
 open Printf
 open Array
+open Stack
 open List
 open Str
 
@@ -19,14 +20,20 @@ val mutable name = ""
 val mutable portlist = []
 val mutable tempdirname = ""
 
-val mutable miArray : (string*string*(type_net list)*(type_net list)*(type_net list)) array =  Array.make 1 ("","",[],[],[])
-val mutable miArrayPointer : int =0
+(*  *)
+val mutable cellStack : (string*string*(type_net list)*(type_net list)*(type_net list)) Stack.t= Stack.create ()
 (*using range because some wire dont have range,
 so I need T_range_NOSPEC*)
 val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
 
-
+(*unfold data struct*)
 (* build from construct_boolonly_netlist *)
+(*hold the value in unfolding*)
+val mutable hashWireName2RangeUnfold : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
+val mutable hashWireUnfold : (type_net,bool) Hashtbl.t = Hashtbl.create 1
+val mutable cellArrayUnfold = Array.create 1 ("","",[],[],[])
+val mutable cellArrayUnfoldPointer =0
+	(*hold all wires' range and in/out*)
 
 
 method init module2beElaborated tempdirname1 = 
@@ -38,9 +45,6 @@ begin
 		portlist <- portlist1;
 		tempdirname <- tempdirname1;
 		(*processing mi list*)
-		let len=length milist
-		in
-		self#miArrayInit len;
 		List.iter (self#proc_MI) milist 
 	end
 	| _ -> 
@@ -144,23 +148,11 @@ method proc_T_module_instantiation defname milst = begin
 			in
 			let newmi=(defname,instname,ztnl,atnl,btnl)
 			in
-			self#miArrayAdd newmi
+			Stack.push  newmi cellStack
 		end
 		| _ -> assert false
 	end
 	| _ -> assert false
-end
-
-method miArrayInit sz = begin
-	miArray <- Array.make sz ("","",[],[],[]);
-	miArrayPointer <- 0;
-end
-
-method miArrayAdd co = begin
-	assert (miArrayPointer<(Array.length miArray));
-	assert ((miArray.(miArrayPointer))=("","",[],[],[]));
-	Array.set miArray miArrayPointer co;
-	miArrayPointer <- miArrayPointer +1;
 end
 
 method nameInportlist name1 = begin
@@ -185,7 +177,7 @@ method proc_T_continuous_assign cont_ass = begin
 		in
 		let newmi=("BUF","",[tnlv],tnrexplst,[])
 		in
-		self#miArrayAdd newmi
+		Stack.push  newmi cellStack
 	end
 	| _ -> 
 		assert false
@@ -196,141 +188,192 @@ method compsyn (stepList :(string*int*int) list list) (unfoldNumber:int) =
 begin
 	set_current_time;
 	(*first construct the data structure with bool only*)
-	self#writeFlatNetlist ;
+	self#writeFlatNetlist "flat.v" name;
 	self#unfold_bool_netlist unfoldNumber ;
+	self#writeUnfoldNetlist "unfold.v" (sprintf "%s_unfold_%d" name unfoldNumber);
 end
-	
+
+method cellArrayUnfold_init sz = begin
+	cellArrayUnfold <- Array.create sz ("","",[],[],[]);
+	cellArrayUnfoldPointer <- 0;
+end
+
+method cellArrayUnfold_add co = begin
+	assert (cellArrayUnfoldPointer<(Array.length cellArrayUnfold));
+	cellArrayUnfold.(cellArrayUnfoldPointer) <- co;
+	cellArrayUnfoldPointer <- cellArrayUnfoldPointer+1;
+end
+
 method unfold_bool_netlist unfoldNumber= begin
 	printf "construct_boolonly_netlist start\n";
 	flush stdout;
+	
+	(*whether all the wires referred
+	by cellStack are in hashWireName2Range*)
+	self#checkWireInclusive ;
+	
+	(*find out the number of wires*)
+	let numWire=Hashtbl.fold (self#procSumWireNumber) hashWireName2Range 0
+	and numCell = Stack.length cellStack
+	in
+	let finalWireNum=numWire*unfoldNumber
+	and finalCellNum = numCell*unfoldNumber
+	in begin
+		printf "before unfold %d after %d\n" numWire finalWireNum;
+		(*construct unfold data structure*)
+		(*hold the value in unfolding*)
+		hashWireUnfold <- Hashtbl.create finalWireNum;
+		(*hold all wires' range and in/out*)
+		hashWireName2RangeUnfold <- Hashtbl.create ((Hashtbl.length hashWireName2Range)*unfoldNumber);
+		self#cellArrayUnfold_init finalCellNum;
+		
+		(*unfold the circuit*)
+		for i= 0 to (unfoldNumber-1) do
+			let procCell co = begin
+				match co with
+				(defname,instname,ztnl,atnl,btnl) -> begin
+					let instname1=mapname i instname
+					and ztnl1=List.map (maptnet i) ztnl
+					and atnl1=List.map (maptnetQ2D i) atnl
+					and btnl1=List.map (maptnetQ2D i) btnl
+					in
+					let newco=(defname,instname1,ztnl1,atnl1,btnl1)
+					in
+					self#cellArrayUnfold_add newco
+				end
+			end
+			in
+			Stack.iter  procCell cellStack
+		done;
 
-
+		for i= 0 to (unfoldNumber-1) do
+			let procWire str tionrange = begin
+				match tionrange with
+				(TYPE_CONNECTION_IN,range) -> begin
+					if((isQstr str) && (i>=1)) then begin
+						let newW=(TYPE_CONNECTION_NET,range)
+						and newstr=mapname i str
+						in
+						Hashtbl.replace hashWireName2RangeUnfold newstr newW
+					end
+					else begin
+						assert ((isDstr str)=false);
+						let newstr=mapname i str
+						in
+						Hashtbl.replace hashWireName2RangeUnfold newstr tionrange
+					end
+				end
+				| (TYPE_CONNECTION_OUT,range) -> begin
+					if(isDstr str) then begin
+						let newW=(TYPE_CONNECTION_NET,range)
+						and newstr=mapname i str
+						in
+						Hashtbl.replace hashWireName2RangeUnfold newstr newW
+					end
+					else begin
+						assert ((isQstr str)=false);
+						let newstr=mapname i str
+						in
+						Hashtbl.replace hashWireName2RangeUnfold newstr tionrange
+					end
+				end
+				| (TYPE_CONNECTION_NET,range) -> begin
+					assert ((isQstr str)=false);
+					assert ((isDstr str)=false);
+					let newstr=mapname i str
+					in
+					Hashtbl.replace hashWireName2RangeUnfold newstr tionrange
+				end
+			end
+			in
+			Hashtbl.iter procWire hashWireName2Range
+		done;
+	end
 
 end
 
-method writeFlatNetlist = begin
-	let flat_c = open_out "flat.v" 
+method checkWireInclusive = begin
+	let procTNInclusive tn = begin
+		match tn with
+		TYPE_NET_ID(str) -> 
+			assert (Hashtbl.mem hashWireName2Range str)
+		| TYPE_NET_ARRAYBIT(str,idx) -> begin
+			assert (Hashtbl.mem hashWireName2Range str);
+			let (tion,range)=Hashtbl.find hashWireName2Range str
+			in
+			let (l,r)=rng2lr range
+			in  begin
+				assert ((l>=idx && idx >=r )||(r>=idx && idx >=l ));
+				assert (l>=0);
+				assert (r>=0);
+			end
+		end
+		| _ -> () 
+	end
+	in
+	let procCheckInclusive cell = begin
+		match cell with
+		(_,_,ztnl,atnl,btnl) -> begin
+			List.iter procTNInclusive ztnl;
+			List.iter procTNInclusive atnl;
+			List.iter procTNInclusive btnl;
+		end
+	end
+	in
+	Stack.iter procCheckInclusive cellStack
+end
+
+method procSumWireNumber str tionrange oldnum = begin
+	match tionrange with
+	(_,range) -> begin
+		match range with
+		T_range_NOSPEC -> 1+oldnum
+		| T_range_int(l,r) -> begin
+			assert (l<>r);
+			assert (l>=0);
+			assert (r>=0);
+			l-r+1+oldnum
+		end
+		| T_range(_,_) ->
+			assert false
+	end
+end
+
+method writeFlatNetlist filename currentmodnmae = begin
+	let flat_c = open_out filename 
 	in begin
-		fprintf flat_c "module %s (\n" name;
+		fprintf flat_c "module %s (\n" currentmodnmae;
 		(*print list of input and outputs*)
-		let procPrintOutput str ionrange  = begin
-			match ionrange with
-			(TYPE_CONNECTION_OUT,T_range_NOSPEC) ->
-				fprintf flat_c "  output %s,\n" str
-			| (TYPE_CONNECTION_OUT,T_range_int(lv,rv)) ->
-				fprintf flat_c "  output [%d:%d] %s,\n" lv rv str
-			| (TYPE_CONNECTION_OUT,_) -> 
-				assert false
-			| _ -> ()
-		end
-		in
-		Hashtbl.iter procPrintOutput hashWireName2Range;
+		Hashtbl.iter (procPrintOutput flat_c) hashWireName2Range;
 	
-		let procPrintInput str ionrange = begin
-			match ionrange with
-			(TYPE_CONNECTION_IN,T_range_NOSPEC) -> 
-				fprintf flat_c "  input %s,\n" str
-			| (TYPE_CONNECTION_IN,T_range_int(lv,rv)) -> 
-				fprintf flat_c "  input [%d:%d] %s,\n"  lv rv str
-			| (TYPE_CONNECTION_IN,_) -> 
-				assert false
-			| _ -> ()
-		end
-		in
-		Hashtbl.iter procPrintInput hashWireName2Range; 
+		Hashtbl.iter (procPrintInput flat_c) hashWireName2Range; 
 	
 		fprintf flat_c "input xx);\n";
 	
-		let procPrintWire str ionrange = begin
-			match ionrange with
-			(TYPE_CONNECTION_NET,T_range_NOSPEC) -> 
-				fprintf flat_c "  wire %s;\n" str
-			| (TYPE_CONNECTION_NET,T_range_int(lv,rv)) -> 
-				fprintf flat_c "  wire [%d:%d] %s;\n"  lv rv str
-			| (TYPE_CONNECTION_NET,_) -> 
-				assert false
-			| _ -> ()
-		end
-		in
-		Hashtbl.iter procPrintWire hashWireName2Range;
+		Hashtbl.iter (procPrintWire flat_c) hashWireName2Range;
 	
-		let procPrintCell mi = begin
-			match mi with
-			("AN2",instname,[ztn],[atn],[btn]) -> begin
-				let zname=getTNname ztn
-				and aname=getTNname atn
-				and bname=getTNname btn
-				in
-				fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
-			end
-			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
-				let zname=getTNname ztn
-				and aname=getTNname atn
-				and bname=getTNname btn
-				in
-				fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
-			end
-			| ("IV",instname,[ztn],[atn],[]) -> begin
-				let zname=getTNname ztn
-				and aname=getTNname atn
-				in
-				fprintf flat_c "  IV %s (.Z(%s),.A(%s));\n" instname zname aname 
-			end
-			| ("BUF","",[ztn],[atn],[]) -> begin
-				let zname=getTNname ztn
-				and aname=getTNname atn
-				in
-				fprintf flat_c "  assign %s = %s;\n"  zname aname 
-			end
-			| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				and bl=getTNLname btnl
-				in 
-				fprintf flat_c "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-			end
-			| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				and bl=getTNLname btnl
-				in 
-				fprintf flat_c "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-			end
-			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				and bl=getTNLname btnl
-				in 
-				fprintf flat_c "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-			end
-			| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				and bl=getTNLname btnl
-				in 
-				fprintf flat_c "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-			end
-			| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				in 
-				fprintf flat_c "  tower2flat %s (.Z(%s),.A(%s));\n" instname zl al
-			end
-			| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
-				let zl=getTNLname ztnl
-				and al=getTNLname atnl
-				in 
-				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
-			end
-			| ("","",[],[],[]) ->()
-			| (modname,instname,_,_,_) -> begin
-				printf "Error : improper %s %s\n" modname instname;
-				flush stdout;
-				assert false
-			end
-		end
-		in
-		Array.iter procPrintCell miArray;
+		Stack.iter (procPrintCell flat_c) cellStack;
+	
+		fprintf flat_c "endmodule\n";
+
+		close_out flat_c;
+	end
+end
+
+method writeUnfoldNetlist   filename currentmodnmae= begin
+	let flat_c = open_out filename
+	in begin
+		fprintf flat_c "module %s (\n" currentmodnmae;
+		(*print list of input and outputs*)
+		Hashtbl.iter (procPrintOutput flat_c) hashWireName2RangeUnfold;
+	
+		Hashtbl.iter (procPrintInput flat_c) hashWireName2RangeUnfold; 
+	
+		fprintf flat_c "input xx);\n";
+	
+		Hashtbl.iter (procPrintWire flat_c) hashWireName2RangeUnfold;
+	
+		Array.iter (procPrintCell flat_c) cellArrayUnfold;
 	
 		fprintf flat_c "endmodule\n";
 
@@ -384,19 +427,5 @@ end
 *)
 
 
-
-	method genDecoderFunction iv shift ov instCNF = begin
-		let maxidxR=get_largest_varindex_inclslst instCNF in 
-		let shiftedIV=List.map (fun x -> x+shift) iv in 
-		let clslst_shift = begin
-			List.iter (fun x -> assert(x<=maxidxR)) shiftedIV;
-			List.iter (fun x -> assert(x<=maxidxR)) ov;
-			shiftclslst instCNF ov maxidxR
-		end 
-		in 
-		characterization_interp_AB_mass iv shift instCNF clslst_shift maxidxR ov
-	end
-
-	
 
 end
