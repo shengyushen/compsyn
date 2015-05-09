@@ -14,4 +14,35 @@ and	dbg_print str = begin
 		oldtime := current_time
 	end
 end
-
+and getLines filename = begin
+	let file_c = open_in filename
+	in
+	let rec getLines_internal  i = begin
+		let (newln,tf)= begin
+			try 
+				let ln=input_line file_c
+				in
+				(ln,true)
+			with End_of_file ->
+				("",false)
+		end
+		in begin
+			if(tf) then 
+				newln::(getLines_internal i)
+			else []
+		end
+	end
+	in
+	let lines=getLines_internal 0
+	in 
+	begin
+		close_in file_c;
+		lines
+	end
+end
+and int2bool i = begin
+	match i with
+	0 -> false
+	|1 -> true
+	|_ -> assert false
+end

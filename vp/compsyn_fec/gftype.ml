@@ -5,7 +5,7 @@ open Typedef
 
 type type_net =
 	TYPE_NET_ID of string
-	| TYPE_NET_CONST of int
+	| TYPE_NET_CONST of bool
 	| TYPE_NET_ARRAYBIT of string*int
 	| TYPE_NET_NULL
 ;;
@@ -13,7 +13,7 @@ type type_net =
 let rec getTNname tn = begin
 	match tn with
 	TYPE_NET_ID(str) -> str
-	| TYPE_NET_CONST(i) -> sprintf "1'b%d" i
+	| TYPE_NET_CONST(b) -> sprintf "1'b%b" b
 	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
 	| TYPE_NET_NULL -> ""
 end
@@ -121,8 +121,8 @@ and print_type_net tnet = begin
 		assert (str<>"");
 		printf " %s " str
 	end
-	| TYPE_NET_CONST(i) -> 
-		printf " %d "  i
+	| TYPE_NET_CONST(b) -> 
+		printf " %b "  b
 	| TYPE_NET_ARRAYBIT(str,idx) -> 
 		printf " %s[%d] " str idx
 	| TYPE_NET_NULL -> ()
@@ -294,9 +294,9 @@ end
 and exp2tn exp = begin
 	match exp with
 	T_primary(T_primary_num(T_number_base(1,'b',"0"))) ->
-		TYPE_NET_CONST(0)
+		TYPE_NET_CONST(false)
 	| T_primary(T_primary_num(T_number_base(1,'b',"1"))) ->
-		TYPE_NET_CONST(1)
+		TYPE_NET_CONST(true)
 	| T_primary(T_primary_id([str])) ->
 		TYPE_NET_ID(str)
 	| T_primary(T_primary_arrbit([str],exp)) ->

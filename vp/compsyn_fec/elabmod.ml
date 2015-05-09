@@ -30,7 +30,7 @@ val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.c
 (* build from construct_boolonly_netlist *)
 (*hold the value in unfolding*)
 val mutable hashWireName2RangeUnfold : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
-val mutable hashWireUnfold : (type_net,bool) Hashtbl.t = Hashtbl.create 1
+val mutable hashTnetValue : (type_net,type_net) Hashtbl.t = Hashtbl.create 1
 val mutable cellArrayUnfold = Array.create 1 ("","",[],[],[])
 val mutable cellArrayUnfoldPointer =0
 	(*hold all wires' range and in/out*)
@@ -184,13 +184,29 @@ method proc_T_continuous_assign cont_ass = begin
 end
 	
 	
-method compsyn (stepList :(string*int*int) list list) (unfoldNumber:int) = 
+method compsyn stepList  (unfoldNumber:int) = 
 begin
 	set_current_time;
 	(*first construct the data structure with bool only*)
 	self#writeFlatNetlist "flat.v" name;
+
+	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
 	self#writeUnfoldNetlist "unfold.v" (sprintf "%s_unfold_%d" name unfoldNumber);
+	
+	(*propagate const*)
+	self#handleInputStepList stepList;
+	self#propagateConst;
+(*
+		Printf.printf "finished parsing\n";
+		let procp x = begin
+			match x with
+			(str,v) -> 
+				Printf.printf "  %s %d\n" str v;
+		end
+		in
+		List.iter procp stepList;
+*)
 end
 
 method cellArrayUnfold_init sz = begin
@@ -222,7 +238,7 @@ method unfold_bool_netlist unfoldNumber= begin
 		printf "before unfold %d after %d\n" numWire finalWireNum;
 		(*construct unfold data structure*)
 		(*hold the value in unfolding*)
-		hashWireUnfold <- Hashtbl.create finalWireNum;
+		hashTnetValue <- Hashtbl.create finalWireNum;
 		(*hold all wires' range and in/out*)
 		hashWireName2RangeUnfold <- Hashtbl.create ((Hashtbl.length hashWireName2Range)*unfoldNumber);
 		self#cellArrayUnfold_init finalCellNum;
@@ -381,51 +397,23 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 	end
 end
 
-(*
-	method handleInputStepList stepList = begin
-		assert ((Hashtbl.length hashTnetValue)=0);
-		let procStringInt idx x = begin
-			match x with
-			(str,arridx,i) -> begin
-				assert (i=0 || i=1);
-				let newstr=mapname str idx 
-				in
-				let tnet=begin
-					if(arridx<0) then begin
-						printf "adding %s = %d\n" newstr i;
-						TYPE_NET_ID(newstr)
-					end
-					else begin
-						printf "adding %s[%d] = %d\n" newstr arridx i;
-						TYPE_NET_ARRAYBIT(newstr,arridx)
-					end
-				end
-				in begin
-					Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(i));
-					(tnet,(TYPE_NET_CONST(i)))
-				end
-			end
+method handleInputStepList stepList = begin
+	assert ((Hashtbl.length hashTnetValue)=0);
+	let procStringInt x = begin
+		match x with
+		(str,i) -> begin
+			assert (i=0 || i=1);
+			let tnet= TYPE_NET_ID(str)
+			in 
+			Hashtbl.add hashTnetValue tnet (TYPE_NET_CONST(int2bool(i)));
 		end
-		in
-		let procStep i stp = begin
-			List.map (procStringInt i) stp;
-		end
-		in
-		let rec procStepList i stpl= begin
-			match stpl with
-			[] ->[]
-			| hd::tl -> begin
-				let currentList=procStep i hd
-				and remainList=procStepList (i+1) tl 
-				in
-				currentList @ remainList
-			end
-		end
-		in 
-		procStepList 0 stepList
 	end
-*)
+	in
+	List.iter procStringInt stepList
+end
 
-
+method propagateConst = begin
+	
+end
 
 end
