@@ -13,7 +13,8 @@ type type_net =
 let rec getTNname tn = begin
 	match tn with
 	TYPE_NET_ID(str) -> str
-	| TYPE_NET_CONST(b) -> sprintf "1'b%b" b
+	| TYPE_NET_CONST(false) -> "1'b0"
+	| TYPE_NET_CONST(true)  -> "1'b1"
 	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
 	| TYPE_NET_NULL -> ""
 end
