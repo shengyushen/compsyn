@@ -117,9 +117,10 @@ method proc_T_net_declaration nettypename exprng namelst = begin
 	in
 	let proc_one_net name1 = begin
 		(*add it to circuit object list*)
-		assert ((Hashtbl.mem hashWireName2Range name1)=false);
-
-		Hashtbl.replace hashWireName2Range name1 (TYPE_CONNECTION_NET,newrng)
+		if (Hashtbl.mem hashWireName2Range name1) then 
+			printf "Error : duplicated wire definition %s\n" name1
+		else 
+			Hashtbl.replace hashWireName2Range name1 (TYPE_CONNECTION_NET,newrng)
 	end
 	in 
 	List.iter proc_one_net namelst

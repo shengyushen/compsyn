@@ -31,8 +31,13 @@ let getSteps i= begin
 	let procmap y = begin
 		match y with
 		[a;b] -> begin
-			assert ((b="0") || (b="1"));
-			(a,int_of_string b)
+			if ((b="0") || (b="1")) then
+				(a,int_of_string b)
+			else begin
+				Printf.printf "Error : invalid input step %s %s\n" a b;
+				flush stdout;
+				assert false
+			end
 		end
 		| _ -> assert false
 	end
