@@ -572,11 +572,16 @@ method procCell pos = begin
 				begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
-					in
-					printf "Info : %s <- 0\n" ztnname;
-					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(false));
-					[ztn]
+					and newztn=TYPE_NET_CONST(false)
+					in begin
+						printf "Info : %s <- 0\n" ztnname;
+						cellArrayUnfoldValid.(pos) <- false;
+						(*record this make sure that we 
+						dont need to explore this any more*)
+						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn]);
+						self#setTNetValue ztn newztn;
+						[ztn]
+					end
 				end
 				else if(atn1=TYPE_NET_CONST(true)) then 
 				begin
@@ -590,7 +595,12 @@ method procCell pos = begin
 					(*only update the next state 
 					when we have const*)
 					match btn1 with
-					TYPE_NET_CONST(_) -> [ztn]
+					TYPE_NET_CONST(_) -> begin
+						let newztn=TYPE_NET_CONST(true)
+						in
+						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn]);
+						[ztn]
+					end
 					| _ -> []
 				end
 				else if(btn1=TYPE_NET_CONST(true)) then
@@ -602,12 +612,13 @@ method procCell pos = begin
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn atn1;
 					match atn1 with
-					TYPE_NET_CONST(_) -> [ztn]
+					TYPE_NET_CONST(_) -> assert false
 					| _ -> []
 				end
 				else begin
 					printf "Info : nothing to do\n";
-					[]
+					flush stdout;
+					assert false
 				end
 			end
 			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
@@ -618,10 +629,12 @@ method procCell pos = begin
 				   btn1=TYPE_NET_CONST(true)) then begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
+					and newztn=TYPE_NET_CONST(true)
 					in
 					printf "Info : %s <- 1\n" ztnname;
 					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(true));
+					cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn]);
+					self#setTNetValue ztn newztn;
 					[ztn]
 				end
 				else if(atn1=TYPE_NET_CONST(false)) then 
@@ -634,7 +647,12 @@ method procCell pos = begin
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn btn1;
 					match btn1 with
-					TYPE_NET_CONST(_) -> [ztn]
+					TYPE_NET_CONST(_) -> begin
+						let newztn=TYPE_NET_CONST(false)
+						in
+						cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn]);
+						[ztn]
+					end
 					| _ -> []
 				end
 				else if(btn1=TYPE_NET_CONST(false)) then
@@ -646,12 +664,13 @@ method procCell pos = begin
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn atn1;
 					match atn1 with
-					TYPE_NET_CONST(_) -> [ztn]
+					TYPE_NET_CONST(_) -> assert false
 					| _ -> []
 				end
 				else begin
 					printf "Info : nothing to do\n";
-					[]
+					flush stdout;
+					assert false
 				end
 			end
 			| ("EO",instname,[ztn],[atn],[btn]) -> begin
@@ -666,11 +685,14 @@ method procCell pos = begin
 				begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
-					in
-					printf "Info : %s <- 0\n" ztnname;
-					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(false));
-					[ztn]
+					and newztn=TYPE_NET_CONST(false)
+					in begin
+						printf "Info : %s <- 0\n" ztnname;
+						cellArrayUnfoldValid.(pos) <- false;
+						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn]);
+						self#setTNetValue ztn newztn;
+						[ztn]
+					end
 				end
 				else if((atn1=TYPE_NET_CONST(true) && 
 				         btn1=TYPE_NET_CONST(false))
@@ -680,11 +702,14 @@ method procCell pos = begin
 				begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
-					in
-					printf "Info : %s <- 1\n" ztnname;
-					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(true));
-					[ztn]
+					and newztn=TYPE_NET_CONST(true)
+					in begin
+						printf "Info : %s <- 1\n" ztnname;
+						cellArrayUnfoldValid.(pos) <- false;
+						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn]);
+						self#setTNetValue ztn newztn;
+						[ztn]
+					end
 				end
 				else if(atn1=TYPE_NET_CONST(false)) then 
 				begin
@@ -729,7 +754,8 @@ method procCell pos = begin
 				end
 				else begin
 					printf "Info : nothing to do\n";
-					[]
+					flush stdout;
+					assert false
 				end
 			end
 			| ("IV",instname,[ztn],[atn],[]) -> begin
@@ -739,25 +765,32 @@ method procCell pos = begin
 				begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
-					in
-					printf "Info : %s <- 0\n" ztnname;
-					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(false));
-					[ztn]
+					and newztn=TYPE_NET_CONST(false)
+					in begin
+						printf "Info : %s <- 0\n" ztnname;
+						cellArrayUnfoldValid.(pos) <- false;
+						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[]);
+						self#setTNetValue ztn newztn;
+						[ztn]
+					end
 				end
 				else if(atn1=TYPE_NET_CONST(false)) then 
 				begin
 					(*propagate the btn1 to ztn*)
 					let ztnname=getTNname ztn
-					in
-					printf "Info : %s <- 1\n" ztnname;
-					cellArrayUnfoldValid.(pos) <- false;
-					self#setTNetValue ztn (TYPE_NET_CONST(true));
-					[ztn]
+					and newztn=TYPE_NET_CONST(true)
+					in begin
+						printf "Info : %s <- 1\n" ztnname;
+						cellArrayUnfoldValid.(pos) <- false;
+						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[]);
+						self#setTNetValue ztn newztn;
+						[ztn]
+					end
 				end
 				else begin
 					printf "Info : nothing to do\n";
-					[]
+					flush stdout;
+					assert false
 				end
 			end
 			| ("BUF",instname,[ztn],[atn],[]) -> begin
@@ -782,48 +815,60 @@ method procCell pos = begin
 					end
 					else  begin
 					printf "Info : nothing to do\n";
-						[]
+					flush stdout;
+					assert false
 					end
 				end
 			end
 			| ("","",[],[],[]) -> assert false
 			| (defname,instname,_,_,_) -> begin
-				if(
-				defname<>"gfadd_mod" &&
-				defname<>"gfdiv_mod" &&
-				defname<>"gfmult_flat_mod" &&
-				defname<>"gfmult_mod" &&
-				defname<>"tower2flat" &&
-				defname<>"flat2tower"
-				) then begin
-					printf "Error : in procCell improper %s %s\n" defname instname ;
-					flush stdout;
-					assert false
-				end
-				else []
+				assert (isGF defname);
+				[]
 			end
 		end
 		else begin
-			(*invalid one, run to its transitive closure*)
+			(*invalid one, run to its transitive closure
+			only when the output is already const*)
 			match cell with
-			(defname,instname,ztnl,_,_) -> begin
-(* 				printf "Info: procCell invalid %s %s %d\n" defname instname pos; *)
-				let procFindSink tn = 
-					try
-						Hashtbl.find hashTnetSink tn
-					with Not_found -> begin
-						let tnname=getTNname tn
-						in
-						printf "Warning : not found sink for %s\n" tnname;
-						flush stdout;
-						[]
-					end
+			(defname,instname,[TYPE_NET_CONST(_)],_,_) -> begin
+				(*already be zero before we considered 
+				current assignment, so dont go further*)
+				[]
+			end
+			| (defname,instname,[ztn],_,_) -> begin
+ 				printf "Info: procCell invalid %s %s %d\n" defname instname pos; 
+				let ztn1=self#getTNetValue ztn 
 				in
-				let poslstlst=List.map procFindSink ztnl
-				in
-				let poslst=List.concat poslstlst
-				in
-				List.concat (List.map (self#procCell) poslst)
+				match ztn1 with
+				TYPE_NET_NULL -> []
+				| TYPE_NET_CONST(_) -> begin
+					(*be const when consider current assignment
+					so go further*)
+					let procFindSink tn = 
+						try
+							Hashtbl.find hashTnetSink tn
+						with Not_found -> begin
+							let tnname=getTNname tn
+							in
+							printf "Warning : not found sink for %s\n" tnname;
+							flush stdout;
+							[]
+						end
+					in
+					let poslst=procFindSink ztn
+					in
+					List.concat (List.map (self#procCell) poslst)
+				end
+				| _ -> begin
+					(*not const even with current assignment
+					dont go further*)
+					[]
+				end
+			end
+			| (defname,_,ztnl,_,_) -> begin
+				(*gf mod dont need to prop*)
+				assert (isGF defname);
+				[]
 			end
 		end
 	end
@@ -876,7 +921,12 @@ method propagateConst stepList= begin
 				with Not_found -> []
 			end
 			in
-			let lstlst=List.map (self#procCell) cellList
+			let lstlst= begin
+				printf "cellList len %d\n" (List.length cellList);
+				List.iter (printf " %d ") cellList;
+				printf "\n";
+				List.map (self#procCell) cellList
+			end
 			in
 			List.iter (List.iter (addTodoQ todoname)) lstlst
 		done;
