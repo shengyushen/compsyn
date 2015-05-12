@@ -350,6 +350,13 @@ and procPrintCell flat_c mi  = begin
 				in
 				fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
 			end
+			| ("EO",instname,[ztn],[atn],[btn]) -> begin
+				let zname=getTNname ztn
+				and aname=getTNname atn
+				and bname=getTNname btn
+				in
+				fprintf flat_c "  EO %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
+			end
 			| ("IV",instname,[ztn],[atn],[]) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn

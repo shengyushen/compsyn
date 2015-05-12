@@ -196,28 +196,29 @@ begin
 	self#writeFlatNetlist "flat.v" name;
 
 	(*unfold *)
-	dbg_print "unfold_bool_netlist start\n";
 	self#unfold_bool_netlist unfoldNumber ;
+	dbg_print "unfold_bool_netlist finish\n";
 
-	dbg_print "writeUnfoldNetlist start\n";
 	let modname=sprintf "%s_unfold_%d" name unfoldNumber
 	in
 	self#writeUnfoldNetlist "unfold.v" modname;
+	dbg_print "writeUnfoldNetlist finish\n";
 	
 	(*propagate const*)
-	dbg_print "handleInputStepList start\n";
 	self#handleInputStepList stepList;
+	dbg_print "handleInputStepList finish\n";
 
-	dbg_print "buildSrcSink start\n";
 	self#buildSrcSink;
+	dbg_print "buildSrcSink finish\n";
 
-	dbg_print "propagateConst start\n";
  	self#propagateConst stepList; 
+	printf "cellArrayUnfold len %d\n" (Array.length cellArrayUnfold);
+	dbg_print "propagateConst finish \n";
 
-	dbg_print "writeUnfoldPropagatedNetlist start\n";
 	let modname=sprintf "%s_unfold_%d_propconst" name unfoldNumber
 	in
 	self#writeUnfoldPropagatedNetlist "propconst.v" modname;
+	dbg_print "writeUnfoldPropagatedNetlist finish\n";
 end
 
 method cellArrayUnfold_init sz = begin
@@ -238,6 +239,7 @@ method unfold_bool_netlist unfoldNumber= begin
 	(*whether all the wires referred
 	by cellStack are in hashWireName2Range*)
 	self#checkWireInclusive ;
+	dbg_print "checkWireInclusive finished\n";
 	
 	(*find out the number of wires*)
 	let numWire=Hashtbl.fold (self#procSumWireNumber) hashWireName2Range 0
@@ -252,7 +254,8 @@ method unfold_bool_netlist unfoldNumber= begin
 		(*hold all wires' range and in/out*)
 		hashWireName2RangeUnfold <- Hashtbl.create ((Hashtbl.length hashWireName2Range)*unfoldNumber);
 		self#cellArrayUnfold_init finalCellNum;
-		
+		dbg_print "cellArrayUnfold_init finish\n";
+
 		(*unfold the gates*)
 		for i= 0 to (unfoldNumber-1) do
 			let procCell co = begin
@@ -271,7 +274,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Stack.iter  procCell cellStack
 		done;
-
+		dbg_print "cellArrayUnfold_add finished\n";
 		(*unfold the wires*)
 		for i= 0 to (unfoldNumber-1) do
 			let procWire str tionrange = begin
@@ -315,6 +318,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Hashtbl.iter procWire hashWireName2Range
 		done;
+		dbg_print "hashWireName2RangeUnfold finished\n";
 	end
 
 end
@@ -449,12 +453,14 @@ method procTnetSrcSink pos cell = begin
 				let newlist=pos::currentList
 				in begin
 					Hashtbl.replace hashTnetSink tn newlist;
+(*
 					let tnname=getTNname tn
 					in begin
 						printf "Info: sink of %s" tnname;
 						List.iter (printf " %d") newlist;
 						printf "\n";
 					end
+*)
 				end
 			end
 		end
@@ -467,15 +473,19 @@ method procTnetSrcSink pos cell = begin
 					let current=Hashtbl.find hashTnetSrc tn
 					in begin
 						Hashtbl.replace hashTnetSrc tn pos;
+(*
 						let tnname=getTNname tn
 						in
 						printf "Info: src of %s %d\n" tnname pos
+*)
 					end
 				with Not_found -> begin
 					Hashtbl.add hashTnetSrc tn pos;
+(*
 					let tnname=getTNname tn
 					in
 					printf "Info: src of %s %d\n" tnname pos
+*)
 				end
 			end
 		end
@@ -565,7 +575,6 @@ method procCell pos = begin
 				in 
 				if(atn1=TYPE_NET_CONST(false) || btn1=TYPE_NET_CONST(false)) then
 				begin
-				printf "haha\n";
 					(*const false at output*)
 					let ztnname=getTNname ztn
 					in
@@ -576,7 +585,6 @@ method procCell pos = begin
 				end
 				else if(atn1=TYPE_NET_CONST(true)) then 
 				begin
-				printf "haha1\n";
 					(*propagate the btn1 to ztn*)
 					let ztnname=getTNname ztn
 					and btnname=getTNname btn1
@@ -584,21 +592,26 @@ method procCell pos = begin
 					printf "Info : %s <- %s\n" ztnname btnname;
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn btn1;
-					[ztn]
+					(*only update the next state 
+					when we have const*)
+					match btn1 with
+					TYPE_NET_CONST(_) -> [ztn]
+					| _ -> []
 				end
 				else if(btn1=TYPE_NET_CONST(true)) then
 				begin
-				printf "haha2\n";
 					let ztnname=getTNname ztn
 					and atnname=getTNname atn1
 					in
 					printf "Info : %s <- %s\n" ztnname atnname;
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn atn1;
-					[ztn]
+					match atn1 with
+					TYPE_NET_CONST(_) -> [ztn]
+					| _ -> []
 				end
 				else begin
-				printf "haha3 a %s b %s\n" (getTNname atn1) (getTNname btn1);
+					printf "Info : nothing to do\n";
 					[]
 				end
 			end
@@ -625,7 +638,9 @@ method procCell pos = begin
 					printf "Info : %s <- %s\n" ztnname btnname;
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn btn1;
-					[ztn]
+					match btn1 with
+					TYPE_NET_CONST(_) -> [ztn]
+					| _ -> []
 				end
 				else if(btn1=TYPE_NET_CONST(false)) then
 				begin
@@ -635,9 +650,88 @@ method procCell pos = begin
 					printf "Info : %s <- %s\n" ztnname atnname;
 					cellArrayUnfoldValid.(pos) <- false;
 					self#setTNetValue ztn atn1;
+					match atn1 with
+					TYPE_NET_CONST(_) -> [ztn]
+					| _ -> []
+				end
+				else begin
+					printf "Info : nothing to do\n";
+					[]
+				end
+			end
+			| ("EO",instname,[ztn],[atn],[btn]) -> begin
+				let atn1=self#getTNetValue atn
+				and btn1=self#getTNetValue btn
+				in 
+				if((atn1=TYPE_NET_CONST(true) && btn1=TYPE_NET_CONST(true))
+				|| (atn1=TYPE_NET_CONST(false) && btn1=TYPE_NET_CONST(false))
+				) then
+				begin
+					(*const false at output*)
+					let ztnname=getTNname ztn
+					in
+					printf "Info : %s <- 0\n" ztnname;
+					cellArrayUnfoldValid.(pos) <- false;
+					self#setTNetValue ztn (TYPE_NET_CONST(false));
 					[ztn]
 				end
-				else []
+				else if((atn1=TYPE_NET_CONST(true) && btn1=TYPE_NET_CONST(false))
+				|| (atn1=TYPE_NET_CONST(false) && btn1=TYPE_NET_CONST(true))
+				) then
+				begin
+					(*const false at output*)
+					let ztnname=getTNname ztn
+					in
+					printf "Info : %s <- 1\n" ztnname;
+					cellArrayUnfoldValid.(pos) <- false;
+					self#setTNetValue ztn (TYPE_NET_CONST(true));
+					[ztn]
+				end
+				else if(atn1=TYPE_NET_CONST(false)) then 
+				begin
+					(*propagate the btn1 to ztn*)
+					let ztnname=getTNname ztn
+					and btnname=getTNname btn1
+					in
+					printf "Info : %s <- %s\n" ztnname btnname;
+					cellArrayUnfoldValid.(pos) <- false;
+					self#setTNetValue ztn btn1;
+					[]
+				end
+				else if(atn1=TYPE_NET_CONST(true)) then 
+				begin
+					(*propagate the btn1 to ztn*)
+					let ztnname=getTNname ztn
+					and btnname=getTNname btn1
+					in
+					printf "Info : %s <- !%s\n" ztnname btnname;
+					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[btn1],[]);
+					[]
+				end
+				else if(btn1=TYPE_NET_CONST(false)) then
+				begin
+					let ztnname=getTNname ztn
+					and atnname=getTNname atn1
+					in
+					printf "Info : %s <- %s\n" ztnname atnname;
+					cellArrayUnfoldValid.(pos) <- false;
+					self#setTNetValue ztn atn1;
+					[]
+				end
+				else if(btn1=TYPE_NET_CONST(true)) then 
+				begin
+					(*propagate the btn1 to ztn*)
+					let ztnname=getTNname ztn
+					and atnname=getTNname atn1
+					in
+					printf "Info : %s <- !%s\n" ztnname atnname;
+					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[atn1],[]);
+					[]
+				end
+				else begin
+					printf "Info : nothing to do\n";
+					[]
+				end
 			end
 			| ("IV",instname,[ztn],[atn],[]) -> begin
 				let atn1=self#getTNetValue atn
@@ -662,13 +756,35 @@ method procCell pos = begin
 					self#setTNetValue ztn (TYPE_NET_CONST(true));
 					[ztn]
 				end
-				else []
+				else begin
+					printf "Info : nothing to do\n";
+					[]
+				end
 			end
-			| ("BUF",_,[ztn],[atn],[]) -> begin
+			| ("BUF",instname,[ztn],[atn],[]) -> begin
 				let atn1=self#getTNetValue atn
 				in begin
-					self#setTNetValue ztn atn1;
-					[ztn]
+					if(atn1<>atn) then begin
+						self#setTNetValue ztn atn1;
+						match atn1 with
+						TYPE_NET_CONST(false) -> begin
+							let ztnname=getTNname ztn
+							in
+							printf "Info : %s <- 0\n" ztnname;
+							[ztn]
+						end
+						| TYPE_NET_CONST(true) -> begin
+							let ztnname=getTNname ztn
+							in
+							printf "Info : %s <- 1\n" ztnname;
+							[ztn]
+						end
+						| _ -> []
+					end
+					else  begin
+					printf "Info : nothing to do\n";
+						[]
+					end
 				end
 			end
 			| ("","",[],[],[]) -> assert false
@@ -692,7 +808,7 @@ method procCell pos = begin
 			(*invalid one, run to its transitive closure*)
 			match cell with
 			(defname,instname,ztnl,_,_) -> begin
-				printf "Info: procCell invalid %s %s %d" defname instname pos;
+(* 				printf "Info: procCell invalid %s %s %d\n" defname instname pos; *)
 				let procFindSink tn = 
 					try
 						Hashtbl.find hashTnetSink tn
@@ -716,21 +832,46 @@ end
 
 method propagateConst stepList= begin
 	let todoQ   = Queue.create ()
+	and todoHashBool = Hashtbl.create (Hashtbl.length hashWireName2RangeUnfold)
+	in
+	let addTodoQ todoname tn = begin
+		if((Hashtbl.mem todoHashBool tn)=false) then
+		begin
+			let tnname=getTNname tn 
+			in begin
+				printf "addTodoQ : %s -> %s\n" todoname tnname;
+				Queue.push  tn todoQ;
+				Hashtbl.add todoHashBool tn true
+			end
+		end
+	end
+	and popTodoQ  () = begin
+		let todoTn=Queue.pop todoQ
+		in begin
+			Hashtbl.remove todoHashBool todoTn;
+			todoTn
+		end
+	end
 	in begin
 		let procStep x = begin
 			match x with
 			(str,_) ->
 				let tn=TYPE_NET_ID(str)
 				in
-				Queue.push  tn todoQ
+				addTodoQ "inithaha" tn
 		end
 		in
 		List.iter procStep stepList;
 
 		while ((Queue.is_empty todoQ)=false) do
-			let todoTn=Queue.pop todoQ
+			dbg_print (sprintf "todo len %d\n" (Queue.length todoQ));
+			let todoTn=popTodoQ ()
+			in 
+			let todoname=getTNname todoTn
 			in 
 			let cellList=	begin
+				printf "todoname %s\n" todoname;
+
 				try
 					Hashtbl.find hashTnetSink todoTn
 				with Not_found -> []
@@ -738,11 +879,7 @@ method propagateConst stepList= begin
 			in
 			let lstlst=List.map (self#procCell) cellList
 			in
-			let lst=List.concat lstlst
-			in
-			let tnname=getTNname todoTn
-			in 
-			List.iter (fun x -> Queue.push x todoQ ) lst
+			List.iter (fun lst -> List.iter (addTodoQ todoname)  lst)  lstlst
 		done;
 	end
 end
@@ -798,20 +935,27 @@ method procPrintCellPropConst flat_c pos mi  = begin
 			and aname=self#getTNnamePropConst atn
 			and bname=self#getTNnamePropConst btn
 			in
-			fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));\/\/%d\n" instname zname aname bname pos
+			fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
 		end
 		| ("OR2",instname,[ztn],[atn],[btn]) -> begin
 			let zname=getTNname ztn
 			and aname=self#getTNnamePropConst atn
 			and bname=self#getTNnamePropConst btn
 			in
-			fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\/\/%d\n" instname zname aname bname pos
+			fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
+		end
+		| ("EO",instname,[ztn],[atn],[btn]) -> begin
+			let zname=getTNname ztn
+			and aname=self#getTNnamePropConst atn
+			and bname=self#getTNnamePropConst btn
+			in
+			fprintf flat_c "  EO %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
 		end
 		| ("IV",instname,[ztn],[atn],[]) -> begin
 			let zname=getTNname ztn
 			and aname=self#getTNnamePropConst atn
 			in
-			fprintf flat_c "  IV %s (.Z(%s),.A(%s));\/\/%d\n" instname zname aname pos
+			fprintf flat_c "  IV %s (.Z(%s),.A(%s));//%d\n" instname zname aname pos
 		end
 		| ("BUF",instname,[ztn],[atn],[]) -> begin
 			let zname=getTNname ztn
