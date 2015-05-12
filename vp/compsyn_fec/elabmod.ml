@@ -453,14 +453,12 @@ method procTnetSrcSink pos cell = begin
 				let newlist=pos::currentList
 				in begin
 					Hashtbl.replace hashTnetSink tn newlist;
-(*
 					let tnname=getTNname tn
 					in begin
 						printf "Info: sink of %s" tnname;
 						List.iter (printf " %d") newlist;
 						printf "\n";
 					end
-*)
 				end
 			end
 		end
@@ -473,19 +471,15 @@ method procTnetSrcSink pos cell = begin
 					let current=Hashtbl.find hashTnetSrc tn
 					in begin
 						Hashtbl.replace hashTnetSrc tn pos;
-(*
 						let tnname=getTNname tn
 						in
 						printf "Info: src of %s %d\n" tnname pos
-*)
 					end
 				with Not_found -> begin
 					Hashtbl.add hashTnetSrc tn pos;
-(*
 					let tnname=getTNname tn
 					in
 					printf "Info: src of %s %d\n" tnname pos
-*)
 				end
 			end
 		end
@@ -573,7 +567,8 @@ method procCell pos = begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
 				in 
-				if(atn1=TYPE_NET_CONST(false) || btn1=TYPE_NET_CONST(false)) then
+				if(atn1=TYPE_NET_CONST(false) || 
+				   btn1=TYPE_NET_CONST(false)) then
 				begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
@@ -619,8 +614,8 @@ method procCell pos = begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
 				in 
-				if(atn1=TYPE_NET_CONST(true) || btn1=TYPE_NET_CONST(true)) then
-				begin
+				if(atn1=TYPE_NET_CONST(true) || 
+				   btn1=TYPE_NET_CONST(true)) then begin
 					(*const false at output*)
 					let ztnname=getTNname ztn
 					in
@@ -663,8 +658,10 @@ method procCell pos = begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
 				in 
-				if((atn1=TYPE_NET_CONST(true) && btn1=TYPE_NET_CONST(true))
-				|| (atn1=TYPE_NET_CONST(false) && btn1=TYPE_NET_CONST(false))
+				if((atn1=TYPE_NET_CONST(true) && 
+				    btn1=TYPE_NET_CONST(true))
+				|| (atn1=TYPE_NET_CONST(false) &&
+				    btn1=TYPE_NET_CONST(false))
 				) then
 				begin
 					(*const false at output*)
@@ -675,8 +672,10 @@ method procCell pos = begin
 					self#setTNetValue ztn (TYPE_NET_CONST(false));
 					[ztn]
 				end
-				else if((atn1=TYPE_NET_CONST(true) && btn1=TYPE_NET_CONST(false))
-				|| (atn1=TYPE_NET_CONST(false) && btn1=TYPE_NET_CONST(true))
+				else if((atn1=TYPE_NET_CONST(true) && 
+				         btn1=TYPE_NET_CONST(false))
+				     || (atn1=TYPE_NET_CONST(false) &&
+						     btn1=TYPE_NET_CONST(true))
 				) then
 				begin
 					(*const false at output*)
@@ -879,7 +878,7 @@ method propagateConst stepList= begin
 			in
 			let lstlst=List.map (self#procCell) cellList
 			in
-			List.iter (fun lst -> List.iter (addTodoQ todoname)  lst)  lstlst
+			List.iter (List.iter (addTodoQ todoname)) lstlst
 		done;
 	end
 end
