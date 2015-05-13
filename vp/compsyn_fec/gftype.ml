@@ -105,7 +105,12 @@ and maptnet idx tnet = begin
 	| TYPE_NET_NULL -> tnet
 end
 and isQstr str = begin
-	string_match (regexp "^.*_Q$") str 0
+	let len=String.length str
+	in begin
+		if(len>=2) then
+			((String.sub str (len-2) 2)="_Q")
+		else false
+	end
 end
 and print_type_ion tion = begin
 	match tion with
@@ -179,7 +184,12 @@ and isQ tnet = begin
 	| _ -> false
 end
 and isDstr str = begin
-	string_match (regexp "^.*_D$") str 0
+	let len=String.length str
+	in begin
+		if(len >=2) then
+			((String.sub str (len-2) 2)="_D")
+		else false
+	end
 end
 and isD tnet = begin
 	match tnet with
@@ -190,9 +200,13 @@ and maptnetQ2D idx tnet = begin
 	match tnet with
 	TYPE_NET_ID(str) -> begin
 		if ((idx >=1) && (isQstr str)) then begin
-			let dnet=global_replace (regexp "_Q$") "_D" str 
+			let dnet= String.copy str 
+			and len=String.length str
 			in
-			let newdnet=mapname (idx-1) dnet
+			let newdnet=begin
+				String.set dnet (len-1) 'D';
+				mapname (idx-1) dnet
+			end
 			in
 			TYPE_NET_ID(newdnet)
 		end
