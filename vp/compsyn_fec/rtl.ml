@@ -8,7 +8,7 @@ exception No_such_clock
 
 type eventype=Noedge | Edge
 
-class rtl  = fun very_struct_init tmpdirname1  ->
+class rtl  = fun very_struct_init tmpdirname1  debugFlag->
 object (self)
 
 (*rtl syntax tree*)
@@ -29,7 +29,7 @@ object (self)
 		(*find this exact module definition*)
 		let module2beElaborated = self#findOneModuleInVerystruct elabModName
 		in 
-		let newElabModule = new elabmod 
+		let newElabModule = new elabmod debugFlag
 		in begin
 			newElabModule#init module2beElaborated tmpdirname;
 			elaboratedModuleList <- newElabModule::elaboratedModuleList
@@ -67,9 +67,9 @@ object (self)
 	end
 	
 	
-	method compsyn stepList unfoldNumber= begin
+	method compsyn stepList unfoldNumber  = begin
 		match elaboratedModuleList with
-		[topmod] -> topmod#compsyn stepList unfoldNumber
+		[topmod] -> topmod#compsyn stepList unfoldNumber notUsedOutputList
 		| _ -> assert false
 	end
 end

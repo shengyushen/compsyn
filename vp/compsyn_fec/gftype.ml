@@ -13,14 +13,15 @@ type type_net =
 let rec getTNname tn = begin
 	match tn with
 	TYPE_NET_ID(str) -> str
+	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
 	| TYPE_NET_CONST(false) -> "1'b0"
 	| TYPE_NET_CONST(true)  -> "1'b1"
-	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s[%d]" str idx
 	| TYPE_NET_NULL -> ""
 end
 and getTNLname tnl = begin
 	let nl=List.map getTNname tnl
 	in
+(*
 	let rec prt l = begin
 		match l with
 		[hd] -> hd
@@ -33,6 +34,8 @@ and getTNLname tnl = begin
 	end
 	in
 	let res=prt nl
+*)
+	let res=String.concat "," nl
 	in
 	sprintf "{ %s }" res
 end
@@ -96,13 +99,12 @@ and maptnet idx tnet = begin
 		in
 		TYPE_NET_ID(newstr)
 	end
-	| TYPE_NET_CONST(_) -> tnet
 	| TYPE_NET_ARRAYBIT(str,id) -> begin
 		let newstr=mapname idx str 
 		in
 		TYPE_NET_ARRAYBIT(newstr,id)
 	end
-	| TYPE_NET_NULL -> tnet
+	| _ -> tnet
 end
 and isQstr str = begin
 	let len=String.length str

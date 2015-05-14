@@ -16,7 +16,8 @@ let inputFileName = Sys.argv.(1) ;;
 let elabModName = Sys.argv.(2) ;;
 let stimulationFileName = Sys.argv.(3) ;;
 let expNumber = int_of_string (Sys.argv.(4)) ;;
-
+let notUsedOutputFilename = Sys.argv.(5) ;;
+let debugFlag = bool_of_string (Sys.argv.(6)) ;;
 
 
 (*parsing stimulation*)
@@ -46,6 +47,21 @@ let getSteps i= begin
 end
 in
 let stepList=getSteps 1 
+;;
+
+(*not used output list*)
+let getNotUsedOutputList i = begin
+	let listLines=getLines notUsedOutputFilename
+	in
+	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
+	in
+	List.filter (fun x -> assert ((length x)<=1); (isEmptyList x)=false) splitedLinesList
+end
+in
+let notUsedOutputList=getNotUsedOutputList 1
+;;
+
+
 and inputFileChannle = open_in inputFileName
 in
 let lexbuf = Lexing.from_channel inputFileChannle
@@ -54,10 +70,10 @@ let very_struct = Parser.source_text Very.verilog lexbuf
 in 
 begin
 	close_in  inputFileChannle ;
-	let objRTL = new rtl very_struct tempdirname
+	let objRTL = new rtl very_struct tempdirname debugFlag
 	in begin
 		objRTL#elaborate elabModName ;
-		objRTL#compsyn stepList expNumber;
+		objRTL#compsyn stepList expNumber notUsedOutputList;
 		exit 0
 	end
 end;
