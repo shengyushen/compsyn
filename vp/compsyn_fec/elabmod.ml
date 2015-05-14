@@ -444,11 +444,7 @@ method procTnetSrcSink pos cell = begin
 			TYPE_NET_CONST(_) -> ()
 			| TYPE_NET_NULL -> ()
 			| _ -> begin
-				let currentList= begin
-					try 
-						Hashtbl.find hashTnetSink tn
-					with Not_found -> []
-				end
+				let currentList= self#findTnetSink tn
 				in
 				let newlist=pos::currentList
 				in begin
@@ -844,18 +840,7 @@ method procCell pos = begin
 				| TYPE_NET_CONST(_) -> begin
 					(*be const when consider current assignment
 					so go further*)
-					let procFindSink tn = 
-						try
-							Hashtbl.find hashTnetSink tn
-						with Not_found -> begin
-							let tnname=getTNname tn
-							in
-							printf "Warning : not found sink for %s\n" tnname;
-							flush stdout;
-							[]
-						end
-					in
-					let poslst=procFindSink ztn
+					let poslst=self#findTnetSink ztn
 					in
 					List.concat (List.map (self#procCell) poslst)
 				end
@@ -915,10 +900,7 @@ method propagateConst stepList= begin
 			in 
 			let cellList=	begin
 				printf "todoname %s\n" todoname;
-
-				try
-					Hashtbl.find hashTnetSink todoTn
-				with Not_found -> []
+				self#findTnetSink todoTn
 			end
 			in
 			let lstlst= begin
@@ -931,6 +913,12 @@ method propagateConst stepList= begin
 			List.iter (List.iter (addTodoQ todoname)) lstlst
 		done;
 	end
+end
+
+method findTnetSink tn = begin
+	try
+		Hashtbl.find hashTnetSink tn
+	with Not_found -> []
 end
 
 (*the only different to writeUnfoldNetlist is 
