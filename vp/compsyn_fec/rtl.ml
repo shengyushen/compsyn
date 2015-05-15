@@ -67,7 +67,7 @@ object (self)
 	end
 	
 	
-	method compsyn stepList unfoldNumber  = begin
+	method compsyn stepList unfoldNumber notUsedOutputList = begin
 		match elaboratedModuleList with
 		[topmod] -> topmod#compsyn stepList unfoldNumber notUsedOutputList
 		| _ -> assert false

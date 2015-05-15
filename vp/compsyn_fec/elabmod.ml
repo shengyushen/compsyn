@@ -8,6 +8,7 @@ open Str
 
 open Typedef
 open Misc
+open Intlist
 open Interp
 open Dumpsat
 open Gftype
@@ -197,54 +198,192 @@ begin
 
 	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
-	dbg_print "unfold_bool_netlist finish\n";
 
-	let modname=sprintf "%s_unfold_%d" name unfoldNumber
-	in
-	self#writeUnfoldNetlist "unfold.v" modname;
-	dbg_print "writeUnfoldNetlist finish\n";
+	self#writeUnfoldNetlist "unfold.v" "unfold";
 	
 	(*propagate const*)
 	self#handleInputStepList stepList;
-	dbg_print "handleInputStepList finish\n";
 
 	self#buildSrcSink;
-	dbg_print "buildSrcSink finish\n";
 
  	self#propagateConst stepList; 
-	printf "cellArrayUnfold len %d\n" (Array.length cellArrayUnfold);
-	dbg_print "propagateConst finish \n";
+
+	(* propagate the value to all tn*)
+	self#fillInRealValueOfTN;
+
+	self#writeUnfoldNetlist "propconst.v" "propconst";
+
+	self#buildSrcSink;
 
 	self#removeNotdrivingCells notUsedOutputList ;
 
-	let modname=sprintf "%s_unfold_%d_propconst" name unfoldNumber
-	in
-	self#writeUnfoldPropagatedNetlist "propconst.v" modname;
-	dbg_print "writeUnfoldPropagatedNetlist finish\n";
+	self#writeUnfoldNetlist "noundriven.v" "noundriven";
 end
 
-method isNotUsed tn = begin
-	
+method fillInRealValueOfTN = begin
+	let procFillInRealValueOfTN pos valid = begin
+		if(valid) then 
+		let cell=cellArrayUnfold.(pos)
+		in
+		match cell with
+		(defname,instname,ztnl,atnl,btnl) -> begin
+			let atnl1 = List.map (self#getTNetValue) atnl
+			and btnl1 = List.map (self#getTNetValue) btnl
+			in
+			let newCell = (defname,instname,ztnl,atnl1,btnl1)
+			in
+			cellArrayUnfold.(pos) <- newCell
+		end
+	end
+	in
+	Array.iteri procFillInRealValueOfTN cellArrayUnfoldValid;
+	dbg_print "fillInRealValueOfTN finish\n";
+end
+
+method isOutputStr str = begin
+	if(Hashtbl.mem hashWireName2RangeUnfold str) then
+		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
+		in 
+		match tion with
+		TYPE_CONNECTION_OUT -> true
+		| _ -> false
+	else false
+end
+
+method isInvalid pos = begin
+	if(cellArrayUnfoldValid.(pos)) then
+		false
+	else true
+end
+
+
+method isBackTracable tn = begin
+	match tn with
+	TYPE_NET_ID(_) -> true
+	| TYPE_NET_ARRAYBIT(_,_) -> true
+	| _ -> false
 end
 
 method removeNotdrivingCells notUsedOutputList = begin
-	let todoQ = Queue.create ()
+	(*add not used output list into hash*)
+	let hashNotUsedOutput = Hashtbl.create (List.length notUsedOutputList)
 	in
-	let procAddtodoQ pos valid =begin
-		if(valid) then begin	
-			let cell = cellArrayUnfold.(pos)
-			in 
-			match cell with
-			(_,_,ztnl,atnl,btnl) -> begin
-				if(List.fora_all (self#isNotUsed) ztnl) then begin
-					
+	let isNotUsed tn = begin
+		match tn with
+		TYPE_NET_ID(str) -> begin
+			if(self#isOutputStr str) then begin
+				if(Hashtbl.mem hashNotUsedOutput str) then 
+					true
+				else false
+			end
+			else begin
+				let sinklst = self#findTnetSink tn
+				in
+				List.for_all (self#isInvalid) sinklst
+			end
+		end
+		| TYPE_NET_ARRAYBIT(str,_) -> begin
+			if(self#isOutputStr str) then begin
+				if(Hashtbl.mem hashNotUsedOutput str) then 
+					true
+				else false
+			end
+			else begin
+				let sinklst = self#findTnetSink tn
+				in
+				List.for_all (self#isInvalid) sinklst
+			end
+		end
+		| _ -> true
+	end
+	in
+	let procAddNotUsed str = begin
+		assert (Hashtbl.mem hashWireName2RangeUnfold str);
+		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
+		in
+		match tion with
+		TYPE_CONNECTION_OUT -> 
+			Hashtbl.add hashNotUsedOutput str true
+		| _ -> assert false
+	end
+	in begin
+		List.iter procAddNotUsed notUsedOutputList;
+	
+		let todoQ = Queue.create ()
+		in
+		let procAddtodoQ pos valid  =begin
+			if(valid) then begin	
+				let cell = cellArrayUnfold.(pos)
+				in 
+				match cell with
+				(_,_,ztnl,atnl,btnl) -> begin
+					if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then begin
+						(*not used*)
+						Queue.push  pos todoQ;
+					end
 				end
 			end
 		end
-	end
-	in begin
-		(*first find all cells position that are not driving*)
-		Array.iteri procAddtodoQ cellArrayUnfoldValid;
+		in begin
+			(*first find all cells position that are not driving*)
+			Array.iteri procAddtodoQ cellArrayUnfoldValid;
+	
+			while ((Queue.is_empty todoQ)=false) do 
+				let pos=Queue.pop todoQ
+				in
+				let cell=cellArrayUnfold.(pos)
+				in 
+				match cell with
+				(defname,instname,ztnl,atnl,btnl) -> begin
+					printf "Info : doing %s %s %d " defname instname pos;
+					if(cellArrayUnfoldValid.(pos) && 
+					((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)))
+					then begin
+						printf "removed\n";
+						cellArrayUnfoldValid.(pos) <- false;
+						let abttnl = List.filter (self#isBackTracable) atnl
+						and bbttnl = List.filter (self#isBackTracable) btnl
+						in
+						let procaddtn tn = begin
+							let tnname=getTNname tn
+							in
+							printf "procaddtn %s\n" tnname;
+
+							try 
+								let postn=Hashtbl.find hashTnetSrc tn
+								in
+								if(cellArrayUnfoldValid.(postn)) then 
+									Queue.push  postn todoQ
+								else 
+									assert false
+							with Not_found -> ()
+						end
+						in begin
+							List.iter procaddtn abttnl;
+							List.iter procaddtn bbttnl;
+						end
+					end
+					else 
+						printf "\n";
+				end
+			done;
+	
+			(*check that all cells are used*)
+			let procck pos valid = begin
+				if(valid) then 
+				let cell=cellArrayUnfold.(pos)
+				in
+				match cell with
+				(defname,instname,ztnl,_,_) -> begin
+					if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
+						printf "Error : %s %s %d is not used\n" defname instname pos;
+				end
+			end
+			in
+			Array.iteri procck cellArrayUnfoldValid;
+			
+			dbg_print "removeNotdrivingCells finish\n";
+		end
 	end
 end
 
@@ -281,7 +420,6 @@ method unfold_bool_netlist unfoldNumber= begin
 		(*hold all wires' range and in/out*)
 		hashWireName2RangeUnfold <- Hashtbl.create ((Hashtbl.length hashWireName2Range)*unfoldNumber);
 		self#cellArrayUnfold_init finalCellNum;
-		dbg_print "cellArrayUnfold_init finish\n";
 
 		(*unfold the gates*)
 		for i= 0 to (unfoldNumber-1) do
@@ -301,7 +439,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Stack.iter  procCell cellStack
 		done;
-		dbg_print "cellArrayUnfold_add finished\n";
+		dbg_print "unfold cell finished\n";
 
 		(*unfold the wires*)
 		for i= 0 to (unfoldNumber-1) do
@@ -346,7 +484,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Hashtbl.iter procWire hashWireName2Range
 		done;
-		dbg_print "hashWireName2RangeUnfold finished\n";
+		dbg_print "unfold wire finished\n";
 	end
 
 end
@@ -442,6 +580,7 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 		fprintf flat_c "endmodule\n";
 
 		close_out flat_c;
+		dbg_print "writeUnfoldNetlist finish\n";
 	end
 end
 
@@ -458,6 +597,7 @@ method handleInputStepList stepList = begin
 	end
 	in
 	List.iter procStringInt stepList;
+	dbg_print "handleInputStepList finish\n";
 
 (*
 	Hashtbl.add hashTnetValue (TYPE_NET_CONST(false)) (TYPE_NET_CONST(false));
@@ -516,12 +656,16 @@ end
 method buildSrcSink = begin
 	let finalWireNum = Hashtbl.length hashTnetValue
 	in begin
+		Hashtbl.clear hashTnetSink;
+		Hashtbl.clear hashTnetSrc;
 		hashTnetSink  <- Hashtbl.create finalWireNum;
 		hashTnetSrc   <- Hashtbl.create finalWireNum;
 	end
 	;
 	
-	Array.iteri (self#procTnetSrcSink)  cellArrayUnfoldValid
+	Array.iteri (self#procTnetSrcSink)  cellArrayUnfoldValid;
+
+	dbg_print "buildSrcSink finish\n";
 	
 end
 
@@ -1007,14 +1151,20 @@ method propagateConst stepList= begin
 				List.map (self#procCell) cellList
 			end
 			in
-			List.iter (List.iter (addTodoQ todoname)) lstlst
+			List.iter (List.iter (addTodoQ todoname)) lstlst;
+
+			printf "cellArrayUnfold len %d\n" (Array.length cellArrayUnfold);
+			dbg_print "propagateConst finish \n";
 		done;
 	end
 end
 
 
 (*the only different to writeUnfoldNetlist is 
-use hashTnetValue *)
+useing hashTnetValue to trace transitively to 
+source of Tnet, we only use this in prop const result
+while on the final no undriven netlist we use the simple
+writeUnfoldNetlist*)
 method writeUnfoldPropagatedNetlist   filename currentmodnmae= begin
 	let flat_c = open_out filename
 	in begin

@@ -22,7 +22,7 @@ let debugFlag = bool_of_string (Sys.argv.(6)) ;;
 
 (*parsing stimulation*)
 
-let getSteps i= begin
+let stepList = begin
 	let listLines=getLines stimulationFileName
 	in
 	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
@@ -45,37 +45,32 @@ let getSteps i= begin
 	in
 	List.map procmap noEmptyList
 end
-in
-let stepList=getSteps 1 
-;;
-
 (*not used output list*)
-let getNotUsedOutputList i = begin
+and notUsedOutputList = begin
 	let listLines=getLines notUsedOutputFilename
 	in
 	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
 	in
-	List.filter (fun x -> assert ((length x)<=1); (isEmptyList x)=false) splitedLinesList
+	let lstSingular=List.filter (fun x -> assert ((List.length x)<=1); (isEmptyList x)=false) splitedLinesList
+	in
+	List.map (fun x -> List.hd x) lstSingular
+end
+and objRTL= begin
+	let inputFileChannle = open_in inputFileName
+	in
+	let lexbuf = Lexing.from_channel inputFileChannle
+	in
+	let very_struct = Parser.source_text Very.verilog lexbuf 
+	in begin
+		close_in  inputFileChannle ;
+		new rtl very_struct tempdirname debugFlag
+	end
 end
 in
-let notUsedOutputList=getNotUsedOutputList 1
-;;
-
-
-and inputFileChannle = open_in inputFileName
-in
-let lexbuf = Lexing.from_channel inputFileChannle
-in
-let very_struct = Parser.source_text Very.verilog lexbuf 
-in 
 begin
-	close_in  inputFileChannle ;
-	let objRTL = new rtl very_struct tempdirname debugFlag
-	in begin
-		objRTL#elaborate elabModName ;
-		objRTL#compsyn stepList expNumber notUsedOutputList;
-		exit 0
-	end
+	objRTL#elaborate elabModName ;
+	objRTL#compsyn stepList expNumber notUsedOutputList;
+	exit 0
 end;
 
 
