@@ -199,7 +199,9 @@ begin
 	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
 
-	self#writeUnfoldNetlist "unfold.v" "unfold";
+	let unfoldname=sprintf "%s_unfold" name
+	in
+	self#writeUnfoldNetlist "unfold.v" unfoldname;
 	
 	(*propagate const*)
 	self#handleInputStepList stepList;
@@ -211,13 +213,17 @@ begin
 	(* propagate the value to all tn*)
 	self#fillInRealValueOfTN;
 
-	self#writeUnfoldNetlist "propconst.v" "propconst";
+	let propconstname=sprintf "%s_propconst" name
+	in
+	self#writeUnfoldNetlist "propconst.v" propconstname;
 
 	self#buildSrcSink;
 
 	self#removeNotdrivingCells notUsedOutputList ;
 
-	self#writeUnfoldNetlist "noundriven.v" "noundriven";
+	let noundrivenname=sprintf "%s_noundriven" name
+	in
+	self#writeUnfoldNetlist "noundriven.v" noundrivenname;
 end
 
 method fillInRealValueOfTN = begin
