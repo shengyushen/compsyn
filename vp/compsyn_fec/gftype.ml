@@ -426,6 +426,7 @@ and procPrintCell flat_c mi  = begin
 				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
 			end
 			| ("","",[],[],[]) ->()
+			| ("output","",[],[ztn],[]) -> ()
 			| (modname,instname,_,_,_) -> begin
 				printf "Error : improper %s %s\n" modname instname;
 				flush stdout;

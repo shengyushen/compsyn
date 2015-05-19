@@ -188,7 +188,7 @@ method proc_T_continuous_assign cont_ass = begin
 	| _ -> 
 		assert false
 end
-	
+
 	
 method compsyn stepList unfoldNumber notUsedOutputList = 
 begin
@@ -313,6 +313,19 @@ method removeNotdrivingCells notUsedOutputList = begin
 		| _ -> true
 	end
 	in
+	let isNotUsedCell cell = begin
+		match cell with
+		(defname,_,ztnl,atnl,btnl) -> begin
+			if(defname<>"output") then 
+				if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
+					true
+				else false
+			else if(List.for_all isNotUsed atnl) then 
+				true
+			else false
+		end
+	end
+	in
 	let procAddNotUsed str = begin
 		assert (Hashtbl.mem hashWireName2RangeUnfold str);
 		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
@@ -331,12 +344,9 @@ method removeNotdrivingCells notUsedOutputList = begin
 			if(valid) then begin	
 				let cell = cellArrayUnfold.(pos)
 				in 
-				match cell with
-				(_,_,ztnl,atnl,btnl) -> begin
-					if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then begin
-						(*not used*)
-						Queue.push  pos todoQ;
-					end
+				if(isNotUsedCell cell) then begin
+					(*not used*)
+					Queue.push  pos todoQ;
 				end
 			end
 		end
@@ -352,8 +362,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				match cell with
 				(defname,instname,ztnl,atnl,btnl) -> begin
 					printf "Info : doing %s %s %d " defname instname pos;
-					if(cellArrayUnfoldValid.(pos) && 
-					((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)))
+					if(cellArrayUnfoldValid.(pos) && (isNotUsedCell cell))
 					then begin
 						printf "removed\n";
 						cellArrayUnfoldValid.(pos) <- false;
@@ -398,7 +407,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				in
 				match cell with
 				(defname,instname,ztnl,_,_) -> begin
-					if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
+					if(isNotUsedCell cell) then 
 						printf "Error : %s %s %d is not used\n" defname instname pos;
 				end
 			end
@@ -421,6 +430,14 @@ method cellArrayUnfold_add co = begin
 	cellArrayUnfold.(cellArrayUnfoldPointer) <- co;
 	cellArrayUnfoldValid.(cellArrayUnfoldPointer) <- true;
 	cellArrayUnfoldPointer <- cellArrayUnfoldPointer+1;
+	if(debugFlag) then
+	match co with
+	(defname,instname,ztnl,atnl,btnl) -> 
+		let ztnlname = getTNLname ztnl
+		and atnlname = getTNLname atnl
+		and btnlname = getTNLname btnl
+		in
+		printf "Info : cellArrayUnfold_add %s %s %s %s %s\n" defname instname ztnlname atnlname btnlname
 end
 
 method unfold_bool_netlist unfoldNumber= begin
@@ -432,10 +449,11 @@ method unfold_bool_netlist unfoldNumber= begin
 	
 	(*find out the number of wires*)
 	let numWire = Hashtbl.fold (self#procSumWireNumber) hashWireName2Range 0
+	and numOutput = Hashtbl.fold (self#procSumOutNumber) hashWireName2Range 0
 	and numCell = Stack.length cellStack
 	in
 	let finalWireNum=numWire*unfoldNumber
-	and finalCellNum = numCell*unfoldNumber
+	and finalCellNum = (numCell+numOutput)*unfoldNumber
 	in begin
 		(*construct unfold data structure*)
 		(*hold the value in unfolding*)
@@ -492,8 +510,22 @@ method unfold_bool_netlist unfoldNumber= begin
 					else begin
 						assert ((isQstr str)=false);
 						let newstr=mapname i str
-						in
-						Hashtbl.replace hashWireName2RangeUnfold newstr tionrange
+						in begin
+							Hashtbl.replace hashWireName2RangeUnfold newstr tionrange;
+							(*not only add as wire
+							also add as a term cell*)
+							let tnlist= begin
+								match range with
+								T_range_NOSPEC -> [TYPE_NET_ID(mapname i str)]
+								| T_range_int(l,r) -> 
+									List.map (fun x -> TYPE_NET_ARRAYBIT((mapname i str),x)) (lr2list l r)
+								| _ -> assert false
+							end
+							in
+							let celllst=List.map (fun x -> ("output","",[],[x],[])) tnlist
+							in
+							List.iter (self#cellArrayUnfold_add ) celllst
+						end
 					end
 				end
 				| (TYPE_CONNECTION_NET,range) -> begin
@@ -559,6 +591,23 @@ method procSumWireNumber str tionrange oldnum = begin
 	end
 end
 
+method procSumOutNumber str tionrange oldnum = begin
+	match tionrange with
+	(TYPE_CONNECTION_OUT,range) -> begin
+		match range with
+		T_range_NOSPEC -> 1+oldnum
+		| T_range_int(l,r) -> begin
+			assert (l<>r);
+			assert (l>=0);
+			assert (r>=0);
+			l-r+1+oldnum
+		end
+		| T_range(_,_) ->
+			assert false
+	end
+	| _ -> oldnum
+end
+
 method writeFlatNetlist filename currentmodnmae = begin
 	let flat_c = open_out filename 
 	in begin
@@ -613,6 +662,11 @@ method printWires flat_c = begin
 						if(self#isOutputStr str) then ()
 						else if(self#isInputStr str) then begin
 							printf "Error : driving inputs %s %d\n" str idx;
+							flush stdout;
+							assert false
+						end
+						else if(Hashtbl.mem hashDrivenWires tn) then begin
+							printf "Error : multi-driven wires %s %d\n" str idx;
 							flush stdout;
 							assert false
 						end
@@ -679,7 +733,6 @@ method printWires flat_c = begin
 		end;
 end
 
-(*
 method procPrintOutputAssignment flat_c str tionrange = begin
 	match tionrange with
 	(TYPE_CONNECTION_OUT,range) -> begin
@@ -697,7 +750,9 @@ method procPrintOutputAssignment flat_c str tionrange = begin
 		in
 		let procprt tn = begin
 			if(Hashtbl.mem hashTnetValue tn) then begin
-				let newtn=Hashtbl.find hashTnetValue tn
+				(*mapping in hashTnetValue means original 
+				cell is removed*)
+				let newtn=self#getTNetValue tn
 				in
 				if(newtn<>tn) then
 					let tnname=getTNname tn
@@ -713,7 +768,6 @@ method procPrintOutputAssignment flat_c str tionrange = begin
 	end
 	|_ ->()
 end
-*)
 
 
 method writeUnfoldNetlist   filename currentmodnmae= begin
@@ -739,7 +793,7 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 		Array.iteri procPrintCellUnfold  cellArrayUnfoldValid;
 
 		(*some outputs still have values in hashTnetValue*)
-(* 		Hashtbl.iter (self#procPrintOutputAssignment flat_c) hashWireName2RangeUnfold; *)
+ 		Hashtbl.iter (self#procPrintOutputAssignment flat_c) hashWireName2RangeUnfold; 
 	
 		fprintf flat_c "endmodule\n";
 
@@ -1202,6 +1256,7 @@ method procCell pos = begin
 				end
 			end
 			| ("","",[],[],[]) -> assert false
+			| ("output","",[],[ztn],[]) -> []
 			| (defname,instname,_,_,_) -> begin
 				assert (isGF defname);
 				[]
