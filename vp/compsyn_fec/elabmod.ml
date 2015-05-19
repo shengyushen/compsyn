@@ -256,6 +256,16 @@ method isOutputStr str = begin
 	else false
 end
 
+method isInputStr str = begin
+	if(Hashtbl.mem hashWireName2RangeUnfold str) then
+		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
+		in 
+		match tion with
+		TYPE_CONNECTION_IN -> true
+		| _ -> false
+	else false
+end
+
 method isInvalid pos = begin
 	if(cellArrayUnfoldValid.(pos)) then
 		false
@@ -360,8 +370,15 @@ method removeNotdrivingCells notUsedOutputList = begin
 								in
 								if(cellArrayUnfoldValid.(postn)) then 
 									Queue.push  postn todoQ
-								else 
-									assert false
+								else begin
+									printf "Warning : cell at %d alreay become invalid. if it drive a not used output, then OK " postn;
+									match cellArrayUnfold.(postn) with
+									(defnn,instnn,ztnl,_,_) -> begin
+										let ztnlname = getTNLname ztnl
+										in
+										printf "%s %s %s\n" defnn instnn ztnlname;
+									end
+								end
 							with Not_found -> ()
 						end
 						in begin
@@ -563,6 +580,142 @@ method writeFlatNetlist filename currentmodnmae = begin
 	end
 end
 
+method printWires flat_c = begin
+		let hashDrivenWires=Hashtbl.create (Hashtbl.length hashWireName2RangeUnfold)
+		and wiresNameUsed=Hashtbl.create (Hashtbl.length hashWireName2RangeUnfold)
+		in
+		let procDrivenWires pos valid = begin
+			if(valid) then
+			let cell=cellArrayUnfold.(pos) 
+			in
+			match cell with
+			(_,_,ztnl,_,_) -> begin
+				let procZTN tn =begin
+					match tn with
+					TYPE_NET_ID(str) -> begin
+						Hashtbl.replace wiresNameUsed str true;
+						if(self#isOutputStr str) then ()
+						else if(self#isInputStr str) then begin
+							printf "Error : driving inputs %s\n" str;
+							flush stdout;
+							assert false
+						end
+						else if(Hashtbl.mem hashDrivenWires tn) then begin
+							printf "Error : multi-driven wires %s\n" str;
+							flush stdout;
+							assert false
+						end
+						else 
+							Hashtbl.add hashDrivenWires tn true;
+					end
+					| TYPE_NET_ARRAYBIT(str,idx) -> begin
+						Hashtbl.replace wiresNameUsed str true;
+						if(self#isOutputStr str) then ()
+						else if(self#isInputStr str) then begin
+							printf "Error : driving inputs %s %d\n" str idx;
+							flush stdout;
+							assert false
+						end
+						else 
+							Hashtbl.add hashDrivenWires tn true
+					end
+					| _ ->()
+				end
+				in
+				List.iter procZTN ztnl;
+			end
+		end
+		and procABwires pos valid = begin
+			if(valid) then 
+			let cell=cellArrayUnfold.(pos) 
+			in
+			match cell with
+			(_,_,_,atnl,btnl) -> begin
+				let procABTN tn = begin
+					match tn with
+					TYPE_NET_ID(str) -> begin
+						if(self#isOutputStr str) then ()
+						else if(self#isInputStr str) then ()
+						else if(Hashtbl.mem hashDrivenWires tn) then ()
+						else begin
+							printf "Error : not driven net %s\n" str;
+							flush stdout;
+							assert false
+						end
+					end
+					| TYPE_NET_ARRAYBIT(str,idx) -> begin
+						if(self#isOutputStr str) then ()
+						else if(self#isInputStr str) then ()
+						else if(Hashtbl.mem hashDrivenWires tn) then ()
+						else begin
+							printf "Error : not driven wire %s %d\n" str idx;
+							flush stdout;
+							assert false
+						end
+					end
+					| TYPE_NET_NULL -> begin
+						printf "Error : not driven AB nets\n";
+						flush stdout;
+						assert false
+					end
+					| _ ->()
+				end
+				in begin
+					List.iter procABTN atnl;
+					List.iter procABTN btnl;
+				end
+			end
+		end
+		in
+		let procPrintWire_check flat_c str ionrange = begin
+			if(Hashtbl.mem wiresNameUsed str) then
+				procPrintWire flat_c str ionrange
+		end
+		in begin
+			Array.iteri procDrivenWires cellArrayUnfoldValid;
+			Array.iteri procABwires cellArrayUnfoldValid;
+			
+	 		Hashtbl.iter (procPrintWire_check flat_c) hashWireName2RangeUnfold; 
+		end;
+end
+
+(*
+method procPrintOutputAssignment flat_c str tionrange = begin
+	match tionrange with
+	(TYPE_CONNECTION_OUT,range) -> begin
+		let tnlst = begin
+			match range with
+			T_range_int(l,r) -> begin
+				let lst= lr2list l r 
+				in
+				List.map (fun x -> TYPE_NET_ARRAYBIT(str,x)) lst
+			end
+			| T_range_NOSPEC -> 
+				[TYPE_NET_ID(str) ]
+			| _ -> assert false
+		end
+		in
+		let procprt tn = begin
+			if(Hashtbl.mem hashTnetValue tn) then begin
+				let newtn=Hashtbl.find hashTnetValue tn
+				in
+				if(newtn<>tn) then
+					let tnname=getTNname tn
+					and newtname=getTNname newtn 
+					in begin
+						fprintf flat_c "  assign %s = %s ;//direct output\n" tnname newtname;
+						printf "Warning : additional output assignments %s %s\n" tnname newtname;
+					end
+			end
+		end
+		in
+		List.iter procprt tnlst
+	end
+	|_ ->()
+end
+*)
+
+
 method writeUnfoldNetlist   filename currentmodnmae= begin
 	let flat_c = open_out filename
 	in begin
@@ -573,8 +726,10 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 		Hashtbl.iter (procPrintInput flat_c) hashWireName2RangeUnfold; 
 	
 		fprintf flat_c "input xx);\n";
-	
-		Hashtbl.iter (procPrintWire flat_c) hashWireName2RangeUnfold;
+
+		(*checking whether each AB wire used is 
+		actually driven by Z pin*)
+		self#printWires flat_c;
 	
 		let procPrintCellUnfold pos valid = begin
 			if(valid) then 
@@ -582,6 +737,9 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 		end
 		in
 		Array.iteri procPrintCellUnfold  cellArrayUnfoldValid;
+
+		(*some outputs still have values in hashTnetValue*)
+(* 		Hashtbl.iter (self#procPrintOutputAssignment flat_c) hashWireName2RangeUnfold; *)
 	
 		fprintf flat_c "endmodule\n";
 
