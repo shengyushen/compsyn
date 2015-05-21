@@ -69,6 +69,7 @@ end
 in
 begin
 	objRTL#elaborate elabModName ;
+	List.iter (Printf.printf "notused %s\n") notUsedOutputList ;
 	objRTL#compsyn stepList expNumber notUsedOutputList;
 	exit 0
 end;

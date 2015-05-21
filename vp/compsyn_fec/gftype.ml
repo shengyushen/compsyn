@@ -18,6 +18,12 @@ let rec getTNname tn = begin
 	| TYPE_NET_CONST(true)  -> "1'b1"
 	| TYPE_NET_NULL -> ""
 end
+and  getTNStr tn = begin
+	match tn with
+	TYPE_NET_ID(str) -> str
+	| TYPE_NET_ARRAYBIT(str,_) -> str
+	| _ -> ""
+end
 and getTNLname tnl = begin
 	let nl=List.map getTNname tnl
 	in
@@ -426,7 +432,7 @@ and procPrintCell flat_c mi  = begin
 				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
 			end
 			| ("","",[],[],[]) ->()
-			| ("output","",[],[ztn],[]) -> ()
+			| ("output","",_,[ztn],[]) -> ()
 			| (modname,instname,_,_,_) -> begin
 				printf "Error : improper %s %s\n" modname instname;
 				flush stdout;

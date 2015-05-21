@@ -38,6 +38,7 @@ val mutable hashTnetSrc  : (type_net,int ) Hashtbl.t = Hashtbl.create 1
 val mutable cellArrayUnfold = Array.create 1 ("","",[],[],[])
 val mutable cellArrayUnfoldValid = Array.create 1 false
 val mutable cellArrayUnfoldPointer =0
+val mutable hashNotUsedOutput : (string,bool ) Hashtbl.t= Hashtbl.create 1
 	(*hold all wires' range and in/out*)
 
 
@@ -192,6 +193,8 @@ end
 	
 method compsyn stepList unfoldNumber notUsedOutputList = 
 begin
+
+
 	set_current_time;
 	(*first construct the data structure with bool only*)
 	self#writeFlatNetlist "flat.v" name;
@@ -199,9 +202,23 @@ begin
 	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
 
+	hashNotUsedOutput <- Hashtbl.create (List.length notUsedOutputList);
+	let procAddNotUsed str = begin
+		printf "procAddNotUsed %s\n" str;
+		assert (Hashtbl.mem hashWireName2RangeUnfold str);
+		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
+		in
+		match tion with
+		TYPE_CONNECTION_OUT -> 
+			Hashtbl.add hashNotUsedOutput str true
+		| _ -> assert false
+	end
+	in
+	List.iter procAddNotUsed notUsedOutputList;
+
 	let unfoldname=sprintf "%s_unfold" name
 	in
-	self#writeUnfoldNetlist "unfold.v" unfoldname;
+	self#writeUnfoldNetlist "unfold.v" unfoldname ;
 	
 	(*propagate const*)
 	self#handleInputStepList stepList;
@@ -215,7 +232,7 @@ begin
 
 	let propconstname=sprintf "%s_propconst" name
 	in
-	self#writeUnfoldNetlist "propconst.v" propconstname;
+	self#writeUnfoldNetlist "propconst.v" propconstname ;
 
 	self#buildSrcSink;
 
@@ -223,7 +240,7 @@ begin
 
 	let noundrivenname=sprintf "%s_noundriven" name
 	in
-	self#writeUnfoldNetlist "noundriven.v" noundrivenname;
+	self#writeUnfoldNetlist "noundriven.v" noundrivenname ;
 end
 
 method fillInRealValueOfTN = begin
@@ -267,9 +284,22 @@ method isInputStr str = begin
 end
 
 method isInvalid pos = begin
-	if(cellArrayUnfoldValid.(pos)) then
+	if(debugFlag) then begin
+		printf "isInvalid %d\n" pos;
+	end;
+
+	if(cellArrayUnfoldValid.(pos)) then begin
+		if(debugFlag) then begin
+			printf "false\n";
+		end;
 		false
-	else true
+	end
+	else begin
+		if(debugFlag) then begin
+			printf "true\n";
+		end;
+		true
+	end
 end
 
 
@@ -282,17 +312,25 @@ end
 
 method removeNotdrivingCells notUsedOutputList = begin
 	(*add not used output list into hash*)
-	let hashNotUsedOutput = Hashtbl.create (List.length notUsedOutputList)
-	in
 	let isNotUsed tn = begin
+		if(debugFlag) then begin
+			printf "isNotUsed : %s\n" (getTNname tn);
+		end;
 		match tn with
 		TYPE_NET_ID(str) -> begin
 			if(self#isOutputStr str) then begin
-				if(Hashtbl.mem hashNotUsedOutput str) then 
+				if(Hashtbl.mem hashNotUsedOutput str) then begin
+					if(debugFlag) then begin
+						printf "not used\n";
+					end;
 					true
+				end
 				else false
 			end
 			else begin
+				if(debugFlag) then begin
+					printf "trying all\n";
+				end;
 				let sinklst = self#findTnetSink tn
 				in
 				List.for_all (self#isInvalid) sinklst
@@ -300,11 +338,19 @@ method removeNotdrivingCells notUsedOutputList = begin
 		end
 		| TYPE_NET_ARRAYBIT(str,_) -> begin
 			if(self#isOutputStr str) then begin
-				if(Hashtbl.mem hashNotUsedOutput str) then 
+				if(Hashtbl.mem hashNotUsedOutput str) then begin
+					if(debugFlag) then begin
+						printf "not used\n";
+					end;
 					true
+				end
 				else false
 			end
 			else begin
+				if(debugFlag) then begin
+					printf "trying all\n";
+				end;
+
 				let sinklst = self#findTnetSink tn
 				in
 				List.for_all (self#isInvalid) sinklst
@@ -315,28 +361,73 @@ method removeNotdrivingCells notUsedOutputList = begin
 	in
 	let isNotUsedCell cell = begin
 		match cell with
-		(defname,_,ztnl,atnl,btnl) -> begin
-			if(defname<>"output") then 
-				if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
+		(defname,instname,ztnl,atnl,btnl) -> begin
+			printf "isNotUsedCell : %s %s\n" defname instname;
+			if(defname="output") then 
+				if(List.for_all isNotUsed ztnl) then 
 					true
 				else false
-			else if(List.for_all isNotUsed atnl) then 
-				true
-			else false
+			else if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
+					true
+			else begin
+				printf "non output used\n";
+				false
+			end
 		end
 	end
 	in
-	let procAddNotUsed str = begin
-		assert (Hashtbl.mem hashWireName2RangeUnfold str);
-		let (tion,_)=Hashtbl.find hashWireName2RangeUnfold str
+	let markUnusedOutputCell pos valid = begin
+		if(debugFlag) then begin
+			match (cellArrayUnfold.(pos)) with
+			("output",_,_,atnl,_)  -> begin
+				printf "working on %s pos %d\n" (getTNLname atnl) pos;
+			end
+			| _ -> ()
+		end;
+
+		if(valid=false)  then begin
+			printf "invalid\n";
+		end
+		else
+		let cell=cellArrayUnfold.(pos)
 		in
-		match tion with
-		TYPE_CONNECTION_OUT -> 
-			Hashtbl.add hashNotUsedOutput str true
-		| _ -> assert false
+		match cell with
+		("output",_,_,atnl,_) -> begin
+			match atnl with
+			[TYPE_NET_ID(str)] -> begin
+				if(Hashtbl.mem hashNotUsedOutput str) then begin
+					if(debugFlag) then begin
+						printf "markUnusedOutputCell false %s pos %d\n" str pos;
+					end;
+					cellArrayUnfoldValid.(pos) <- false;
+				end
+				else begin
+					printf "not in\n";
+				end
+			end
+			| [TYPE_NET_ARRAYBIT(str,idx)] -> begin
+				if(Hashtbl.mem hashNotUsedOutput str) then begin
+					if(debugFlag) then begin
+						printf "markUnusedOutputCell false %s %d pos %d\n" str idx pos;
+					end;
+					cellArrayUnfoldValid.(pos) <- false;
+				end
+				else begin
+					printf "not in\n";
+				end
+			end 
+			| [TYPE_NET_NULL] -> assert false
+			| [TYPE_NET_CONST(_)] -> begin
+				printf "empty\n";
+			end
+			| _ -> assert false
+		end
+		| _ -> begin
+			printf "other\n"
+		end
 	end
 	in begin
-		List.iter procAddNotUsed notUsedOutputList;
+		Array.iteri markUnusedOutputCell cellArrayUnfoldValid;
 	
 		let todoQ = Queue.create ()
 		in
@@ -522,7 +613,7 @@ method unfold_bool_netlist unfoldNumber= begin
 								| _ -> assert false
 							end
 							in
-							let celllst=List.map (fun x -> ("output","",[],[x],[])) tnlist
+							let celllst=List.map (fun x -> ("output","",[x],[x],[])) tnlist
 							in
 							List.iter (self#cellArrayUnfold_add ) celllst
 						end
@@ -749,7 +840,10 @@ method procPrintOutputAssignment flat_c str tionrange = begin
 		end
 		in
 		let procprt tn = begin
-			if(Hashtbl.mem hashTnetValue tn) then begin
+			let tnstr=getTNStr tn
+			in
+			if((Hashtbl.mem hashTnetValue tn) && (Hashtbl.mem hashNotUsedOutput tnstr)=false) then begin
+				assert (tnstr<>"");
 				(*mapping in hashTnetValue means original 
 				cell is removed*)
 				let newtn=self#getTNetValue tn
@@ -770,7 +864,7 @@ method procPrintOutputAssignment flat_c str tionrange = begin
 end
 
 
-method writeUnfoldNetlist   filename currentmodnmae= begin
+method writeUnfoldNetlist   filename currentmodnmae  = begin
 	let flat_c = open_out filename
 	in begin
 		fprintf flat_c "module %s (\n" currentmodnmae;
@@ -793,7 +887,7 @@ method writeUnfoldNetlist   filename currentmodnmae= begin
 		Array.iteri procPrintCellUnfold  cellArrayUnfoldValid;
 
 		(*some outputs still have values in hashTnetValue*)
- 		Hashtbl.iter (self#procPrintOutputAssignment flat_c) hashWireName2RangeUnfold; 
+ 		Hashtbl.iter (self#procPrintOutputAssignment flat_c ) hashWireName2RangeUnfold; 
 	
 		fprintf flat_c "endmodule\n";
 
@@ -862,7 +956,10 @@ method procTnetSrcSink pos valid = begin
 		end
 		in
 		match cell with
-		(_,_,ztnl,atnl,btnl) -> begin
+		("output",_,_,atnl,_) -> begin
+			List.iter procsink atnl;
+		end
+		| (_,_,ztnl,atnl,btnl) -> begin
 			List.iter procsrc  ztnl;
 			List.iter procsink atnl;
 			List.iter procsink btnl;
@@ -1256,7 +1353,7 @@ method procCell pos = begin
 				end
 			end
 			| ("","",[],[],[]) -> assert false
-			| ("output","",[],[ztn],[]) -> []
+			| ("output",_,_,_,_) -> []
 			| (defname,instname,_,_,_) -> begin
 				assert (isGF defname);
 				[]
