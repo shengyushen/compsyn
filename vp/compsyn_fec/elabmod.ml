@@ -1481,26 +1481,6 @@ useing hashTnetValue to trace transitively to
 source of Tnet, we only use this in prop const result
 while on the final no undriven netlist we use the simple
 writeUnfoldNetlist*)
-method writeUnfoldPropagatedNetlist   filename currentmodnmae= begin
-	let flat_c = open_out filename
-	in begin
-		fprintf flat_c "module %s (\n" currentmodnmae;
-		(*print list of input and outputs*)
-		Hashtbl.iter (procPrintOutput flat_c) hashWireName2RangeUnfold;
-	
-		Hashtbl.iter (procPrintInput flat_c) hashWireName2RangeUnfold; 
-	
-		fprintf flat_c "input xx);\n";
-	
-		Hashtbl.iter (procPrintWire flat_c) hashWireName2RangeUnfold;
-	
-		Array.iteri (self#procPrintCellPropConst flat_c) cellArrayUnfoldValid;
-	
-		fprintf flat_c "endmodule\n";
-
-		close_out flat_c;
-	end
-end
 
 method getTNnamePropConst tn =begin
 	let newtn=self#getTNetValue tn
@@ -1521,91 +1501,4 @@ method getTNLnamePropconst tnl = begin
 	sprintf "{%s}" x
 end
 
-method procPrintCellPropConst flat_c pos valid   = begin
-	if(valid) then begin
-		let mi=cellArrayUnfold.(pos)
-		in
-		match mi with
-		("AN2",instname,[ztn],[atn],[btn]) -> begin
-			(*z should always be original name*)
-			let zname=getTNname ztn
-			and aname=self#getTNnamePropConst atn
-			and bname=self#getTNnamePropConst btn
-			in
-			fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
-		end
-		| ("OR2",instname,[ztn],[atn],[btn]) -> begin
-			let zname=getTNname ztn
-			and aname=self#getTNnamePropConst atn
-			and bname=self#getTNnamePropConst btn
-			in
-			fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
-		end
-		| ("EO",instname,[ztn],[atn],[btn]) -> begin
-			let zname=getTNname ztn
-			and aname=self#getTNnamePropConst atn
-			and bname=self#getTNnamePropConst btn
-			in
-			fprintf flat_c "  EO %s (.Z(%s),.A(%s),.B(%s));//%d\n" instname zname aname bname pos
-		end
-		| ("IV",instname,[ztn],[atn],[]) -> begin
-			let zname=getTNname ztn
-			and aname=self#getTNnamePropConst atn
-			in
-			fprintf flat_c "  IV %s (.Z(%s),.A(%s));//%d\n" instname zname aname pos
-		end
-		| ("BUF",instname,[ztn],[atn],[]) -> begin
-			let zname=getTNname ztn
-			and aname=self#getTNnamePropConst atn
-			in
-			fprintf flat_c "  assign %s = %s;\n"  zname aname 
-		end
-		| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			and bl=self#getTNLnamePropconst btnl
-			in 
-			fprintf flat_c "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-		end
-		| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			and bl=self#getTNLnamePropconst btnl
-			in 
-			fprintf flat_c "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-		end
-		| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			and bl=self#getTNLnamePropconst btnl
-			in 
-			fprintf flat_c "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-		end
-		| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			and bl=self#getTNLnamePropconst btnl
-			in 
-			fprintf flat_c "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
-		end
-		| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			in 
-			fprintf flat_c "  tower2flat %s (.Z(%s),.A(%s));\n" instname zl al
-		end
-		| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
-			let zl=getTNLname ztnl
-			and al=self#getTNLnamePropconst atnl
-			in 
-			fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
-		end
-		| ("","",[],[],[]) -> assert false
-		| (modname,instname,_,_,_) -> begin
-			printf "Error : procPrintCellPropConst improper %s %s\n" modname instname;
-			flush stdout;
-			assert false
-		end
-	end
-end
 end

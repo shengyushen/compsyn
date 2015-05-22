@@ -52,6 +52,7 @@ and isGF defname = begin
 	defname="gfdiv_mod" ||
 	defname="gfmult_flat_mod" ||
 	defname="gfmult_mod" ||
+	defname="is_zero_mod" ||
 	defname="tower2flat" ||
 	defname="flat2tower"
 	) then 

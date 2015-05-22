@@ -184,6 +184,7 @@ and is1OpGF modname = begin
 	match modname with
 	"tower2flat" -> true
 	| "flat2tower" -> true
+	| "is_zero_mod" -> true
 	| _ -> false
 end
 and isQ tnet = begin
@@ -430,6 +431,12 @@ and procPrintCell flat_c mi  = begin
 				and al=getTNLname atnl
 				in 
 				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
+			end
+			| ("is_zero_mod",instname,ztnl,atnl,[]) -> begin	
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				in 
+				fprintf flat_c "  is_zero_mod %s (.Z(%s),.A(%s));\n" instname zl al
 			end
 			| ("","",[],[],[]) ->()
 			| ("output","",_,[ztn],[]) -> ()
