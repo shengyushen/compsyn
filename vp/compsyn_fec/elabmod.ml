@@ -1038,6 +1038,8 @@ method setTNetValue tn1 tn2 = begin
 end
 
 method procCell pos = begin
+	if(pos>=cellArrayUnfoldPointer) then []
+	else
 	let cell=cellArrayUnfold.(pos)
 	in begin
 		if(cellArrayUnfoldValid.(pos)) then begin
@@ -1114,8 +1116,11 @@ method procCell pos = begin
 				end
 				else begin
 					printf "Info : nothing to do\n";
+					[]
+(*
 					flush stdout;
 					assert false
+*)
 				end
 			end
 			| ("OR2",instname,[ztn],[atn],[btn],_) -> begin
@@ -1177,8 +1182,11 @@ method procCell pos = begin
 				end
 				else begin
 					printf "Info : nothing to do\n";
+					[]
+(*
 					flush stdout;
 					assert false
+*)
 				end
 			end
 			| ("EO",instname,[ztn],[atn],[btn],_) -> begin
@@ -1282,8 +1290,11 @@ method procCell pos = begin
 				end
 				else begin
 					printf "Info : nothing to do\n";
+					[]
+(*
 					flush stdout;
 					assert false
+*)
 				end
 			end
 			| ("IV",instname,[ztn],[atn],[],_) -> begin
@@ -1325,8 +1336,11 @@ method procCell pos = begin
 				end
 				else begin
 					printf "Info : nothing to do\n";
+					[]
+(*
 					flush stdout;
 					assert false
+*)
 				end
 			end
 			| ("BUF",instname,[ztn],[atn],[],_) -> begin
@@ -1356,8 +1370,11 @@ method procCell pos = begin
 					end
 					else  begin
 					printf "Info : nothing to do\n";
+					[]
+(*
 					flush stdout;
 					assert false
+*)
 					end
 				end
 			end
@@ -1382,20 +1399,95 @@ method procCell pos = begin
 			end
 			| ("gfmux_mod",instname,ztnl,atnl,btnl,[stn]) -> begin
 				let stn1=self#getTNetValue stn
+				and atnl1=List.map (self#getTNetValue ) atnl
+				and btnl1=List.map (self#getTNetValue ) btnl
 				in
 				if(stn1=(TYPE_NET_CONST(true))) then begin
 					cellArrayUnfoldValid.(pos) <- false;
-					let combnl=List.combine ztnl atnl
+					let combnl=List.combine ztnl atnl1
 					in
-					List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
-					ztnl
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
 				end
 				else if(stn1=(TYPE_NET_CONST(false))) then begin
 					cellArrayUnfoldValid.(pos) <- false;
-					let combnl = List.combine ztnl btnl
+					let combnl = List.combine ztnl btnl1
 					in
-					List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
+				end
+				else if(atnl1=btnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl=List.combine ztnl atnl1
+					in
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
+				end
+				else []
+			end
+			| ("gfadd_mod",instname,ztnl,atnl,btnl,_) -> begin
+				let atnl1=List.map (self#getTNetValue ) atnl
+				and btnl1=List.map (self#getTNetValue ) btnl
+				in
+				if(isGFZero atnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl = List.combine ztnl btnl1
+					in
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
+				end
+				else if(isGFZero btnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl = List.combine ztnl atnl1
+					in
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
+				end
+				else []
+			end
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,_) -> begin
+				let atnl1=List.map (self#getTNetValue ) atnl
+				and btnl1=List.map (self#getTNetValue ) btnl
+				in
+				if((isGFZero atnl1) || (isGFZero btnl1)) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					List.iter (fun x -> self#setTNetValue x (TYPE_NET_CONST(false))) ztnl;
 					ztnl
+				end
+				else if(isGFOne atnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl = List.combine ztnl btnl1
+					in
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
+				end
+				else if(isGFOne btnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl = List.combine ztnl atnl1
+					in
+					let constnl=List.filter (fun x -> match x with (_,TYPE_NET_CONST(_)) -> true | _ -> false) combnl
+					in begin
+						List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+						List.map fst constnl
+					end
 				end
 				else []
 			end
@@ -1435,9 +1527,18 @@ method procCell pos = begin
 					[]
 				end
 			end
+			| ("",instname,_,_,_,_) -> begin
+				printf "Error : empty def %s\n" instname;
+				flush stdout;
+				assert false
+			end
 			| (defname,_,ztnl,_,_,_) -> begin
 				(*gf mod dont need to prop*)
-				assert (isGF defname);
+				if ((isGF defname)=false) then begin
+					printf "Error : non GF %s\n" defname;
+					flush stdout;
+					assert false
+				end;
 				[]
 			end
 		end
@@ -1479,6 +1580,14 @@ method propagateConst stepList= begin
 		end
 		in
 		List.iter procStep stepList;
+
+		let procCelli pos valid = begin
+			let newztnl=self#procCell pos
+			in
+			List.iter (addTodoQ "inithaha2" ) newztnl
+		end
+		in
+		Array.iteri procCelli cellArrayUnfoldValid;
 
 		while ((Queue.is_empty todoQ)=false) do
 			if(debugFlag) then begin

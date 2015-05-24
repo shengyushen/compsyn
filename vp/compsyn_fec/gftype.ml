@@ -504,3 +504,6 @@ end
 and isNotGFZero tnl =begin
 	List.exists (fun tn -> tn=(TYPE_NET_CONST(true))) tnl
 end
+and isGFOne tnl =begin
+	tnl=[TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(false);TYPE_NET_CONST(true)]
+end
