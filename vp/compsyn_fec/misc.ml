@@ -46,16 +46,3 @@ and int2bool i = begin
 	|1 -> true
 	|_ -> assert false
 end
-and isGF defname = begin
-	if(
-	defname="gfadd_mod" ||
-	defname="gfdiv_mod" ||
-	defname="gfmult_flat_mod" ||
-	defname="gfmult_mod" ||
-	defname="is_zero_mod" ||
-	defname="tower2flat" ||
-	defname="flat2tower"
-	) then 
-		true
-	else false
-end

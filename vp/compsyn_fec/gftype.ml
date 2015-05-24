@@ -187,6 +187,20 @@ and is1OpGF modname = begin
 	| "is_zero_mod" -> true
 	| _ -> false
 end
+and isGF defname = begin
+	if(
+	defname="gfadd_mod" ||
+	defname="gfdiv_mod" ||
+	defname="gfmult_flat_mod" ||
+	defname="gfmult_mod" ||
+	defname="is_zero_mod" ||
+	defname="tower2flat" ||
+	defname="flat2tower" ||
+	defname="gfmux_mod"
+	) then 
+		true
+	else false
+end
 and isQ tnet = begin
 	match tnet with
 	TYPE_NET_ID(str) -> isQstr str
@@ -359,88 +373,96 @@ and lv2tn lv = begin
 end
 and procPrintCell flat_c mi  = begin
 			match mi with
-			("AN2",instname,[ztn],[atn],[btn]) -> begin
+			("AN2",instname,[ztn],[atn],[btn],_) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				and bname=getTNname btn
 				in
 				fprintf flat_c "  AN2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
 			end
-			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
+			| ("OR2",instname,[ztn],[atn],[btn],_) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				and bname=getTNname btn
 				in
 				fprintf flat_c "  OR2 %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
 			end
-			| ("EO",instname,[ztn],[atn],[btn]) -> begin
+			| ("EO",instname,[ztn],[atn],[btn],_) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				and bname=getTNname btn
 				in
 				fprintf flat_c "  EO %s (.Z(%s),.A(%s),.B(%s));\n" instname zname aname bname
 			end
-			| ("IV",instname,[ztn],[atn],[]) -> begin
+			| ("IV",instname,[ztn],[atn],[],_) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				in
 				fprintf flat_c "  IV %s (.Z(%s),.A(%s));\n" instname zname aname 
 			end
-			| ("BUF",instname,[ztn],[atn],[]) -> begin
+			| ("BUF",instname,[ztn],[atn],[],_) -> begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				in
 				fprintf flat_c "  assign %s = %s;\n"  zname aname 
 			end
-			| ("gfadd_mod",instname,ztnl,atnl,btnl) -> begin
+			| ("gfadd_mod",instname,ztnl,atnl,btnl,_) -> begin
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				and bl=getTNLname btnl
 				in 
 				fprintf flat_c "  gfadd_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
 			end
-			| ("gfmult_mod",instname,ztnl,atnl,btnl) -> begin	
+			| ("gfmult_mod",instname,ztnl,atnl,btnl,_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				and bl=getTNLname btnl
 				in 
 				fprintf flat_c "  gfmult_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
 			end
-			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl) -> begin	
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				and bl=getTNLname btnl
 				in 
 				fprintf flat_c "  gfmult_flat_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
 			end
-			| ("gfdiv_mod",instname,ztnl,atnl,btnl) -> begin	
+			| ("gfdiv_mod",instname,ztnl,atnl,btnl,_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				and bl=getTNLname btnl
 				in 
 				fprintf flat_c "  gfdiv_mod %s (.Z(%s),.A(%s),.B(%s));\n" instname zl al bl
 			end
-			| ("tower2flat",instname,ztnl,atnl,[]) -> begin	
+			| ("tower2flat",instname,ztnl,atnl,[],_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				in 
 				fprintf flat_c "  tower2flat %s (.Z(%s),.A(%s));\n" instname zl al
 			end
-			| ("flat2tower",instname,ztnl,atnl,[]) -> begin	
+			| ("flat2tower",instname,ztnl,atnl,[],_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				in 
 				fprintf flat_c "  flat2tower %s (.Z(%s),.A(%s));\n" instname zl al
 			end
-			| ("is_zero_mod",instname,ztnl,atnl,[]) -> begin	
+			| ("is_zero_mod",instname,ztnl,atnl,[],_) -> begin	
 				let zl=getTNLname ztnl
 				and al=getTNLname atnl
 				in 
 				fprintf flat_c "  is_zero_mod %s (.Z(%s),.A(%s));\n" instname zl al
 			end
-			| ("","",[],[],[]) ->()
-			| ("output","",_,[ztn],[]) -> ()
-			| (modname,instname,_,_,_) -> begin
+			| ("gfmux_mod",instname,ztnl,atnl,btnl,stnl) -> begin
+				let zl=getTNLname ztnl
+				and al=getTNLname atnl
+				and bl=getTNLname btnl
+				and sl=getTNLname stnl
+				in
+				fprintf flat_c "  gfmux_mod %s (.Z(%s),.A(%s),.B(%s),.S(%s));\n" instname zl al bl sl;
+			end
+			| ("","",[],[],[],[]) -> assert false
+			| ("output","",_,[ztn],[],[]) -> ()
+			| (modname,instname,_,_,_,_) -> begin
 				printf "Error : improper %s %s\n" modname instname;
 				flush stdout;
 				assert false
@@ -466,7 +488,7 @@ and procPrintOutput flat_c str ionrange  = begin
 				assert false
 			| _ -> ()
 end
-let procPrintInput flat_c str ionrange = begin
+and procPrintInput flat_c str ionrange = begin
 			match ionrange with
 			(TYPE_CONNECTION_IN,T_range_NOSPEC) -> 
 				fprintf flat_c "  input %s,\n" str
@@ -476,4 +498,9 @@ let procPrintInput flat_c str ionrange = begin
 				assert false
 			| _ -> ()
 end
-
+and isGFZero tnl = begin
+	List.for_all (fun tn -> tn=(TYPE_NET_CONST(false))) tnl
+end
+and isNotGFZero tnl =begin
+	List.exists (fun tn -> tn=(TYPE_NET_CONST(true))) tnl
+end

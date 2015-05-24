@@ -23,7 +23,7 @@ val mutable portlist = []
 val mutable tempdirname = ""
 
 (*  *)
-val mutable cellStack : (string*string*(type_net list)*(type_net list)*(type_net list)) Stack.t= Stack.create ()
+val mutable cellStack : (string*string*(type_net list)*(type_net list)*(type_net list)*(type_net list)) Stack.t= Stack.create ()
 (*using range because some wire dont have range,
 so I need T_range_NOSPEC*)
 val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
@@ -35,7 +35,7 @@ val mutable hashWireName2RangeUnfold : (string,(type_ion*range))  Hashtbl.t= Has
 val mutable hashTnetValue : (type_net,type_net) Hashtbl.t = Hashtbl.create 1
 val mutable hashTnetSink : (type_net,int ) Hashtbl.t = Hashtbl.create 1
 val mutable hashTnetSrc  : (type_net,int ) Hashtbl.t = Hashtbl.create 1
-val mutable cellArrayUnfold = Array.create 1 ("","",[],[],[])
+val mutable cellArrayUnfold = Array.create 1 ("","",[],[],[],[])
 val mutable cellArrayUnfoldValid = Array.create 1 false
 val mutable cellArrayUnfoldPointer =0
 val mutable hashNotUsedOutput : (string,bool ) Hashtbl.t= Hashtbl.create 1
@@ -152,8 +152,9 @@ method proc_T_module_instantiation defname milst = begin
 			let ztnl=self#getX "Z" npclst
 			and atnl=self#getX "A" npclst
 			and btnl=self#getX "B" npclst
+			and stnl=self#getX "S" npclst
 			in
-			let newmi=(defname,instname,ztnl,atnl,btnl)
+			let newmi=(defname,instname,ztnl,atnl,btnl,stnl)
 			in
 			Stack.push  newmi cellStack
 		end
@@ -182,7 +183,7 @@ method proc_T_continuous_assign cont_ass = begin
 		in
 		let tnrexplst=exp2tnlst exp
 		in
-		let newmi=("BUF","",[tnlv],tnrexplst,[])
+		let newmi=("BUF","",[tnlv],tnrexplst,[],[])
 		in
 		Stack.push  newmi cellStack
 	end
@@ -249,11 +250,12 @@ method fillInRealValueOfTN = begin
 		let cell=cellArrayUnfold.(pos)
 		in
 		match cell with
-		(defname,instname,ztnl,atnl,btnl) -> begin
+		(defname,instname,ztnl,atnl,btnl,stnl) -> begin
 			let atnl1 = List.map (self#getTNetValue) atnl
 			and btnl1 = List.map (self#getTNetValue) btnl
+			and stnl1 = List.map (self#getTNetValue) stnl
 			in
-			let newCell = (defname,instname,ztnl,atnl1,btnl1)
+			let newCell = (defname,instname,ztnl,atnl1,btnl1,stnl1)
 			in
 			cellArrayUnfold.(pos) <- newCell
 		end
@@ -361,7 +363,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 	in
 	let isNotUsedCell cell = begin
 		match cell with
-		(defname,instname,ztnl,atnl,btnl) -> begin
+		(defname,instname,ztnl,atnl,btnl,stnl) -> begin
 			printf "isNotUsedCell : %s %s\n" defname instname;
 			if(defname="output") then 
 				if(List.for_all isNotUsed ztnl) then 
@@ -379,7 +381,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 	let markUnusedOutputCell pos valid = begin
 		if(debugFlag) then begin
 			match (cellArrayUnfold.(pos)) with
-			("output",_,_,atnl,_)  -> begin
+			("output",_,_,atnl,_,_)  -> begin
 				printf "working on %s pos %d\n" (getTNLname atnl) pos;
 			end
 			| _ -> ()
@@ -392,7 +394,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 		let cell=cellArrayUnfold.(pos)
 		in
 		match cell with
-		("output",_,_,atnl,_) -> begin
+		("output",_,_,atnl,_,_) -> begin
 			match atnl with
 			[TYPE_NET_ID(str)] -> begin
 				if(Hashtbl.mem hashNotUsedOutput str) then begin
@@ -451,7 +453,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				let cell=cellArrayUnfold.(pos)
 				in 
 				match cell with
-				(defname,instname,ztnl,atnl,btnl) -> begin
+				(defname,instname,ztnl,atnl,btnl,stnl) -> begin
 					printf "Info : doing %s %s %d " defname instname pos;
 					if(cellArrayUnfoldValid.(pos) && (isNotUsedCell cell))
 					then begin
@@ -459,6 +461,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 						cellArrayUnfoldValid.(pos) <- false;
 						let abttnl = List.filter (self#isBackTracable) atnl
 						and bbttnl = List.filter (self#isBackTracable) btnl
+						and sbttnl = List.filter (self#isBackTracable) stnl
 						in
 						let procaddtn tn = begin
 							let tnname=getTNname tn
@@ -473,7 +476,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 								else begin
 									printf "Warning : cell at %d alreay become invalid. if it drive a not used output, then OK " postn;
 									match cellArrayUnfold.(postn) with
-									(defnn,instnn,ztnl,_,_) -> begin
+									(defnn,instnn,ztnl,_,_,_) -> begin
 										let ztnlname = getTNLname ztnl
 										in
 										printf "%s %s %s\n" defnn instnn ztnlname;
@@ -484,6 +487,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 						in begin
 							List.iter procaddtn abttnl;
 							List.iter procaddtn bbttnl;
+							List.iter procaddtn sbttnl;
 						end
 					end
 					else 
@@ -497,7 +501,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				let cell=cellArrayUnfold.(pos)
 				in
 				match cell with
-				(defname,instname,ztnl,_,_) -> begin
+				(defname,instname,ztnl,_,_,_) -> begin
 					if(isNotUsedCell cell) then 
 						printf "Error : %s %s %d is not used\n" defname instname pos;
 				end
@@ -511,7 +515,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 end
 
 method cellArrayUnfold_init sz = begin
-	cellArrayUnfold <- Array.create sz ("","",[],[],[]);
+	cellArrayUnfold <- Array.create sz ("","",[],[],[],[]);
 	cellArrayUnfoldValid <- Array.create sz false;
 	cellArrayUnfoldPointer <- 0;
 end
@@ -523,12 +527,13 @@ method cellArrayUnfold_add co = begin
 	cellArrayUnfoldPointer <- cellArrayUnfoldPointer+1;
 	if(debugFlag) then
 	match co with
-	(defname,instname,ztnl,atnl,btnl) -> 
+	(defname,instname,ztnl,atnl,btnl,stnl) -> 
 		let ztnlname = getTNLname ztnl
 		and atnlname = getTNLname atnl
 		and btnlname = getTNLname btnl
+		and stnlname = getTNLname stnl
 		in
-		printf "Info : cellArrayUnfold_add %s %s %s %s %s\n" defname instname ztnlname atnlname btnlname
+		printf "Info : cellArrayUnfold_add %s %s %s %s %s %s\n" defname instname ztnlname atnlname btnlname stnlname
 end
 
 method unfold_bool_netlist unfoldNumber= begin
@@ -557,13 +562,14 @@ method unfold_bool_netlist unfoldNumber= begin
 		for i= 0 to (unfoldNumber-1) do
 			let procCell co = begin
 				match co with
-				(defname,instname,ztnl,atnl,btnl) -> begin
+				(defname,instname,ztnl,atnl,btnl,stnl) -> begin
 					let instname1 = mapname i instname
 					and ztnl1 = List.map (maptnet i) ztnl
 					and atnl1 = List.map (maptnetQ2D i) atnl
 					and btnl1 = List.map (maptnetQ2D i) btnl
+					and stnl1 = List.map (maptnetQ2D i) stnl
 					in
-					let newco=(defname,instname1,ztnl1,atnl1,btnl1)
+					let newco=(defname,instname1,ztnl1,atnl1,btnl1,stnl1)
 					in
 					self#cellArrayUnfold_add newco
 				end
@@ -613,7 +619,7 @@ method unfold_bool_netlist unfoldNumber= begin
 								| _ -> assert false
 							end
 							in
-							let celllst=List.map (fun x -> ("output","",[x],[x],[])) tnlist
+							let celllst=List.map (fun x -> ("output","",[x],[x],[],[])) tnlist
 							in
 							List.iter (self#cellArrayUnfold_add ) celllst
 						end
@@ -656,10 +662,11 @@ method checkWireInclusive = begin
 	in
 	let procCheckInclusive cell = begin
 		match cell with
-		(_,_,ztnl,atnl,btnl) -> begin
+		(_,_,ztnl,atnl,btnl,stnl) -> begin
 			List.iter procTNInclusive ztnl;
 			List.iter procTNInclusive atnl;
 			List.iter procTNInclusive btnl;
+			List.iter procTNInclusive stnl;
 		end
 	end
 	in
@@ -729,7 +736,7 @@ method printWires flat_c = begin
 			let cell=cellArrayUnfold.(pos) 
 			in
 			match cell with
-			(_,_,ztnl,_,_) -> begin
+			(_,_,ztnl,_,_,_) -> begin
 				let procZTN tn =begin
 					match tn with
 					TYPE_NET_ID(str) -> begin
@@ -775,7 +782,7 @@ method printWires flat_c = begin
 			let cell=cellArrayUnfold.(pos) 
 			in
 			match cell with
-			(_,_,_,atnl,btnl) -> begin
+			(_,_,_,atnl,btnl,stnl) -> begin
 				let procABTN tn = begin
 					match tn with
 					TYPE_NET_ID(str) -> begin
@@ -808,6 +815,7 @@ method printWires flat_c = begin
 				in begin
 					List.iter procABTN atnl;
 					List.iter procABTN btnl;
+					List.iter procABTN stnl;
 				end
 			end
 		end
@@ -956,13 +964,14 @@ method procTnetSrcSink pos valid = begin
 		end
 		in
 		match cell with
-		("output",_,_,atnl,_) -> begin
+		("output",_,_,atnl,_,_) -> begin
 			List.iter procsink atnl;
 		end
-		| (_,_,ztnl,atnl,btnl) -> begin
+		| (_,_,ztnl,atnl,btnl,stnl) -> begin
 			List.iter procsrc  ztnl;
 			List.iter procsink atnl;
 			List.iter procsink btnl;
+			List.iter procsink stnl;
 		end
 	end
 end
@@ -1035,12 +1044,12 @@ method procCell pos = begin
 			begin
 				if(debugFlag) then begin
 					match cell with
-					(defname,instname,_,_,_) -> 
+					(defname,instname,_,_,_,_) -> 
 						printf "Info: procCell %s %s %d\n" defname instname pos;
 				end
 			end;
 			match cell with
-			("AN2",instname,[ztn],[atn],[btn]) -> 
+			("AN2",instname,[ztn],[atn],[btn],_) -> 
 			begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
@@ -1060,7 +1069,7 @@ method procCell pos = begin
 						cellArrayUnfoldValid.(pos) <- false;
 						(*record this make sure that we 
 						dont need to explore this any more*)
-						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn],[]);
 						self#setTNetValue ztn newztn;
 						[ztn]
 					end
@@ -1083,7 +1092,7 @@ method procCell pos = begin
 					TYPE_NET_CONST(_) -> begin
 						let newztn=TYPE_NET_CONST(true)
 						in
-						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("AN2",instname,[newztn],[atn],[btn],[]);
 						[ztn]
 					end
 					| _ -> []
@@ -1109,7 +1118,7 @@ method procCell pos = begin
 					assert false
 				end
 			end
-			| ("OR2",instname,[ztn],[atn],[btn]) -> begin
+			| ("OR2",instname,[ztn],[atn],[btn],_) -> begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
 				in 
@@ -1125,7 +1134,7 @@ method procCell pos = begin
 						end;
 
 						cellArrayUnfoldValid.(pos) <- false;
-						cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn],[]);
 						self#setTNetValue ztn newztn;
 					[ztn]
 					end
@@ -1146,7 +1155,7 @@ method procCell pos = begin
 					TYPE_NET_CONST(_) -> begin
 						let newztn=TYPE_NET_CONST(false)
 						in
-						cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("OR2",instname,[newztn],[atn],[btn],[]);
 						[ztn]
 					end
 					| _ -> []
@@ -1172,7 +1181,7 @@ method procCell pos = begin
 					assert false
 				end
 			end
-			| ("EO",instname,[ztn],[atn],[btn]) -> begin
+			| ("EO",instname,[ztn],[atn],[btn],_) -> begin
 				let atn1=self#getTNetValue atn
 				and btn1=self#getTNetValue btn
 				in 
@@ -1192,7 +1201,7 @@ method procCell pos = begin
 						end;
 
 						cellArrayUnfoldValid.(pos) <- false;
-						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn],[]);
 						self#setTNetValue ztn newztn;
 						[ztn]
 					end
@@ -1213,7 +1222,7 @@ method procCell pos = begin
 						end;
 
 						cellArrayUnfoldValid.(pos) <- false;
-						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn]);
+						cellArrayUnfold.(pos) <- ("EO",instname,[newztn],[atn],[btn],[]);
 						self#setTNetValue ztn newztn;
 						[ztn]
 					end
@@ -1242,7 +1251,7 @@ method procCell pos = begin
 						printf "Info : %s <- !%s\n" ztnname btnname;
 					end;
 
-					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[btn1],[]);
+					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[btn1],[],[]);
 					[]
 				end
 				else if(btn1=TYPE_NET_CONST(false)) then
@@ -1268,7 +1277,7 @@ method procCell pos = begin
 						printf "Info : %s <- !%s\n" ztnname atnname;
 					end;
 
-					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[atn1],[]);
+					cellArrayUnfold.(pos) <- ("IV",instname,[ztn],[atn1],[],[]);
 					[]
 				end
 				else begin
@@ -1277,7 +1286,7 @@ method procCell pos = begin
 					assert false
 				end
 			end
-			| ("IV",instname,[ztn],[atn],[]) -> begin
+			| ("IV",instname,[ztn],[atn],[],_) -> begin
 				let atn1=self#getTNetValue atn
 				in 
 				if(atn1=TYPE_NET_CONST(true) ) then
@@ -1292,7 +1301,7 @@ method procCell pos = begin
 						end;
 
 						cellArrayUnfoldValid.(pos) <- false;
-						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[]);
+						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[],[]);
 						self#setTNetValue ztn newztn;
 						[ztn]
 					end
@@ -1309,7 +1318,7 @@ method procCell pos = begin
 						end;
 
 						cellArrayUnfoldValid.(pos) <- false;
-						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[]);
+						cellArrayUnfold.(pos) <- ("IV",instname,[newztn],[atn],[],[]);
 						self#setTNetValue ztn newztn;
 						[ztn]
 					end
@@ -1320,7 +1329,7 @@ method procCell pos = begin
 					assert false
 				end
 			end
-			| ("BUF",instname,[ztn],[atn],[]) -> begin
+			| ("BUF",instname,[ztn],[atn],[],_) -> begin
 				let atn1=self#getTNetValue atn
 				in begin
 					if(atn1<>atn) then begin
@@ -1352,9 +1361,45 @@ method procCell pos = begin
 					end
 				end
 			end
-			| ("","",[],[],[]) -> assert false
-			| ("output",_,_,_,_) -> []
-			| (defname,instname,_,_,_) -> begin
+			| ("","",[],[],[],_) -> assert false
+			| ("output",_,_,_,_,_) -> []
+			| ("is_zero_mod",instname,[ztn],atnl,_,_) -> begin
+				let atnl1=List.map (self#getTNetValue) atnl
+				in
+				if(isGFZero atnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					cellArrayUnfold.(pos) <- ("is_zero_mod",instname,[TYPE_NET_CONST(true)],atnl,[],[]);
+					self#setTNetValue ztn (TYPE_NET_CONST(true));
+					[ztn]
+				end
+				else if(isNotGFZero atnl1) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					cellArrayUnfold.(pos) <- ("is_zero_mod",instname,[TYPE_NET_CONST(false)],atnl,[],[]);
+					self#setTNetValue ztn (TYPE_NET_CONST(false));
+					[ztn]
+				end
+				else []
+			end
+			| ("gfmux_mod",instname,ztnl,atnl,btnl,[stn]) -> begin
+				let stn1=self#getTNetValue stn
+				in
+				if(stn1=(TYPE_NET_CONST(true))) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl=List.combine ztnl atnl
+					in
+					List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+					ztnl
+				end
+				else if(stn1=(TYPE_NET_CONST(false))) then begin
+					cellArrayUnfoldValid.(pos) <- false;
+					let combnl = List.combine ztnl btnl
+					in
+					List.iter (fun x -> match x with (z,a) -> self#setTNetValue z a) combnl ;
+					ztnl
+				end
+				else []
+			end
+			| (defname,instname,_,_,_,_) -> begin
 				assert (isGF defname);
 				[]
 			end
@@ -1363,12 +1408,12 @@ method procCell pos = begin
 			(*invalid one, run to its transitive closure
 			only when the output is already const*)
 			match cell with
-			(defname,instname,[TYPE_NET_CONST(_)],_,_) -> begin
+			(defname,instname,[TYPE_NET_CONST(_)],_,_,_) -> begin
 				(*already be zero before we considered 
 				current assignment, so dont go further*)
 				[]
 			end
-			| (defname,instname,[ztn],_,_) -> begin
+			| (defname,instname,[ztn],_,_,_) -> begin
 				if(debugFlag) then begin
 	 				printf "Info: procCell invalid %s %s %d\n" defname instname pos; 
 				end;
@@ -1390,7 +1435,7 @@ method procCell pos = begin
 					[]
 				end
 			end
-			| (defname,_,ztnl,_,_) -> begin
+			| (defname,_,ztnl,_,_,_) -> begin
 				(*gf mod dont need to prop*)
 				assert (isGF defname);
 				[]
