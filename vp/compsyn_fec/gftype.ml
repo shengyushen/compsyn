@@ -404,7 +404,7 @@ and procPrintCell flat_c mi  = begin
 				let zname=getTNname ztn
 				and aname=getTNname atn
 				in
-				fprintf flat_c "  assign %s = %s;\n"  zname aname 
+				fprintf flat_c "  assign %s = %s;//buf\n"  zname aname 
 			end
 			| ("gfadd_mod",instname,ztnl,atnl,btnl,_) -> begin
 				let zl=getTNLname ztnl

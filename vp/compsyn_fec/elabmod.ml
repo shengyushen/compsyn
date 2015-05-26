@@ -198,7 +198,7 @@ begin
 
 	set_current_time;
 	(*first construct the data structure with bool only*)
-	self#writeFlatNetlist "flat.v" name;
+	self#writeFlatNetlist "flat" name;
 
 	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
@@ -217,9 +217,7 @@ begin
 	in
 	List.iter procAddNotUsed notUsedOutputList;
 
-	let unfoldname=sprintf "%s_unfold" name
-	in
-	self#writeUnfoldNetlist "unfold.v" unfoldname ;
+	self#writeUnfoldNetlist "unfold" name ;
 	
 	(*propagate const*)
 	self#handleInputStepList stepList;
@@ -231,17 +229,13 @@ begin
 	(* propagate the value to all tn*)
 	self#fillInRealValueOfTN;
 
-	let propconstname=sprintf "%s_propconst" name
-	in
-	self#writeUnfoldNetlist "propconst.v" propconstname ;
+	self#writeUnfoldNetlist "propconst" name ;
 
 	self#buildSrcSink;
 
 	self#removeNotdrivingCells notUsedOutputList ;
 
-	let noundrivenname=sprintf "%s_noundriven" name
-	in
-	self#writeUnfoldNetlist "noundriven.v" noundrivenname ;
+	self#writeUnfoldNetlist "noundriven" name ;
 end
 
 method fillInRealValueOfTN = begin
@@ -314,13 +308,36 @@ end
 
 method removeNotdrivingCells notUsedOutputList = begin
 	(*add not used output list into hash*)
-	let isNotUsed tn = begin
+	let isNotUsedOutputTN tn = begin
+		match tn with
+		TYPE_NET_ID(str) -> begin
+				if(Hashtbl.mem hashNotUsedOutput str) then 
+					true
+				else false
+		end
+		| TYPE_NET_ARRAYBIT(str,_) -> begin
+				if(Hashtbl.mem hashNotUsedOutput str) then begin
+					if(debugFlag) then begin
+						printf "not used\n";
+					end;
+					true
+				end
+				else false
+		end
+		| _ -> assert false
+	end
+	and isNotUsed tn = begin
 		if(debugFlag) then begin
 			printf "isNotUsed : %s\n" (getTNname tn);
 		end;
 		match tn with
 		TYPE_NET_ID(str) -> begin
-			if(self#isOutputStr str) then begin
+(*
+				we have output cell type which will be handled
+				by isNotUsedOutputTN
+				in diff way as normal cell, so we do not need this
+*)
+			(*if(self#isOutputStr str) then begin
 				if(Hashtbl.mem hashNotUsedOutput str) then begin
 					if(debugFlag) then begin
 						printf "not used\n";
@@ -329,7 +346,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				end
 				else false
 			end
-			else begin
+			else*) begin
 				if(debugFlag) then begin
 					printf "trying all\n";
 				end;
@@ -339,7 +356,12 @@ method removeNotdrivingCells notUsedOutputList = begin
 			end
 		end
 		| TYPE_NET_ARRAYBIT(str,_) -> begin
-			if(self#isOutputStr str) then begin
+(*
+				we have output cell type which will be handled
+				by isNotUsedOutputTN
+				in diff way as normal cell, so we do not need this
+*)
+			(*if(self#isOutputStr str) then begin
 				if(Hashtbl.mem hashNotUsedOutput str) then begin
 					if(debugFlag) then begin
 						printf "not used\n";
@@ -348,7 +370,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 				end
 				else false
 			end
-			else begin
+			else*) begin
 				if(debugFlag) then begin
 					printf "trying all\n";
 				end;
@@ -364,13 +386,20 @@ method removeNotdrivingCells notUsedOutputList = begin
 	let isNotUsedCell cell = begin
 		match cell with
 		(defname,instname,ztnl,atnl,btnl,stnl) -> begin
-			printf "isNotUsedCell : %s %s\n" defname instname;
+			printf "isNotUsedCell : %s %s %s " defname instname (getTNLname ztnl) ;
 			if(defname="output") then 
-				if(List.for_all isNotUsed ztnl) then 
+				if(List.for_all isNotUsedOutputTN ztnl) then begin
+					printf "not used\n";
 					true
-				else false
-			else if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then 
-					true
+				end
+				else begin
+					printf "used\n";
+					false
+				end
+			else if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then begin
+				printf "not used\n";
+				true
+			end
 			else begin
 				printf "non output used\n";
 				false
@@ -706,7 +735,10 @@ method procSumOutNumber str tionrange oldnum = begin
 	| _ -> oldnum
 end
 
-method writeFlatNetlist filename currentmodnmae = begin
+method writeFlatNetlist filename_nove currentmodnmae_nove = begin
+	let filename = sprintf "%s_%s.v"  currentmodnmae_nove filename_nove
+	and currentmodnmae = sprintf "%s_%s" currentmodnmae_nove filename_nove
+	in
 	let flat_c = open_out filename 
 	in begin
 		fprintf flat_c "module %s (\n" currentmodnmae;
@@ -872,7 +904,10 @@ method procPrintOutputAssignment flat_c str tionrange = begin
 end
 
 
-method writeUnfoldNetlist   filename currentmodnmae  = begin
+method writeUnfoldNetlist   filename_nove currentmodnmae_nove  = begin
+	let filename = sprintf "%s_%s.v" currentmodnmae_nove filename_nove
+	and currentmodnmae = sprintf "%s_%s" currentmodnmae_nove filename_nove
+	in
 	let flat_c = open_out filename
 	in begin
 		fprintf flat_c "module %s (\n" currentmodnmae;
