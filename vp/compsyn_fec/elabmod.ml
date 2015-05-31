@@ -198,7 +198,7 @@ begin
 
 	set_current_time;
 	(*first construct the data structure with bool only*)
-	self#writeFlatNetlist "flat" name;
+(* 	self#writeFlatNetlist "flat" name; *)
 
 	(*unfold *)
 	self#unfold_bool_netlist unfoldNumber ;
@@ -217,7 +217,7 @@ begin
 	in
 	List.iter procAddNotUsed notUsedOutputList;
 
-	self#writeUnfoldNetlist "unfold" name ;
+(* 	self#writeUnfoldNetlist "unfold" name ; *)
 	
 	(*propagate const*)
 	self#handleInputStepList stepList;
@@ -229,7 +229,7 @@ begin
 	(* propagate the value to all tn*)
 	self#fillInRealValueOfTN;
 
-	self#writeUnfoldNetlist "propconst" name ;
+(* 	self#writeUnfoldNetlist "propconst" name ; *)
 
 	self#buildSrcSink;
 
@@ -256,7 +256,7 @@ method fillInRealValueOfTN = begin
 	end
 	in
 	Array.iteri procFillInRealValueOfTN cellArrayUnfoldValid;
-	dbg_print "fillInRealValueOfTN finish\n";
+	dbg_print "fillInRealValueOfTN finish ";
 end
 
 method isOutputStr str = begin
@@ -386,22 +386,32 @@ method removeNotdrivingCells notUsedOutputList = begin
 	let isNotUsedCell cell = begin
 		match cell with
 		(defname,instname,ztnl,atnl,btnl,stnl) -> begin
-			printf "isNotUsedCell : %s %s %s " defname instname (getTNLname ztnl) ;
+			if(debugFlag) then begin
+				printf "isNotUsedCell : %s %s %s " defname instname (getTNLname ztnl) ;
+			end;
 			if(defname="output") then 
 				if(List.for_all isNotUsedOutputTN ztnl) then begin
-					printf "not used\n";
+					if(debugFlag) then begin
+						printf "not used\n";
+					end;
 					true
 				end
 				else begin
-					printf "used\n";
+					if(debugFlag) then begin
+						printf "used\n";
+					end;
 					false
 				end
 			else if((List.for_all isNotUsed ztnl) || (isEmptyList ztnl)) then begin
-				printf "not used\n";
+				if(debugFlag) then begin
+					printf "not used\n";
+				end;
 				true
 			end
 			else begin
-				printf "non output used\n";
+				if(debugFlag) then begin
+					printf "non output used\n";
+				end;
 				false
 			end
 		end
@@ -416,10 +426,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 			| _ -> ()
 		end;
 
-		if(valid=false)  then begin
-			printf "invalid\n";
-		end
-		else
+		if(valid)  then
 		let cell=cellArrayUnfold.(pos)
 		in
 		match cell with
@@ -433,7 +440,9 @@ method removeNotdrivingCells notUsedOutputList = begin
 					cellArrayUnfoldValid.(pos) <- false;
 				end
 				else begin
-					printf "not in\n";
+					if(debugFlag) then begin
+						printf "not in\n";
+					end;
 				end
 			end
 			| [TYPE_NET_ARRAYBIT(str,idx)] -> begin
@@ -449,13 +458,13 @@ method removeNotdrivingCells notUsedOutputList = begin
 			end 
 			| [TYPE_NET_NULL] -> assert false
 			| [TYPE_NET_CONST(_)] -> begin
-				printf "empty\n";
+				if(debugFlag) then begin
+					printf "empty\n";
+				end
 			end
 			| _ -> assert false
 		end
-		| _ -> begin
-			printf "other\n"
-		end
+		| _ -> ()
 	end
 	in begin
 		Array.iteri markUnusedOutputCell cellArrayUnfoldValid;
@@ -483,19 +492,25 @@ method removeNotdrivingCells notUsedOutputList = begin
 				in 
 				match cell with
 				(defname,instname,ztnl,atnl,btnl,stnl) -> begin
-					printf "Info : doing %s %s %d " defname instname pos;
+					if(debugFlag) then begin
+						printf "Info : doing %s %s %d " defname instname pos;
+					end;
 					if(cellArrayUnfoldValid.(pos) && (isNotUsedCell cell))
 					then begin
-						printf "removed\n";
+						if(debugFlag) then begin
+							printf "removed\n";
+						end;
 						cellArrayUnfoldValid.(pos) <- false;
 						let abttnl = List.filter (self#isBackTracable) atnl
 						and bbttnl = List.filter (self#isBackTracable) btnl
 						and sbttnl = List.filter (self#isBackTracable) stnl
 						in
 						let procaddtn tn = begin
-							let tnname=getTNname tn
-							in
-							printf "procaddtn %s\n" tnname;
+							if(debugFlag) then begin
+								let tnname=getTNname tn
+								in
+								printf "procaddtn %s\n" tnname;
+							end;
 
 							try 
 								let postn=Hashtbl.find hashTnetSrc tn
@@ -519,8 +534,11 @@ method removeNotdrivingCells notUsedOutputList = begin
 							List.iter procaddtn sbttnl;
 						end
 					end
-					else 
-						printf "\n";
+					else begin
+						if(debugFlag) then begin
+							printf "\n";
+						end
+					end
 				end
 			done;
 	
@@ -538,7 +556,7 @@ method removeNotdrivingCells notUsedOutputList = begin
 			in
 			Array.iteri procck cellArrayUnfoldValid;
 			
-			dbg_print "removeNotdrivingCells finish\n";
+			dbg_print "removeNotdrivingCells finish ";
 		end
 	end
 end
@@ -570,7 +588,7 @@ method unfold_bool_netlist unfoldNumber= begin
 	(*whether all the wires referred
 	by cellStack are in hashWireName2Range*)
 	self#checkWireInclusive ;
-	dbg_print "checkWireInclusive finished\n";
+	dbg_print "checkWireInclusive finished ";
 	
 	(*find out the number of wires*)
 	let numWire = Hashtbl.fold (self#procSumWireNumber) hashWireName2Range 0
@@ -587,6 +605,7 @@ method unfold_bool_netlist unfoldNumber= begin
 		hashWireName2RangeUnfold <- Hashtbl.create ((Hashtbl.length hashWireName2Range)*unfoldNumber);
 		self#cellArrayUnfold_init finalCellNum;
 
+		dbg_print "cellArrayUnfold_init finished ";
 		(*unfold the gates*)
 		for i= 0 to (unfoldNumber-1) do
 			let procCell co = begin
@@ -606,7 +625,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Stack.iter  procCell cellStack
 		done;
-		dbg_print "unfold cell finished\n";
+		dbg_print "unfold cell finished ";
 
 		(*unfold the wires*)
 		for i= 0 to (unfoldNumber-1) do
@@ -665,7 +684,7 @@ method unfold_bool_netlist unfoldNumber= begin
 			in
 			Hashtbl.iter procWire hashWireName2Range
 		done;
-		dbg_print "unfold wire finished\n";
+		dbg_print "unfold wire finished ";
 	end
 
 end
@@ -935,7 +954,7 @@ method writeUnfoldNetlist   filename_nove currentmodnmae_nove  = begin
 		fprintf flat_c "endmodule\n";
 
 		close_out flat_c;
-		dbg_print "writeUnfoldNetlist finish\n";
+		dbg_print "writeUnfoldNetlist finish ";
 	end
 end
 
@@ -952,7 +971,7 @@ method handleInputStepList stepList = begin
 	end
 	in
 	List.iter procStringInt stepList;
-	dbg_print "handleInputStepList finish\n";
+	dbg_print "handleInputStepList finish ";
 
 (*
 	Hashtbl.add hashTnetValue (TYPE_NET_CONST(false)) (TYPE_NET_CONST(false));
@@ -1024,7 +1043,7 @@ method buildSrcSink = begin
 	
 	Array.iteri (self#procTnetSrcSink)  cellArrayUnfoldValid;
 
-	dbg_print "buildSrcSink finish\n";
+	dbg_print "buildSrcSink finish ";
 	
 end
 
@@ -1150,7 +1169,9 @@ method procCell pos = begin
 					| _ -> []
 				end
 				else begin
-					printf "Info : nothing to do\n";
+					if(debugFlag) then begin
+						printf "Info : nothing to do\n";
+					end;
 					[]
 (*
 					flush stdout;
@@ -1216,7 +1237,9 @@ method procCell pos = begin
 					| _ -> []
 				end
 				else begin
-					printf "Info : nothing to do\n";
+					if(debugFlag) then begin
+						printf "Info : nothing to do\n";
+					end;
 					[]
 (*
 					flush stdout;
@@ -1324,7 +1347,9 @@ method procCell pos = begin
 					[]
 				end
 				else begin
-					printf "Info : nothing to do\n";
+					if(debugFlag) then begin
+						printf "Info : nothing to do\n";
+					end;
 					[]
 (*
 					flush stdout;
@@ -1370,7 +1395,9 @@ method procCell pos = begin
 					end
 				end
 				else begin
-					printf "Info : nothing to do\n";
+					if(debugFlag) then begin
+						printf "Info : nothing to do\n";
+					end;
 					[]
 (*
 					flush stdout;
@@ -1404,8 +1431,10 @@ method procCell pos = begin
 						| _ -> []
 					end
 					else  begin
-					printf "Info : nothing to do\n";
-					[]
+						if(debugFlag) then begin
+							printf "Info : nothing to do\n";
+						end;
+						[]
 (*
 					flush stdout;
 					assert false
@@ -1658,9 +1687,11 @@ method propagateConst stepList= begin
 			in
 			List.iter (List.iter (addTodoQ todoname)) lstlst;
 
-			printf "cellArrayUnfold len %d\n" (Array.length cellArrayUnfold);
-			dbg_print "propagateConst finish \n";
+			if(debugFlag) then begin
+				printf "cellArrayUnfold len %d\n" (Array.length cellArrayUnfold);
+			end
 		done;
+		dbg_print "propagateConst finish ";
 	end
 end
 

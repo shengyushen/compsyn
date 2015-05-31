@@ -51,9 +51,17 @@ and notUsedOutputList = begin
 	in
 	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
 	in
-	let lstSingular=List.filter (fun x -> assert ((List.length x)<=1); (isEmptyList x)=false) splitedLinesList
+	let lstSingular=List.filter  isSingularList splitedLinesList
 	in
-	List.map (fun x -> List.hd x) lstSingular
+	let notUsedList=List.map (fun x -> List.hd x) lstSingular
+	in begin
+		let fc=open_out "notUsedReal"
+		in begin
+			List.iter (Printf.fprintf fc "%s\n") notUsedList;
+			close_out fc;
+		end;
+		notUsedList
+	end
 end
 and objRTL= begin
 	let inputFileChannle = open_in inputFileName
@@ -69,7 +77,7 @@ end
 in
 begin
 	objRTL#elaborate elabModName ;
-	List.iter (Printf.printf "notused %s\n") notUsedOutputList ;
+(* 	List.iter (Printf.printf "notused %s\n") notUsedOutputList ; *)
 	objRTL#compsyn stepList expNumber notUsedOutputList;
 	exit 0
 end;

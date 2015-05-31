@@ -9,7 +9,7 @@ let set_current_time = begin
 end
 and	dbg_print str = begin
 	let current_time=Unix.gettimeofday () in begin
-		Printf.printf "dbg_print : %s\t\t\ttime %5f delta %5f\n" str (current_time -. (!starttime)) (current_time -. (!oldtime)) ;
+		Printf.printf "dbg_print : %s  time %5f delta %5f\n" str (current_time -. (!starttime)) (current_time -. (!oldtime)) ;
 		flush stdout;
 		oldtime := current_time
 	end
