@@ -14,12 +14,10 @@ let start_time = Unix.gettimeofday ();;
 (*parsing input files*)
 let inputFileName = Sys.argv.(1) ;;
 let elabModName = Sys.argv.(2) ;;
-let expNumber = int_of_string (Sys.argv.(3)) ;;
-let stimulationFileName = Sys.argv.(4) ;;
+let stimulationFileName = Sys.argv.(3) ;;
+let expNumber = int_of_string (Sys.argv.(4)) ;;
 let notUsedOutputFilename = Sys.argv.(5) ;;
-let additiveMod = Sys.argv.(6) ;;
-let multplicativeMod = Sys.argv.(7) ;;
-let debugFlag = bool_of_string (Sys.argv.(8)) ;;
+let debugFlag = bool_of_string (Sys.argv.(6)) ;;
 
 
 (*parsing stimulation*)
@@ -78,7 +76,7 @@ and objRTL= begin
 end
 in
 begin
-	objRTL#elaborate elabModName additiveMod multplicativeMod;
+	objRTL#elaborate elabModName ;
 (* 	List.iter (Printf.printf "notused %s\n") notUsedOutputList ; *)
 	objRTL#compsyn stepList expNumber notUsedOutputList;
 	exit 0

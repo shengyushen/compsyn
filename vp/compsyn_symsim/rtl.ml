@@ -17,21 +17,32 @@ object (self)
 (*temp dir and their various files*)
 	val tmpdirname = tmpdirname1
 	
-	val mutable topmod = new elabmod debugFlag
-	val mutable addMod = new elabmod debugFlag
-	val mutable mulMod = new elabmod debugFlag
+	val mutable elaboratedModuleList : elabmod list = []
 
-	method elaborate elabModName additiveMod multplicativeMod = begin
+	method elaborate elabModName = begin
+		(*we dont want to deal with parameter now*)
+		(*if (List.length paramlist) != 0 then begin
+			Printf.printf "fatal error : parameter is not supported at this stage\n";
+			exit 1
+		end
+		;*)
+		(*find this exact module definition*)
 		let module2beElaborated = self#findOneModuleInVerystruct elabModName
-		and addMod2beElabotated = self#findOneModuleInVerystruct additiveMod
-		and mulMod2beElaborated = self#findOneModuleInVerystruct multplicativeMod
+		in 
+		let newElabModule = new elabmod debugFlag
 		in begin
-			topmod#init module2beElaborated tmpdirname;
-			addMod#init addMod2beElabotated tmpdirname;
-			mulMod#init mulMod2beElaborated tmpdirname;
+			newElabModule#init module2beElaborated tmpdirname;
+			elaboratedModuleList <- newElabModule::elaboratedModuleList
 		end
 	end
-
+(*
+	method link elabModName = begin
+		(*actually some previous elaborate code should be placed here
+		  that is to say, elaborate it only deal with a module himself
+		  and link take care of issue between multiple module
+		*)
+	end
+*)
 	method findOneModuleInVerystruct modName = begin
 		let matchModuleName mn = fun md -> begin
 			match md with 
@@ -57,11 +68,9 @@ object (self)
 	
 	
 	method compsyn stepList unfoldNumber notUsedOutputList = begin
-(* 		inferring field size *)
-		addMod#encoderCNF;
-		addMod#checkingAbelian;
-		addMod#inferZero;
- 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
+		match elaboratedModuleList with
+		[topmod] -> topmod#compsyn stepList unfoldNumber notUsedOutputList
+		| _ -> assert false
 	end
 end
 ;;
