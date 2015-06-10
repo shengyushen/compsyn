@@ -29,9 +29,9 @@ so I need T_range_NOSPEC*)
 val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
 (* the index for each type_net *)
 val mutable hashtnet2idx : (type_net,int) Hashtbl.t = Hashtbl.create 100
-val mutable hashUsedIdentifier (string,bool) Hashtbl.t = Hashtbl.create 100
-val mutable idxCurrent : int
-val mutable clsList : (int list,string) list = []
+val mutable hashUsedIdentifier : (string,bool) Hashtbl.t = Hashtbl.create 100
+val mutable idxCurrent : int = 3
+val mutable clsList : ((int list)*string) list = []
 
 
 
@@ -1731,11 +1731,6 @@ method getTNLnamePropconst tnl = begin
 end
 
 
-(* 1.	checking additive closure : dont need*)
-(* 2.	checking Abelian *)
-(* 3.	associative *)
-(* 4.	zero *)
-(* 5.	inverse *)
 
 (* inferring zero cell for additive operation *)
 method inferZero = begin
@@ -1744,16 +1739,71 @@ method inferZero = begin
 
 end
 
+method getIdxList wirename = begin
+	let tionrange = Hashtbl.find hashWireName2Range wirename
+	in
+	match tionrange with
+	(_,range) -> begin
+		match range with
+		T_range_NOSPEC -> [Hashtbl.find hashtnet2idx (TYPE_NET_ID(wirename))]
+		| T_range_int(l,r) -> begin
+			let lrlst = lr2list l r
+			in
+			List.map (fun i -> Hashtbl.find hashtnet2idx (TYPE_NET_ARRAYBIT(wirename,i))) lrlst
+		end
+		| _ -> assert false
+	end
+end
+
 method checkingAbelian = begin
 	printf "checkingAbelian for %s\n" name;
 	assert ((isEmptyList clsList)= false);
-
+	let aidxl = self#getIdxList "A"
+	and bidxl = self#getIdxList "B"
+	and zidxl = self#getIdxList "Z"
+	and maxIdx = get_largest_varindex_inclslst clsList
+	in
+	let clsList_shifted = shiftclslst clsList [] maxIdx 
+	in
+	let alen = List.length aidxl
+	and blen = List.length bidxl
+	and zlen = List.length zidxl
+	in begin
+		assert (alen = blen);
+		assert (alen = zlen);
+		let shifted_blist = List.map (fun x -> x+maxIdx) bidxl
+		and shifted_alist = List.map (fun x -> x+maxIdx) aidxl
+		and shifted_zlist = List.map (fun x -> x+maxIdx) zidxl
+		in
+		let a_shifted_blist = List.combine aidxl shifted_blist
+		and b_shifted_alist = List.combine bidxl shifted_alist
+		and z_shifted_zlist = List.combine zidxl shifted_zlist
+		in 
+		let a_Sb_clsListList = List.map (fun x ->  encode_EQU_alone (fst x) (snd x) ) a_shifted_blist
+		and b_Sa_clsListList = List.map (fun x ->  encode_EQU_alone (fst x) (snd x) ) b_shifted_alist
+		and z_clsListList    = List.map (fun x ->  encode_NEG_alone (fst x) (snd x) ) z_shifted_zlist
+		in 
+		let allclsList = clsList @ clsList_shifted @ (List.concat a_Sb_clsListList) @ (List.concat b_Sa_clsListList) @ (List.concat z_clsListList)
+		in
+		let res = dump_sat_withclear  allclsList
+		in	
+		match res with
+		UNSATISFIABLE -> begin
+			printf "Info : checkingAbelian is OK\n";
+			()
+		end
+		| SATISFIABLE -> begin
+			printf "Error : additive module %s is not abelian \n" name;
+			flush stdout;
+			assert false;
+		end
+	end
 end
 
 method generateTnetIdxOne str tionrange = begin
 	match tionrange with
 	(_,range) -> begin
-		assert ((Hashtbl.mem str hashUsedIdentifier)=false);
+		assert ((Hashtbl.mem hashUsedIdentifier str)=false);
 		match range with
 		T_range_NOSPEC -> begin
 			let newidx=self#allocIdx
@@ -1774,7 +1824,7 @@ method generateTnetIdxOne str tionrange = begin
 				Hashtbl.add hashtnet2idx (TYPE_NET_ARRAYBIT(str,i)) newidx
 			end
 			in begin
-				Hashtbl.add hashUsedIdentifier str
+				Hashtbl.add hashUsedIdentifier str true;
 				List.iter procLR lrlst
 			end
 		end
@@ -1840,9 +1890,9 @@ method  encodingCell defname instname zidxl aidxl bidxl sidxl = begin
 		and bidx = List.hd bidxl;
 		in
 		let cls0 = [-zidx;aidx;bidx]
-		let cls1 = [-zidx;-aidx;-bidx]
-		let cls2 = [zidx;-aidx;bidx]
-		let cls3 = [zidx;aidx;-bidx]
+		and cls1 = [-zidx;-aidx;-bidx]
+		and cls2 = [zidx;-aidx;bidx]
+		and cls3 = [zidx;aidx;-bidx]
 		and cmt0 = sprintf "%s %s cls0" defname instname
 		and cmt1 = sprintf "%s %s cls1" defname instname
 		and cmt2 = sprintf "%s %s cls2" defname instname
@@ -1859,7 +1909,7 @@ method  encodingCell defname instname zidxl aidxl bidxl sidxl = begin
 		and aidx = List.hd aidxl;
 		in
 		let cls0 = [zidx;aidx]
-		let cls1 = [-zidx;-aidx]
+		and cls1 = [-zidx;-aidx]
 		and cmt0 = sprintf "%s %s cls0" defname instname
 		and cmt1 = sprintf "%s %s cls1" defname instname
 		in
@@ -1874,7 +1924,7 @@ method  encodingCell defname instname zidxl aidxl bidxl sidxl = begin
 		and aidx = List.hd aidxl;
 		in
 		let cls0 = [zidx;-aidx]
-		let cls1 = [-zidx;aidx]
+		and cls1 = [-zidx;aidx]
 		and cmt0 = sprintf "%s %s cls0" defname instname
 		and cmt1 = sprintf "%s %s cls1" defname instname
 		in
@@ -1903,7 +1953,7 @@ end
 
 method generateClauseList = begin
 	(*map each cell to clause list*)
-	let clsQueue = Queue.create 
+	let clsQueue = Queue.create ()
 	in
 	let procCell cell = begin
 		match cell with
@@ -1915,15 +1965,15 @@ method generateClauseList = begin
 			in
 			let clslst = self#encodingCell defname instname zidxl aidxl bidxl sidxl
 			in
-			List.iter (Queue.add clsQueue ) clslst
+			List.iter (fun x -> Queue.add x clsQueue ) clslst
 		end
 	end
 	in begin
 		Stack.iter procCell cellStack;
 (* 		adding clauses for true and false const *)
-		Queue.add clsQueue (2,"true");
-		Queue.add clsQueue (-1,"false");
-		Queue.fold (fun x y -> x::y) [] clsQueue
+		Queue.add  ([2],"true") clsQueue;
+		Queue.add  ([-1],"false") clsQueue;
+		Queue.fold (fun x y -> y::x) [] clsQueue
 	end
 end
 
@@ -1938,6 +1988,20 @@ method allocIdx = begin
 		idxCurrent <- idxCurrent +1;
 		oldidx
 	end
-
 end
+
+method allocIdxList num = begin
+	if(num = 0) then []
+	else
+	let newidx = self#allocIdx 
+	in
+	let remainIdxList = self#allocIdxList (num-1)
+	in 
+	newidx::remainIdxList
+end
+
+method getFieldSize = begin
+	
+end
+
 end

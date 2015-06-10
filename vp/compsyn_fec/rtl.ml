@@ -58,10 +58,24 @@ object (self)
 	
 	method compsyn stepList unfoldNumber notUsedOutputList = begin
 (* 		inferring field size *)
-		addMod#encoderCNF;
-		addMod#checkingAbelian;
-		addMod#inferZero;
- 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
+		let addFieldSize = addMod#getFieldSize
+		and mulFieldSize = mulMod#getFieldSize
+		in begin
+			assert (addFieldSize = mulFieldSize);
+			printf "Info : working on field GF(2^%s)\n" addFieldSize;
+			addMod#encoderCNF;
+		
+
+(* 1.	checking additive closure : dont need*)
+(* 2.	checking Abelian *)
+			addMod#checkingAbelian;
+(* 3.	associative *)
+(* 4.	zero *)
+(* 5.	inverse *)
+
+			addMod#inferZero;
+	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
+		end
 	end
 end
 ;;
