@@ -294,6 +294,26 @@ and encode_NEG_alone idx1 idx2 = begin
 	(*code the equality *)
 	[([idx1;idx2],"encode_NEG");([-1*idx1;-1*idx2],"encode_NEG")]
 end
+and encode_EQU_list idxl1 idxl2 = begin
+	let len1 = List.length idxl1
+	and len2 = List.length idxl2
+	in begin
+		assert (len1=len2);
+		let comblst = List.combine idxl1 idxl2
+		in
+		List.concat (List.map (fun x ->  encode_EQU_alone (fst x) (snd x) ) comblst);
+	end
+end
+and encode_NEG_list idxl1 idxl2 = begin
+	let len1 = List.length idxl1
+	and len2 = List.length idxl2
+	in begin
+		assert (len1=len2);
+		let comblst = List.combine idxl1 idxl2
+		in
+		List.concat (List.map (fun x ->  encode_NEG_alone (fst x) (snd x) ) comblst);
+	end
+end
 and check_clslst_maxidx clslst maxidx = begin
 	let proc_int_new intele = begin
 		assert (intele!=0);

@@ -462,7 +462,9 @@ method removeNotdrivingCells notUsedOutputList = begin
 					cellArrayUnfoldValid.(pos) <- false;
 				end
 				else begin
-					printf "not in\n";
+					if(debugFlag) then begin
+						printf "not in\n";
+					end
 				end
 			end 
 			| [TYPE_NET_NULL] -> assert false
@@ -1733,10 +1735,103 @@ end
 
 
 (* inferring zero cell for additive operation *)
-method inferZero = begin
-	printf "inferZero for %s\n" name;
+method inferZero excluded = begin
+(* 	printf "inferZero for %s\n" name; *)
 	assert ((isEmptyList clsList)= false);
+	
+	let aidxl = self#getIdxList "A"
+	and bidxl = self#getIdxList "B"
+	and zidxl = self#getIdxList "Z"
+	in 
+	let genExcludedBlockingClsList idxl = begin
+		let len = List.length idxl
+		in
+		let procexcl exc = begin
+			let lenexc = List.length exc
+			in begin
+				assert (lenexc = len);
+				let comb = List.combine idxl exc
+				in
+				let procCell x = begin
+					match x with
+					(idx,0) -> idx
+					| (idx,1) -> -idx
+					| _ -> assert false
+				end
+				in
+				((List.map procCell comb),"excluded")
+			end
+		end
+		in
+		List.map procexcl excluded
+	end
+	in
+	let excludedBlockingClsList_A = genExcludedBlockingClsList aidxl
+	and excludedBlockingClsList_B = genExcludedBlockingClsList bidxl
+	and excludedBlockingClsList_Z = genExcludedBlockingClsList zidxl
+	in
+	let clsList_AZ_equ = encode_EQU_list aidxl zidxl 
+	and clsList_AZ_neq = encode_NEG_list aidxl zidxl
+	in 
+	let allclsList = clsList_AZ_equ @ clsList @ excludedBlockingClsList_A @ excludedBlockingClsList_B @ excludedBlockingClsList_Z
+	and blockingClsList = ref []
+	and stop = ref false
+	and finalZero = ref []
+	in 
+	while ((!stop)=false) do
+		let allclsList_all = (!blockingClsList) @ allclsList
+		in
+		let res = dump_sat  allclsList_all
+		in 
+		match res with
+		UNSATISFIABLE -> begin
+			printf "Error : can not find the zero cell for module %s\n" name;
+			flush stdout;
+			assert false
+		end
+		| SATISFIABLE -> begin
+			let bidxlAssignment = List.map get_assignment bidxl
+			in begin
+				(*further checking that when zero is forced into B, 
+				then A and Z can not be disequal*)
+				let procAss x = begin
+					match x with
+					(idx,true) -> ([idx],"zero on B")
+					| (idx,false) -> ([-idx],"zero on B")
+				end
+				in
+				let clsList_B_zero = List.map procAss bidxlAssignment
+				in
+				let allclsList1 = clsList_B_zero @ clsList @ clsList_AZ_neq @ excludedBlockingClsList_A @ excludedBlockingClsList_B @ excludedBlockingClsList_Z
+				in
+				let res1 = dump_sat_withclear allclsList1
+				in 
+				match res1 with
+				UNSATISFIABLE -> begin
+					let zeroAssign = List.map (fun x -> match x with (_,true) -> 1 | (_,false) -> 0) bidxlAssignment
+					in begin
+						printf "Info : module %s with zero : " name;
+						List.iter (printf "%d" ) zeroAssign;
+						printf "\n";
+						finalZero := zeroAssign;
+						stop := true;
+					end
+				end
+				| SATISFIABLE -> begin
+					let zeroAssign = List.map (fun x -> match x with (_,true) -> 1 | (_,false) -> 0) bidxlAssignment
+					and blockingCls = List.map (fun x -> match x with (idx,true) -> -idx | (idx,false) -> idx) bidxlAssignment
+					in begin (*found zero is not universal, blocking it*)
+						printf "Info : module %s with non-universal zero : " name;
+						List.iter (printf "%d" ) zeroAssign;
+						printf "\n";
 
+						blockingClsList := (blockingCls,"blocking") :: (!blockingClsList);
+					end
+				end
+			end
+		end
+	done;
+	!finalZero
 end
 
 method getIdxList wirename = begin
@@ -1756,7 +1851,7 @@ method getIdxList wirename = begin
 end
 
 method checkingAbelian = begin
-	printf "checkingAbelian for %s\n" name;
+(* 	printf "checkingAbelian for %s\n" name; *)
 	assert ((isEmptyList clsList)= false);
 	let aidxl = self#getIdxList "A"
 	and bidxl = self#getIdxList "B"
@@ -1768,7 +1863,8 @@ method checkingAbelian = begin
 	let alen = List.length aidxl
 	and blen = List.length bidxl
 	and zlen = List.length zidxl
-	in begin
+	in 
+	let allclsList = begin
 		assert (alen = blen);
 		assert (alen = zlen);
 		let shifted_blist = List.map (fun x -> x+maxIdx) bidxl
@@ -1783,20 +1879,78 @@ method checkingAbelian = begin
 		and b_Sa_clsListList = List.map (fun x ->  encode_EQU_alone (fst x) (snd x) ) b_shifted_alist
 		and z_clsListList    = List.map (fun x ->  encode_NEG_alone (fst x) (snd x) ) z_shifted_zlist
 		in 
-		let allclsList = clsList @ clsList_shifted @ (List.concat a_Sb_clsListList) @ (List.concat b_Sa_clsListList) @ (List.concat z_clsListList)
+		clsList @ clsList_shifted @ (List.concat a_Sb_clsListList) @ (List.concat b_Sa_clsListList) @ (List.concat z_clsListList)
+	end
+	in
+	let res = dump_sat_withclear  allclsList
+	in	
+	match res with
+	UNSATISFIABLE -> begin
+		printf "Info : module %s is abelian\n" name;
+		()
+	end
+	| SATISFIABLE -> begin
+		printf "Error : module %s is not abelian \n" name;
+		flush stdout;
+		assert false;
+	end
+end
+
+method checkingAssiciative = begin
+(* 	printf "checkingAssiciative for %s\n" name; *)
+	assert ((isEmptyList clsList)= false);
+	let aidxl = self#getIdxList "A"
+	and bidxl = self#getIdxList "B"
+	and zidxl = self#getIdxList "Z"
+	and maxIdx = get_largest_varindex_inclslst clsList
+	in
+	let clsList_0 = clsList
+	and clsList_1 = shiftclslst clsList [] maxIdx 
+	and clsList_2 = shiftclslst clsList [] (maxIdx*2)
+	and clsList_3 = shiftclslst clsList [] (maxIdx*3)
+	in
+	let alen = List.length aidxl
+	and blen = List.length bidxl
+	and zlen = List.length zidxl
+	in 
+	let allclsList = begin
+		assert (alen = blen);
+		assert (alen = zlen);
+		
+		let aidxl0 = aidxl
+		and bidxl0 = bidxl
+		and zidxl0 = zidxl
+		and aidxl1 = List.map (fun x -> x + maxIdx*1) aidxl 
+		and bidxl1 = List.map (fun x -> x + maxIdx*1) bidxl
+		and zidxl1 = List.map (fun x -> x + maxIdx*1) zidxl
+		and aidxl2 = List.map (fun x -> x + maxIdx*2) aidxl 
+		and bidxl2 = List.map (fun x -> x + maxIdx*2) bidxl
+		and zidxl2 = List.map (fun x -> x + maxIdx*2) zidxl
+		and aidxl3 = List.map (fun x -> x + maxIdx*3) aidxl 
+		and bidxl3 = List.map (fun x -> x + maxIdx*3) bidxl
+		and zidxl3 = List.map (fun x -> x + maxIdx*3) zidxl
+		in 
+		let clsLst_A0A2     = encode_EQU_list aidxl0 aidxl2
+		and clsLst_B0A3     = encode_EQU_list bidxl0 aidxl3
+		and clsLst_B1B3     = encode_EQU_list bidxl1 bidxl3
+		and clsLst_Z0A1     = encode_EQU_list zidxl0 aidxl1
+		and clsLst_Z3B2     = encode_EQU_list zidxl3 bidxl2
+		and clsLst_Z1Z2_NEG = encode_NEG_list zidxl1 zidxl2
 		in
-		let res = dump_sat_withclear  allclsList
-		in	
-		match res with
-		UNSATISFIABLE -> begin
-			printf "Info : checkingAbelian is OK\n";
-			()
-		end
-		| SATISFIABLE -> begin
-			printf "Error : additive module %s is not abelian \n" name;
-			flush stdout;
-			assert false;
-		end
+		clsList_0 @ clsList_1 @ clsList_2 @ clsList_3 @ clsLst_A0A2 @ clsLst_B0A3 @ clsLst_B1B3 @ clsLst_Z0A1 @ clsLst_Z3B2 @ clsLst_Z1Z2_NEG
+	end
+	in
+	let res = dump_sat_withclear  allclsList
+	in	
+	match res with
+	UNSATISFIABLE -> begin
+		printf "Info : module %s is associative \n" name;
+		()
+	end
+	| SATISFIABLE -> begin
+		printf "Error : module %s is not associative \n" name;
+		flush stdout;
+		assert false;
 	end
 end
 
@@ -2001,7 +2155,23 @@ method allocIdxList num = begin
 end
 
 method getFieldSize = begin
-	
+	let aidxl = self#getIdxList "A"
+	and bidxl = self#getIdxList "B"
+	and zidxl = self#getIdxList "Z"
+	in
+	let alen = List.length aidxl
+	and blen = List.length bidxl
+	and zlen = List.length zidxl
+	in begin
+		assert (alen = blen);
+		assert (alen = zlen);
+		alen
+	end
 end
 
+(*
+method checkingInverse excluded = begin
+	
+end
+*)
 end

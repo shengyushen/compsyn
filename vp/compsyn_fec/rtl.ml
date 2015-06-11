@@ -3,6 +3,7 @@ open Elabmod
 open Misc
 open Sys
 open Elabmod
+open Printf
 
 exception No_such_clock
 
@@ -57,23 +58,41 @@ object (self)
 	
 	
 	method compsyn stepList unfoldNumber notUsedOutputList = begin
+		addMod#encoderCNF;
+		mulMod#encoderCNF;
 (* 		inferring field size *)
 		let addFieldSize = addMod#getFieldSize
 		and mulFieldSize = mulMod#getFieldSize
-		in begin
+		in 
+		let addZero = begin
 			assert (addFieldSize = mulFieldSize);
-			printf "Info : working on field GF(2^%s)\n" addFieldSize;
-			addMod#encoderCNF;
-		
-
+			printf "Info : working on field GF(2^%d)\n" addFieldSize;
 (* 1.	checking additive closure : dont need*)
-(* 2.	checking Abelian *)
+(* 2.	checking additive Abelian *)
 			addMod#checkingAbelian;
-(* 3.	associative *)
-(* 4.	zero *)
-(* 5.	inverse *)
+(* 3.	checking additive associative *)
+			addMod#checkingAssiciative;
+(* 4.	finding out additive zero *)
+			addMod#inferZero [];
+		end
+		in
+		let mulOne = begin
+			flush stdout;
+			mulMod#checkingAbelian;
+			flush stdout;
+			mulMod#checkingAssiciative;
+			flush stdout;
+			mulMod#inferZero [addZero];
+			flush stdout;
+		end
+		in begin
+(* 5.	checking inverse *)
+(*
+			addMod#checkingInverse [];
+			mulMod#checkingInverse [addZero];
+*)
+(* 6.	checking distribution *)
 
-			addMod#inferZero;
 	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
 		end
 	end
