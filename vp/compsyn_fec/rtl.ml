@@ -77,20 +77,16 @@ object (self)
 		end
 		in
 		let mulOne = begin
-			flush stdout;
 			mulMod#checkingAbelian;
-			flush stdout;
-			mulMod#checkingAssiciative;
-			flush stdout;
-			mulMod#inferZero [addZero];
-			flush stdout;
+(* 			this is slow and should be verified with formality *)
+(* 			mulMod#checkingAssiciative; *)
+			mulMod#inferZero [addZero]
 		end
 		in begin
 (* 5.	checking inverse *)
-(*
-			addMod#checkingInverse [];
-			mulMod#checkingInverse [addZero];
-*)
+			addMod#checkingInverse [] addZero;
+			flush stdout;
+			mulMod#checkingInverse [addZero] mulOne;
 (* 6.	checking distribution *)
 
 	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 

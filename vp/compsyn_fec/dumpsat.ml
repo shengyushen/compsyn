@@ -304,6 +304,23 @@ and encode_EQU_list idxl1 idxl2 = begin
 		List.concat (List.map (fun x ->  encode_EQU_alone (fst x) (snd x) ) comblst);
 	end
 end
+and encode_EQU_const idx1 v = begin
+	assert (idx1 >0);
+	match v with
+	0 -> ([-idx1],"")
+	| 1 -> ([idx1],"")
+	| _ -> assert false
+end
+and encode_EQU_const_list idxl1 vl = begin
+	let len1 = List.length idxl1
+	and len2 = List.length vl
+	in begin
+		assert (len1=len2);
+		let comblst = List.combine idxl1 vl
+		in
+		List.map (fun x ->  encode_EQU_const (fst x) (snd x) ) comblst;
+	end
+end
 and encode_NEG_list idxl1 idxl2 = begin
 	let len1 = List.length idxl1
 	and len2 = List.length idxl2

@@ -29,6 +29,7 @@ so I need T_range_NOSPEC*)
 val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
 (* the index for each type_net *)
 val mutable hashtnet2idx : (type_net,int) Hashtbl.t = Hashtbl.create 100
+val mutable hashidx2tnet : (int,type_net) Hashtbl.t = Hashtbl.create 100
 val mutable hashUsedIdentifier : (string,bool) Hashtbl.t = Hashtbl.create 100
 val mutable idxCurrent : int = 3
 val mutable clsList : ((int list)*string) list = []
@@ -49,6 +50,10 @@ val mutable cellArrayUnfoldValid = Array.create 1 false
 val mutable cellArrayUnfoldPointer =0
 val mutable hashNotUsedOutput : (string,bool ) Hashtbl.t= Hashtbl.create 1
 	(*hold all wires' range and in/out*)
+
+
+
+val mutable ddM = CaddieBdd.init 0 64 256 512
 
 
 method init module2beElaborated tempdirname1 = 
@@ -1733,6 +1738,28 @@ method getTNLnamePropconst tnl = begin
 end
 
 
+method genExcludedBlockingClsList idxl excluded = begin
+	let len = List.length idxl
+	in
+	let procexcl exc = begin
+		let lenexc = List.length exc
+		in begin
+			assert (lenexc = len);
+			let comb = List.combine idxl exc
+			in
+			let procCell x = begin
+				match x with
+				(idx,0) -> idx
+				| (idx,1) -> -idx
+				| _ -> assert false
+			end
+			in
+			((List.map procCell comb),"excluded")
+		end
+	end
+	in
+	List.map procexcl excluded
+end
 
 (* inferring zero cell for additive operation *)
 method inferZero excluded = begin
@@ -1743,32 +1770,9 @@ method inferZero excluded = begin
 	and bidxl = self#getIdxList "B"
 	and zidxl = self#getIdxList "Z"
 	in 
-	let genExcludedBlockingClsList idxl = begin
-		let len = List.length idxl
-		in
-		let procexcl exc = begin
-			let lenexc = List.length exc
-			in begin
-				assert (lenexc = len);
-				let comb = List.combine idxl exc
-				in
-				let procCell x = begin
-					match x with
-					(idx,0) -> idx
-					| (idx,1) -> -idx
-					| _ -> assert false
-				end
-				in
-				((List.map procCell comb),"excluded")
-			end
-		end
-		in
-		List.map procexcl excluded
-	end
-	in
-	let excludedBlockingClsList_A = genExcludedBlockingClsList aidxl
-	and excludedBlockingClsList_B = genExcludedBlockingClsList bidxl
-	and excludedBlockingClsList_Z = genExcludedBlockingClsList zidxl
+	let excludedBlockingClsList_A = self#genExcludedBlockingClsList aidxl excluded 
+	and excludedBlockingClsList_B = self#genExcludedBlockingClsList bidxl excluded
+	and excludedBlockingClsList_Z = self#genExcludedBlockingClsList zidxl excluded
 	in
 	let clsList_AZ_equ = encode_EQU_list aidxl zidxl 
 	and clsList_AZ_neq = encode_NEG_list aidxl zidxl
@@ -1963,7 +1967,8 @@ method generateTnetIdxOne str tionrange = begin
 			let newidx=self#allocIdx
 			in begin
 				Hashtbl.add hashUsedIdentifier str true;
-				Hashtbl.add hashtnet2idx (TYPE_NET_ID(str)) newidx
+				Hashtbl.add hashtnet2idx (TYPE_NET_ID(str)) newidx;
+				Hashtbl.add hashidx2tnet newidx (TYPE_NET_ID(str));
 			end
 		end
 		| T_range_int(l,r) -> begin
@@ -1974,8 +1979,10 @@ method generateTnetIdxOne str tionrange = begin
 			in 
 			let procLR i = begin
 				let newidx = self#allocIdx 
-				in
-				Hashtbl.add hashtnet2idx (TYPE_NET_ARRAYBIT(str,i)) newidx
+				in begin
+					Hashtbl.add hashtnet2idx (TYPE_NET_ARRAYBIT(str,i)) newidx;
+					Hashtbl.add hashidx2tnet newidx (TYPE_NET_ARRAYBIT(str,i));
+				end
 			end
 			in begin
 				Hashtbl.add hashUsedIdentifier str true;
@@ -2095,8 +2102,10 @@ end
 method generateTnetIdx = begin
 	(*create the hash that map tnet to idx*)
 	let numWire = Hashtbl.fold (self#procSumWireNumber) hashWireName2Range 0
-	in
-	hashtnet2idx <- Hashtbl.create numWire
+	in begin
+		hashtnet2idx <- Hashtbl.create numWire;
+		hashidx2tnet <- Hashtbl.create numWire;
+	end
 	;
 
 	hashUsedIdentifier <- Hashtbl.create (Hashtbl.length hashWireName2Range);
@@ -2169,9 +2178,109 @@ method getFieldSize = begin
 	end
 end
 
-(*
-method checkingInverse excluded = begin
-	
+method checkingInverse excluded zero = begin
+	assert ((isEmptyList clsList)= false);
+	let aidxl = self#getIdxList "A"
+	and bidxl = self#getIdxList "B"
+	and zidxl = self#getIdxList "Z"
+	in
+	let alen = List.length aidxl
+	and blen = List.length bidxl
+	and zlen = List.length zidxl
+	and zerolen = List.length zero
+	in 
+	let allclsList = begin
+		assert (alen = blen);
+		assert (alen = zlen);
+		assert (alen = zerolen);
+
+		let excludedBlockingClsList_A = self#genExcludedBlockingClsList aidxl excluded 
+		and excludedBlockingClsList_B = self#genExcludedBlockingClsList bidxl excluded
+		in
+		let zZeroClsList = encode_EQU_const_list zidxl zero
+		in
+		clsList @ excludedBlockingClsList_A @ excludedBlockingClsList_B @ zZeroClsList 
+	end 
+	in 
+	let bddList = List.map (fun x -> allsat_interp allclsList x aidxl [] ddM) bidxl 
+	in 
+	let itpList = begin	
+		assert (List.for_all (fun x -> ((fst x)=UNSATISFIABLE) && (isSingularList (snd x))) bddList);
+		List.map (fun x -> List.hd (snd x)) bddList;
+	end
+	in begin
+		printf "Info : inverse of %s is " name;
+		List.iter (self#print_itpo_verilog_file stdout) itpList;
+		printf "\n";
+	end
 end
-*)
+
+
+
+method print_itpo_verilog_file fv arr_itpo = begin
+		let size=Array.length arr_itpo
+		in
+		let rec interpObj2str interpObj = begin
+			match interpObj with
+			TiterpCircuit_true -> "1'b1"
+			| TiterpCircuit_false -> "1'b0"
+			| TiterpCircuit_refcls(clsidx) -> begin
+				let itpo_nxt=arr_itpo.(clsidx)
+				in interpObj2str itpo_nxt
+			end
+			| TiterpCircuit_refvar(varidx) -> begin
+				if (varidx>0) then begin
+					self#idx2name varidx
+(* 					sprintf "cycle%d_%s" (varidx/final_index_oneinst) (self#idx2name (varidx mod final_index_oneinst))  *)
+				end
+				else if (varidx<0) then begin
+					sprintf "!%s" (self#idx2name (-varidx) )
+(* 					sprintf "!cycle%d_%s" ((-varidx)/final_index_oneinst) (self#idx2name ((-varidx) mod final_index_oneinst)) *)
+				end
+				else assert false
+			end
+			| TiterpCircuit_and(interpObjlst) -> begin
+				let objreslst=List.map (interpObj2str ) interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " & " objreslst);")"]
+			end
+			| TiterpCircuit_or(interpObjlst) -> begin
+				let objreslst=List.map (interpObj2str ) interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " | " objreslst);")"]
+			end
+			| TiterpCircuit_not(interpObj) -> begin
+				let objres=interpObj2str interpObj
+				in
+				sprintf "!%s" objres
+			end
+			| TiterpCircuit_printed(clsidx) -> assert false
+			| _ -> assert false
+		end
+		and prt_trace_withInterp num iter_res  = begin
+			match iter_res with
+			TiterpCircuit_none -> ()
+			| _ -> begin
+				let str_of_itpo=interpObj2str  iter_res
+				in
+				fprintf fv "%s" str_of_itpo
+			end
+		end
+		in begin
+			prt_trace_withInterp (size-1) arr_itpo.(size-1)
+		end
+end
+
+
+method idx2name idx = begin
+	let tnet = Hashtbl.find hashidx2tnet idx 
+	in 
+	match tnet with
+	TYPE_NET_ID(str) -> str
+	| TYPE_NET_ARRAYBIT(str,idx) -> sprintf "%s_%d" str idx
+	| TYPE_NET_CONST(true) -> "1"
+	| TYPE_NET_CONST(false) -> "0"
+	| TYPE_NET_NULL -> ""
+end
+
 end
