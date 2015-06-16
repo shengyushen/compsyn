@@ -2211,6 +2211,13 @@ method checkingInverse excluded zero = begin
 	in begin
 		printf "Info : inverse of %s is " name;
 		List.iter (self#print_itpo_verilog_file stdout) itpList;
+(*
+		for further confirming that the inferred 
+		predicates actually form the inverse,
+		we can enforse it into B
+		and checking that Z != zero is UNSATISFIABLE
+		we will not do it here
+*)
 		printf "\n";
 	end
 end

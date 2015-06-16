@@ -87,7 +87,7 @@ object (self)
 			addMod#checkingInverse [] addZero;
 			flush stdout;
 			mulMod#checkingInverse [addZero] mulOne;
-(* 6.	checking distribution *)
+(* 6.	checking distribution will be done by formality*)
 
 	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
 		end
