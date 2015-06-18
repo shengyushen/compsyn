@@ -1,15 +1,15 @@
 MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
 OCAMLC	= ocamlopt 
-OCAMLC_OPT = str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/
+OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/
 OBJS	=   MiniSAT.cmx misc.cmx intlist.cmx typedef.cmx gftype.cmx dumpsat.cmx interp.cmx very.cmx  parser.cmx  elabmod.cmx rtl.cmx main.cmx 
 CUDD_DIR = ../../other/cudd
 GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
 TAGPROG = otags
 CTAGS   = ctags
 
-all : compsyn_fec.exe
+all : compsyn_chkfld.exe
 
-compsyn_fec.exe: File.o Proof.o Solver.o MiniSATWrap.o MiniSATcommondef.cmx MiniSAT.cmi $(OBJS) 
+compsyn_chkfld.exe: File.o Proof.o Solver.o MiniSATWrap.o MiniSATcommondef.cmx MiniSAT.cmi $(OBJS) 
 	$(OCAMLC) $(OCAMLC_OPT)    \
 		-cclib -lstdc++ -cclib -lasmrun -cc g++ \
 		-o $@ \
@@ -65,5 +65,5 @@ parser.ml: parser.mly typedef.ml
 
 
 clean : 
-	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_fec  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe
+	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn_chkfld  compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o  *.exe
 

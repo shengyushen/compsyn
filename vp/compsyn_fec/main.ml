@@ -17,9 +17,8 @@ let elabModName = Sys.argv.(2) ;;
 let expNumber = int_of_string (Sys.argv.(3)) ;;
 let stimulationFileName = Sys.argv.(4) ;;
 let notUsedOutputFilename = Sys.argv.(5) ;;
-let additiveMod = Sys.argv.(6) ;;
-let multplicativeMod = Sys.argv.(7) ;;
-let debugFlag = bool_of_string (Sys.argv.(8)) ;;
+let fieldInfo = Sys.argv.(6) ;;
+let debugFlag = bool_of_string (Sys.argv.(7)) ;;
 
 
 (*parsing stimulation*)
@@ -76,11 +75,27 @@ and objRTL= begin
 		new rtl very_struct tempdirname debugFlag
 	end
 end
+and (fieldSize,zero,one) = begin
+	let listLines=getLines fieldInfo
+	in
+	let fieldSize = int_of_string (List.nth listLines 0)
+	in
+	let zero = begin
+		let zerostr = List.nth listLines 1
+		in
+		intstr2lst01 zerostr
+	end
+	and one = begin
+		let onestr = List.nth listLines 2
+		in
+		intstr2lst01 onestr
+	end
+	in
+	(fieldSize,zero,one)
+end
 in
 begin
-	objRTL#elaborate elabModName additiveMod multplicativeMod;
-(* 	List.iter (Printf.printf "notused %s\n") notUsedOutputList ; *)
-	objRTL#compsyn stepList expNumber notUsedOutputList;
+	objRTL#compsynRTL elabModName stepList expNumber notUsedOutputList fieldSize zero one;
 	exit 0
 end;
 

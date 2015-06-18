@@ -205,13 +205,7 @@ method proc_T_continuous_assign cont_ass = begin
 end
 
 	
-method compsyn stepList unfoldNumber notUsedOutputList fieldSize zero one = begin
-	self#unfoldNetlist stepList unfoldNumber notUsedOutputList;
-
-	self#simulateInput2Output
-end
-
-method unfoldNetlist stepList unfoldNumber notUsedOutputList = 
+method compsyn stepList unfoldNumber notUsedOutputList = 
 begin
 
 
@@ -2203,16 +2197,12 @@ method checkingInverse excluded zero = begin
 	end 
 	in 
 	let bddList = begin
-		printf "mama\n";
-		flush stdout;
 		let ddM  = CaddieBdd.init 0 64 256 512 
 		in
 		List.map (fun x ->  allsat_interp allclsList x aidxl [] ddM) bidxl 
 	end
 	in 
 	let itpList = begin	
-		printf "nana\n";
-		flush stdout;
 		assert (List.for_all (fun x -> ((fst x)=UNSATISFIABLE) && (isSingularList (snd x))) bddList);
 		List.map (fun x -> List.hd (snd x)) bddList;
 	end
@@ -2257,7 +2247,7 @@ method checkingInverse excluded zero = begin
 	match res with
 	UNSATISFIABLE -> begin
 		printf "Info : inverse of %s is " name;
- (*		List.iter (self#print_itpo_verilog_file stdout) itpList; *)
+		List.iter (fun x -> begin self#print_itpo_verilog_file stdout x ; printf "\n" end) itpList; 
 		printf "\n";
 		flush stdout;
 	end

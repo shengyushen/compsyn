@@ -46,23 +46,3 @@ and int2bool i = begin
 	|1 -> true
 	|_ -> assert false
 end
-;;
-let rec  intstr2lst01 str = begin
-	let len = String.length str 
-	in begin
-		if(len >0) then begin
-			let hd= String.sub str 0 1
-			in 
-			let hdv = begin
-				if(hd= "0" ) then 0
-				else if(hd = "1") then 1
-				else assert false
-			end
-			in
-			let remainlst = intstr2lst01 (String.sub str 1 ((String.length str)-1))
-			in
-			hdv::remainlst
-		end
-		else []
-	end
-end

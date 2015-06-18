@@ -18,20 +18,6 @@ object (self)
 (*temp dir and their various files*)
 	val tmpdirname = tmpdirname1
 	
-	val mutable topmod = new elabmod debugFlag
-	val mutable addMod = new elabmod debugFlag
-	val mutable mulMod = new elabmod debugFlag
-
-	method elaborate elabModName additiveMod multplicativeMod = begin
-		let module2beElaborated = self#findOneModuleInVerystruct elabModName
-		and addMod2beElabotated = self#findOneModuleInVerystruct additiveMod
-		and mulMod2beElaborated = self#findOneModuleInVerystruct multplicativeMod
-		in begin
-			topmod#init module2beElaborated tmpdirname;
-			addMod#init addMod2beElabotated tmpdirname;
-			mulMod#init mulMod2beElaborated tmpdirname;
-		end
-	end
 
 	method findOneModuleInVerystruct modName = begin
 		let matchModuleName mn = fun md -> begin
@@ -57,39 +43,20 @@ object (self)
 	end
 	
 	
-	method compsyn stepList unfoldNumber notUsedOutputList = begin
-		addMod#encoderCNF;
-		mulMod#encoderCNF;
-(* 		inferring field size *)
-		let addFieldSize = addMod#getFieldSize
-		and mulFieldSize = mulMod#getFieldSize
-		in 
-		let addZero = begin
-			assert (addFieldSize = mulFieldSize);
-			printf "Info : working on field GF(2^%d)\n" addFieldSize;
-(* 1.	checking additive closure : dont need*)
-(* 2.	checking additive Abelian *)
-			addMod#checkingAbelian;
-(* 3.	checking additive associative *)
-			addMod#checkingAssiciative;
-(* 4.	finding out additive zero *)
-			addMod#inferZero [];
-		end
-		in
-		let mulOne = begin
-			mulMod#checkingAbelian;
-(* 			this is slow and should be verified with formality *)
-(* 			mulMod#checkingAssiciative; *)
-			mulMod#inferZero [addZero]
-		end
-		in begin
-(* 5.	checking inverse *)
-			addMod#checkingInverse [] addZero;
-			flush stdout;
-			mulMod#checkingInverse [addZero] mulOne;
-(* 6.	checking distribution will be done by formality*)
+	method compsynRTL elabModName stepList unfoldNumber notUsedOutputList fieldSize zero one = begin
+		printf "fieldSize is %d\n"  fieldSize;
+		printf "zero is : ";
+		List.iter (printf "%d" ) zero;
+		printf "\n";
+		printf "one is : ";
+		List.iter (printf "%d") one;
+		printf "\n";
 
-	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
+		let	topmod = new elabmod debugFlag
+		and module2beElaborated = self#findOneModuleInVerystruct elabModName
+		in begin
+			topmod#init module2beElaborated tmpdirname;
+	 		topmod#compsyn stepList unfoldNumber notUsedOutputList fieldSize zero one
 		end
 	end
 end
