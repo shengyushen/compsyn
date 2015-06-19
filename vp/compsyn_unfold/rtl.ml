@@ -43,20 +43,13 @@ object (self)
 	end
 	
 	
-	method compsynRTL elabModName fieldSize zero one = begin
-		printf "fieldSize is %d\n"  fieldSize;
-		printf "zero is : ";
-		List.iter (printf "%d" ) zero;
-		printf "\n";
-		printf "one is : ";
-		List.iter (printf "%d") one;
-		printf "\n";
+	method compsynRTL elabModName stepList unfoldNumber notUsedOutputList  = begin
 
 		let	topmod = new elabmod debugFlag
 		and module2beElaborated = self#findOneModuleInVerystruct elabModName
 		in begin
 			topmod#init module2beElaborated tmpdirname;
-	 		topmod#compsyn fieldSize zero one
+	 		topmod#compsyn stepList unfoldNumber notUsedOutputList 
 		end
 	end
 end

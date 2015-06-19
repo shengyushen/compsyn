@@ -14,57 +14,13 @@ let start_time = Unix.gettimeofday ();;
 (*parsing input files*)
 let inputFileName = Sys.argv.(1) ;;
 let elabModName = Sys.argv.(2) ;;
-let expNumber = int_of_string (Sys.argv.(3)) ;;
-let stimulationFileName = Sys.argv.(4) ;;
-let notUsedOutputFilename = Sys.argv.(5) ;;
-let fieldInfo = Sys.argv.(6) ;;
-let debugFlag = bool_of_string (Sys.argv.(7)) ;;
+let fieldInfo = Sys.argv.(3) ;;
+let debugFlag = bool_of_string (Sys.argv.(4)) ;;
 
 
 (*parsing stimulation*)
 
-let stepList = begin
-	let listLines=getLines stimulationFileName
-	in
-	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
-	in
-	let noEmptyList=List.filter (fun x -> (isEmptyList x)=false) splitedLinesList
-	in 
-	let procmap y = begin
-		match y with
-		[a;b] -> begin
-			if ((b="0") || (b="1")) then
-				(a,int_of_string b)
-			else begin
-				Printf.printf "Error : invalid input step %s %s\n" a b;
-				flush stdout;
-				assert false
-			end
-		end
-		| _ -> assert false
-	end
-	in
-	List.map procmap noEmptyList
-end
-(*not used output list*)
-and notUsedOutputList = begin
-	let listLines=getLines notUsedOutputFilename
-	in
-	let splitedLinesList=List.map (Str.split (Str.regexp "[ \t]+")) listLines
-	in
-	let lstSingular=List.filter  isSingularList splitedLinesList
-	in
-	let notUsedList=List.map (fun x -> List.hd x) lstSingular
-	in begin
-		let fc=open_out "notUsedReal"
-		in begin
-			List.iter (Printf.fprintf fc "%s\n") notUsedList;
-			close_out fc;
-		end;
-		notUsedList
-	end
-end
-and objRTL= begin
+let objRTL= begin
 	let inputFileChannle = open_in inputFileName
 	in
 	let lexbuf = Lexing.from_channel inputFileChannle
@@ -95,7 +51,7 @@ and (fieldSize,zero,one) = begin
 end
 in
 begin
-	objRTL#compsynRTL elabModName stepList expNumber notUsedOutputList fieldSize zero one;
+	objRTL#compsynRTL elabModName fieldSize zero one;
 	exit 0
 end;
 
