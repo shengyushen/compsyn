@@ -650,7 +650,7 @@ and allsat_interp
 			ddM 
 = 
 begin
-(* 	dbg_print "allsat_interp"; *)
+ 	dbg_print "allsat_interp"; 
 	allsat_interp_BDD 
 					clslst_R 
 					target 

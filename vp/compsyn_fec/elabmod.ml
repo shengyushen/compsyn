@@ -181,6 +181,8 @@ end
 	
 method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 	set_current_time;
+
+	
 end
 
 

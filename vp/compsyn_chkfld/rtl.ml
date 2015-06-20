@@ -89,6 +89,7 @@ object (self)
 				end
 				in begin
 					(* 5.	checking inverse *)
+					flush stdout;
  					mulMod#checkingInverse [zero] mulOne; 
 					(* 6.	checking distribution will be done by formality*)
 					flush stdout;

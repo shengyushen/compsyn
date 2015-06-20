@@ -35,6 +35,7 @@ val mutable idxCurrent : int = 3
 val mutable clsList : ((int list)*string) list = []
 
 
+val mutable ddM  = CaddieBdd.init 0 64 256 512 
 
 
 
@@ -2197,8 +2198,6 @@ method checkingInverse excluded zero = begin
 	end 
 	in 
 	let bddList = begin
-		let ddM  = CaddieBdd.init 0 64 256 512 
-		in
 		List.map (fun x ->  allsat_interp allclsList x aidxl [] ddM) bidxl 
 	end
 	in 
@@ -2215,7 +2214,6 @@ method checkingInverse excluded zero = begin
 		we can enforse it into B
 		and checking that Z != zero is UNSATISFIABLE
 *)
-		
 		let rec encodingItpList oldIdxMax currentItpList = begin
 			match currentItpList with
 			hd::tl -> begin
@@ -2247,7 +2245,7 @@ method checkingInverse excluded zero = begin
 	match res with
 	UNSATISFIABLE -> begin
 		printf "Info : inverse of %s is " name;
-		List.iter (fun x -> begin self#print_itpo_verilog_file stdout x ; printf "\n" end) itpList; 
+ 		List.iter (fun x -> begin self#print_itpo_verilog_file stdout x ; printf "\n" end) itpList;  
 		printf "\n";
 		flush stdout;
 	end
