@@ -23,10 +23,14 @@ val mutable portlist = []
 val mutable tempdirname = ""
 
 (* the original module  *)
-val mutable cellStack : (string*string*(type_net list)*(type_net list)*(type_net list)*(type_net list)) Stack.t= Stack.create ()
+val mutable cellStack : (string*string*(type_net list)*(type_net list)*(type_net list)*(type_net list)) Stack.t = Stack.create ()
 (*using range because some wire dont have range,
 so I need T_range_NOSPEC*)
 val mutable hashWireName2Range : (string,(type_ion*range))  Hashtbl.t= Hashtbl.create 100
+
+val mutable cellArray  = Array.make 1 ("","",[],[],[],[]) 
+val mutable cellArrayPointer = 0
+val mutable hashTNL2gftype : ((type_net list),gftype) Hashtbl.t = Hashtbl.create 10000
 
 
 method init module2beElaborated tempdirname1 = 
@@ -178,11 +182,171 @@ method proc_T_continuous_assign cont_ass = begin
 		assert false
 end
 
-	
+method getInputData = begin
+	let inputList = Hashtbl.fold (fun k d t -> match d with (TYPE_CONNECTION_IN,range) -> (k,range)::t | _ -> t) hashWireName2Range []
+	in begin
+		assert (isSingularList inputList);
+		List.hd inputList
+	end
+end
+
+
+method getParity = begin
+	let outputList = Hashtbl.fold (fun k d t -> match d with (TYPE_CONNECTION_OUT,range) -> (k,range)::t | _ -> t) hashWireName2Range []
+	in begin
+		assert (isSingularList outputList);
+		List.hd outputList
+	end
+end
+
+method isReady tnl = begin
+	((Hashtbl.mem hashTNL2gftype tnl ) || isConstTNL tnl)
+end
+
+method getReady tnl = begin
+	if (isConstTNL tnl) then GFTYPE_TNLIST(tnl)
+	else Hashtbl.find hashTNL2gftype tnl
+end
+
 method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 	set_current_time;
-
 	
+	let (inputName,inputRange) = self#getInputData
+	and (parityName,parityRange) = self#getParity
+	in
+	let (inputLeft,inputRight) = rng2lr inputRange
+	and (parityLeft,parityRight) = rng2lr parityRange
+	in
+	let (baseInputMax,baseParityMax) = begin
+		assert ( isDiv ( inputLeft - inputRight + 1 ) fieldSize);
+		assert ( isDiv ( parityLeft - parityRight + 1 ) fieldSize);
+		assert ( inputLeft > inputRight ) ; 
+		assert ( parityLeft > parityRight ) ;
+
+		let baseInputMax = (( inputLeft - inputRight + 1 ) / fieldSize ) - 1
+		and baseParityMax = (( parityLeft - parityRight + 1 ) / fieldSize ) - 1
+		in
+		(baseInputMax,baseParityMax)
+	end
+	in begin
+		printf "inputName : %s [%d:%d]\n" inputName inputLeft inputRight;
+		printf "parityName : %s [%d:%d]\n" parityName parityLeft parityRight;
+
+		cellArray <- Array.make (Stack.length cellStack)  ("","",[],[],[],[]);
+		cellArrayPointer <- 0;
+		let procStackCell cell = begin
+			cellArray.(cellArrayPointer) <- cell;
+			cellArrayPointer <- cellArrayPointer + 1;
+		end
+		in
+		Stack.iter procStackCell cellStack;
+		assert (cellArrayPointer = (Array.length cellArray));
+
+		(*first adding the input gftype*)
+		for i = 0 to baseInputMax do
+			let l = i*fieldSize + fieldSize -1
+			and r = i*fieldSize
+			in
+			let lst = lr2list l r
+			in 
+			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(inputName,x)) lst
+			in 
+			Hashtbl.add hashTNL2gftype tnl (GFTYPE_TNLIST(tnl))
+		done
+		;
+
+
+
+		(*then propagate*)
+		let stop = ref false
+		and cellArrayDone = Array.make (Array.length cellArray)  false
+		in
+		while (!stop)=false do
+			stop := true;
+			let procCell i dn = begin
+				if(dn=false) then
+				let cell = cellArray.(i)
+				in
+				match cell with
+				("gfadd_mod",instname,ztnl,atnl,btnl,[]) -> begin
+					if((self#isReady atnl) && (self#isReady btnl)) then begin
+						let agft = self#getReady atnl
+						and bgft = self#getReady btnl
+						in
+						let zgft = GFTYPE_ADD(agft,bgft)
+						in begin
+(*
+							assert (dn=false);
+							printf "on %d %s\n" i instname;
+*)
+							Hashtbl.replace hashTNL2gftype ztnl zgft ;
+							cellArrayDone.(i) <- true;
+							stop := false ;
+						end
+					end
+				end
+				| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,[]) -> begin
+					if((self#isReady atnl) && (self#isReady btnl)) then begin
+						let agft = self#getReady atnl
+						and bgft = self#getReady btnl
+						in
+						let zgft = GFTYPE_MULT(agft,bgft)
+						in begin
+(*
+							assert (dn=false);
+							printf "on %d %s\n" i instname;
+*)
+							Hashtbl.replace hashTNL2gftype ztnl zgft ;
+							cellArrayDone.(i) <- true;
+							stop := false ;
+						end
+					end
+				end
+				| _ -> assert false
+			end
+			in
+			Array.iteri procCell cellArrayDone;
+		done;
+
+
+		(*finally checking all cells with marked gftype*)
+		let procCell cell = begin
+			match cell with
+			("gfadd_mod",instname,ztnl,atnl,btnl,[]) -> begin
+				assert (self#isReady atnl);
+				assert (self#isReady btnl);
+				assert (self#isReady ztnl);
+			end
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,[]) -> begin
+				assert (self#isReady atnl);
+				assert (self#isReady btnl);
+				assert (self#isReady ztnl);
+			end
+			| _ -> assert false
+		end
+		in 
+		Array.iter procCell cellArray;
+
+
+		for i = 0 to baseParityMax do
+			let l = i*fieldSize + fieldSize -1
+			and r = i*fieldSize
+			in
+			let lst = lr2list l r
+			in
+			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(parityName,x)) lst
+			in
+			let gft = Hashtbl.find hashTNL2gftype tnl
+			in
+			match gft with
+			GFTYPE_TNLIST(_) -> printf "GFTYPE_TNLIST\n"
+			| GFTYPE_ADD(_,_) -> printf "GFTYPE_ADD\n"
+			| GFTYPE_MULT(_,_) -> printf "GFTYPE_MULT\n"
+		done
+		;
+
+
+	end
 end
 
 

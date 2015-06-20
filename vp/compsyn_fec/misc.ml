@@ -46,6 +46,9 @@ and int2bool i = begin
 	|1 -> true
 	|_ -> assert false
 end
+and isDiv a b = begin
+	((abs a) mod b ) = 0
+end
 ;;
 let rec  intstr2lst01 str = begin
 	let len = String.length str 
