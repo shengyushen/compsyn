@@ -109,6 +109,23 @@ end
 
 type gftype = 
 	GFTYPE_TNLIST of type_net list
-	| GFTYPE_ADD of gftype*gftype
-	| GFTYPE_MULT of gftype*gftype
+	| GFTYPE_ADD of gftype list
+	| GFTYPE_MULT of gftype list
+;;
 
+let rec isGFADD gft = begin
+	match gft with
+	GFTYPE_ADD(_) -> true
+	| _ -> false
+end
+and isGFMUL gft = begin
+	match gft with
+	GFTYPE_MULT(_) -> true
+	| _ -> false
+end
+and getSubList gft = begin
+	match gft with
+	GFTYPE_ADD(lst) -> lst
+	| GFTYPE_MULT(lst) -> lst
+	| _ -> assert false
+end

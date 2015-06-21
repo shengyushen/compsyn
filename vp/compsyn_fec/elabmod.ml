@@ -208,6 +208,59 @@ method getReady tnl = begin
 	else Hashtbl.find hashTNL2gftype tnl
 end
 
+method mergeGFT gft = begin
+(*this seems to be very expensive*)
+	self#mergeGFT_internl 0 gft 
+end
+
+method mergeGFT_internl depth gft = begin
+(* 	printf "into %d\n" depth; *)
+	match gft with
+	GFTYPE_ADD(gftlst) -> begin
+		let newgftlst = List.map (self#mergeGFT_internl (depth +1)) gftlst
+		in
+		let (addlst,nonaddlst) = List.partition isGFADD newgftlst
+		in
+		let sublst = List.concat (List.map getSubList addlst)
+		in
+		GFTYPE_ADD(sublst@nonaddlst) 
+	end
+	| GFTYPE_MULT(gftlst) -> begin
+		let newgftlst = List.map (self#mergeGFT_internl (depth +1)) gftlst
+		in
+		let (mullst,nonmullst) = List.partition isGFMUL newgftlst
+		in
+		let sublst = List.concat (List.map getSubList mullst)
+		in
+		GFTYPE_MULT(sublst@nonmullst)
+	end
+	| _ -> begin
+(* 		printf "return\n"; *)
+		gft
+	end
+end
+
+method checkMergeGFT gft = begin
+(*this seems to be very expensive*)
+	self#checkMergeGFT_internl 0 gft 
+end
+
+method checkMergeGFT_internl depth gft = begin
+ 	printf "into %d\n" depth; 
+	match gft with
+	GFTYPE_ADD(gftlst) -> begin
+		assert (List.for_all (fun x -> (isGFADD x)=false) gftlst );
+		List.iter (self#checkMergeGFT_internl (depth + 1)) gftlst
+	end
+	| GFTYPE_MULT(gftlst) -> begin
+		assert (List.for_all (fun x -> (isGFMUL x)=false) gftlst );
+		List.iter (self#checkMergeGFT_internl (depth + 1)) gftlst
+	end
+	| _ -> begin
+		printf "return\n";
+		()
+	end
+end
 method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 	set_current_time;
 	
@@ -273,7 +326,18 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 						let agft = self#getReady atnl
 						and bgft = self#getReady btnl
 						in
-						let zgft = GFTYPE_ADD(agft,bgft)
+						let zgft = begin
+							if(isGFADD agft) then 
+								if(isGFADD bgft) then 
+									GFTYPE_ADD((getSubList agft) @ (getSubList bgft))
+								else 
+									GFTYPE_ADD(bgft::(getSubList agft) )
+							else 
+								if(isGFADD bgft) then 
+									GFTYPE_ADD(agft::(getSubList bgft))
+								else
+									GFTYPE_ADD([agft;bgft])
+						end
 						in begin
 (*
 							assert (dn=false);
@@ -290,7 +354,18 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 						let agft = self#getReady atnl
 						and bgft = self#getReady btnl
 						in
-						let zgft = GFTYPE_MULT(agft,bgft)
+						let zgft = begin
+							if(isGFMUL agft) then 
+								if(isGFMUL bgft) then 
+									GFTYPE_MULT((getSubList agft) @ (getSubList bgft))
+								else 
+									GFTYPE_MULT(bgft::(getSubList agft) )
+							else 
+								if(isGFMUL bgft) then 
+									GFTYPE_MULT(agft::(getSubList bgft))
+								else
+									GFTYPE_MULT([agft;bgft])
+						end
 						in begin
 (*
 							assert (dn=false);
@@ -307,7 +382,8 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 			in
 			Array.iteri procCell cellArrayDone;
 		done;
-
+		printf "Info : finishing propagating GF\n";
+		flush stdout;
 
 		(*finally checking all cells with marked gftype*)
 		let procCell cell = begin
@@ -326,7 +402,29 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 		end
 		in 
 		Array.iter procCell cellArray;
+		printf "Info : finish checking all marked\n";
+		flush stdout;
 
+		for i = 0 to baseParityMax do
+			let l = i*fieldSize + fieldSize -1
+			and r = i*fieldSize
+			in
+			let lst = lr2list l r
+			in
+			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(parityName,x)) lst
+			in
+			let gft = Hashtbl.find hashTNL2gftype tnl
+			in
+ 			self#checkMergeGFT gft 
+(*
+ 			let newgft = self#mergeGFT gft 
+			in
+			Hashtbl.replace hashTNL2gftype tnl newgft
+*)
+		done
+		;
+		printf "Info : finish checking no nested same type operator\n";
+		flush stdout;
 
 		for i = 0 to baseParityMax do
 			let l = i*fieldSize + fieldSize -1
@@ -340,8 +438,8 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 			in
 			match gft with
 			GFTYPE_TNLIST(_) -> printf "GFTYPE_TNLIST\n"
-			| GFTYPE_ADD(_,_) -> printf "GFTYPE_ADD\n"
-			| GFTYPE_MULT(_,_) -> printf "GFTYPE_MULT\n"
+			| GFTYPE_ADD(_) -> printf "GFTYPE_ADD\n"
+			| GFTYPE_MULT(_) -> printf "GFTYPE_MULT\n"
 		done
 		;
 
