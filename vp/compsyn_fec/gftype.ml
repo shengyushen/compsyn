@@ -104,28 +104,25 @@ end
 and isConstTNL tnl = begin
 	List.for_all isConstTN tnl
 end
+and getConstTNL tnl = begin
+	assert (isConstTNL tnl);
+	List.map (fun x -> match x with TYPE_NET_CONST(y) -> y | _ -> assert false) tnl
+end
+and bool2int b = begin
+	match b with
+	true -> 1
+	| _ -> 0
+end
+and getConstTNLname tnl = begin
+	let intlst = getConstTNL tnl
+	in
+	List.fold_left (fun x y -> sprintf "%s%s" x (string_of_int (bool2int y)) ) "" intlst
+end
 ;;
 
 
 type gftype = 
-	GFTYPE_TNLIST of type_net list
-	| GFTYPE_ADD of gftype list
-	| GFTYPE_MULT of gftype list
+	GFTYPE_CONST of type_net list
+	| GFTYPE_WIRE of string
 ;;
 
-let rec isGFADD gft = begin
-	match gft with
-	GFTYPE_ADD(_) -> true
-	| _ -> false
-end
-and isGFMUL gft = begin
-	match gft with
-	GFTYPE_MULT(_) -> true
-	| _ -> false
-end
-and getSubList gft = begin
-	match gft with
-	GFTYPE_ADD(lst) -> lst
-	| GFTYPE_MULT(lst) -> lst
-	| _ -> assert false
-end

@@ -199,68 +199,6 @@ method getParity = begin
 	end
 end
 
-method isReady tnl = begin
-	((Hashtbl.mem hashTNL2gftype tnl ) || isConstTNL tnl)
-end
-
-method getReady tnl = begin
-	if (isConstTNL tnl) then GFTYPE_TNLIST(tnl)
-	else Hashtbl.find hashTNL2gftype tnl
-end
-
-method mergeGFT gft = begin
-(*this seems to be very expensive*)
-	self#mergeGFT_internl 0 gft 
-end
-
-method mergeGFT_internl depth gft = begin
-(* 	printf "into %d\n" depth; *)
-	match gft with
-	GFTYPE_ADD(gftlst) -> begin
-		let newgftlst = List.map (self#mergeGFT_internl (depth +1)) gftlst
-		in
-		let (addlst,nonaddlst) = List.partition isGFADD newgftlst
-		in
-		let sublst = List.concat (List.map getSubList addlst)
-		in
-		GFTYPE_ADD(sublst@nonaddlst) 
-	end
-	| GFTYPE_MULT(gftlst) -> begin
-		let newgftlst = List.map (self#mergeGFT_internl (depth +1)) gftlst
-		in
-		let (mullst,nonmullst) = List.partition isGFMUL newgftlst
-		in
-		let sublst = List.concat (List.map getSubList mullst)
-		in
-		GFTYPE_MULT(sublst@nonmullst)
-	end
-	| _ -> begin
-(* 		printf "return\n"; *)
-		gft
-	end
-end
-
-method checkMergeGFT gft = begin
-(*this seems to be very expensive*)
-	self#checkMergeGFT_internl 0 gft 
-end
-
-method checkMergeGFT_internl depth gft = begin
- 	printf "into %d\n" depth; 
-	match gft with
-	GFTYPE_ADD(gftlst) -> begin
-		assert (List.for_all (fun x -> (isGFADD x)=false) gftlst );
-		List.iter (self#checkMergeGFT_internl (depth + 1)) gftlst
-	end
-	| GFTYPE_MULT(gftlst) -> begin
-		assert (List.for_all (fun x -> (isGFMUL x)=false) gftlst );
-		List.iter (self#checkMergeGFT_internl (depth + 1)) gftlst
-	end
-	| _ -> begin
-		printf "return\n";
-		()
-	end
-end
 method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 	set_current_time;
 	
@@ -304,145 +242,101 @@ method compsyn (fieldSize:int) (zero: int list) (one : int list) = begin
 			in 
 			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(inputName,x)) lst
 			in 
-			Hashtbl.add hashTNL2gftype tnl (GFTYPE_TNLIST(tnl))
+			Hashtbl.add hashTNL2gftype tnl (GFTYPE_WIRE(sprintf "%s_%d" inputName i))
 		done
 		;
 
-
-
-		(*then propagate*)
-		let stop = ref false
-		and cellArrayDone = Array.make (Array.length cellArray)  false
-		in
-		while (!stop)=false do
-			stop := true;
-			let procCell i dn = begin
-				if(dn=false) then
-				let cell = cellArray.(i)
-				in
-				match cell with
-				("gfadd_mod",instname,ztnl,atnl,btnl,[]) -> begin
-					if((self#isReady atnl) && (self#isReady btnl)) then begin
-						let agft = self#getReady atnl
-						and bgft = self#getReady btnl
-						in
-						let zgft = begin
-							if(isGFADD agft) then 
-								if(isGFADD bgft) then 
-									GFTYPE_ADD((getSubList agft) @ (getSubList bgft))
-								else 
-									GFTYPE_ADD(bgft::(getSubList agft) )
-							else 
-								if(isGFADD bgft) then 
-									GFTYPE_ADD(agft::(getSubList bgft))
-								else
-									GFTYPE_ADD([agft;bgft])
-						end
-						in begin
-(*
-							assert (dn=false);
-							printf "on %d %s\n" i instname;
-*)
-							Hashtbl.replace hashTNL2gftype ztnl zgft ;
-							cellArrayDone.(i) <- true;
-							stop := false ;
-						end
-					end
-				end
-				| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,[]) -> begin
-					if((self#isReady atnl) && (self#isReady btnl)) then begin
-						let agft = self#getReady atnl
-						and bgft = self#getReady btnl
-						in
-						let zgft = begin
-							if(isGFMUL agft) then 
-								if(isGFMUL bgft) then 
-									GFTYPE_MULT((getSubList agft) @ (getSubList bgft))
-								else 
-									GFTYPE_MULT(bgft::(getSubList agft) )
-							else 
-								if(isGFMUL bgft) then 
-									GFTYPE_MULT(agft::(getSubList bgft))
-								else
-									GFTYPE_MULT([agft;bgft])
-						end
-						in begin
-(*
-							assert (dn=false);
-							printf "on %d %s\n" i instname;
-*)
-							Hashtbl.replace hashTNL2gftype ztnl zgft ;
-							cellArrayDone.(i) <- true;
-							stop := false ;
-						end
-					end
-				end
-				| _ -> assert false
-			end
+		for i = 0 to baseParityMax do
+			let l = i*fieldSize + fieldSize -1
+			and r = i*fieldSize
 			in
-			Array.iteri procCell cellArrayDone;
-		done;
-		printf "Info : finishing propagating GF\n";
-		flush stdout;
+			let lst = lr2list l r
+			in
+			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(parityName,x)) lst
+			in
+			Hashtbl.add hashTNL2gftype tnl (GFTYPE_WIRE(sprintf "%s_%d" parityName i))
+		done
+		;
 
-		(*finally checking all cells with marked gftype*)
+		let tmpCounter = ref 1
+		in
+		let isProperLength tnl = begin
+			(List.length tnl) = fieldSize
+		end
+		and allocatingTNLName tnl = begin
+			if(isConstTNL tnl)=false then begin
+				if(Hashtbl.mem hashTNL2gftype tnl)=false then begin
+					Hashtbl.add hashTNL2gftype tnl (GFTYPE_WIRE(sprintf "tmp_%d" (!tmpCounter)));
+					tmpCounter := (!tmpCounter) +1
+				end
+			end
+		end
+		in
 		let procCell cell = begin
 			match cell with
 			("gfadd_mod",instname,ztnl,atnl,btnl,[]) -> begin
-				assert (self#isReady atnl);
-				assert (self#isReady btnl);
-				assert (self#isReady ztnl);
+				assert (isProperLength ztnl);
+				assert (isProperLength atnl);
+				assert (isProperLength btnl);
+
+				allocatingTNLName ztnl;
+				allocatingTNLName atnl;
+				allocatingTNLName btnl;
 			end
 			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,[]) -> begin
-				assert (self#isReady atnl);
-				assert (self#isReady btnl);
-				assert (self#isReady ztnl);
+				assert (isProperLength ztnl);
+				assert (isProperLength atnl);
+				assert (isProperLength btnl);
+
+				allocatingTNLName ztnl;
+				allocatingTNLName atnl;
+				allocatingTNLName btnl;
 			end
 			| _ -> assert false
 		end
-		in 
+		in
 		Array.iter procCell cellArray;
-		printf "Info : finish checking all marked\n";
-		flush stdout;
 
-		for i = 0 to baseParityMax do
-			let l = i*fieldSize + fieldSize -1
-			and r = i*fieldSize
-			in
-			let lst = lr2list l r
-			in
-			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(parityName,x)) lst
-			in
-			let gft = Hashtbl.find hashTNL2gftype tnl
-			in
- 			self#checkMergeGFT gft 
-(*
- 			let newgft = self#mergeGFT gft 
-			in
-			Hashtbl.replace hashTNL2gftype tnl newgft
-*)
-		done
-		;
-		printf "Info : finish checking no nested same type operator\n";
-		flush stdout;
+		let fc = open_out "poly"
+		in
+		let getTNLHashName tnl = begin
+			if(isConstTNL tnl) then getConstTNLname tnl
+			else 
+				match Hashtbl.find hashTNL2gftype tnl with
+				GFTYPE_WIRE(str) -> str
+				| _ -> assert false
+		end
+		in
+		let procCell cell = begin
+			match cell with
+			("gfadd_mod",instname,ztnl,atnl,btnl,[]) -> begin
+				assert (isProperLength ztnl);
+				assert (isProperLength atnl);
+				assert (isProperLength btnl);
 
-		for i = 0 to baseParityMax do
-			let l = i*fieldSize + fieldSize -1
-			and r = i*fieldSize
-			in
-			let lst = lr2list l r
-			in
-			let tnl = List.map (fun x -> TYPE_NET_ARRAYBIT(parityName,x)) lst
-			in
-			let gft = Hashtbl.find hashTNL2gftype tnl
-			in
-			match gft with
-			GFTYPE_TNLIST(_) -> printf "GFTYPE_TNLIST\n"
-			| GFTYPE_ADD(_) -> printf "GFTYPE_ADD\n"
-			| GFTYPE_MULT(_) -> printf "GFTYPE_MULT\n"
-		done
-		;
+				let aname = getTNLHashName atnl
+				and bname = getTNLHashName btnl
+				and zname = getTNLHashName ztnl
+				in
+				fprintf fc "%s = %s + %s \n" zname aname bname 
+			end
+			| ("gfmult_flat_mod",instname,ztnl,atnl,btnl,[]) -> begin
+				assert (isProperLength ztnl);
+				assert (isProperLength atnl);
+				assert (isProperLength btnl);
 
+				let aname = getTNLHashName atnl
+				and bname = getTNLHashName btnl
+				and zname = getTNLHashName ztnl
+				in
+				fprintf fc "%s = %s * %s \n" zname aname bname 
+			end
+			| _ -> assert false
+		end
+		in begin
+			Array.iter procCell cellArray;
+			close_out fc;
+		end
 
 	end
 end
