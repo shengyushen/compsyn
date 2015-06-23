@@ -59,8 +59,14 @@ step2_nodef	replace macro with their difinition
 
 aag2verilog convert aig to verilog
 
+the following are for FEC:
+compsyn_symsim : symbolic simulation of fec code to remove unused and const  bool and GF cells
+compsyn_unfold : unfolding the fec code 
+compsyn_chkfld : checking the gf character
+compsyn_fec    : printing the poly of fec encoder
 
 
+compsyn_pdr : property directed reachability , not finished
 
 ###########
 following are never used
