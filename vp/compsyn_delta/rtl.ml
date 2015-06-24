@@ -1,11 +1,11 @@
+open Sys
+
 open Typedef
-open Typedefcommon
 open Circuit_obj
 open Elabmod
 open Misc
-open Misc2
-open Sys
-open Elabmod
+open Dumpsat
+open Printf
 
 exception No_such_clock
 
@@ -80,9 +80,28 @@ object (self)
 		emod#print dumpout
 	end
 	
-	method compsyn (*(bound:int)*)  (instrlist:string list) (outstrlist:string list) = begin
+	method compsyn assert1 assert2  (instrlist:string list) (outstrlist:string list) = begin
+		printf "assertions\n";
+		printf "%s\n" assert1;
+		printf "%s\n" assert2;
 		match elaboratedModuleList with
-		[topmod] -> topmod#compsyn (*bound*) instrlist outstrlist
+		[topmod] -> begin
+			let (res,d,l,p,f)=topmod#compsyn (*bound*) instrlist outstrlist
+			in begin
+				if (res==SATISFIABLE) then begin
+					Printf.printf "FINAL RESULT : FAILED:  can't found solution\n";
+					1
+				end
+				else begin
+					Printf.printf "FINAL RESULT : SUCCESS:  delay = %d  length = %d prefix = %d forward = %d \n" d l p f;
+					0
+				end
+			end
+		end
+		| _ -> begin
+			Printf.printf "fatal error: there should only be one module"; 
+			exit 1
+		end
 	end
 end
 ;;

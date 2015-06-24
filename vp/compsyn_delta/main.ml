@@ -1,5 +1,7 @@
-open Rtl
 open Sys
+
+open Misc
+open Rtl
 open Print_v
 
 (*open the temp dir*)
@@ -75,8 +77,20 @@ begin
 end
 ;;
 
+let (assert1,assert2) = begin
+(* parsing assertions files *)
+	let lines = getLines "assertions" 
+	in
+	let lines_notcomment = List.filter (fun x -> (String.get x 0)<>'#') lines 
+	in begin
+		assert ((List.length lines_notcomment)=2);
+		(List.hd lines_notcomment, (List.hd (List.tl lines_notcomment)))
+	end
+end
+;;
+
 (*we dont use bound any more*)
-let fail_ornot=objRTL#compsyn (*(int_of_string Sys.argv.(4))*) instrlist outstrlist;;
+let fail_ornot=objRTL#compsyn assert1 assert2 instrlist outstrlist;;
 
 exit fail_ornot
 
