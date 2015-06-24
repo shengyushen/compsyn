@@ -46,3 +46,17 @@ and int2bool i = begin
 	|1 -> true
 	|_ -> assert false
 end
+let string_equ str1 str2 = begin
+  if (String.compare str1 str2) ==0 then true
+	else false
+end
+
+let rec string2charlist str = begin
+	let ll = String.length str
+	in begin
+		if ll!= 0 then begin
+(String.get str 0)::(string2charlist (String.sub str 1 (ll-1)))
+		end
+		else []
+	end
+end

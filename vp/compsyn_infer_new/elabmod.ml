@@ -5,19 +5,8 @@
 
 open Printf
 open Typedef
-open Typedefcommon
-open Circuit_obj
-open Print_v
-open Misc2
 open Misc
-open Statement
-open Misc2
-open Dependent
-open Str
-open Clauseman
 open Interp
-open Bddssy
-open Aig
 
 exception UNSAT
 

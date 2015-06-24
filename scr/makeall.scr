@@ -31,7 +31,7 @@ do
   popd
 done
 
-for i in `find vp/ -maxdepth 1 -mindepth 1 -type d|grep -v "\.svn\|vp\/scr\|vp\/bak"|sort`
+for i in `find vp/ -maxdepth 1 -mindepth 1 -type d|grep -v "\.svn\|vp\/scr\|vp\/bak\|share"|sort`
 do
   pushd .
   cd $i

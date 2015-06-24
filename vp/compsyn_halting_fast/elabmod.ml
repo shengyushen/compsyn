@@ -1,16 +1,14 @@
+open Str
+
 open Typedef
 open Circuit_obj
 open Print_v
-open Misc2
 open Misc
-open Statement
 open Printf
-open Misc2
-open Print_v
-open Dependent
-open Str
+open MiniSATcommondef
+open Intlist
 
-exception UNSAT
+(* exception UNSAT *)
 
 type result = SATISFIABLE | UNSATISFIABLE 
 type result_uniq = RES_UNIQ | RES_NONU | RES_UNK
@@ -674,9 +672,9 @@ object (self)
 			;
 			
 			(*solve it*)
-			 match MiniSAT.solve () with
-			| MiniSAT.UNSAT -> UNSATISFIABLE
-			| MiniSAT.SAT   -> SATISFIABLE
+			 match (MiniSAT.solve () ) with
+				UNSAT->UNSATISFIABLE
+				|SAT->SATISFIABLE
 		end
 	end
 		
@@ -1069,7 +1067,7 @@ object (self)
 		and l=1
 		in
 		let nl_const_cnfname=   String.concat "" [tempdirname ; "dumpout/nl_const_"    ; name ;"_d";string_of_int(d);"_l";string_of_int(l);"_p";string_of_int(p);"_f";string_of_int(f);".cnf"]
-		and start_time = Unix.gettimeofday ()
+(* 		and start_time = Unix.gettimeofday () *)
 		in begin
 			(*to dump out an instance from 0 to bd-1*)
 			(*nl_const cnf construction*)
@@ -1167,7 +1165,7 @@ object (self)
 		let start_time = Unix.gettimeofday ()
 		in
 		let cnfname_1inst=String.concat "" [tempdirname ; "dumpout/inst1_" ; name ;".cnf"]
-		and cnfname_dualsyn=String.concat "" [tempdirname ; "dumpout/dualsyn_" ; name ;".cnf"]
+(* 		and cnfname_dualsyn=String.concat "" [tempdirname ; "dumpout/dualsyn_" ; name ;".cnf"] *)
 		in 
 		begin
 			(*Printf.printf "start to do with bound\n" ;*)
@@ -1503,8 +1501,8 @@ object (self)
 				
 				let commonlen=min (List.length expidx_lst) (List.length lvidx_lst)
 				in
-				let expidx_lst_common=Misc.lst_lastn expidx_lst commonlen
-				and lvidx_lst_common=Misc.lst_lastn lvidx_lst commonlen
+				let expidx_lst_common=lst_lastn expidx_lst commonlen
+				and lvidx_lst_common=lst_lastn lvidx_lst commonlen
 				in
 				let pairlst=List.combine lvidx_lst_common expidx_lst_common
 				in
@@ -1610,7 +1608,7 @@ object (self)
 				in  x1
 			end
 			and rng=self#name2range name
-			and off=Expression.exp2int_simple exp
+			and off=exp2int_simple exp
 			in begin
 				if self#is_inrange rng off then begin
 					let (left,right)=self#rng2lr rng
@@ -1629,8 +1627,8 @@ object (self)
 				in  x1
 			end
 			and rng=self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst=self#lr2list li ri
 			and (left,right)=self#rng2lr rng
@@ -1661,7 +1659,7 @@ object (self)
 	method encode_number num = begin
 		match num with
 		T_number_unsign(i) -> begin
-			let strlst=(List.rev (Misc2.int2bin i))
+			let strlst=(List.rev (int2bin i))
 			in begin
 				let rec proc_intlst slst = begin
 					match slst with
@@ -2280,8 +2278,8 @@ object (self)
 				
 				let commonlen=min (List.length expidx_lst) (List.length lvidx_lst)
 				in
-				let expidx_lst_common=Misc.lst_lastn expidx_lst commonlen
-				and lvidx_lst_common=Misc.lst_lastn lvidx_lst commonlen
+				let expidx_lst_common=lst_lastn expidx_lst commonlen
+				and lvidx_lst_common=lst_lastn lvidx_lst commonlen
 				in
 				let pairlst=List.combine lvidx_lst_common expidx_lst_common
 				in
@@ -2418,7 +2416,7 @@ object (self)
 
 	method encode_Red_AND li bitlst1  = begin
 	   assert((List.length bitlst1)!=0);
-	   let bitlst=Misc.uniqlst bitlst1 
+	   let bitlst=uniqlst bitlst1 
 	   in begin
 		assert((List.length bitlst)!=0);
 		(*Printf.printf  "encode_Red_AND %d\n"   li;*)
@@ -2434,7 +2432,7 @@ object (self)
 	
 	method encode_Red_NAND li bitlst1  = begin
 	   assert((List.length bitlst1)!=0);
-	   let bitlst=Misc.uniqlst bitlst1 
+	   let bitlst=uniqlst bitlst1 
 	   in begin
 		assert((List.length bitlst)!=0);
 		(*Printf.printf  "encode_Red_NAND %d\n"   li;*)
@@ -2450,7 +2448,7 @@ object (self)
 	
 	method encode_Red_OR li bitlst1  = begin
 	   assert((List.length bitlst1)!=0);
-	   let bitlst=Misc.uniqlst bitlst1 
+	   let bitlst=uniqlst bitlst1 
 	   in begin
 		assert((List.length bitlst)!=0);
 		(*Printf.printf  "encode_Red_OR %d\n"   li;*)
@@ -2466,7 +2464,7 @@ object (self)
 	
 	method encode_Red_NOR li bitlst1  = begin
 	   assert((List.length bitlst1)!=0);
-	   let bitlst=Misc.uniqlst bitlst1 
+	   let bitlst=uniqlst bitlst1 
 	   in begin
 		assert((List.length bitlst)!=0);
 		(*Printf.printf  "encode_Red_NOR %d\n"   li;*)
@@ -2555,7 +2553,7 @@ object (self)
 				end
 			end
 			and rng=self#name2range name
-			and off=Expression.exp2int_simple exp
+			and off=exp2int_simple exp
 			in begin
 				if self#is_inrange rng off then begin
 					let (left,right)=self#rng2lr rng
@@ -2577,8 +2575,8 @@ object (self)
 				end
 			end
 			and rng=self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst=self#lr2list li ri
 			and (left,right)=self#rng2lr rng
@@ -2632,8 +2630,8 @@ object (self)
 	method rng2lr rng= begin
 			match rng with
 			T_range(expl,expr) -> begin
-				let idxl= Expression.exp2int_simple expl
-				and idxr= Expression.exp2int_simple expr
+				let idxl= exp2int_simple expl
+				and idxr= exp2int_simple expr
 				in
 				(idxl,idxr)
 			end

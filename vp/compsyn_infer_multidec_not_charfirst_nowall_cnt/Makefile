@@ -1,20 +1,26 @@
+# $^ all depende files
+# #< first depend file
+# $@ tarhet file
+
 MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
+
+# search files in these dirs
+VPATH = ../share/:$(MINISATDIR)
+
 OCAMLC	= ocamlopt
-OCAMLC_OPT = -p str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/
-OBJS	=  typedef.cmx typedefcommon.cmx misc.cmx bddssy.cmx clauseman.cmx aig.cmx  dependent.cmx statement.cmx expression.cmx print_v.cmx  misc2.cmx interp.cmx very.cmx  parser.cmx circuit_obj.cmx elabmod.cmx rtl.cmx main.cmx 
-CUDD_DIR = ../../other/cudd
-GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR)
+OCAMLC_OPT = str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
+OBJS	= File.o Proof.o Solver.o MiniSATcommondef.cmx MiniSATWrap.o MiniSAT.cmx intlist.cmx typedef.cmx misc.cmx dumpsat.cmx interp.cmx very.cmx parser.cmx print_v.cmx circuit_obj.cmx elabmod.cmx rtl.cmx main.cmx 
+GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR) -Wno-unused-result
 
 
 all : compsyn_infer_multidec_not_charfirst_nowall_cnt.exe
 
-compsyn_infer_multidec_not_charfirst_nowall_cnt.exe : File.o Proof.o Solver.o MiniSATWrap.o MiniSAT.cmi MiniSAT.cmx $(OBJS) 
+compsyn_infer_multidec_not_charfirst_nowall_cnt.exe :  $(OBJS) 
 	$(OCAMLC)     \
+		$(OCAMLC_OPT) \
 		-cclib -lstdc++ -cclib -lasmrun -cc g++ \
 		-o $@ \
-		str.cmxa unix.cmxa \
-		../../other/caddie/libcaddie.cmxa ../../other/caddie/caddie.o \
-		MiniSATWrap.o File.o Proof.o Solver.o  MiniSAT.cmx \
+		../../other/caddie/caddie.o \
 		../../other/cudd/cudd/libcudd.a \
 		../../other/cudd/dddmp/libdddmp.a \
 		../../other/cudd/epd/libepd.a \
@@ -23,45 +29,27 @@ compsyn_infer_multidec_not_charfirst_nowall_cnt.exe : File.o Proof.o Solver.o Mi
 		../../other/cudd/st/libst.a \
 		$(OBJS) 
 
-Solver.o: $(MINISATDIR)/Solver.C
-	g++ $(GPP_OPT) -c $(MINISATDIR)/Solver.C
 
-Proof.o: $(MINISATDIR)/Proof.C
-	g++ $(GPP_OPT) -c $(MINISATDIR)/Proof.C
+very.ml : very.mll parser.cmx typedef.cmx
+	ocamllex -o very.ml $<
 
-File.o: $(MINISATDIR)/Proof.C
-	g++ $(GPP_OPT) -c $(MINISATDIR)/File.C
-
-MiniSATWrap.o: MiniSATWrap.C
-	g++ $(GPP_OPT) -c  MiniSATWrap.C
-
-MiniSAT.cmx: MiniSAT.ml MiniSAT.cmi
-	ocamlopt -c MiniSAT.ml
-
-MiniSAT.cmi: MiniSAT.mli
-	ocamlopt -c MiniSAT.mli
+parser.ml: parser.mly typedef.cmx
+	ocamlyacc -v -b parser $<
+	$(OCAMLC) $(OCAMLC_OPT) -c parser.mli
 
 
+%.o: %.C
+	g++ $(GPP_OPT) -c $< 
 
 %.cmx: %.ml
-	$(OCAMLC) ${OCAMLC_OPT} -c $< 
-	
-	
-very.ml : very.mll parser.mly typedef.ml
-	$(OCAMLC) ${OCAMLC_OPT} -c typedef.ml
-	ocamlyacc -v -b parser parser.mly
-	$(OCAMLC) ${OCAMLC_OPT} -c parser.mli
-	$(OCAMLC) ${OCAMLC_OPT} -c parser.ml  
-	ocamllex -o very.ml very.mll
-	$(OCAMLC) ${OCAMLC_OPT} -c very.ml  
+	$(OCAMLC) $(OCAMLC_OPT) -c $<  
 
-parser.ml: parser.mly typedef.ml
-	$(OCAMLC) ${OCAMLC_OPT} -c typedef.ml
-	ocamlyacc -v -b parser parser.mly
-	$(OCAMLC) ${OCAMLC_OPT} -c parser.mli
-	$(OCAMLC) ${OCAMLC_OPT} -c parser.ml  
+#%.cmi: %.mli
+#	$(OCAMLC) $(OCAMLC_OPT) -c $<  
 
+.PHONY : clean
 
 clean : 
 	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn compsyn_infer_multidec_not_charfirst_nowall_cnt compsyn.exe compsyn_infer_multidec_not_charfirst_nowall_cnt.exe *.o
+	rm -f ../share/*.cmx ../share/*.o ../share/*.cmi
 

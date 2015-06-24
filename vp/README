@@ -39,7 +39,7 @@ compsyn_relarional_plr_fast :
 	speedup finidng flow control with incremental SAT
 
 compsyn_relarional_plr_inc : 
-	speedup characterizing decoder function with incremental SAT
+	speedup characterizing decoder function with incremental SAT, for rev1, rev2 and final TODAES14
 
 compsyn_relarional_plr_inc_nominlr	:
 	not minimize l and r based on compsyn_relarional_plr_inc, just for comparison
@@ -67,6 +67,7 @@ compsyn_fec    : printing the poly of fec encoder
 
 
 compsyn_pdr : property directed reachability , not finished
+compsyn_multisat : change to use multiple SAT solver
 
 ###########
 following are never used

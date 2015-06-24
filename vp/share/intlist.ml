@@ -6,6 +6,9 @@ let rec listUniq lst = begin
 		Hashtbl.fold (fun k d i -> k::i) hashMarked []
 	end
 end
+and uniqlst lst =begin
+	listUniq lst
+end
 and isListUniq lst = begin
 	not (isListDup lst)
 end
@@ -178,4 +181,18 @@ and listPartition iselim lst = begin
 	end
 	in
 	listPartition_internal lst
+end
+and lst_lastn lst n = begin
+	match lst with
+	[] -> begin
+		if n==0 then []
+		else begin
+			Printf.printf "fatal error : improper length\n";
+			exit 1
+		end
+	end
+	| hd::tl -> begin
+		if (List.length lst) == n then lst
+		else lst_lastn tl n
+	end
 end

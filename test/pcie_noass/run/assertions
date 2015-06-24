@@ -1,0 +1,4 @@
+# this is the assertion file for compsyn_delta
+# it list the two assertion expressions
+1'b1
+1'b1

@@ -778,7 +778,7 @@ begin
 							clslst_R_new := clslst_2beappend@(!clslst_R_new);
 						end
 						;
-						let litcnt=Intlist.listSum (List.map (fun x -> List.length (fst x)) (!clslst_R_new)) in
+(* 						let litcnt=Intlist.listSum (List.map (fun x -> List.length (fst x)) (!clslst_R_new)) in *)
 						(*dbg_print (sprintf "  after force_assertion_alone %d %n" (List.length (!clslst_R_new)) litcnt);*)
 						
 						infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
@@ -1143,7 +1143,7 @@ and check_inverted_assertion_satisfiable infered_assertion_array_lst_old last_in
 		end
 	end
 end
-and check_assertion_satisfiable posAssertion invAssertionList last_index ddM= begin
+and check_assertion_satisfiable posAssertion invAssertionList last_index = begin
 	let proc_fold x y = begin
 		match x with
 		(lastidx,clslstnew) -> begin

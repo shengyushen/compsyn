@@ -1,13 +1,10 @@
+open Printf
+
 open Typedef
 open Circuit_obj
-open Print_v
-open Misc2
 open Misc
-open Statement
-open Printf
-open Misc2
 open Print_v
-open Dependent
+open Intlist
 
 exception UNSAT
 
@@ -1006,8 +1003,8 @@ following is used to expose them for debugging*)
 				
 				let commonlen=min (List.length expidx_lst) (List.length lvidx_lst)
 				in
-				let expidx_lst_common=Misc.lst_lastn expidx_lst commonlen
-				and lvidx_lst_common=Misc.lst_lastn lvidx_lst commonlen
+				let expidx_lst_common=lst_lastn expidx_lst commonlen
+				and lvidx_lst_common=lst_lastn lvidx_lst commonlen
 				in
 				let pairlst=List.combine lvidx_lst_common expidx_lst_common
 				in
@@ -1128,7 +1125,7 @@ following is used to expose them for debugging*)
 				in  x1
 			end
 			and rng=self#name2range name
-			and off=Expression.exp2int_simple exp
+			and off=exp2int_simple exp
 			in begin
 				if self#is_inrange rng off then begin
 					let (left,right)=self#rng2lr rng
@@ -1147,8 +1144,8 @@ following is used to expose them for debugging*)
 				in  x1
 			end
 			and rng=self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst=self#lr2list li ri
 			and (left,right)=self#rng2lr rng
@@ -1178,7 +1175,7 @@ following is used to expose them for debugging*)
 	method encode_number num = begin
 		match num with
 		T_number_unsign(i) -> begin
-			let strlst=(List.rev (Misc2.int2bin i))
+			let strlst=(List.rev (int2bin i))
 			in begin
 				let rec proc_intlst slst = begin
 					match slst with
@@ -1797,8 +1794,8 @@ following is used to expose them for debugging*)
 				
 				let commonlen=min (List.length expidx_lst) (List.length lvidx_lst)
 				in
-				let expidx_lst_common=Misc.lst_lastn expidx_lst commonlen
-				and lvidx_lst_common=Misc.lst_lastn lvidx_lst commonlen
+				let expidx_lst_common=lst_lastn expidx_lst commonlen
+				and lvidx_lst_common=lst_lastn lvidx_lst commonlen
 				in
 				let pairlst=List.combine lvidx_lst_common expidx_lst_common
 				in
@@ -2022,7 +2019,7 @@ following is used to expose them for debugging*)
 				end
 			end
 			and rng=self#name2range name
-			and off=Expression.exp2int_simple exp
+			and off=exp2int_simple exp
 			in begin
 				if self#is_inrange rng off then begin
 					let (left,right)=self#rng2lr rng
@@ -2044,8 +2041,8 @@ following is used to expose them for debugging*)
 				end
 			end
 			and rng=self#name2range name
-			and li = Expression.exp2int_simple expl
-			and ri = Expression.exp2int_simple expr
+			and li = exp2int_simple expl
+			and ri = exp2int_simple expr
 			in
 			let idxlst=self#lr2list li ri
 			and (left,right)=self#rng2lr rng
@@ -2106,8 +2103,8 @@ following is used to expose them for debugging*)
 	method rng2lr rng= begin
 			match rng with
 			T_range(expl,expr) -> begin
-				let idxl= Expression.exp2int_simple expl
-				and idxr= Expression.exp2int_simple expr
+				let idxl= exp2int_simple expl
+				and idxr= exp2int_simple expr
 				in
 				(idxl,idxr)
 			end

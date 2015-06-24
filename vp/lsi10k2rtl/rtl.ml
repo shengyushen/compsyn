@@ -1,9 +1,9 @@
+open Sys
+
 open Typedef
 open Circuit_obj
 open Elabmod
 open Misc
-open Misc2
-open Sys
 open Elabmod
 
 exception No_such_clock

@@ -241,6 +241,22 @@ let rec exp2int_simple exp = begin
 		exit 1
 	end
 end
+and exp2lv exp =begin
+	match exp with 
+	T_primary(T_primary_id(idlst)) -> T_lvalue_id(idlst)
+	| T_primary(T_primary_concat(explst)) -> T_lvalue_concat(explst)
+	| T_primary(T_primary_arrbit(idlst,exp)) -> T_lvalue_arrbit(idlst,exp)
+	| T_primary(T_primary_arrrange(idlst,exp1,exp2)) -> T_lvalue_arrrange(idlst,exp1,exp2)
+	| T_expression_NOSPEC(nn) -> begin
+		Printf.printf "fatal error : exp2lv not support T_expression_NOSPEC(%d)\n" nn;
+		exit 1
+	end
+	| _ -> begin
+		Printf.printf "fatal error : exp2lv not support such expr format \n";
+		print_v_expression stdout exp;
+		exit 1
+	end
+end
 and prim2int_simple prim = begin
 	match prim with
 	T_primary_num(num) -> num2int_simple num
