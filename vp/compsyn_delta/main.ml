@@ -1,20 +1,21 @@
-open Sys
-
-open Misc
 open Rtl
+open Sys
 open Print_v
 
+(*parsing input files*)
+let inputFileName = Sys.argv.(1) ;;
+let elabModName = Sys.argv.(2) ;;
+let tmpDirName = Sys.argv.(3) ;;
+let assertionFileName = Sys.argv.(4) ;;
+
 (*open the temp dir*)
-let tempdirname = (String.concat "" ["./";"container_";Sys.argv.(3);"/"]);;
+let tempdirname = (String.concat "" ["./";"container_";tmpDirName;"/"]);;
 
 let start_time = Unix.gettimeofday ();;
 
 (*Manager.set_gc 1000000 (Gc.full_major) (Gc.full_major)
 ;;
 *)
-(*parsing input files*)
-let inputFileName = Sys.argv.(1) ;;
-let elabModName = Sys.argv.(2) ;;
 
 let inputFileChannle = open_in inputFileName;;
 
@@ -77,20 +78,8 @@ begin
 end
 ;;
 
-let (assert1,assert2) = begin
-(* parsing assertions files *)
-	let lines = getLines "assertions" 
-	in
-	let lines_notcomment = List.filter (fun x -> (String.get x 0)<>'#') lines 
-	in begin
-		assert ((List.length lines_notcomment)=2);
-		(List.hd lines_notcomment, (List.hd (List.tl lines_notcomment)))
-	end
-end
-;;
-
 (*we dont use bound any more*)
-let fail_ornot=objRTL#compsyn assert1 assert2 instrlist outstrlist;;
+objRTL#compsyn  instrlist outstrlist;;
 
-exit fail_ornot
+exit 0
 
