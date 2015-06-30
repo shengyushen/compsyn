@@ -774,25 +774,24 @@ object (self)
 		(*this do not include the input constrain*)
 		let target=self#construct_nonloop p l r assLst [] in begin
 			self#set_unlock_multiple;
-			self#append_clause_list_multiple  [([target],"target")]
-		end
-		;
+			self#append_clause_list_multiple  [([target],"target")];
 
-		(*force the input of p+l and p+l+1+r+p+l to be diff*)
-		self#set_unlock_multiple;
-		let ov = bv_instrlist	in 
-		let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) ov
-		and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) ov in
-		self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b)) 
-		;
-		(*dbg_print "  after generating clauses";*)
-
-		check_clslst_maxidx clause_list_multiple last_index;
-		let res=dump_sat_withclear clause_list_multiple in begin
-			(*dbg_print "exiting tryPCSAT";*)
-			if(res == UNSATISFIABLE) then false
-			else if(res == SATISFIABLE) then true
-			else assert false
+			(*force the input of p+l and p+l+1+r+p+l to be diff*)
+			self#set_unlock_multiple;
+			let ov = bv_instrlist	in 
+			let ov_0 = List.map (fun x -> x+ (p+l)*final_index_oneinst) ov
+			and ov_b = List.map (fun x -> x+ (p+l+1+r+p+l)*final_index_oneinst) ov in
+			self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b)) 
+			;
+			(*dbg_print "  after generating clauses";*)
+	
+			check_clslst_maxidx clause_list_multiple last_index;
+			let res=dump_sat_withclear clause_list_multiple in begin
+				(*dbg_print "exiting tryPCSAT";*)
+				if(res == UNSATISFIABLE) then (false,target)
+				else if(res == SATISFIABLE) then (true,target)
+				else assert false
+			end
 		end
 	end
 
@@ -800,7 +799,7 @@ object (self)
 		assert (p>=0);
 		assert (r>=0);
 		if (l>=(-r+1)) then begin
-			let res=self#tryPCSAT p (l-1) r assLst in begin
+			let (res,_)=self#tryPCSAT p (l-1) r assLst in begin
 				if(res) then l
 				else self#minimizeL p (l-1) r assLst 
 			end
@@ -813,7 +812,7 @@ object (self)
 		assert (p>=0);
 		assert (l>=0);
 		if (r>=1) then begin
-			let res=self#tryPCSAT p l (r-1) assLst in begin
+			let (res,_)=self#tryPCSAT p l (r-1) assLst in begin
 				if(res) then r
 				else self#minimizeR p l (r-1) assLst 
 			end
@@ -827,9 +826,8 @@ object (self)
 		(*(p,l,r)*)
 		(*this one really minimize it*)
 		let newr=self#minimizeR p l r assLst in
-		let newl=self#minimizeL p l newr assLst in begin
-			(newl,newr)
-		end
+		let newl=self#minimizeL p l newr assLst in 
+		(newl,newr)
 	end
 
 	method getAllInputList = begin
@@ -945,20 +943,47 @@ object (self)
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
 (* 		self#relational_code  *)
-		self#findoutBound ;
+		let b=self#findoutBound in
+		let (newl,newr)=self#minimizeLR b b b [] in begin
+			printf "newl %d newr %d\n" newl newr
+		end
 	end
 	
 	method findoutBound  = begin
-		let b = ref (maxN-1)
+		let b = ref 2
 		and stop = ref false
-		in
-		while (!stop)=false do
-			b := (!b) + 1 ;
-			let respc = self#tryPCSAT (!b) (!b) (!b) []
-			in 
-			match respc with
-			false -> 
-		done
+		in begin
+			while (!stop)=false do
+				b := (!b) + 1 ;
+				dbg_print (sprintf "b is %d\n" (!b));
+				let (respc,target) = self#tryPCSAT (!b) (!b) (!b) []
+				in 
+				match respc with
+				false ->  begin
+					stop := true
+				end
+				| true -> begin
+					let target_loop = self#construct_instance_loop (!b) (!b) (!b) target
+					in begin
+						self#set_unlock_multiple;
+						self#append_clause_list_multiple  [([target_loop],"target_loop")];
+
+						check_clslst_maxidx clause_list_multiple last_index;
+						let res=dump_sat_withclear clause_list_multiple
+						in
+						match res with
+						UNSATISFIABLE -> ()
+						| SATISFIABLE -> begin
+							printf "Error : found loop counterexample\n";
+							flush stdout;
+							exit 1
+						end
+					end
+				end
+			done
+			;
+			!b
+		end
 	end
 
 
