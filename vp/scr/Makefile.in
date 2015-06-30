@@ -11,7 +11,7 @@ default :
 	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
 	@echo "relational_plr_inc_plr1by1 : find out plr by increcing them one by one, only for comparing to relational_plr_inc"
 	@echo "relational_plr_inc_nominlr : dont minimize LR, only for comparing to relational_plr_inc"
-	@echo "delta											: based on infer, find out the delta between two assertions"
+	@echo "sync												: self synchronous protocol"
 	@echo "multisat                   : support using multiple SAT solver and incremental SAT"
 	@echo "pdr                        : based on multisat, apply ic3/pdr to infer reachable state set, and also decoding as much as possible by inferring all input that can not be uniquely determined"
 
@@ -115,10 +115,10 @@ pdr : sed_res.v
 	# OCAMLRUNPARAM=b compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
 	compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
 
-delta : sed_res.v
+sync : sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
-	compsyn_delta.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+	compsyn_sync.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 decoderarea: resulting_dual_cnf.v
 	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log

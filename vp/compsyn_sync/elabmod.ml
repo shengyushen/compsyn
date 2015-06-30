@@ -944,8 +944,23 @@ object (self)
 		(*following is relational code*)
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
-		self#relational_code 
+(* 		self#relational_code  *)
+		self#findoutBound ;
 	end
+	
+	method findoutBound  = begin
+		let b = ref (maxN-1)
+		and stop = ref false
+		in
+		while (!stop)=false do
+			b := (!b) + 1 ;
+			let respc = self#tryPCSAT (!b) (!b) (!b) []
+			in 
+			match respc with
+			false -> 
+		done
+	end
+
 
 	method relational_code  = begin
 		(*****************************************)
