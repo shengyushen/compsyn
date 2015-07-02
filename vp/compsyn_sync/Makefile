@@ -8,7 +8,7 @@ MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
 VPATH = ../share/:$(MINISATDIR)
 
 OCAMLC	= ocamlopt
-OCAMLC_OPT = str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
+OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
 OBJS	= File.o Proof.o Solver.o MiniSATcommondef.cmx MiniSATWrap.o MiniSAT.cmx intlist.cmx typedef.cmx misc.cmx dumpsat.cmx interp.cmx very.cmx parser.cmx print_v.cmx circuit_obj.cmx elabmod.cmx rtl.cmx main.cmx 
 GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR) -Wno-unused-result
 

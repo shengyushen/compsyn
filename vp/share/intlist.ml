@@ -196,3 +196,25 @@ and lst_lastn lst n = begin
 		else lst_lastn tl n
 	end
 end
+and cutList lst start len = begin
+	if (start>0) then cutList (List.tl lst) (start-1) len
+	else begin
+		assert (start=0);
+		let rec getHead l length = begin
+			match l with
+			[] -> begin
+				assert (length=0);
+				[]
+			end
+			| hd::tl -> begin
+				if(length=0) then []
+				else begin
+					assert (length>0);
+					hd::(getHead tl (length-1))
+				end
+			end
+		end
+		in 
+		getHead lst len
+	end
+end
