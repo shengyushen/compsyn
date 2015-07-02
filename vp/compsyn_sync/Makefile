@@ -28,6 +28,7 @@ compsyn_sync.exe :  $(OBJS)
 		../../other/cudd/util/libutil.a \
 		../../other/cudd/st/libst.a \
 		$(OBJS) 
+	otags -r *.ml ../share/*.ml
 
 
 very.ml : very.mll parser.cmx typedef.cmx

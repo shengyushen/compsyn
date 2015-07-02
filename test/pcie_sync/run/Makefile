@@ -2,7 +2,8 @@
 SRCFILE	= /home/syshen/compsyn_ips/pcie_sync/src/verilog/filelist.v
 TOPMOD = PCIEXP_TX
 DCINCPATH = /home/syshen/compsyn_ips/pcie_sync/src/verilog
-INPUT = -Input TXDATA -Input TXDATAK -Input CNTL_TXEnable_P0  
+#INPUT = -Input TXDATA -Input TXDATAK -Input CNTL_TXEnable_P0  
+INPUT = -Input TXDATA -Input TXDATAK 
 #OUTPUT = -Output HSS_TXD -Output HSS_TXBEACONCMD -Output HSS_TXELECIDLE
 OUTPUT = -Output HSS_TXD 
 RESET_CONDITION = "CNTL_RESETN_P0==1'b0"

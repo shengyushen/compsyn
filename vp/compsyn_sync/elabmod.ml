@@ -955,25 +955,38 @@ object (self)
 			self#minimizeL2Right b 0 newr 
 		end
 		in
-		self#inferInputPattern b l2right newr
+		let inferredItpList = self#inferInputPattern b l2right newr
+		in 
+		let finalass = begin
+			if (List.length inferredItpList)!=0 then 
+				simplify_withBDD (invert_assertion (or_assertion inferredItpList)) ddM
+			else 
+				Array.make 1 TiterpCircuit_true
+		end
+		in begin
+			printf "Info : the final patterns\n";
+			self#print_itpo finalass;
+			printf "\n";
+		end
+	end
 
 
 	method inferInputPattern p1 l2right newr = begin
 		let cycleNumberOfOutputUnit = newr-l2right+1
-		and l2right1=l2right
 		in
 		let r1 = newr+cycleNumberOfOutputUnit;
 		in begin
-			printf "l2right %d\n" l2right1;
+			printf "l2right %d\n" l2right;
+			printf "r1 %d\n" r1;
 			flush stdout;
-			assert (l2right1 > 0);
+			assert (l2right > 0);
 
 			(*again construc the instances*)
-			self#construct_nonloop_l2right p1 l2right1 r1;
+			self#construct_nonloop_l2right p1 l2right r1;
 			self#set_unlock_multiple;
 			(*then construct the shifted output equality testing of bv_outstrlist*)
-			let cycleList2BeShifted = lr2list (p1+l2right1) (p1+r1)
-			and cycleList2BeFixed   = lr2list (p1+l2right1 + p1+l2right1+r1+1) (p1+newr + p1+l2right1+r1+1)
+			let cycleList2BeShifted = lr2list (p1+l2right) (p1+r1)
+			and cycleList2BeFixed   = lr2list (p1+l2right + p1+r1+1) (p1+newr + p1+r1+1)
 			in
 			let bitList2BeShifted = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) cycleList2BeShifted)
 			and bitList2BeFixed   = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) cycleList2BeFixed)
@@ -986,6 +999,8 @@ object (self)
 				let (tgt,clsList) = self#encode_EQUV_res shiftedBitList bitList2BeFixed
 				in begin
 					self#append_clause_list_multiple clsList;
+					check_clslst_maxidx clause_list_multiple last_index;
+					assert (tgt<last_index);
 					tgt
 				end
 			end
@@ -994,6 +1009,7 @@ object (self)
 			in begin
 				assert ((List.length bitList2BeFixed)=bitNumber);
 				assert ((List.length bitList2BeShifted)>=bitNumber);
+				check_clslst_maxidx clause_list_multiple last_index;
 
 				let finaltarget = self#alloc_index 1
 				in
@@ -1009,9 +1025,15 @@ object (self)
 															clause_list_multiple
 															finaltarget
 															listUniqBitI_shifted
-															(self#construct_varlst2assumption_l2right p1 r1 )
-															bv_instrlist
-
+															(self#construct_varlst2assumption_l2right p1 r1 bv_instrlist)
+															ddM
+				in 
+				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p1+1+r1+p1)*final_index_oneinst))) itplst  
+				in begin
+					assert (res1=UNSATISFIABLE);
+					List.iter (fun x -> check_itpo_var_membership x bv_instrlist) itplst_shiftback;
+					itplst_shiftback
+				end
 			end
 		end
 	end
@@ -1994,7 +2016,7 @@ object (self)
 			(*printf "nonuniq is \n";
 			List.iter (fun x -> printf "%s(%d)\n" (self#idx2name x) x) nonuniq;
 			printf "\n";*)
-			initial_state_index_list @ initial_state_index_list2 @ ov_all @ nonuniq_pl @ nonuniq_pl2
+			initial_state_index_list @ initial_state_index_list2 @ ov_all @ nonuniq_pl2
 		end
 	end
 
