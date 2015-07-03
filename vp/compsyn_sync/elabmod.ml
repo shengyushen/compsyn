@@ -957,16 +957,46 @@ object (self)
 		in
 		let inferredItpList = self#inferInputPattern b l2right newr
 		in 
-		let finalass = begin
+		let invertedass = begin
 			if (List.length inferredItpList)!=0 then 
 				simplify_withBDD (invert_assertion (or_assertion inferredItpList)) ddM
 			else 
 				Array.make 1 TiterpCircuit_true
 		end
+		and ass = begin
+			if (List.length inferredItpList)!=0 then 
+				simplify_withBDD (or_assertion inferredItpList) ddM
+			else 
+				Array.make 1 TiterpCircuit_false
+		end
+		in 
+		let finalass = begin
+			self#set_unlock_multiple ;
+			self#set_clause_list_multiple clause_list;
+			self#force_assertion invertedass;
+			self#set_lock_multiple ;
+			let (_,itpolst) = allsat_interp 
+											clause_list_multiple
+											(List.hd (self#name2idxlist assertion_shengyushen))
+											bv_instrlist
+											bv_non_proctocol_input_list
+											ddM
+			in
+			if ((List.length itpolst)<>0) then 
+				simplify_withBDD (or_assertion itpolst) ddM
+			else 
+				Array.make 1 TiterpCircuit_false 
+		end
 		in begin
 			printf "Info : the final patterns\n";
 			self#print_itpo finalass;
 			printf "\n";
+
+			printf "Info : ass\n";
+			self#print_itpo ass;
+			printf "\n";
+
+
 		end
 	end
 
