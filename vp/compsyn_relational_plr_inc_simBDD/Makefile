@@ -13,9 +13,9 @@ OBJS	= File.o Proof.o Solver.o MiniSATcommondef.cmx MiniSATWrap.o MiniSAT.cmx in
 GPP_OPT = -O6  -I /usr/local/lib/ocaml -I /usr/local/lib/ocaml/caml -I /usr/lib/ocaml -I /usr/lib/ocaml/caml -I $(MINISATDIR) -Wno-unused-result
 
 
-all : compsyn_relational_plr_inc.exe
+all : compsyn_relational_plr_inc_simBDD.exe
 
-compsyn_relational_plr_inc.exe :  $(OBJS) 
+compsyn_relational_plr_inc_simBDD.exe :  $(OBJS) 
 	$(OCAMLC)     \
 		$(OCAMLC_OPT) \
 		-cclib -lstdc++ -cclib -lasmrun -cc g++ \
@@ -28,6 +28,7 @@ compsyn_relational_plr_inc.exe :  $(OBJS)
 		../../other/cudd/util/libutil.a \
 		../../other/cudd/st/libst.a \
 		$(OBJS) 
+	otags -r *.ml ../share/*.ml
 
 
 very.ml : very.mll parser.cmx typedef.cmx
@@ -50,6 +51,6 @@ parser.ml: parser.mly typedef.cmx
 .PHONY : clean
 
 clean : 
-	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn compsyn_relational_plr_inc compsyn.exe compsyn_relational_plr_inc.exe *.o
+	rm -f  *.cmo *.a *.cmx *.cmxa *.cmi very.ml a.out *.bak *~ parser.ml parser.mli parser.output sdf main main.exe compsyn compsyn_relational_plr_inc_simBDD compsyn.exe compsyn_relational_plr_inc_simBDD.exe *.o
 	rm -f ../share/*.cmx ../share/*.o ../share/*.cmi
 
