@@ -992,21 +992,27 @@ object (self)
 			self#print_itpo finalass;
 			printf "\n";
 
+(*
 			printf "Info : ass\n";
 			self#print_itpo ass;
 			printf "\n";
+*)
 
 
 		end
 	end
 
 
-	method inferInputPattern p1 l2right newr = begin
+	method inferInputPattern p l2right newr = begin
+		let p1=p+1
+		in
 		let cycleNumberOfOutputUnit = newr-l2right+1
 		in
 		let r1 = newr+cycleNumberOfOutputUnit;
 		in begin
+			printf "p1 %d\n" p1;
 			printf "l2right %d\n" l2right;
+			printf "newr %d\n" newr;
 			printf "r1 %d\n" r1;
 			flush stdout;
 			assert (l2right > 0);
@@ -1018,16 +1024,26 @@ object (self)
 			let cycleList2BeShifted = lr2list (p1+l2right) (p1+r1)
 			and cycleList2BeFixed   = lr2list (p1+l2right + p1+r1+1) (p1+newr + p1+r1+1)
 			in
-			let bitList2BeShifted = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) cycleList2BeShifted)
-			and bitList2BeFixed   = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) bv_outstrlist) cycleList2BeFixed)
+			let bitList2BeShifted = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) (List.rev bv_outstrlist)) cycleList2BeShifted)
+			and bitList2BeFixed   = List.concat (List.map (fun frm -> List.map (fun x -> x+frm*final_index_oneinst) (List.rev bv_outstrlist)) cycleList2BeFixed)
 			and bitNumber = cycleNumberOfOutputUnit*(List.length bv_outstrlist)
 			in
 			let posList = lr2list 1 (bitNumber-1)
 			and procPos pos = begin
+				printf "procPos : pos %d\n" pos;
+
 				let shiftedBitList = cutList bitList2BeShifted pos bitNumber
 				in
 				let (tgt,clsList) = self#encode_EQUV_res shiftedBitList bitList2BeFixed
 				in begin
+					printf "bitList2BeFixed :\n";
+					List.iter (fun x -> printf "  %s\n" (self#idx2name x)) bitList2BeFixed ;
+					printf "\n";
+
+					printf "shiftedBitList :\n";
+					List.iter (fun x -> printf "  %s\n" (self#idx2name x)) shiftedBitList ;
+					printf "\n";
+
 					self#append_clause_list_multiple clsList;
 					check_clslst_maxidx clause_list_multiple last_index;
 					assert (tgt<last_index);
@@ -1039,6 +1055,8 @@ object (self)
 			in begin
 				assert ((List.length bitList2BeFixed)=bitNumber);
 				assert ((List.length bitList2BeShifted)>=bitNumber);
+				printf "len bitList2BeFixed %d\n" (List.length bitList2BeFixed);
+				printf "len bitList2BeShifted %d\n" (List.length bitList2BeShifted);
 				check_clslst_maxidx clause_list_multiple last_index;
 
 				let finaltarget = self#alloc_index 1

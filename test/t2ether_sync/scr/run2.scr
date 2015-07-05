@@ -1,0 +1,1 @@
+vp_proc1.scr -S ../src/t2src/filelist.v -T pcs_encoder -I ../src/t2src -B 20 -Input tx_8b_enc_in -Input encoder_sel -Input special_enc_in -Output tx_10b_enc_out

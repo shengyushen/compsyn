@@ -1,0 +1,148 @@
+# SimVision Command Script (Fri Feb 14 12:17:31 PM CST 2014)
+#
+# Version 09.20.s022
+#
+# You can restore this configuration with:
+#
+#      ncsim worklib.tb:v -input ../scr/restore.tcl -input ../scr/start.tcl -input /home/ssy/compsyn/test/t2ether_relational/scr/restore.tcl
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-SimControl-WatchList {
+  usual
+  hide set_break
+  hide vplan
+}
+preferences set toolbar-SimControl-SrcBrowser {
+  usual
+  hide vplan
+  position -pos 0
+}
+preferences set toolbar-SimControl-WaveWindow {
+  usual
+  hide vplan
+}
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-SimControl-SchematicWindow {
+  usual
+  hide vplan
+}
+preferences set toolbar-SignalTrace-SrcBrowser {
+  usual
+  position -pos 3
+}
+preferences set toolbar-OperatingMode-WaveWindow {
+  usual
+  position -pos 4
+  name OperatingMode
+}
+preferences set toolbar-SrcCallstack-SrcBrowser {
+  usual
+  position -pos 1
+}
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  hide set_break
+  hide vplan
+  shown 0
+}
+preferences set toolbar-Edit-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# Simulator
+#
+database require simulator -hints {
+	simulator "ncsim worklib.tb:v -input ../scr/restore.tcl -input ../scr/start.tcl -gui -input restore.tcl"
+}
+
+#
+# Cursors
+#
+set time 671241000ps
+if {[catch {cursor new -name  TimeA -time $time}] != ""} {
+    cursor set -using TimeA -time $time
+}
+
+#
+# Mnemonic Maps
+#
+mmap new -reuse -name {Boolean as Logic} -radix %x -contents {
+{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}
+}
+mmap new -reuse -name {Example Map} -radix %x -contents {
+{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}
+}
+
+#
+# Design Browser windows
+#
+if {[catch {window new browser -name "Design Browser 1" -geometry 700x500+5+49}] != ""} {
+    window geometry "Design Browser 1" 700x500+5+49
+}
+window target "Design Browser 1" on
+browser using "Design Browser 1"
+browser set -scope [subst -nobackslashes -nocommands simulator::tb ]
+browser yview see [subst -nobackslashes -nocommands simulator::tb ]
+browser timecontrol set -lock 0
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1280x724+0+24}] != ""} {
+    window geometry "Waveform 1" 1280x724+0+24
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar select designbrowser
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ps \
+    -valuewidth 75
+cursor set -using TimeA -time 671,241,000ps
+waveform baseline set -time 671,271,000ps
+
+set id [waveform add -signals [subst -nobackslashes -nocommands {
+	{simulator::tb.inst_0.tx_enc_ctrl_sel[3:0]}
+	simulator::tb.inst_0.tx_en
+	simulator::tb.inst_0.tx_er
+	{simulator::tb.inst_0.txd[7:0]}
+	simulator::tb.inst_1_gen.tx_en
+	{simulator::tb.inst_1_gen.tx_enc_ctrl_sel[3:0]}
+	simulator::tb.inst_1_gen.tx_er
+	{simulator::tb.inst_1_gen.txd[7:0]}
+} ]]
+
+waveform xview limits 671198120ps 671315420ps
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 600x250+0+24
