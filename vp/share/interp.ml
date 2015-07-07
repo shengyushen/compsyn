@@ -1136,7 +1136,7 @@ and check_inverted_assertion_satisfiable infered_assertion_array_lst_old last_in
 		UNSATISFIABLE -> begin
 			printf "FATAL : no solution at all\n" ;
 			printf "often means all configuration lead to nonuniqe\n" ;
-			assert false (*should always solvable*)
+(* 			assert false (*should always solvable*) *)
 		end
 		| SATISFIABLE -> begin
 			printf "check_inverted_assertion_satisfiable OK ass len %d\n" (List.length infered_assertion_array_lst_old);
