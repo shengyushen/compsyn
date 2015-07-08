@@ -1,5 +1,5 @@
-compsyn	check 
-	the complementary condition, ICCAD'09 and TCAD'10
+compsyn	
+	check the complementary condition, ICCAD'09 and TCAD'10
 compsyn_halting	
 	the halting that proposed in TCAD'11, 
 	1	it checks all combinations of d p and l, so it is very slow. 
@@ -41,6 +41,9 @@ compsyn_relarional_plr_fast :
 compsyn_relarional_plr_inc : 
 	speedup characterizing decoder function with incremental SAT, for rev1, rev2 and final TODAES14
 
+compsyn_relarional_plr_inc_simBDD : 
+	simplify the decoder function with BDD, the area is much smaller
+
 compsyn_relarional_plr_inc_nominlr	:
 	not minimize l and r based on compsyn_relarional_plr_inc, just for comparison
 
@@ -65,6 +68,8 @@ compsyn_unfold : unfolding the fec code
 compsyn_chkfld : checking the gf character
 compsyn_fec    : printing the poly of fec encoder
 
+compsyn_sync :
+	finding the output pattern that can not occur in other input , such that we can find the boarder
 
 compsyn_pdr : property directed reachability , not finished
 compsyn_multisat : change to use multiple SAT solver

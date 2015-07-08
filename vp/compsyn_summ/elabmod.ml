@@ -840,7 +840,7 @@ object (self)
 
 	method partition1 (b:int) infered_assertion_array_lst_old_loop1 = begin
 		(*make sure the inferred loop like assertion is correct*)
-		let (result_p, infered_assertion_array_lst_new_nonloop )= self#inferSATFormula_plr_nonloop b b b  [] infered_assertion_array_lst_old_loop1
+		let result_p = self#inferSATFormula_plr_nonloop b b b  [] infered_assertion_array_lst_old_loop1
 		in begin
 			assert (result_p = UNSATISFIABLE);
 			printf "inferred pattern is \n";
@@ -857,7 +857,7 @@ object (self)
 		and infered_assertion_array_lst_old_loop = ref []
 		in begin
 			while (!stop) = false do
-				let (result_p, infered_assertion_array_lst_new_nonloop )= self#inferSATFormula_plr_nonloop b b b  [] (!infered_assertion_array_lst_old_loop) 
+				let result_p = self#inferSATFormula_plr_nonloop b b b  [] (!infered_assertion_array_lst_old_loop) 
 				in 
 				if(result_p = UNSATISFIABLE) then begin
 					check_clslst_maxidx clause_list_multiple last_index;
@@ -865,28 +865,26 @@ object (self)
 					stop := true ; 
 				end
 				else begin
-					let (result_p_loop, infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop b b b  [] (!infered_assertion_array_lst_old_loop) (*in this case I dont need to encode common again*)
+					let (result_p_loop, infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop b b b  [] (!infered_assertion_array_lst_old_loop)  true
 					in begin
 						assert (result_p_loop = UNSATISFIABLE) ; 
 						infered_assertion_array_lst_old_loop := infered_assertion_array_lst_new_loop @ (!infered_assertion_array_lst_old_loop);
+						List.iter (fun x -> printf "ITPO : \n";self#print_itpo x;printf "\nend ITPO\n") infered_assertion_array_lst_new_loop ;
 					end
 				end
 			done
 			;
-			printf "len loop ass : %d\n" (List.length (!infered_assertion_array_lst_old_loop));
-			List.iter (fun x -> printf "ITPO : \n";self#print_itpo x;printf "\nend ITPO\n") (!infered_assertion_array_lst_old_loop);
 		end
 	end
 
 	method findBound  = begin
 		let b = ref 1
 		and stop = ref false
-		and infered_assertion_array_lst_old_nonloop = ref []
 		and infered_assertion_array_lst_old_loop = ref []
 		in begin
 			while (!stop) = false do
 				b := (!b) +1 ;
-				let (result_p, infered_assertion_array_lst_new_nonloop ) = self#inferSATFormula_plr_nonloop (!b) (!b) (!b)  [] (!infered_assertion_array_lst_old_loop) 
+				let result_p  = self#inferSATFormula_plr_nonloop (!b) (!b) (!b)  [] (!infered_assertion_array_lst_old_loop) 
 				in 
 				if(result_p = UNSATISFIABLE) then begin
 					check_clslst_maxidx clause_list_multiple last_index;
@@ -894,8 +892,7 @@ object (self)
 					stop := true ; 
 				end
 				else begin
-					infered_assertion_array_lst_old_nonloop := infered_assertion_array_lst_new_nonloop ;
-					let (result_p_loop, infered_assertion_array_lst_new_loop) = self#inferSATFormula_plr_loop (!b) (!b) (!b)  [] (!infered_assertion_array_lst_old_loop) (*in this case I dont need to encode common again*)
+					let (result_p_loop, infered_assertion_array_lst_new_loop) = self#inferSATFormula_plr_loop (!b) (!b) (!b)  [] (!infered_assertion_array_lst_old_loop)  true
 					in begin
 						assert (result_p_loop = UNSATISFIABLE) ; 
 						infered_assertion_array_lst_old_loop := infered_assertion_array_lst_new_loop @ (!infered_assertion_array_lst_old_loop);
@@ -1187,6 +1184,8 @@ object (self)
 		in
 		let res = dump_sat (([target],"target")::(diffInputClauseList @ clause_list_multiple))
 		in
+		res
+(*
 		if(res == UNSATISFIABLE) then 
 			(res,infered_assertion_array_lst_old_nonloop) (*it is ok already*)
 		else begin
@@ -1205,6 +1204,7 @@ object (self)
 				(SATISFIABLE,itplst_shiftback)
 			end
 		end
+*)
 	end
 
 	method construct_loop (p:int) (l:int) (r:int) target = begin
@@ -1400,17 +1400,22 @@ object (self)
 		end
 	end
 
-	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop  = begin
+	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop simplifyOrnot = begin
 		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" p l r (List.length infered_assertion_array_lst_old_loop);
 		if(p<2 || l<2 || r<2) then (UNSATISFIABLE,infered_assertion_array_lst_old_loop)
 		else begin
 			let target = self#construct_nonloop p l r  infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop
+			in
+			let diffInputClauseList = self#diffInput p l r
 			in 
 			let target_all = self#construct_instance_loop p l r target
 			in begin
+				self#set_unlock_multiple ;
+				self#append_clause_list_multiple diffInputClauseList ;
 				check_clslst_maxidx clause_list_multiple last_index;
 				let listUniqBitI_shifted = List.map (fun x -> x+(p+l)*final_index_oneinst) bv_instrlist in
-				let (res1,itplst)= allsat_interp clause_list_multiple target_all listUniqBitI_shifted (self#construct_varlst2assumption p l r ) ddM in
+				(**)
+				let (res1,itplst)= allsat_interp_BDD clause_list_multiple target_all listUniqBitI_shifted (self#construct_varlst2assumption p l r ) ddM simplifyOrnot in
 				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in  begin
 					List.iter (fun x -> check_itpo_var_membership x bv_instrlist ) itplst_shiftback;
 					(res1,itplst_shiftback)

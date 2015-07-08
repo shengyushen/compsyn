@@ -38,7 +38,7 @@ do
   echo "Making " $i
   make clean
   make distclean
-  make &
+  make 
   popd
 done
 

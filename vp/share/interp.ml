@@ -721,6 +721,7 @@ and allsat_interp_BDD_loop
 			simplifyOrnot
 			= 
 begin
+	printf "allsat_interp_BDD_loop\n";
 	assert((isEmptyList non_important_varlst)==false);
 	(*a loop to infer*)
 	let res= ref SATISFIABLE
@@ -730,7 +731,7 @@ begin
 		clslst_R_new := clslst_R;
 		
 		while ((!res)!=UNSATISFIABLE) do
-			(*dbg_print "  start loop";*)
+			dbg_print "  start loop";
 			Gc.compact();
 			(*dbg_print "  start dump_sat";*)
 			
@@ -788,6 +789,7 @@ begin
 			;
 		done
 		;
+		printf "quit while\n" ;
 		Gc.compact();
 		((!res),(!infered_assertion_array_lst_new))
 	end
