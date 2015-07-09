@@ -107,7 +107,8 @@ public:
             if (fp.null())
                 xfree(name);
             else{
-                files.push(name);
+								// dont add, I will remvove these files in clear_proof
+                //files.push(name);
                 return name;
             }
         }
@@ -304,6 +305,10 @@ vec<long>& Proof::save(cchar* prooffilename)
 
 void Proof::clear_proof()
 {
+	if( ! ( fp.null() )) {
+		fp.close();
+	}
+
 	if (trav != NULL) {
 	        delete trav;
 					trav=NULL;

@@ -68,6 +68,7 @@ object (self)
 	
 	(*they will never be changed after assignment*)
 	val mutable bv_instrlist = []
+	val mutable bvi2name_hash : (int , string ) Hashtbl.t = Hashtbl.create 1 
 	val mutable bv_outstrlist = []
 	val mutable bv_non_proctocol_input_list = []
 	
@@ -814,6 +815,11 @@ object (self)
 		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
 		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
 
+		bvi2name_hash <- Hashtbl.create (List.length bv_instrlist) ;
+		List.map (fun x -> Hashtbl.add bvi2name_hash x (self#idx2name x) ) bv_instrlist;
+		Hashtbl.iter (fun x y -> printf "%d %s\n" x y) bvi2name_hash ; 
+
+
 
 		(*****************************************)
 		(*write out the encoded CNF*)
@@ -1410,12 +1416,23 @@ object (self)
 			in 
 			let target_all = self#construct_instance_loop p l r target
 			in begin
-				self#set_unlock_multiple ;
-				self#append_clause_list_multiple diffInputClauseList ;
 				check_clslst_maxidx clause_list_multiple last_index;
 				let listUniqBitI_shifted = List.map (fun x -> x+(p+l)*final_index_oneinst) bv_instrlist in
 				(**)
-				let (res1,itplst)= allsat_interp_BDD clause_list_multiple target_all listUniqBitI_shifted (self#construct_varlst2assumption p l r ) ddM simplifyOrnot in
+				let (res1,itplst)= allsat_interp_BDD_diffInput 
+															clause_list_multiple 
+															diffInputClauseList 
+															target_all 
+															listUniqBitI_shifted 
+															(self#construct_varlst2assumption p l r ) 
+															ddM 
+															simplifyOrnot 
+															p
+															l
+															r
+ 															final_index_oneinst
+															bvi2name_hash
+				in
 				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in  begin
 					List.iter (fun x -> check_itpo_var_membership x bv_instrlist ) itplst_shiftback;
 					(res1,itplst_shiftback)

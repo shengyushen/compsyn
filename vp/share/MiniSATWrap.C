@@ -15,6 +15,10 @@ static void convert_literals(value l, vec<Lit> &r) {
 
 extern "C" value minisat_reset(value unit) {
   if(solver!=NULL) {
+		if((solver->proof)!=NULL) {
+			(solver->proof)->clear_proof();
+		  delete solver->proof;
+		}
     delete solver;
   }
   solver = new Solver();

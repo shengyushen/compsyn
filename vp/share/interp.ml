@@ -29,6 +29,7 @@ max_index means the max idx of A
 oidxlst means the list of var not moved
 *)
 let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin 
+(* 	dbg_print "characterization_interp_AB"; *)
 		assert ((List.length oidxlst)>0);
 		(*let minmaxfold a b = begin
 			assert (b>0);
@@ -66,16 +67,17 @@ let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin
 		let totalclslst= clslst_1A @ clslst_0B
 		in
 		begin
-
+(* 			dbg_print "before reset_proof"; *)
 			(*printf "characterization_interp_AB totalclslst len  %d min_dont_shift %d max_dont_shift %d\n" (List.length totalclslst) min_dont_shift max_dont_shift;
 			flush stdout;*)
 			(*reset with proof generator*)
 			MiniSAT.reset_proof ();
+(* 			dbg_print "after reset_proof"; *)
 			let max_index_all=get_largest_varindex_inclslst totalclslst
 			in 
 			let trace=begin
 				MiniSAT.mass_new_var max_index_all;
-		
+(* 				dbg_print "after mass_new_var"; *)
 				(*add all cls*)
 				let proc_int var = begin
 					if (var > 0) then  var+var
@@ -99,12 +101,12 @@ let rec characterization_interp_AB clslst_1A clslst_0B max_index oidxlst = begin
 				;
 				(*dbg_print (sprintf "    cls number %d" (List.length totalclslst));*)
 
-				(*dbg_print "    before solve";*)
+(* 				dbg_print "    before solve"; *)
 				
 				(*solve it*)
 				 match MiniSAT.solve () with
 				 UNSAT -> begin
-					(*dbg_print "    after solve";*)
+(* 					dbg_print "    after solve"; *)
 
 					let proofarray=MiniSAT.save_proof ()
 					in begin
@@ -391,6 +393,7 @@ and characterization_interp_AB_mass iv shift  clslst_1A clslst_0B max_index oidx
 		end
 end
 and characterization_interp clslst_noass assumption_lst oidxlst iidx = begin
+(* 	dbg_print "characterization_interp"; *)
 		(*printf "characterization_interp\n";
 		flush stdout;*)
 		assert (iidx>0) ;
@@ -731,7 +734,7 @@ begin
 		clslst_R_new := clslst_R;
 		
 		while ((!res)!=UNSATISFIABLE) do
-			dbg_print "  start loop";
+(* 			dbg_print "  start loop"; *)
 			Gc.compact();
 			(*dbg_print "  start dump_sat";*)
 			
@@ -827,6 +830,143 @@ begin
 			non_important_varlst 
 			ddM 
 			simplifyOrnot
+	end
+end
+and allsat_interp_BDD_diffInput
+			clslst_R 
+			diffInputClauseList 
+			target 
+			important_varlst 
+			non_important_varlst 
+			ddM 
+			simplifyOrnot
+			p
+			l
+			r
+			final_index_oneinst
+			bvi2name_hash
+= begin
+	let maxidx_R=get_largest_varindex_inclslst ( clslst_R @ diffInputClauseList )
+	in begin
+		assert (target<=maxidx_R);
+		List.iter (fun x -> assert(x<=maxidx_R)) (important_varlst @ non_important_varlst)
+	end
+	;
+
+	(*this is copied from allsat_interp_BDD_loop*)
+	assert((isEmptyList non_important_varlst)==false);
+	(*a loop to infer*)
+	let shift = (p+l)*final_index_oneinst
+	in
+	let res= ref SATISFIABLE
+	and infered_assertion_array_lst_new = ref []
+	and clslst_R_new = ref []
+	and cnt = ref 0
+	in begin
+		(*when finding the non unique case, I need the diffInputClauseList
+		but when I need to enlarge the cases, I also need both cases in it,
+		so I dont need diffInputClauseList in craig*)
+		clslst_R_new := clslst_R @ diffInputClauseList ;
+		
+		while ((!res)!=UNSATISFIABLE) do
+			printf "cnt %d\n" (!cnt) ;
+			cnt := (!cnt) + 1 ;
+(* 			dbg_print "  start loop in allsat_interp_BDD_diffInput"; *)
+			Gc.compact();
+(* 			dbg_print "  start dump_sat"; *)
+			
+			(*find out whether it is SAT*)
+			res:=dump_sat (([target],"allsat_interp target")::(!clslst_R_new));
+			(*use dunp_sat without reset because we still need to get it assignment below
+			after that we will reset it*)
+(* 			dbg_print "  finished dump_sat"; *)
+			printf "first ass\n";
+			let procpl x y = begin
+				let idx = x + (p+l)*final_index_oneinst
+				in
+				let (_,v) = get_assignment idx
+				in
+				match v with
+				false -> printf "!%s " y
+				| true -> printf " %s " y
+			end
+			in
+			Hashtbl.iter procpl bvi2name_hash;
+			printf "\nsecond ass\n";
+			
+			let procpl x y = begin
+				let idx = x + (p+l+p+l+1+r)*final_index_oneinst
+				in
+				let (_,v) = get_assignment idx
+				in
+				match v with
+				false -> printf "!%s " y
+				| true -> printf " %s " y
+			end
+			in
+			Hashtbl.iter procpl bvi2name_hash;
+			printf "\n";
+			
+			match (!res) with
+			UNSATISFIABLE -> begin
+				dbg_print "  no result in  allsat_interp";
+			end
+			| _ -> begin
+				assert((!res)==SATISFIABLE);
+				dbg_print "SAT";
+				(*dbg_print (sprintf "  found result in  allsat_interp %d" (List.length (!infered_assertion_array_lst_new)));*)
+				(*construct the list of all S0 and protocol input*)
+				(*get all their value, and construct the assumption list*)
+				let all_index_value_list = List.map get_assignment non_important_varlst
+				in begin
+					MiniSAT.reset ();
+					(*generate the circuit*)
+						(*let res=characterization_interp (!clslst_R_new) all_index_value_list important_varlst target*)
+						(*it is used for enlarging, so no need to rule out assignments enumerated
+							simply use clslst_R*)
+(* 					dbg_print "before characterization_interp"; *)
+					let new_assertion_preBDD = characterization_interp 
+																			clslst_R 
+																			all_index_value_list 
+																			important_varlst 
+																			target 
+																			in
+					let new_assertion = begin
+						(*dbg_print "  TIME of characterization_interp";*)
+						if(simplifyOrnot) then
+							simplify_withBDD new_assertion_preBDD ddM
+						else new_assertion_preBDD
+					end
+					in begin
+						(*dbg_print (sprintf "  after simplify_withBDD array size %d" (Array.length new_assertion));*)
+						(*check that all var referenced in new_assertion are npi*)
+(* 						dbg_print "after characterization_interp"; *)
+						check_itpo_var_membership new_assertion important_varlst ;
+						(*increamental encoding the new_assertion*)
+						let (_,clslst_2beappend)=
+							force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
+						begin
+							clslst_R_new := clslst_2beappend@(!clslst_R_new);
+						end
+						;
+						printf "intermedia result\n";
+						print_itpo_file_alone stdout new_assertion shift bvi2name_hash ;
+						printf "\n" ;
+(* 						dbg_print "after forcing assertion"; *)
+(* 						let litcnt=Intlist.listSum (List.map (fun x -> List.length (fst x)) (!clslst_R_new)) in *)
+						(*dbg_print (sprintf "  after force_assertion_alone %d %n" (List.length (!clslst_R_new)) litcnt);*)
+						
+						infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
+					end
+				end
+			end
+			;
+		done
+		;
+		printf "quit while\n" ;
+		flush stdout;
+ 		Gc.compact(); 
+		((!res),(!infered_assertion_array_lst_new))
 	end
 end
 and construct_ITPLST r_asslst = begin
@@ -1611,5 +1751,56 @@ and simplify_withBDD_withassumption itpcircuit assumptionlist ddM= begin
 				
 				simplify_withBDD arr_itpo ddM
 		end
+end
+and print_itpo_file_alone fv arr_itpo shift bvi2name_hash = begin
+	let size = Array.length arr_itpo
+	in
+	let rec interpObj2str interpObj = begin
+		match interpObj with
+		TiterpCircuit_true -> "1'b1"
+		| TiterpCircuit_false -> "1'b0"
+		| TiterpCircuit_refcls(clsidx) -> begin
+			let itpo_nxt = arr_itpo.(clsidx)
+			in interpObj2str itpo_nxt
+		end
+		| TiterpCircuit_refvar(varidx) -> begin
+			if (varidx>0) then begin
+				sprintf "%s" (Hashtbl.find bvi2name_hash (varidx-shift))
+			end
+			else if (varidx<0) then begin
+				sprintf "!%s"  (Hashtbl.find bvi2name_hash (( abs varidx )-shift))
+			end
+			else assert false
+		end
+		| TiterpCircuit_and(interpObjlst) -> begin
+			let objreslst = List.map (interpObj2str ) interpObjlst
+			in
+			String.concat " " ["(" ;(String.concat " & " objreslst);")"]
+		end
+		| TiterpCircuit_or(interpObjlst) -> begin
+			let objreslst = List.map (interpObj2str ) interpObjlst
+			in
+			String.concat " " ["(" ;(String.concat " | " objreslst);")"]
+		end
+		| TiterpCircuit_not(interpObj) -> begin
+			let objres = interpObj2str interpObj
+			in
+			sprintf "!%s" objres
+		end
+		| TiterpCircuit_printed(clsidx) -> assert false
+		| _ -> assert false
+	end
+	and prt_trace_withInterp num iter_res  = begin
+		match iter_res with
+		TiterpCircuit_none -> ()
+		| _ -> begin
+			let str_of_itpo = interpObj2str  iter_res
+			in
+			fprintf fv "%s" str_of_itpo
+		end
+	end
+	in begin
+		prt_trace_withInterp (size-1) arr_itpo.(size-1)
+	end
 end
 	
