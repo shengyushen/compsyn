@@ -845,6 +845,7 @@ object (self)
 	end
 
 	method partition1 (b:int) infered_assertion_array_lst_old_loop1 = begin
+		printf "partition with b = %d \n" b;
 		(*make sure the inferred loop like assertion is correct*)
 		let result_p = self#inferSATFormula_plr_nonloop b b b  [] infered_assertion_array_lst_old_loop1
 		in begin
@@ -871,7 +872,7 @@ object (self)
 					stop := true ; 
 				end
 				else begin
-					let (result_p_loop, infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop b b b  [] (!infered_assertion_array_lst_old_loop)  true
+					let (result_p_loop, infered_assertion_array_lst_new_loop)= self#inferSATFormula_plr_loop_1by1 b b b  [] (!infered_assertion_array_lst_old_loop)  true
 					in begin
 						assert (result_p_loop = UNSATISFIABLE) ; 
 						infered_assertion_array_lst_old_loop := infered_assertion_array_lst_new_loop @ (!infered_assertion_array_lst_old_loop);
@@ -1406,19 +1407,38 @@ object (self)
 		end
 	end
 
-	method inferSATFormula_plr_loop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop simplifyOrnot = begin
-		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" p l r (List.length infered_assertion_array_lst_old_loop);
-		if(p<2 || l<2 || r<2) then (UNSATISFIABLE,infered_assertion_array_lst_old_loop)
+	method inferSATFormula_plr_loop 
+		(p:int) 
+		(l:int) 
+		(r:int) 
+		infered_assertion_array_lst_old_nonloop 
+		infered_assertion_array_lst_old_loop 
+		simplifyOrnot 
+	= begin
+		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" 
+				p 
+				l 
+				r 
+				(List.length infered_assertion_array_lst_old_loop);
+		if(p<2 || l<2 || r<2) then 
+			(UNSATISFIABLE,infered_assertion_array_lst_old_loop)
 		else begin
-			let target = self#construct_nonloop p l r  infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop
+			let target = self#construct_nonloop 
+											p 
+											l 
+											r  
+											infered_assertion_array_lst_old_nonloop 
+											infered_assertion_array_lst_old_loop
 			in
 			let diffInputClauseList = self#diffInput p l r
 			in 
 			let target_all = self#construct_instance_loop p l r target
 			in begin
 				check_clslst_maxidx clause_list_multiple last_index;
-				let listUniqBitI_shifted = List.map (fun x -> x+(p+l)*final_index_oneinst) bv_instrlist in
-				(**)
+				let listUniqBitI_shifted = List.map 
+																	(fun x -> x+(p+l)*final_index_oneinst) 
+																	bv_instrlist 
+				in
 				let (res1,itplst)= allsat_interp_BDD_diffInput 
 															clause_list_multiple 
 															diffInputClauseList 
@@ -1433,7 +1453,10 @@ object (self)
  															final_index_oneinst
 															bvi2name_hash
 				in
-				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in  begin
+				let itplst_shiftback = List.map 
+															(fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) 
+															itplst  
+				in  begin
 					List.iter (fun x -> check_itpo_var_membership x bv_instrlist ) itplst_shiftback;
 					(res1,itplst_shiftback)
 				end
@@ -1441,6 +1464,58 @@ object (self)
 		end
 	end
 
+	method inferSATFormula_plr_loop_1by1 
+					(p:int) 
+					(l:int) 
+					(r:int) 
+					infered_assertion_array_lst_old_nonloop 
+					infered_assertion_array_lst_old_loop 
+					simplifyOrnot 
+	= begin
+		Printf.printf "  inferSATFormula_plr_loop : p %d l %d r %d ass len %d\n" 
+					p l r 
+					(List.length infered_assertion_array_lst_old_loop);
+		if(p<2 || l<2 || r<2) then 
+			(UNSATISFIABLE,infered_assertion_array_lst_old_loop)
+		else begin
+			let target = self#construct_nonloop 
+											p 
+											l 
+											r  
+											infered_assertion_array_lst_old_nonloop 
+											infered_assertion_array_lst_old_loop
+			in
+			let diffInputClauseList = self#diffInput p l r
+			in 
+			let target_all = self#construct_instance_loop p l r target
+			in begin
+				check_clslst_maxidx clause_list_multiple last_index;
+				let listUniqBitI_shifted = List.map 
+																	(fun x -> x+(p+l)*final_index_oneinst) 
+																	bv_instrlist 
+				in
+				let (res1,itplst)= allsat_interp_BDD_diffInput_1by1 
+															clause_list_multiple 
+															diffInputClauseList 
+															target_all 
+															listUniqBitI_shifted 
+															(self#construct_varlst2assumption p l r ) 
+															ddM 
+															simplifyOrnot 
+															p
+															l
+															r
+ 															final_index_oneinst
+															bvi2name_hash
+															bv_instrlist
+				in
+				let itplst_shiftback = List.map (fun x -> shiftAssertion x (-((p+l)*final_index_oneinst))) itplst  in  begin
+					List.iter (fun x -> check_itpo_var_membership x bv_instrlist ) itplst_shiftback;
+					(res1,itplst_shiftback)
+				end
+			end
+		end
+	end
 	method construct_instance_loop (p:int) (l:int) (r:int) target_all_old = begin
 		self#set_unlock_multiple ;
 		

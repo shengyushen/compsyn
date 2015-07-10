@@ -832,6 +832,110 @@ begin
 			simplifyOrnot
 	end
 end
+and allsat_interp_BDD_diffInput_1by1
+			clslst_R 
+			diffInputClauseList 
+			target 
+			important_varlst 
+			non_important_varlst 
+			ddM 
+			simplifyOrnot
+			p
+			l
+			r
+			final_index_oneinst
+			bvi2name_hash
+			bv_instrlist
+= begin
+	(*this is copied from allsat_interp_BDD_loop*)
+	assert((isEmptyList non_important_varlst)==false);
+	(*a loop to infer*)
+	let plpl1r_bv_inst_list = List.map (fun x -> x + (p+l+p+l+1+r)*final_index_oneinst) bv_instrlist
+	in
+	let res= ref SATISFIABLE
+	and infered_assertion_array_lst_new = ref []
+	and clslst_R_new = ref []
+	and cnt = ref 0
+	in begin
+		clslst_R_new := clslst_R @ diffInputClauseList ;
+		
+		while ((!res)!=UNSATISFIABLE) do
+			printf "cnt 1by1 %d\n" (!cnt) ;
+			cnt := (!cnt) + 1 ;
+			Gc.compact();
+			
+			(*find out whether it is SAT*)
+			res:=dump_sat (([target],"allsat_interp target")::(!clslst_R_new));
+			
+			match (!res) with
+			UNSATISFIABLE -> begin
+				dbg_print "  no result in  allsat_interp 1by1";
+			end
+			| _ -> begin
+				assert((!res)==SATISFIABLE);
+				dbg_print "SAT 1by1";
+
+			printf "second ass 1by1\n";
+			let procpl x y = begin
+				let idx = x + (p+l+p+l+1+r)*final_index_oneinst
+				in
+				let (_,v) = get_assignment idx
+				in
+				match v with
+				false -> printf "!%s " y
+				| true -> printf " %s " y
+			end
+			in
+			Hashtbl.iter procpl bvi2name_hash;
+			printf "\n" ;
+
+				let plpl1r_bv_inst_list_ass = List.map get_assignment_lit plpl1r_bv_inst_list
+				in
+				let plpl1r_bv_inst_list_ass_clstlst = List.map (fun x -> ([x],"")) plpl1r_bv_inst_list_ass 
+				in begin
+					MiniSAT.reset ();
+					let (ress,new_assertion_preBDD) = allsat_interp_BDD_diffInput 
+												(plpl1r_bv_inst_list_ass_clstlst @ clslst_R)
+												diffInputClauseList
+												target
+												important_varlst
+												non_important_varlst
+												ddM
+												simplifyOrnot
+												p
+												l
+												r
+												final_index_oneinst
+												bvi2name_hash
+					in
+					let new_assertion = begin
+						assert (ress = UNSATISFIABLE);
+						(*dbg_print "  TIME of characterization_interp";*)
+						simplify_withBDD (or_assertion new_assertion_preBDD) ddM
+					end
+					in begin
+						check_itpo_var_membership new_assertion important_varlst ;
+						(*increamental encoding the new_assertion*)
+						let (_,clslst_2beappend)=
+							force_assertion_alone (invert_assertion new_assertion) (get_largest_varindex_inclslst (!clslst_R_new)) in
+						begin
+							clslst_R_new := clslst_2beappend@(!clslst_R_new);
+						end
+						;
+						
+						infered_assertion_array_lst_new := (new_assertion::(!infered_assertion_array_lst_new))
+					end
+				end
+			end
+			;
+		done
+		;
+		printf "quit while 1by1\n" ;
+		flush stdout;
+ 		Gc.compact(); 
+		((!res),(!infered_assertion_array_lst_new))
+	end
+end
 and allsat_interp_BDD_diffInput
 			clslst_R 
 			diffInputClauseList 
@@ -880,6 +984,7 @@ and allsat_interp_BDD_diffInput
 			(*use dunp_sat without reset because we still need to get it assignment below
 			after that we will reset it*)
 (* 			dbg_print "  finished dump_sat"; *)
+(*
 			printf "first ass\n";
 			let procpl x y = begin
 				let idx = x + (p+l)*final_index_oneinst
@@ -906,6 +1011,7 @@ and allsat_interp_BDD_diffInput
 			in
 			Hashtbl.iter procpl bvi2name_hash;
 			printf "\n";
+*)
 			
 			match (!res) with
 			UNSATISFIABLE -> begin
@@ -949,9 +1055,11 @@ and allsat_interp_BDD_diffInput
 							clslst_R_new := clslst_2beappend@(!clslst_R_new);
 						end
 						;
+(*
 						printf "intermedia result\n";
 						print_itpo_file_alone stdout new_assertion shift bvi2name_hash ;
 						printf "\n" ;
+*)
 (* 						dbg_print "after forcing assertion"; *)
 (* 						let litcnt=Intlist.listSum (List.map (fun x -> List.length (fst x)) (!clslst_R_new)) in *)
 						(*dbg_print (sprintf "  after force_assertion_alone %d %n" (List.length (!clslst_R_new)) litcnt);*)

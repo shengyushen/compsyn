@@ -1,5 +1,5 @@
 
-elabmod.ml,6975
+elabmod.ml,7109
 Elabmod1,0
 exception UNSATUNSAT17,189
 class elabmodelabmod21,210
@@ -25,118 +25,120 @@ class elabmodelabmod21,210
 	val mutable outstrlistoutstrlist66,1904
 	val mutable non_proctocol_input_listnon_proctocol_input_list67,1933
 	val mutable bv_instrlistbv_instrlist70,2027
-	val mutable bv_outstrlistbv_outstrlist71,2058
-	val mutable bv_non_proctocol_input_listbv_non_proctocol_input_list72,2090
-	val mutable clause_list_multiple_fclause_list_multiple_f76,2228
-	val mutable last_index_flast_index_f77,2331
-	val mutable clause_list_multiple_geniaclause_list_multiple_genia81,2517
-	val mutable last_index_genialast_index_genia82,2624
-	val mutable ddMddM84,2724
-	method printprint87,2773
-	method getnamegetname205,5539
-	method addcoaddco207,5563
-	method rplcorplco212,5678
-	method findcofindco217,5800
-	method nameInportlistnameInportlist229,6204
-	method proc_T_input_declarationproc_T_input_declaration248,6641
-	method proc_T_output_declarationproc_T_output_declaration264,7075
-	method proc_T_net_declarationproc_T_net_declaration280,7515
-	method proc_T_reg_declarationproc_T_reg_declaration308,8269
-	method proc_T_continuous_assignproc_T_continuous_assign328,8853
-	method proc_T_always_statement_seqproc_T_always_statement_seq390,10407
-	method proc_T_always_statement_combproc_T_always_statement_comb467,12607
-	method proc_T_always_statementproc_T_always_statement480,12957
-	method proc_MIproc_MI516,13999
-	method initinit584,16151
-	method name2idxlistname2idxlist599,16525
-	method name2idxlist_nxtname2idxlist_nxt609,16724
-	method is_assertionis_assertion619,16927
-	method constrain_assertionconstrain_assertion626,17061
-	method try_assertiontry_assertion635,17596
-	method alloc_and_equ_resalloc_and_equ_res646,17878
-	method tryPCSATtryPCSAT660,18149
-	method minimizeLminimizeL687,19090
-	method minimizeRminimizeR700,19365
-	method minimizeLRminimizeLR713,19635
-	method getAllInputListgetAllInputList723,19885
-	method getNonProtocolInputListgetNonProtocolInputList736,20156
-	method dumpCNFdumpCNF746,20377
-	method printInOutListprintInOutList765,20844
-	method compsyncompsyn778,21266
-	method partition1partition1841,23333
-	method findBoundfindBound880,24779
-	method genDecoderFunctiongenDecoderFunction907,25757
-	method bitnamelst2namerangelstbitnamelst2namerangelst921,26272
-	method getVisitedPosListgetVisitedPosList969,27556
-	method generateDecoderVeriloggenerateDecoderVerilog1018,29017
-	method inferSATFormula_plr_nonloopinferSATFormula_plr_nonloop1162,33164
-	method construct_loopconstruct_loop1210,34630
-	method construct_nonloop_1copyconstruct_nonloop_1copy1234,35385
-	method diffInputdiffInput1297,37577
-	method construct_nonloopconstruct_nonloop1312,37956
-	method inferSATFormula_plr_loopinferSATFormula_plr_loop1403,40999
-	method construct_instance_loopconstruct_instance_loop1433,42363
-	method double_loopdouble_loop1457,43218
-	method construct_varlst2assumptionconstruct_varlst2assumption1499,44795
-	method force_assertionforce_assertion1519,45902
-	method connect_dffpairconnect_dffpair1532,46406
-	method connect_multiple_instance_step3connect_multiple_instance_step31594,48769
-	method encode_instanceencode_instance1611,49300
-	method gen_multiple_instance_step2gen_multiple_instance_step21629,49825
-	method encode_oneInstance2SAT_step1encode_oneInstance2SAT_step11638,50072
-	method encode2SAT_contass_listencode2SAT_contass_list1654,50571
-	method encode_assencode_ass1659,50740
-	method encode2SAT_comb_always_listencode2SAT_comb_always_list1668,50937
-	method encode_statement_incombencode_statement_incomb1678,51268
-	method encode2SAT_seq_always_listencode2SAT_seq_always_list1759,54334
-	method encode_nba_incombencode_nba_incomb1769,54657
-	method encode_statement_inseqencode_statement_inseq1809,55874
-	method encode_predencode_pred1870,58271
-	method encode_primencode_prim1888,58694
-	method encode_numberencode_number1963,60837
-	method encode_expencode_exp2024,62340
-	method encode_ADDencode_ADD2489,75765
-	method encode_ADD_1bitencode_ADD_1bit2539,77526
-	method encode_nba_inseqencode_nba_inseq2560,79210
-	method addGuardaddGuard2600,80424
-	method encode_ASSIGNencode_ASSIGN2611,80694
-	method encode_EQUencode_EQU2619,80990
-	method encode_EQU_resencode_EQU_res2627,81277
-	method encode_EQUVencode_EQUV2634,81594
-	method encode_EQUV_resencode_EQUV_res2646,81916
-	method encode_INEVencode_INEV2670,82657
-	method encode_INEV_resencode_INEV_res2698,83334
-	method encode_INE_resencode_INE_res2726,84001
-	method encode_AND2_resencode_AND2_res2733,84322
-	method encode_OR2_resencode_OR2_res2740,84621
-	method encode_SEL_resencode_SEL_res2747,84915
-	method encode_XOR2_resencode_XOR2_res2754,85277
-	method encode_NEQencode_NEQ2756,85343
-	method encode_NEG_ASSIGNencode_NEG_ASSIGN2765,85656
-	method encode_Red_ANDencode_Red_AND2773,85965
-	method encode_Red_NANDencode_Red_NAND2784,86428
-	method encode_Red_ORencode_Red_OR2795,86897
-	method encode_Red_NORencode_Red_NOR2806,87355
-	method encode2SAT_explictnameencode2SAT_explictname2817,87819
-	method map_lv2indexmap_lv2index2852,89120
-	method isdffisdff2923,90805
-	method name2rangename2range2932,90959
-	method idx2nameidx2name2945,91331
-	method print_cnfprint_cnf3004,93606
-	method print_itpoprint_itpo3101,96560
-	method print_itpo_fileprint_itpo_file3105,96641
-	method print_itpo_verilog_fileprint_itpo_verilog_file3157,98141
-	method set_lock_oneinstset_lock_oneinst3207,99615
-	method set_unlock_oneinstset_unlock_oneinst3211,99678
-	method append_clause_list_oneinstappend_clause_list_oneinst3215,99744
-	method set_clause_list_oneinstset_clause_list_oneinst3220,99880
-	method set_last_index_oneinstset_last_index_oneinst3225,99999
-	method set_lock_multipleset_lock_multiple3232,100143
-	method set_unlock_multipleset_unlock_multiple3237,100263
-	method append_clause_list_multipleappend_clause_list_multiple3241,100331
-	method set_clause_list_multipleset_clause_list_multiple3246,100487
-	method set_last_indexset_last_index3251,100617
-	method alloc_indexalloc_index3258,100883
+	val mutable bvi2name_hashbvi2name_hash71,2058
+	val mutable bv_outstrlistbv_outstrlist72,2133
+	val mutable bv_non_proctocol_input_listbv_non_proctocol_input_list73,2165
+	val mutable clause_list_multiple_fclause_list_multiple_f77,2303
+	val mutable last_index_flast_index_f78,2406
+	val mutable clause_list_multiple_geniaclause_list_multiple_genia82,2592
+	val mutable last_index_genialast_index_genia83,2699
+	val mutable ddMddM85,2799
+	method printprint88,2848
+	method getnamegetname206,5614
+	method addcoaddco208,5638
+	method rplcorplco213,5753
+	method findcofindco218,5875
+	method nameInportlistnameInportlist230,6279
+	method proc_T_input_declarationproc_T_input_declaration249,6716
+	method proc_T_output_declarationproc_T_output_declaration265,7150
+	method proc_T_net_declarationproc_T_net_declaration281,7590
+	method proc_T_reg_declarationproc_T_reg_declaration309,8344
+	method proc_T_continuous_assignproc_T_continuous_assign329,8928
+	method proc_T_always_statement_seqproc_T_always_statement_seq391,10482
+	method proc_T_always_statement_combproc_T_always_statement_comb468,12682
+	method proc_T_always_statementproc_T_always_statement481,13032
+	method proc_MIproc_MI517,14074
+	method initinit585,16226
+	method name2idxlistname2idxlist600,16600
+	method name2idxlist_nxtname2idxlist_nxt610,16799
+	method is_assertionis_assertion620,17002
+	method constrain_assertionconstrain_assertion627,17136
+	method try_assertiontry_assertion636,17671
+	method alloc_and_equ_resalloc_and_equ_res647,17953
+	method tryPCSATtryPCSAT661,18224
+	method minimizeLminimizeL688,19165
+	method minimizeRminimizeR701,19440
+	method minimizeLRminimizeLR714,19710
+	method getAllInputListgetAllInputList724,19960
+	method getNonProtocolInputListgetNonProtocolInputList737,20231
+	method dumpCNFdumpCNF747,20452
+	method printInOutListprintInOutList766,20919
+	method compsyncompsyn779,21341
+	method partition1partition1847,23622
+	method findBoundfindBound887,25112
+	method genDecoderFunctiongenDecoderFunction914,26090
+	method bitnamelst2namerangelstbitnamelst2namerangelst928,26605
+	method getVisitedPosListgetVisitedPosList976,27889
+	method generateDecoderVeriloggenerateDecoderVerilog1025,29350
+	method inferSATFormula_plr_nonloopinferSATFormula_plr_nonloop1169,33497
+	method construct_loopconstruct_loop1217,34963
+	method construct_nonloop_1copyconstruct_nonloop_1copy1241,35718
+	method diffInputdiffInput1304,37910
+	method construct_nonloopconstruct_nonloop1319,38289
+	method inferSATFormula_plr_loopinferSATFormula_plr_loop1410,41332
+	method inferSATFormula_plr_loop_1by1inferSATFormula_plr_loop_1by11467,42985
+	method construct_instance_loopconstruct_instance_loop1519,44648
+	method double_loopdouble_loop1543,45503
+	method construct_varlst2assumptionconstruct_varlst2assumption1585,47080
+	method force_assertionforce_assertion1605,48187
+	method connect_dffpairconnect_dffpair1618,48691
+	method connect_multiple_instance_step3connect_multiple_instance_step31680,51054
+	method encode_instanceencode_instance1697,51585
+	method gen_multiple_instance_step2gen_multiple_instance_step21715,52110
+	method encode_oneInstance2SAT_step1encode_oneInstance2SAT_step11724,52357
+	method encode2SAT_contass_listencode2SAT_contass_list1740,52856
+	method encode_assencode_ass1745,53025
+	method encode2SAT_comb_always_listencode2SAT_comb_always_list1754,53222
+	method encode_statement_incombencode_statement_incomb1764,53553
+	method encode2SAT_seq_always_listencode2SAT_seq_always_list1845,56619
+	method encode_nba_incombencode_nba_incomb1855,56942
+	method encode_statement_inseqencode_statement_inseq1895,58159
+	method encode_predencode_pred1956,60556
+	method encode_primencode_prim1974,60979
+	method encode_numberencode_number2049,63122
+	method encode_expencode_exp2110,64625
+	method encode_ADDencode_ADD2575,78050
+	method encode_ADD_1bitencode_ADD_1bit2625,79811
+	method encode_nba_inseqencode_nba_inseq2646,81495
+	method addGuardaddGuard2686,82709
+	method encode_ASSIGNencode_ASSIGN2697,82979
+	method encode_EQUencode_EQU2705,83275
+	method encode_EQU_resencode_EQU_res2713,83562
+	method encode_EQUVencode_EQUV2720,83879
+	method encode_EQUV_resencode_EQUV_res2732,84201
+	method encode_INEVencode_INEV2756,84942
+	method encode_INEV_resencode_INEV_res2784,85619
+	method encode_INE_resencode_INE_res2812,86286
+	method encode_AND2_resencode_AND2_res2819,86607
+	method encode_OR2_resencode_OR2_res2826,86906
+	method encode_SEL_resencode_SEL_res2833,87200
+	method encode_XOR2_resencode_XOR2_res2840,87562
+	method encode_NEQencode_NEQ2842,87628
+	method encode_NEG_ASSIGNencode_NEG_ASSIGN2851,87941
+	method encode_Red_ANDencode_Red_AND2859,88250
+	method encode_Red_NANDencode_Red_NAND2870,88713
+	method encode_Red_ORencode_Red_OR2881,89182
+	method encode_Red_NORencode_Red_NOR2892,89640
+	method encode2SAT_explictnameencode2SAT_explictname2903,90104
+	method map_lv2indexmap_lv2index2938,91405
+	method isdffisdff3009,93090
+	method name2rangename2range3018,93244
+	method idx2nameidx2name3031,93616
+	method print_cnfprint_cnf3090,95891
+	method print_itpoprint_itpo3187,98845
+	method print_itpo_fileprint_itpo_file3191,98926
+	method print_itpo_verilog_fileprint_itpo_verilog_file3243,100426
+	method set_lock_oneinstset_lock_oneinst3293,101900
+	method set_unlock_oneinstset_unlock_oneinst3297,101963
+	method append_clause_list_oneinstappend_clause_list_oneinst3301,102029
+	method set_clause_list_oneinstset_clause_list_oneinst3306,102165
+	method set_last_index_oneinstset_last_index_oneinst3311,102284
+	method set_lock_multipleset_lock_multiple3318,102428
+	method set_unlock_multipleset_unlock_multiple3323,102548
+	method append_clause_list_multipleappend_clause_list_multiple3327,102616
+	method set_clause_list_multipleset_clause_list_multiple3332,102772
+	method set_last_indexset_last_index3337,102902
+	method alloc_indexalloc_index3344,103168
 
 main.ml,424
 Main1,0
@@ -493,7 +495,7 @@ and isGFZeroisGFZero501,11630
 and isNotGFZeroisNotGFZero504,11716
 and isGFOneisGFOne507,11802
 
-../share/interp.ml,2373
+../share/interp.ml,2517
 Interp1,0
 type bddssyTypebddssyType8,86
 type bddssyType = T_bddssy_nonT_bddssy_non8,86
@@ -513,34 +515,36 @@ type iterpCircuit = TiterpCircuit_trueTiterpCircuit_true17,391
 | TiterpCircuit_noneTiterpCircuit_none24,629
 | TiterpCircuit_printedTiterpCircuit_printed25,650
 let rec characterization_interp_ABcharacterization_interp_AB31,769
-and characterization_interp_AB_masscharacterization_interp_AB_mass241,8046
-and characterization_interpcharacterization_interp395,14135
-and read_proof_classfyABread_proof_classfyAB427,15027
-and buildChainbuildChain602,20724
-and is_B_simpleis_B_simple615,21064
-and build_var_cls_idx_lstbuild_var_cls_idx_lst626,21293
-and allsat_interpallsat_interp648,21808
-and allsat_interp_noBDDallsat_interp_noBDD665,22069
-and allsat_interp_BDD_directallsat_interp_BDD_direct681,22286
-and allsat_interp_BDD_loopallsat_interp_BDD_loop718,23298
-and allsat_interp_BDDallsat_interp_BDD800,26160
-and allsat_interp_BDD_diffInputallsat_interp_BDD_diffInput835,26828
-and construct_ITPLSTconstruct_ITPLST933,30391
-and or_assertionor_assertion953,30778
-and and_assertionand_assertion970,31419
-and invert_assertioninvert_assertion987,32062
-and shiftAssertionshiftAssertion995,32308
-and check_itpo_var_membershipcheck_itpo_var_membership1060,34093
-and encode_assertionencode_assertion1112,35788
-and force_assertion_aloneforce_assertion_alone1213,38794
-and check_inverted_assertion_satisfiablecheck_inverted_assertion_satisfiable1223,39280
-and check_assertion_satisfiablecheck_assertion_satisfiable1249,40164
-and return_bddreturn_bdd1279,41005
-and bdd_andlstbdd_andlst1284,41131
-and bdd_orlstbdd_orlst1291,41330
-and simplify_withBDDsimplify_withBDD1298,41527
-and simplify_withBDD_forcedsimplify_withBDD_forced1311,41793
-and simplify_withBDD_withassumptionsimplify_withBDD_withassumption1611,50998
+and characterization_interp_AB_masscharacterization_interp_AB_mass241,8082
+and characterization_interpcharacterization_interp395,14171
+and read_proof_classfyABread_proof_classfyAB427,15069
+and buildChainbuildChain602,20766
+and is_B_simpleis_B_simple615,21106
+and build_var_cls_idx_lstbuild_var_cls_idx_lst626,21335
+and allsat_interpallsat_interp648,21850
+and allsat_interp_noBDDallsat_interp_noBDD665,22111
+and allsat_interp_BDD_directallsat_interp_BDD_direct681,22328
+and allsat_interp_BDD_loopallsat_interp_BDD_loop718,23340
+and allsat_interp_BDDallsat_interp_BDD800,26208
+and allsat_interp_BDD_diffInput_1by1allsat_interp_BDD_diffInput_1by1835,26876
+and allsat_interp_BDD_diffInputallsat_interp_BDD_diffInput938,29631
+and construct_ITPLSTconstruct_ITPLST1079,34106
+and or_assertionor_assertion1099,34493
+and and_assertionand_assertion1116,35134
+and invert_assertioninvert_assertion1133,35777
+and shiftAssertionshiftAssertion1141,36023
+and check_itpo_var_membershipcheck_itpo_var_membership1206,37808
+and encode_assertionencode_assertion1258,39503
+and force_assertion_aloneforce_assertion_alone1359,42509
+and check_inverted_assertion_satisfiablecheck_inverted_assertion_satisfiable1369,42995
+and check_assertion_satisfiablecheck_assertion_satisfiable1395,43879
+and return_bddreturn_bdd1425,44720
+and bdd_andlstbdd_andlst1430,44846
+and bdd_orlstbdd_orlst1437,45045
+and simplify_withBDDsimplify_withBDD1444,45242
+and simplify_withBDD_forcedsimplify_withBDD_forced1457,45508
+and simplify_withBDD_withassumptionsimplify_withBDD_withassumption1757,54713
+and print_itpo_file_aloneprint_itpo_file_alone1862,57755
 
 ../share/intlist.ml,822
 Intlist1,0
