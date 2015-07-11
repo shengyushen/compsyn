@@ -218,3 +218,13 @@ and cutList lst start len = begin
 		getHead lst len
 	end
 end
+and getHeadListTail lst = begin
+	match lst with
+	hd::[tl] -> ([hd],tl)
+	| hd::tl -> begin
+		let (remainlst,realTail) = getHeadListTail tl
+		in
+		(hd::remainlst,realTail)
+	end
+	| _ -> assert false
+end

@@ -921,8 +921,6 @@ object (self)
 			self#set_lock_oneinst;
 		end ;
 
-		(*making sure that the output is to be sent to serdes*)
-		assert  (isSingularList outstrlist);
 		(*their var index*)
 		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
 		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
@@ -972,12 +970,6 @@ object (self)
 
 			if( l1 = 0 ) then begin
 				(*p output -> p state*)
-				(*p state -> p input*)
-				assert false;
-			end
-			else if ( l1 = 1 ) then begin
-				(*p+l1 output -> p+l1 state*)
-				(*p+l1 state -> p state*)
 				(*p state -> p input*)
 				assert false;
 			end
@@ -1033,24 +1025,66 @@ object (self)
 					end
 				end
 				in
-				let finalList = doproc p_l1_sub1_state_list otherDffList statesList
-				in begin
+				let finalList = begin
 					printf "\nlast uniq state\n";
 					List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) p_l1_sub1_state_list;
+(*
 					printf "\nlast not uniq state\n";
 					List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) otherDffList;
+*)
+					flush stdout;
+
+					doproc p_l1_sub1_state_list otherDffList statesList
+				end
+				in
+				(*p? state -> p input*)
+				let (realList,invalidReglist) = getHeadListTail (((p1+l1),p_l1_sub1_state_list)::finalList)
+				in
+				let revRealList = begin
+					assert ((isEmptyList realList) = false );
 
 					let procL x = begin
 						printf "\nUniqList at state %d\n" (fst x) ; 
 						List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) (snd x) ;
 					end
 					in
-					List.iter procL  finalList
+					List.iter procL  realList
+					;
+					printf "\nNot uniq registers\n"; 
+					List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) (snd invalidReglist) ;
+					flush stdout;
+
+					List.rev realList
 				end
-
-
-
-				(*p state -> p input*)
+				in
+				let rec checkRevRealList rrl = begin
+					match rrl with
+					[] -> assert false
+					| (stpos,reglist) :: tl -> begin
+						printf "trying state %d\n" stpos ;
+						flush stdout;
+						if(isEmptyList reglist) then checkRevRealList tl
+						else
+							let (uniqInputList,nonuniqInputList) =
+								self#findUniqDecidedList
+									p1
+									l1
+									r1
+									reglist
+									stpos
+									bv_instrlist
+									p1
+							in
+							if(isEmptyList nonuniqInputList) then (stpos,reglist)
+							else checkRevRealList tl
+					end
+				end
+				in
+				let (statePos,regList) = checkRevRealList revRealList
+				in begin
+					printf "\nuniq input with state pos %d\n" statePos;
+					flush stdout;
+				end
 			end
 		end
 	end
