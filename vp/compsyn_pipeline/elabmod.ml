@@ -968,7 +968,7 @@ object (self)
 			printf "List of registers\n";
 			List.iter (fun x -> printf "%s\n" (fst x) ) dff_idxpairlst ;
 
-			if( l1 = 0 ) then begin
+			if( l1 < 0 ) then begin
 				(*p output -> p state*)
 				(*p state -> p input*)
 				assert false;
@@ -988,7 +988,7 @@ object (self)
 				(*p+l1 state -> p+l1-1 state*)
 				(*...*)
 				(*p+1 state -> p state*)
-				let statesList = lr2list ( p1 + l1 - 1 )  ( p1 )
+				let statesList = lr2list_lBr ( p1 + l1 - 1 )  ( p1 )
 				in 
 				let rec doproc uniqList diffList stList = begin
 					match stList with
@@ -1034,11 +1034,12 @@ object (self)
 *)
 					flush stdout;
 
-					doproc p_l1_sub1_state_list otherDffList statesList
+					if (isEmptyList statesList) then []
+					else doproc p_l1_sub1_state_list otherDffList statesList
 				end
 				in
 				(*p? state -> p input*)
-				let (realList,invalidReglist) = getHeadListTail (((p1+l1),p_l1_sub1_state_list)::finalList)
+				let (realList,invalidReglist) = getHeadListTail ((p1+l1,bv_outstrlist)::(((p1+l1),p_l1_sub1_state_list)::finalList))
 				in
 				let revRealList = begin
 					assert ((isEmptyList realList) = false );
@@ -1048,7 +1049,7 @@ object (self)
 						List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) (snd x) ;
 					end
 					in
-					List.iter procL  realList
+					List.iter procL  (List.tl realList)
 					;
 					printf "\nNot uniq registers\n"; 
 					List.iter (fun idx -> let y= List.find ( fun x -> (fst (snd x))= idx ) dff_idxpairlst in printf "%s\n" (fst y)) (snd invalidReglist) ;
@@ -1082,7 +1083,13 @@ object (self)
 				in
 				let (statePos,regList) = checkRevRealList revRealList
 				in begin
-					printf "\nuniq input with state pos %d\n" statePos;
+					if (List.for_all (fun idx -> List.exists (fun x -> (fst (snd x) = idx )) dff_idxpairlst) regList) then begin
+						printf "\nuniq input with state pos %d\n" statePos;
+					end
+					else begin
+						printf "\nuniq input with output pos %d\n" statePos;
+					end
+					;
 					flush stdout;
 				end
 			end

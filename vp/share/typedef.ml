@@ -1114,6 +1114,11 @@ and lr2list li ri = begin
 	else if li< ri then li::(lr2list (li+1) ri)
 	else [ri]
 end
+and lr2list_lBr li ri = begin
+	if li > ri then li::(lr2list_lBr (li-1) ri)
+	else if li< ri then []
+	else [li]
+end
 and rng2list rng = begin
 	let (l,r) = rng2lr rng
 	in 
