@@ -1091,9 +1091,198 @@ object (self)
 					end
 					;
 					flush stdout;
+
+
+
+					self#genDecoderVerilog 
+						p1 l1 r1
+						statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
+						revRealList (*the list of pair, (statepos,stage)*)
 				end
 			end
 		end
+	end
+
+	method genDecoderVerilog 
+		p1 l1 r1
+		statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
+		revRealList (*the list of pair, (statepos,stage)*)
+		=
+	begin
+		(*open file *)
+		let decoderVerilog = open_out "resulting_dual_cnf.v" 
+		and bvo = self#bitnamelst2namerangelst bv_outstrlist 
+		and bvi = self#bitnamelst2namerangelst bv_instrlist 
+		in begin
+			(*first output the head of the decoder*)
+			fprintf decoderVerilog  "module resulting_dual(\n";
+
+			(*generating input specification*)
+			let prtbit x = begin
+				match x with 
+				(nm,-1,r) -> begin
+					assert (r =(-1));
+					fprintf decoderVerilog " input  %s,\n" nm
+				end
+				| (nm,l,r) -> begin
+					assert(l!=(-1));
+					assert(r!=(-1));
+					fprintf decoderVerilog " input [%d:%d] %s,\n" l r nm
+				end
+			end in
+			List.iter prtbit bvo;
+
+			(*generating output specification*)
+			let prtbit x = begin
+				match x with 
+				(nm,-1,r) -> begin
+					assert (r =(-1));
+					fprintf decoderVerilog " output  %s,\n" nm
+				end
+				| (nm,l,r) -> begin
+					assert(l!=(-1));
+					assert(r!=(-1));
+					fprintf decoderVerilog " output [%d:%d] %s,\n" l r nm
+				end
+			end in
+			List.iter prtbit bvi;
+
+			fprintf decoderVerilog  "  input clk);\n";
+			
+(* 			print out the register used *)
+(* 			first find out the statePos *)
+			let rec getStatePosHeadList rrl = begin
+				match rrl with
+				(stp,regl)::tl -> begin
+					if(stp=statePos) then rrl
+					else getStatePosHeadList tl
+				end
+				| [] -> assert false
+			end
+			in 
+			let statePosHeadRevRealList = getStatePosHeadList revRealList
+			in
+			let statePosHeadRevRealList_noOutput = remove_last statePosHeadRevRealList
+			in begin
+				let prtreg x = begin
+					match x with 
+					(nm,-1,_) -> begin
+						fprintf decoderVerilog " reg %s;\n" nm
+					end
+					| (nm,l,r) -> begin
+						assert(l!=(-1));
+						assert(r!=(-1));
+						fprintf decoderVerilog " reg [%d:%d] %s;\n" l r nm
+					end
+				end
+				in
+				let prtrr rr = begin
+					match rr with
+					(stp,regl) -> begin
+						fprintf decoderVerilog "  // pipeline state %d\n" stp;
+						List.iter prtreg (self#bitnamelst2namerangelst regl);
+					end
+				end
+				in
+				List.iter prtrr statePosHeadRevRealList_noOutput;
+
+(* 			characterize the input function *)
+				let instCNF = begin
+				(*****************************************)
+				(*the CNF for characterizing flow control vars*)
+				(*****************************************)
+					self#construct_nonloop_1copy p1 0 r1 [] [];
+					clause_list_multiple 
+				end 
+				in 
+				let idx2fucList_input = begin
+					let idx2fucList = self#genDecoderFunction 
+						bv_instrlist
+						(p1*final_index_oneinst)
+						(List.map (fun x -> x+statePos*final_index_oneinst) regList)
+						instCNF
+					in
+					List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((statePos)*final_index_oneinst)) in (i,newass) ) idx2fucList  
+				end
+				and idx2fucList_reg = begin
+					let rec procstg stgl = begin
+						match stgl with
+						(stp1,regl1)::((stp2,regl2)::tl) -> begin
+							(*more than 1 stgs remain, we can char stg1 with stg2*)
+							let idx2fucList = self#genDecoderFunction 
+								regl1
+								(stp1*final_index_oneinst)
+								(List.map (fun x -> x+stp2*final_index_oneinst) regl2)
+								instCNF
+							in
+							let current_idx2fucList = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((stp2)*final_index_oneinst)) in (i,newass) ) idx2fucList  
+							in
+							(stp1,current_idx2fucList) :: (procstg ((stp2,regl2)::tl))
+						end
+						| [(stp1,regl1)] -> begin
+							(*only stg1 remain,char it with output*)
+							let idx2fucList = self#genDecoderFunction 
+								regl1
+								(stp1*final_index_oneinst)
+								(List.map (fun x -> x+(p1+r1)*final_index_oneinst) bv_outstrlist)
+								instCNF
+							in
+							let current_idx2fucList = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((p1+r1)*final_index_oneinst)) in (i,newass) ) idx2fucList  
+							in
+							[(stp1,current_idx2fucList)]
+						end
+						| _ -> assert false
+					end
+					in
+					procstg statePosHeadRevRealList_noOutput
+				end
+				in begin
+					self#printdecfunction  decoderVerilog idx2fucList_input true;
+					List.iter (fun x -> match x with (stp,func) -> fprintf decoderVerilog "//pipeline stage %d\n" stp; self#printdecfunction  decoderVerilog func true) idx2fucList_reg;
+				end
+				;
+			end
+			;
+			
+			close_out decoderVerilog
+		end
+	end
+
+	method printdecfunction decoderVerilog idx2decfunList isCombinational = begin
+			let findVisited  idx2decfun = begin
+				(*find out the visited pos in decfun*)
+				match idx2decfun with
+				(idx,decfun) -> begin
+					let visitedPosList=self#getVisitedPosList decfun in
+					(idx,decfun, visitedPosList)
+				end
+			end
+			in
+			let idx2decfun2VisitedList=List.map findVisited idx2decfunList in
+			let prtWire idx2decfun = begin
+				match idx2decfun with
+				(idx,decfun,visitedPos) -> 
+					List.iter (fun x -> fprintf decoderVerilog "wire w_%d_%d ;\n" idx x) visitedPos
+			end in
+			let prtFunction idx2decfun = begin
+				match idx2decfun with
+				(idx,decfun,visitedPos) -> begin
+					if(isCombinational) then begin
+						fprintf decoderVerilog "assign %s = w_%d_%d ;\n" (self#idx2name idx) idx ((Array.length decfun)-1);
+					end
+					else begin
+						fprintf decoderVerilog "always @(posedge clk) %s = w_%d_%d ;\n" (self#idx2name idx) idx ((Array.length decfun)-1);
+					end
+					;
+
+					List.iter (fun i -> self#print_itpo_verilog_file_nocycle decoderVerilog (Array.get decfun i) idx i) visitedPos
+				end
+			end 
+			in begin
+				List.iter prtWire idx2decfun2VisitedList;
+				List.iter prtFunction idx2decfun2VisitedList;
+			end;
+			
 	end
 
 	method findUniqDecidedList 
@@ -1386,7 +1575,6 @@ object (self)
 		end
 	end
 
-
 	method genDecoderFunction iv shift ov instCNF = begin
 		let maxidxR=get_largest_varindex_inclslst instCNF in 
 		let shiftedIV=List.map (fun x -> x+shift) iv in 
@@ -1396,7 +1584,10 @@ object (self)
 			shiftclslst instCNF ov maxidxR
 		end 
 		in 
-		characterization_interp_AB_mass iv shift instCNF clslst_shift maxidxR ov
+(* 		let ib_itpo_lst = characterization_interp_AB_mass iv shift instCNF clslst_shift maxidxR ov *)
+		let ib_itpo_lst = List.map (fun i -> allsat_interp_BDD_direct instCNF (i+shift) ov ddM true) iv 
+		in
+		List.combine iv (List.map (fun x -> assert (isSingularList (snd x));List.hd (snd x)) ib_itpo_lst)
 	end
 
 	method bitnamelst2namerangelst bitlst = begin
@@ -3793,6 +3984,55 @@ object (self)
 			in begin
 				prt_trace_withInterp (size-1) arr_itpo.(size-1)
 			end
+	end
+
+	method print_itpo_verilog_file_nocycle fv itpo1 idx vpos= begin
+		fprintf fv "assign w_%d_%d = " idx vpos;
+		let rec prt_itpo itpo = begin
+			match itpo with
+			TiterpCircuit_true -> "1'b1"
+			| TiterpCircuit_false -> "1'b0"
+			| TiterpCircuit_refcls(clsidx) -> begin
+				assert(clsidx!=0);
+				sprintf "w_%d_%d" idx clsidx;
+			end
+			| TiterpCircuit_refvar(varidx) -> begin
+				if (varidx>0) then begin
+					sprintf "%s" 
+							(self#idx2name (varidx mod final_index_oneinst)) 
+				end
+				else if (varidx<0) then begin
+					sprintf "!%s" 
+							(self#idx2name ((-varidx) mod final_index_oneinst))
+				end
+				else assert false
+			end
+			| TiterpCircuit_and(interpObjlst) -> begin
+				let objreslst = List.map prt_itpo interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " & " objreslst);")"]
+			end
+			| TiterpCircuit_or(interpObjlst) -> begin
+				let objreslst = List.map prt_itpo interpObjlst
+				in
+				String.concat " " ["(" ;(String.concat " | " objreslst);")"]
+			end
+			| TiterpCircuit_not(interpObj) -> begin
+				let objres = prt_itpo interpObj
+				in
+				sprintf "!%s" objres
+			end
+			| TiterpCircuit_printed(clsidx) -> begin
+				Printf.printf "\nFATAL :TiterpCircuit_printed\n";
+				assert false
+			end
+			| _ -> begin
+				assert (itpo==TiterpCircuit_none);
+				assert false
+			end
+		end in
+		let varstr=prt_itpo itpo1 in
+		fprintf fv " %s ;\n" varstr ;
 	end
 
 	method print_itpo_verilog_file fv itpo1 idx vpos= begin
