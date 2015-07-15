@@ -911,7 +911,7 @@ object (self)
 		(*encoding the transition relation's CNF*)
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
-		dbg_print "encode_oneInstance2SAT_step1" ;
+(* 		dbg_print "encode_oneInstance2SAT_step1" ; *)
 		let clslst_one_inst =self#encode_oneInstance2SAT_step1 in begin
 			self#set_unlock_oneinst;
 			(*set it into the clslst_one_inst*)
@@ -924,7 +924,7 @@ object (self)
 		(*their var index*)
 		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
 		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
-		List.iter (fun x -> printf "name : %s\n" (self#idx2name x)) bv_outstrlist;
+(* 		List.iter (fun x -> printf "name : %s\n" (self#idx2name x)) bv_outstrlist; *)
 		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
 
 
@@ -939,7 +939,7 @@ object (self)
 		(*set the current time to be used by dbg_print*)
 		set_current_time;
 
-
+		dbg_print "begin";
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
 		(*following is relational code*)
@@ -967,6 +967,7 @@ object (self)
 			printf "r1 %d\n" r1 ;
 			printf "List of registers\n";
 			List.iter (fun x -> printf "%s\n" (fst x) ) dff_idxpairlst ;
+			flush stdout;
 
 			if( l1 < 0 ) then begin
 				(*p output -> p state*)
@@ -1098,6 +1099,9 @@ object (self)
 						p1 l1 r1
 						statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
 						revRealList (*the list of pair, (statepos,stage)*)
+						;
+
+					dbg_print "finished";
 				end
 			end
 		end
@@ -1238,12 +1242,13 @@ object (self)
 				end
 				in begin
 					self#printdecfunction  decoderVerilog idx2fucList_input true;
-					List.iter (fun x -> match x with (stp,func) -> fprintf decoderVerilog "//pipeline stage %d\n" stp; self#printdecfunction  decoderVerilog func true) idx2fucList_reg;
+					List.iter (fun x -> match x with (stp,func) -> fprintf decoderVerilog "//pipeline stage %d\n" stp; self#printdecfunction  decoderVerilog func false) idx2fucList_reg;
 				end
 				;
 			end
 			;
-			
+			fprintf decoderVerilog "\n\n endmodule\n";
+
 			close_out decoderVerilog
 		end
 	end
@@ -1271,7 +1276,7 @@ object (self)
 						fprintf decoderVerilog "assign %s = w_%d_%d ;\n" (self#idx2name idx) idx ((Array.length decfun)-1);
 					end
 					else begin
-						fprintf decoderVerilog "always @(posedge clk) %s = w_%d_%d ;\n" (self#idx2name idx) idx ((Array.length decfun)-1);
+						fprintf decoderVerilog "always @(posedge clk) %s <= w_%d_%d ;\n" (self#idx2name idx) idx ((Array.length decfun)-1);
 					end
 					;
 
@@ -1544,7 +1549,7 @@ object (self)
 		in begin
 			while (!stop)=false do
 				b := (!b) + 1 ;
-				dbg_print (sprintf "b is %d\n" (!b));
+(* 				dbg_print (sprintf "b is %d\n" (!b)); *)
 				let (respc,target) = self#tryPCSAT (!b) (!b) (!b) []
 				in 
 				match respc with

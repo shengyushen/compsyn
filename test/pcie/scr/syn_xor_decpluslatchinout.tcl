@@ -7,8 +7,8 @@ set my_lib_path "  \
       ../src/verilog \
       /CAD/synopsys/libraries/syn \
 "
-set filelist "resulting_dual_cnf.v"
-set top_design resulting_dual
+set filelist "resulting_dual_cnf.v ../scr/latchinout.v"
+set top_design latchinout
 
 
 ######################################
@@ -24,7 +24,7 @@ set link_library " *	  \
 set symbol_library [list lsi_10k.sdb ]
 
 
-set search_path " \
+set search_path "../src/verilog \
 		$search_path  \
 		$my_lib_path "
 set wastefile "wastefile"
@@ -51,20 +51,22 @@ current_design ${top_design}
 link
 uniquify
 ungroup -all -flatten -simple_names
-replace_synthetic -ungroup
+replace_synthetic -ungroup 
 
 current_design ${top_design}
 set_ideal_network [get_ports clk]
-create_clock -name clk -period 9 -waveform {0.0 3.5} [ get_ports clk]
-set_input_delay 0 -clock clk [all_inputs]
-set_output_delay 0 -clock clk [all_outputs]
-#set_ideal_network [get_ports *]
+set maxD 6
+create_clock -name clk -period ${maxD} -waveform [list 0.0 [expr ${maxD}/2.0]] [ get_ports clk]
+set_max_delay ${maxD} -from [all_inputs] -to [all_outputs]
+
 
 current_design ${top_design}
-set_map_only [get_cells *] true
+#remove_attribute [get_designs ${top_design}] max_area
+current_design ${top_design}
+#set_map_only [get_cells *] true
 set_max_transition 0.2 [all_designs]
 set_max_fanout 10 [all_designs]
-set_max_area 0 
+set_max_area 0
 
 current_design ${top_design}
 #set_dont_use lsi_10k/*
@@ -85,6 +87,7 @@ report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_regist
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_registers -data_pins] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_outputs             ] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_outputs             ] 
-report_area
 
+report_area
 quit
+

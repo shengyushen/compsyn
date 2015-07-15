@@ -55,8 +55,9 @@ replace_synthetic -ungroup
 
 current_design ${top_design}
 set_ideal_network [get_ports clk]
-#create_clock -name clk -period 15 -waveform {0.0 7.5} {clk}
-#set_output_delay 11 -clock clk  [all_outputs]
+set maxD 6
+create_clock -name clk -period ${maxD} -waveform [list 0.0 [expr ${maxD}/2.0]] [ get_ports clk]
+set_max_delay ${maxD} -from [all_inputs] -to [all_outputs]
 
 
 current_design ${top_design}
@@ -65,25 +66,28 @@ current_design ${top_design}
 #set_map_only [get_cells *] true
 set_max_transition 0.2 [all_designs]
 set_max_fanout 10 [all_designs]
+set_max_area 0
 
 current_design ${top_design}
-set_dont_use lsi_10k/*
-remove_attribute [list lsi_10k/AN2] dont_use
-remove_attribute [list lsi_10k/OR2] dont_use
-remove_attribute [list lsi_10k/IV] dont_use
-remove_attribute [list lsi_10k/FD1] dont_use
+#set_dont_use lsi_10k/*
+#remove_attribute [list lsi_10k/AN2] dont_use
+#remove_attribute [list lsi_10k/OR2] dont_use
+#remove_attribute [list lsi_10k/IV] dont_use
+#remove_attribute [list lsi_10k/FD1] dont_use
 
 current_design ${top_design}
-set_ultra_optimization false
-compile -map_effort high
-
-set_max_area 0.0
-#compile -area_effort high -incremental_mapping
+compile_ultra
 
 
 #source ../scr/gen_scr.tcl
 
 write -f verilog -o dc_res.v 
 #write -f equation -o ssy.equation -no_implicit
-report_timing
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_registers -data_pins] 
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_registers -data_pins] 
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_outputs             ] 
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_outputs             ] 
+
+report_area
 quit
+

@@ -4,32 +4,33 @@
 ######################################
 # where to find include files and synthesis lib
 set my_lib_path "  \
-      ../src/verilog \
-      /CAD/synopsys/libraries/syn \
+			~/compsyn/lib \
+			../src/t2src \
 "
-set filelist "resulting_dual_cnf.v"
-set top_design resulting_dual
+set filelist "../src/t2src/filelist.v"
+set top_design pcs_tx_dpath
 
 
 ######################################
 # following variables should
 # not be edited by user
 ######################################
-set synthetic_library {lsi_10k.db} 
-set target_library [list lsi_10k.db        ]
+set synthetic_library {ssy.db} 
+set target_library [list ssy.db        ]
 
 set link_library " *	  \
-		   lsi_10k.db \
+		   ssy.db \
 		   "
-set symbol_library [list lsi_10k.sdb ]
+#set symbol_library [list ssy.sdb ]
 
 
-set search_path " \
+set search_path "\
 		$search_path  \
 		$my_lib_path "
 set wastefile "wastefile"
 
 set verilogout_no_tri true
+set verilogout_equation false
 set verilogout_single_bit false
 set verilogout_show_unconnected_pins true
 set gen_show_created_symbols true
@@ -40,6 +41,7 @@ set view_report_output2file true
 set sh_enable_line_editing true
 set trans_dc_max_depth 1  
 set hdlin_seqmap_sync_search_depth 1 
+set compile_seqmap_enable_output_inversion false
 define_design_lib WORK -path WORK
 
 analyze \
@@ -54,37 +56,35 @@ ungroup -all -flatten -simple_names
 replace_synthetic -ungroup
 
 current_design ${top_design}
-set_ideal_network [get_ports clk]
-create_clock -name clk -period 9 -waveform {0.0 3.5} [ get_ports clk]
-set_input_delay 0 -clock clk [all_inputs]
-set_output_delay 0 -clock clk [all_outputs]
-#set_ideal_network [get_ports *]
+set_ideal_network [get_ports txclk]
+set maxD 8
+create_clock -name txclk -period ${maxD} -waveform [list 0.0 [expr ${maxD}/2.0]] [ get_ports txclk]
+set_max_delay ${maxD} -from [all_inputs] -to [all_outputs]
 
 current_design ${top_design}
-set_map_only [get_cells *] true
 set_max_transition 0.2 [all_designs]
 set_max_fanout 10 [all_designs]
-set_max_area 0 
+set_max_area 0
 
 current_design ${top_design}
-#set_dont_use lsi_10k/*
-#remove_attribute [list lsi_10k/AN2] dont_use
-#remove_attribute [list lsi_10k/OR2] dont_use
-#remove_attribute [list lsi_10k/IV] dont_use
-#remove_attribute [list lsi_10k/FD1] dont_use
+#set_dont_use ssy/*
+#remove_attribute [list ssy/AN2] dont_use
+#remove_attribute [list ssy/OR2] dont_use
+#remove_attribute [list ssy/IV] dont_use
+#remove_attribute [list ssy/FD1] dont_use
 
 current_design ${top_design}
 compile_ultra
 
-
 #source ../scr/gen_scr.tcl
+change_names -hier -rules verilog
+write -f verilog -o dc_synres.v 
 
-write -f verilog -o dc_res.v 
-#write -f equation -o ssy.equation -no_implicit
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_registers -data_pins] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_registers -data_pins] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_outputs             ] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_outputs             ] 
-report_area
 
+report_area
 quit
+
