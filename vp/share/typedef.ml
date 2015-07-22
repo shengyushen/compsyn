@@ -1153,6 +1153,23 @@ and appendcomment str cls = begin
 	match cls with
 	(intlst,strold) -> (intlst,(cat_string strold str))
 end
+and getFormatedName wire = begin
+	let (li,ri) = rng2lr (snd wire)
+	in begin
+		if( li = -1 && ri = -1 ) then fst wire
+		else sprintf "%s[%d:%d]" (fst wire) li ri
+	end
+end
+and isMeaningfulWire wire = begin
+	let nm = getFormatedName wire 
+	and re = Str.regexp "[nN][0-9]+"
+	in
+	if(Str.string_match re nm 0) then begin
+(* 		printf "droping %s\n" nm; *)
+		false
+	end
+	else true
+end
 and print_blank_endline voutch a = begin
 	fprintf voutch "  \n";
 	flush stdout;

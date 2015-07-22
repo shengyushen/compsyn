@@ -14,6 +14,7 @@ default :
 #	@echo "relational_plr_inc_nominlr : dont minimize LR, only for comparing to relational_plr_inc"
 #	@echo "sync												: self synchronous protocol"
 	@echo "pipeline										: find out the encoder pipeline structure and synthesis its pipelined decoder"
+	@echo "pred												: find out the encoder pipeline and predicate structure "
 #	@echo "summ												: summarizing the non-uniqueness"
 #	@echo "multisat                   : support using multiple SAT solver and incremental SAT"
 #	@echo "pdr                        : based on multisat, apply ic3/pdr to infer reachable state set, and also decoding as much as possible by inferring all input that can not be uniquely determined"
@@ -139,6 +140,11 @@ pipeline : sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_pipeline.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+
+pred : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_pred.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 summ : sed_res.v
 	@rm -rf container_c* ./continue.scr

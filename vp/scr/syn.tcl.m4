@@ -53,10 +53,10 @@ current_design ${top_design}
 link
 uniquify
 ungroup -all -flatten -simple_names
-replace_synthetic -ungroup
+#replace_synthetic -ungroup
 
 current_design ${top_design}
-set_ideal_network [get_ports *]
+#set_ideal_network [get_ports *]
 set_ideal_network [get_ports *]
 
 current_design ${top_design}
@@ -78,9 +78,9 @@ current_design ${top_design}
 set_ultra_optimization false
 set_fix_multiple_port_nets -all -buffer_constants
 # for dc 2004
-compile -map_effort low
+#compile -map_effort low
 # for dc 2007 and latter
-#compile -map_effort low -no_design_rule -area_effort none
+compile -map_effort low -no_design_rule -area_effort none
 
 #source ../scr/gen_scr.tcl
 change_names -hier -rules verilog
