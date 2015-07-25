@@ -640,7 +640,7 @@ and get_str_from_strlstget_str_from_strlst1283,33469
 and list_lastlist_last1284,33527
 and print_v_named_port_connection_exlifprint_v_named_port_connection_exlif1293,33715
 
-../share/typedef.ml,13527
+../share/typedef.ml,13623
 Typedef1,0
 type	module_defmodule_def4,26
 		T_module_defT_module_def5,44
@@ -898,36 +898,38 @@ and is_inrangeis_inrange1139,42627
 and cat_stringcat_string1145,42784
 and setcommentsetcomment1148,42854
 and appendcommentappendcomment1152,42933
-and print_blank_endlineprint_blank_endline1156,43040
-and print_blankprint_blank1161,43127
-and print_orendlineprint_orendline1166,43204
-and print_idprint_id1171,43289
-and print_v_numberprint_v_number1175,43383
-and print_v_primaryprint_v_primary1190,43721
-and print_v_mintypmax_expressionprint_v_mintypmax_expression1244,45264
-and print_v_expressionprint_v_expression1266,45738
-and print_v_arrayassignprint_v_arrayassign1508,52095
-and print_v_charge_strengthprint_v_charge_strength1512,52229
-and print_v_param_assignmentprint_v_param_assignment1535,52772
-and print_v_rangeprint_v_range1547,52994
-and print_v_lvalueprint_v_lvalue1569,53478
-and print_v_assignmentprint_v_assignment1596,54142
-and print_v_expandrangeprint_v_expandrange1608,54360
-and print_v_delayprint_v_delay1627,54776
-and print_v_register_variableprint_v_register_variable1659,55629
-and print_v_drive_strengthprint_v_drive_strength1675,56029
-and print_v_gate_instanceprint_v_gate_instance1690,56352
-and print_v_named_port_connectionprint_v_named_port_connection1701,56595
-and print_v_list_of_module_connectionsprint_v_list_of_module_connections1720,56979
-and print_v_module_instanceprint_v_module_instance1733,57372
-and print_v_delay_controlprint_v_delay_control1746,57672
-and print_v_case_itemprint_v_case_item1757,57874
-and print_v_event_expressionprint_v_event_expression1773,58257
-and print_v_event_controlprint_v_event_control1789,58653
-and print_v_statementprint_v_statement1806,59049
-and print_v_module_itemprint_v_module_item2042,65531
-and print_v_module_defprint_v_module_def2212,71172
-and print_v_source_textprint_v_source_text2244,71888
-and print_v_expression_exlifprint_v_expression_exlif2247,72015
-and print_v_primary_exlifprint_v_primary_exlif2307,73659
-and print_v_named_port_connection_exlifprint_v_named_port_connection_exlif2387,75798
+and getFormatedNamegetFormatedName1156,43040
+and isMeaningfulWireisMeaningfulWire1163,43210
+and print_blank_endlineprint_blank_endline1173,43417
+and print_blankprint_blank1178,43504
+and print_orendlineprint_orendline1183,43581
+and print_idprint_id1188,43666
+and print_v_numberprint_v_number1192,43760
+and print_v_primaryprint_v_primary1207,44098
+and print_v_mintypmax_expressionprint_v_mintypmax_expression1261,45641
+and print_v_expressionprint_v_expression1283,46115
+and print_v_arrayassignprint_v_arrayassign1525,52472
+and print_v_charge_strengthprint_v_charge_strength1529,52606
+and print_v_param_assignmentprint_v_param_assignment1552,53149
+and print_v_rangeprint_v_range1564,53371
+and print_v_lvalueprint_v_lvalue1586,53855
+and print_v_assignmentprint_v_assignment1613,54519
+and print_v_expandrangeprint_v_expandrange1625,54737
+and print_v_delayprint_v_delay1644,55153
+and print_v_register_variableprint_v_register_variable1676,56006
+and print_v_drive_strengthprint_v_drive_strength1692,56406
+and print_v_gate_instanceprint_v_gate_instance1707,56729
+and print_v_named_port_connectionprint_v_named_port_connection1718,56972
+and print_v_list_of_module_connectionsprint_v_list_of_module_connections1737,57356
+and print_v_module_instanceprint_v_module_instance1750,57749
+and print_v_delay_controlprint_v_delay_control1763,58049
+and print_v_case_itemprint_v_case_item1774,58251
+and print_v_event_expressionprint_v_event_expression1790,58634
+and print_v_event_controlprint_v_event_control1806,59030
+and print_v_statementprint_v_statement1823,59426
+and print_v_module_itemprint_v_module_item2059,65908
+and print_v_module_defprint_v_module_def2229,71549
+and print_v_source_textprint_v_source_text2261,72265
+and print_v_expression_exlifprint_v_expression_exlif2264,72392
+and print_v_primary_exlifprint_v_primary_exlif2324,74036
+and print_v_named_port_connection_exlifprint_v_named_port_connection_exlif2404,76175

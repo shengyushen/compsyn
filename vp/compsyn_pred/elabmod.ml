@@ -798,8 +798,6 @@ object (self)
 	method minimizeL p l r assLst = begin
 		assert (p>=0);
 		assert (r>=0);
-		printf "minimizeL l %d\n" l;
-		flush stdout;
 		if (l>=1) then begin
 			let (res,_)=self#tryPCSAT (p+1) (l-1) r assLst in begin
 				if(res) then (p,l)
@@ -924,7 +922,6 @@ object (self)
 		(*their var index*)
 		bv_instrlist <- List.concat (List.map self#name2idxlist instrlist) ;
 		bv_outstrlist <- List.concat (List.map self#name2idxlist outstrlist) ;
-(* 		List.iter (fun x -> printf "name : %s\n" (self#idx2name x)) bv_outstrlist; *)
 		bv_non_proctocol_input_list <- List.concat (List.map self#name2idxlist non_proctocol_input_list) ;
 
 
@@ -939,51 +936,96 @@ object (self)
 		(*set the current time to be used by dbg_print*)
 		set_current_time;
 
-		dbg_print "begin";
+
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
 		(*following is relational code*)
 		(*++++++++++++++++*)
 		(*++++++++++++++++*)
-(* 		self#relational_code  *)
-		let b=self#findoutBound in
-		let (newp,newl,newr)=self#minimizeLR b b b [] in 
+ 		self#relational_code ;
+(* 		self#pipeline ; *)
+
+	end
+
+	method relational_code  = begin
+		(*****************************************)
+		(*finding out the bits that are uniquely determined*)
+		(*****************************************)
+		let list_tf_BitI_n = self#procDetermineUniqueInputs bv_instrlist in 
+		let (listUniqBitITmp,listNonuniqBitITmp) = begin
+			(*partiion them into two list*)
+			List.partition (fun x -> match x with (tf,_,_) -> tf) list_tf_BitI_n
+		end in
+		let maxN = begin
+			(*find out the largest one that make the flow control vars to be uniquely determind*)
+			let listN = List.map (fun b -> match b with (_,_,n) -> n) listUniqBitITmp in
+			begin
+				if((List.length listN)=0) then begin
+					dbg_print "Non of the input bits can be uniquely determined, no decoder exists for this encoder";
+					exit 0
+				end;
+        Intlist.listMax listN
+			end
+		end(*find out the bit index*)
+		and listUniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listUniqBitITmp 
+		and listNonuniqBitI = List.map (fun x -> match x with (_,bit,_) -> bit) listNonuniqBitITmp in 
+		let (pres,
+				p_pre,
+				l1_1,
+				r1_1,
+				_,
+				infered_assertion_array_lst_new_loop)	= 
+		begin 
+		(*****************************************)
+		(*infer the predicate valid(f)*)
+		(*****************************************)
+			printf "maxN %d\n" maxN;
+			dbg_print "time of finding flow control ";
+			assert((List.length listUniqBitITmp)>0);
+
+			self#inferPredicateUniq listUniqBitI listNonuniqBitI maxN 
+		end in 
+		let finalass = begin
+		(*****************************************)
+		(*simplifying valid(f)*)
+		(*****************************************)
+			dbg_print "time of inferPredicateUniq";
+			assert (pres == RES_UNIQ);
+
+			if (List.length infered_assertion_array_lst_new_loop)!=0 then 
+				simplify_withBDD (invert_assertion (or_assertion infered_assertion_array_lst_new_loop)) ddM
+			else 
+				Array.make 1 TiterpCircuit_true
+		end in 
+		let (p,l,r)=begin
+			printf "finalass : \n";
+			self#print_itpo finalass;
+			printf "\n";
+			flush stdout;
+			self#minimizeLR p_pre l1_1 r1_1 [finalass] 
+		end 
+		in 
 		let l2right = begin
-			assert (newl = 0) ; 
-			self#minimizeL2Right newp 0 newr 
+			assert (l=0);
+			self#minimizeL2Right p 0 r [finalass]
 		end
 		in
-		let p1 = newp
+		let p1 = p 
 		and l1 = l2right 
-		and r1 = newr
+		and r1 = r
 		in
 		let dff_idxpairlst = List.filter (isdff_name_index) name_index_lst
 		in
 		let dff_curlst = List.map (fun x -> match x with (_,(y,_)) -> y) dff_idxpairlst
 		in
-		let getWire namestr cont cur = begin
-			match cont#get_obj with
-			Tobj_net_declaration(rng) -> 
-				(namestr,rng)::cur 
-			| _ -> cur 
-		end
-		in
-		let wireList = Hashtbl.fold getWire circuit_hst []
-		in
-		let meaningfulWireList = List.filter isMeaningfulWire wireList
-		in begin
-			assert (l1 = r1) ;
-			printf "p1 %d\n" p1 ;
-			printf "l1 %d\n" l1 ;
-			printf "r1 %d\n" r1 ;
+		begin
+			printf "relational p_pre %d l1_1 %d r1_1 %d \n" p_pre  l1_1 r1_1;
+			printf "relational p %d l %d r %d \n" p  l r ;
+			printf "l2right %d\n" l2right ;
+			assert (l2right=r);
+			printf "relational p1 %d l1 %d r1 %d \n" p1  l1 r1 ;
 
-			printf "List of registers\n";
-			List.iter (fun x -> printf "%s\n" (fst x) ) dff_idxpairlst ;
-			flush stdout;
 
-			printf "List of meaningful predicates\n";
-			List.iter (fun x -> printf "%s\n" (getFormatedName x) ) meaningfulWireList;
-			flush stdout;
 
 			if( l1 < 0 ) then begin
 				(*p output -> p state*)
@@ -1001,6 +1043,7 @@ object (self)
 							(p1+l1)
 							dff_curlst
 							(p1+l1)
+							[finalass]
 				in
 				(*p+l1 state -> p+l1-1 state*)
 				(*...*)
@@ -1019,6 +1062,7 @@ object (self)
 								( hd + 1 )
 								diffList
 								hd
+								[finalass]
 						in
 						(hd,newuniqList) :: [(hd-1),newremainList]
 					end
@@ -1032,6 +1076,7 @@ object (self)
 								( hd + 1 )
 								diffList
 								hd
+								[finalass]
 						in
 						let partitionList = doproc newuniqList newremainList tl
 						in
@@ -1074,7 +1119,7 @@ object (self)
 
 					List.rev realList
 				end
-				in
+				in(*checking the input uniq by some reg*)
 				let rec checkRevRealList rrl = begin
 					match rrl with
 					[] -> assert false
@@ -1092,6 +1137,7 @@ object (self)
 									stpos
 									bv_instrlist
 									p1
+									[finalass]
 							in
 							if(isEmptyList nonuniqInputList) then (stpos,reglist)
 							else checkRevRealList tl
@@ -1099,6 +1145,62 @@ object (self)
 				end
 				in
 				let (statePos,regList) = checkRevRealList revRealList
+				in
+				let rec getPosList pos lst = begin
+					match lst with
+					(poscur,_)::tl -> 
+						if(poscur = pos) then lst
+						else getPosList pos tl
+					| _ -> assert false
+				end
+				in
+				let pipeList = getPosList statePos revRealList
+				in
+				let pipeCFList = begin
+					let rec computeCF pL = begin
+						match pL with
+						[(pos1,rlst1);(pos2,rlst2)] -> begin
+							assert (pos1 = pos2);
+							(* this is the last output to determine the pos1 pipelien stage 
+							just use pos2 without pred*)
+							let (uL,nuL) =
+								self#findUniqDecidedList
+										p1
+										l1
+										r1
+										rlst2
+										pos2
+										rlst1
+										pos1
+										[]
+							in(*actually uL is the cfList whose pred to be infer*)
+							[(pos1,uL,nuL)]
+						end
+						| (pos1,rlst1)::((pos2,rlst2)::tl) -> begin
+							let newCFL = computeCF (List.tl pL)
+							in
+							match (List.hd newCFL) with
+							(pos3,cfList,otherList) -> begin
+								assert ( pos3 = pos2 ) ;
+								let (uL,nuL) =
+									self#findUniqDecidedList
+										p1
+										l1
+										r1
+										bv_outstrlist
+										(p1+l1)
+										rlst1
+										pos1
+										[]
+								in
+								(pos1,uL,nuL)::newCFL
+							end
+						end
+						| _ -> assert false
+					end
+					in
+					computeCF pipeList
+				end
 				in begin
 					if (List.for_all (fun idx -> List.exists (fun x -> (fst (snd x) = idx )) dff_idxpairlst) regList) then begin
 						printf "\nuniq input with state pos %d\n" statePos;
@@ -1109,22 +1211,69 @@ object (self)
 					;
 					flush stdout;
 
+					List.iter (fun x -> printf "pipeList : %d\n" (fst x)) pipeList ; 
+					let procCF cf = begin
+						match cf with
+						(pos,uL,nuL) -> begin
+							printf "\nCFlist : %d\n" pos;
+							List.iter (fun x -> printf "%s\n" (self#idx2name x)) uL;
+(* 							List.iter (fun x -> printf "%s\n" (self#idx2name x)) nuL; *)
+						end
+					end
+					in
+					List.iter procCF pipeCFList; 
+				flush stdout;
 
-
+				let procCF cf = begin
+					match cf with
+					(pos2,uL2,nuL2) -> 
+							let pred = 
+								self#inferPredicateUniq_Pipe 
+								p1
+								l1
+								r1
+								uL2
+								nuL2
+								pos2
+							in
+							(pos2,uL2,nuL2,pred)
+				end
+				in
+				let inputCFPredList = List.map procCF pipeCFList 
+				in
+				let procCFP cfp = begin
+					match cfp with
+					(pos,_,_,pred) -> begin
+						printf "cfp : %d\n" pos ;
+						self#print_itpo pred ;
+						printf "\n";
+						flush stdout;
+					end
+				end
+				in
+				List.iter procCFP inputCFPredList;
+(*
 					self#genDecoderVerilog 
 						p1 l1 r1
 						statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
 						revRealList (*the list of pair, (statepos,stage)*)
 						;
 
+*)
 					dbg_print "finished";
 				end
 			end
+
+
+
 		end
 	end
 
+
+
+
 	method genDecoderVerilog 
-		p1 l1 r1
+		p1 (l1:int) r1
 		statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
 		revRealList (*the list of pair, (statepos,stage)*)
 		=
@@ -1314,6 +1463,7 @@ object (self)
 		posU
 		bvDiff
 		posDiff
+		asslst
 	= begin
 		(*copied from construct_nonloop_l2right*)
 		assert (p>=0);
@@ -1351,6 +1501,31 @@ object (self)
 			self#append_clause_list_multiple  clslst2 ;
 		end;
 
+		(*TODO : shift the assertion to proper cycle*)
+		let ass_nonloop = List.map 
+			(fun x -> shiftAssertion x (p*final_index_oneinst)) 
+			asslst 
+		and ass_nonloop1 = List.map 
+			(fun x -> shiftAssertion x ((p+p+r+1)*final_index_oneinst)) 
+			asslst 
+(*
+		and ass_loop   = List.map 
+			(fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) 
+			infered_assertion_array_lst_old_loop   
+*)
+		in begin
+			(*force the infered_assertion_array_lst_old to be invalid*)
+			if((List.length ass_nonloop)!=0) then begin
+				(*let orass_sim = List.map (fun x -> simplify_withBDD x ddM) ass_nonloop*)
+				(*2014/11/16 Shen dont simply it here to speedup*)
+				let orass_sim =  ass_nonloop @ ass_nonloop1
+				in
+				self#force_assertion (or_assertion orass_sim);
+			end
+(* 			; *)
+(* 			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass_loop; *)
+		end
+		;
 
 		(*forcing the bvU to be equal*)
 		let ov = bvU
@@ -1399,7 +1574,7 @@ object (self)
 			assert (l2right > 0);
 
 			(*again construc the instances*)
-			self#construct_nonloop_l2right p1 l2right r1;
+			self#construct_nonloop_l2right p1 l2right r1 [];
 			self#set_unlock_multiple;
 			(*then construct the shifted output equality testing of bv_outstrlist*)
 			let cycleList2BeShifted = lr2list (p1+l2right) (p1+r1)
@@ -1467,13 +1642,13 @@ object (self)
 		end
 	end
 
-	method minimizeL2Right p l2right r = begin
+	method minimizeL2Right p l2right r asslst = begin
 		if(l2right>r) then begin
 			assert ((l2right-1) >=0) ;
 			(l2right -1)
 		end
 		else 
-		let res = self#trySATPC_l2right p l2right r
+		let res = self#trySATPC_l2right p l2right r asslst
 		in
 		match res with
 		true -> begin
@@ -1482,11 +1657,11 @@ object (self)
 			assert ((l2right-1) >=0) ;
 			(l2right -1)
 		end
-		| false -> self#minimizeL2Right p (l2right+1) r
+		| false -> self#minimizeL2Right p (l2right+1) r asslst
 	end
 
-	method trySATPC_l2right p l2right r = begin
-		self#construct_nonloop_l2right p l2right r;
+	method trySATPC_l2right p l2right r asslst = begin
+		self#construct_nonloop_l2right p l2right r asslst ;
 
 		self#set_unlock_multiple;
 		(*forcing the output to be equal*)
@@ -1512,7 +1687,7 @@ object (self)
 		| SATISFIABLE -> true
 	end
 
-	method construct_nonloop_l2right  p l2right r = begin
+	method construct_nonloop_l2right  p l2right r asslst = begin
 		assert (p>=0);
 		assert (l2right<=r);
 		assert (r>=0);
@@ -1548,6 +1723,31 @@ object (self)
 			self#append_clause_list_multiple  clslst2 ;
 		end;
 
+		(*TODO : shift the assertion to proper cycle*)
+		let ass_nonloop = List.map 
+			(fun x -> shiftAssertion x (p*final_index_oneinst)) 
+			asslst 
+		and ass_nonloop1 = List.map 
+			(fun x -> shiftAssertion x ((p+p+r+1)*final_index_oneinst)) 
+			asslst 
+(*
+		and ass_loop   = List.map 
+			(fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) 
+			infered_assertion_array_lst_old_loop   
+*)
+		in begin
+			(*force the infered_assertion_array_lst_old to be invalid*)
+			if((List.length ass_nonloop)!=0) then begin
+				(*let orass_sim = List.map (fun x -> simplify_withBDD x ddM) ass_nonloop*)
+				(*2014/11/16 Shen dont simply it here to speedup*)
+				let orass_sim =  ass_nonloop @ ass_nonloop1
+				in
+				self#force_assertion (or_assertion orass_sim);
+			end
+(* 			; *)
+(* 			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass_loop; *)
+		end
+		;
 
 		(*forcing the input to be diff*)
 		let ov = bv_instrlist in
@@ -1858,6 +2058,51 @@ object (self)
 		Array.fold_left procpred false arr 
 	end
 
+	method inferPredicateUniq_Pipe 
+		p1
+		l1
+		r1
+		uL2
+		nuL2
+		pos2
+	= begin
+		assert (p1 >= 0);
+		assert (l1 >=0);
+		assert (l1=r1);
+		assert (pos2 >=p1);
+		assert (pos2<=p1+r1);
+
+		printf "inferPredicateUniq_Pipe pos2 %d\n" pos2;
+		List.iter (fun x -> printf "uL2 : %s\n" (self#idx2name x)) uL2;
+		List.iter (fun x -> printf "nuL2 : %s\n" (self#idx2name x)) nuL2;
+		flush stdout;
+
+		let target = self#construct_nonloop_bitIs_Pipe 
+									p1
+									l1
+									r1
+									uL2
+									nuL2
+									pos2
+		in begin
+			check_clslst_maxidx clause_list_multiple last_index;
+			let listUniqBitI_shifted = List.map (fun x -> x+pos2*final_index_oneinst) uL2 in
+			let (res1,itplst)= allsat_interp clause_list_multiple target listUniqBitI_shifted (self#construct_varlst2assumption_Pipe p1 r1 uL2 nuL2 pos2) ddM in
+			let itplst_shiftback = List.map (fun x -> shiftAssertion x ((-pos2)*final_index_oneinst)) itplst  in  begin
+				assert (res1=UNSATISFIABLE);
+				List.iter (fun x -> check_itpo_var_membership x uL2 ) itplst_shiftback;
+(* 				haha *)
+				if((List.length itplst)=0) then
+					Array.make 1 TiterpCircuit_true
+				else begin
+					assert ((List.length itplst)>=1);
+					assert ((List.length itplst_shiftback)>=1);
+					simplify_withBDD (invert_assertion (or_assertion itplst_shiftback)) ddM
+				end
+			end
+		end
+	end
+
 
 	method inferPredicateUniq listUniqBitI listNonuniqBitI maxN = begin
 		assert (maxN>=2);
@@ -2048,12 +2293,104 @@ object (self)
 			end
 	end
 
+	method construct_nonloop_bitIs_Pipe 
+									p
+									l
+									r
+									uL2
+									nuL2
+									pos2
+	= begin
+		(*this one allow l<0 but must > -r+1*)
+		assert(p>=0);
+		(*Printf.printf "l %d r %d\n" l r; 
+		flush stdout;*)
+		assert(l>=0);
+		assert(r>=0);
+		self#set_unlock_multiple;
+		
+		self#set_clause_list_multiple [];
+		self#set_last_index final_index_oneinst;
+		
+		(*generate multiple instance, which bound is defined
+		p instance for prefix 
+		l instance for left expansion
+		1 instance for current input 
+		r instance for right expansion
+		*2 for another expansion
+		*)
+		let (clause_list_multiple_aux,last_index_aux) = (self#gen_multiple_instance_step2 ((p+1+r)*2))
+		in begin
+			self#set_clause_list_multiple clause_list_multiple_aux;
+			self#set_last_index last_index_aux;
+			()
+		end
+		;
+
+		(*constrain the assertion wire*)
+		if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
+			self#append_clause_list_multiple (self#try_assertion 0 ((p+1+r)*2-1))
+		else  begin
+			printf "              warning : not found assertion_shengyushen\n";
+			flush stdout;
+		end
+		;
+		
+		(*connect the first p+1+r instance*)
+		let clslst =(self#connect_multiple_instance_step3 0 (p+r)) in begin
+			self#append_clause_list_multiple  clslst ;
+		end;
+		(*check_clslst_maxidx clause_list_multiple last_index;*)
+		
+		(*connect the secnod p+1+r instance*)
+		let clslst2=(self#connect_multiple_instance_step3 (p+1+r) ((p+1+r)*2-1)) in begin
+			self#append_clause_list_multiple  clslst2 ;
+		end;
+		(*check_clslst_maxidx clause_list_multiple last_index;*)
+		
+		let ov = bv_outstrlist
+		and outputframe_idx = lr2list (p+r) (p+r)
+		in
+		let ov_b_1 = List.concat (List.map (fun frmidx -> (List.map (fun x -> x+ frmidx*final_index_oneinst) ov) ) outputframe_idx)
+		in
+		let ov_b_2 = List.map (fun x -> x+(p+1+r)*final_index_oneinst) ov_b_1
+		in
+		let (target,oclslist)= self#encode_EQUV_res ov_b_1 ov_b_2 
+		in begin
+			self#append_clause_list_multiple oclslist ;
+
+		let ov = nuL2
+		in 
+		let ov_0 = List.map (fun x -> x+ pos2*final_index_oneinst) ov
+		and ov_b = List.map (fun x -> x+ (pos2+p+r+1)*final_index_oneinst) ov
+		in
+		self#append_clause_list_multiple  (self#encode_INEV (ov_0) (ov_b)) 
+		;
+		check_clslst_maxidx clause_list_multiple last_index;
+
+		let ov = uL2
+		in 
+		let ov_0 = List.map (fun x -> x+ pos2*final_index_oneinst) ov
+		and ov_b = List.map (fun x -> x+ (pos2+p+r+1)*final_index_oneinst) ov
+		in
+		self#append_clause_list_multiple  (self#encode_EQUV (ov_0) (ov_b)) 
+		;
+		check_clslst_maxidx clause_list_multiple last_index;
+
+
+
+
+		self#set_lock_multiple;
+			target
+		end
+	end
+
 	method construct_nonloop_bitIs (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop listUniqBitI listNonuniqBitI  = begin
 		(*this one assume all > 0*)
 		assert(p>=0);
 		assert(l>=0);
 		assert(r>=0);
-		let res = self#construct_nonloop (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop in begin
+		let res = self#construct_nonloop_uniq_nonuniq (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop in begin
 
 		assert (Intlist.isLst1inLst2 listUniqBitI bv_instrlist);
 		assert ((Intlist.isIntersect listUniqBitI listNonuniqBitI)== false);
@@ -2085,6 +2422,95 @@ object (self)
 		res
 		end
 	end
+
+	method construct_nonloop_uniq_nonuniq  (*only force assertion on the first path*)
+						(p:int) 
+						(l:int) 
+						(r:int) 
+						infered_assertion_array_lst_old_nonloop 
+						infered_assertion_array_lst_old_loop 
+	= begin
+		(*this one allow l<0 but must > -r+1*)
+		assert(p>=0);
+		(*Printf.printf "l %d r %d\n" l r; 
+		flush stdout;*)
+		assert(l>=0);
+		assert(r>=0);
+		self#set_unlock_multiple;
+		
+		self#set_clause_list_multiple [];
+		self#set_last_index final_index_oneinst;
+		
+		(*generate multiple instance, which bound is defined
+		p instance for prefix 
+		l instance for left expansion
+		1 instance for current input 
+		r instance for right expansion
+		*2 for another expansion
+		*)
+		let (clause_list_multiple_aux,last_index_aux) = (self#gen_multiple_instance_step2 ((p+(max l 0)+1+r)*2))
+		in begin
+			self#set_clause_list_multiple clause_list_multiple_aux;
+			self#set_last_index last_index_aux;
+			()
+		end
+		;
+
+		(*constrain the assertion wire*)
+		if (List.length (List.filter (self#is_assertion) name_index_lst)) > 0 then
+			self#append_clause_list_multiple (self#try_assertion 0 ((p+(max l 0 )+1+r)*2-1))
+		else  begin
+			printf "              warning : not found assertion_shengyushen\n";
+			flush stdout;
+		end
+		;
+		
+		(*connect the first p+1+r instance*)
+		let clslst =(self#connect_multiple_instance_step3 0 (p+(max l 0)+r)) in begin
+			self#append_clause_list_multiple  clslst ;
+		end;
+		(*check_clslst_maxidx clause_list_multiple last_index;*)
+		
+		(*connect the secnod p+1+r instance*)
+		let clslst2=(self#connect_multiple_instance_step3 (p+(max l 0)+1+r) ((p+(max l 0)+1+r)*2-1)) in begin
+			self#append_clause_list_multiple  clslst2 ;
+		end;
+		(*check_clslst_maxidx clause_list_multiple last_index;*)
+		
+
+		
+		(*TODO : shift the assertion to proper cycle*)
+		let ass_nonloop = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_nonloop 
+		and ass_loop   = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_loop   in begin
+			(*force the infered_assertion_array_lst_old to be invalid*)
+			if((List.length ass_nonloop)!=0) then begin
+				(*let orass_sim = List.map (fun x -> simplify_withBDD x ddM) ass_nonloop*)
+				(*2014/11/16 Shen dont simply it here to speedup*)
+				let orass_sim = ass_nonloop
+				in
+				self#force_assertion (or_assertion orass_sim);
+			end
+			;
+			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass_loop;
+		end
+		;
+		(*force the output of p to p+l+1+r-1 to be the same*)
+		(*here l can be negative, while above l must be larger than 0*)
+		let ov = bv_outstrlist
+		and outputframe_idx = lr2list (p-(min l 0)) (p+(max l 0)+1+r-1)
+		in
+		let ov_b_1 = List.concat (List.map (fun frmidx -> (List.map (fun x -> x+ frmidx*final_index_oneinst) ov) ) outputframe_idx)
+		in
+		let ov_b_2 = List.map (fun x -> x+(p+(max l 0)+1+r)*final_index_oneinst) ov_b_1
+		in
+		let (target,oclslist)= self#encode_EQUV_res ov_b_1 ov_b_2 
+		in begin
+			self#append_clause_list_multiple oclslist ;
+			self#set_lock_multiple;
+			target
+		end
+	end
+
 
 	method construct_nonloop_1copy (p:int) (l:int) (r:int) infered_assertion_array_lst_old_nonloop infered_assertion_array_lst_old_loop = begin
 		(*this one allow l<0 but must > -r+1*)
@@ -2207,17 +2633,19 @@ object (self)
 		
 		(*TODO : shift the assertion to proper cycle*)
 		let ass_nonloop = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_nonloop 
-		and ass_loop   = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_loop   in begin
+		and ass_nonloop1 = List.map (fun x -> shiftAssertion x ((p+(max l 0)+p+l+r+1)*final_index_oneinst)) infered_assertion_array_lst_old_nonloop 
+		and ass_loop   = List.map (fun x -> shiftAssertion x ((p+(max l 0))*final_index_oneinst)) infered_assertion_array_lst_old_loop  
+		and ass_loop1   = List.map (fun x -> shiftAssertion x ((p+(max l 0)+p+l+r+1)*final_index_oneinst)) infered_assertion_array_lst_old_loop   in begin
 			(*force the infered_assertion_array_lst_old to be invalid*)
 			if((List.length ass_nonloop)!=0) then begin
 				(*let orass_sim = List.map (fun x -> simplify_withBDD x ddM) ass_nonloop*)
 				(*2014/11/16 Shen dont simply it here to speedup*)
-				let orass_sim = ass_nonloop
+				let orass_sim = ass_nonloop @ ass_nonloop1
 				in
 				self#force_assertion (or_assertion orass_sim);
 			end
 			;
-			List.iter (fun x -> self#force_assertion (invert_assertion x)) ass_loop;
+			List.iter (fun x -> self#force_assertion (invert_assertion x)) (ass_loop@ass_loop1);
 		end
 		;
 		(*force the output of p to p+l+1+r-1 to be the same*)
@@ -2320,6 +2748,29 @@ object (self)
 				riii
 			end
 		end
+	end
+
+	method construct_varlst2assumption_Pipe (p:int) (r:int) uL2 nuL2 pos2 = begin
+		(*find the initial state index*)
+		let dff_idxpair = List.filter (isdff_name_index) name_index_lst in
+		let dff_name_list = List.map (fun x -> match x with (nm,_) -> nm) dff_idxpair in
+		let dffidxlst = List.concat (List.map (self#name2idxlist) dff_name_list) in
+		let otherdffidxList = Intlist.sublst dffidxlst uL2 in
+		let initial_state_index_list = List.map (fun x -> x + pos2*final_index_oneinst) otherdffidxList in
+		let shift2=(p+1+r)*final_index_oneinst in
+		let initial_state_index_list2= List.map (fun x -> x+shift2) initial_state_index_list in (*find all input index*)
+		let ov = bv_instrlist@bv_non_proctocol_input_list
+		and cycle_list = lr2list pos2 (p+r) in
+		let cycle_list2 = List.map (fun x -> x+p+r+1) cycle_list in
+		let cycle_list_filtered = cycle_list@cycle_list2 in
+		let input_cycle_i i = begin
+			List.map (fun x -> x + i*final_index_oneinst) ov
+		end in (*expand them to every cycles*)
+		let ov_all = List.concat ( List.map input_cycle_i  cycle_list_filtered) in
+			(*printf "nonuniq is \n";
+			List.iter (fun x -> printf "%s(%d)\n" (self#idx2name x) x) nonuniq;
+			printf "\n";*)
+		initial_state_index_list @ initial_state_index_list2 @ ov_all 
 	end
 
 	method construct_varlst2assumption_l2right (p:int) (r:int) listUniqBitI = begin

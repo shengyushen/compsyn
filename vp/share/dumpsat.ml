@@ -71,12 +71,16 @@ and reset = begin
 	MiniSAT.reset ();
 end
 and satAssumption assumptionList = begin
+(*
   printf "        before solve_with_assumption\n";
 	flush stdout ;
+*)
 	let covertedAssList=proc_cls assumptionList in
 	let res=MiniSAT.solve_with_assumption covertedAssList in begin	
+(*
   printf "        after solve_with_assumption\n";
 	flush stdout ;
+*)
 		match res with
 		| UNSAT -> begin
 			(*dbg_print "after MiniSAT.solve_with_assumption";*)

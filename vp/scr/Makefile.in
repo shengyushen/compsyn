@@ -8,7 +8,7 @@ default :
 	@echo "halting_fast               : faster complete approach in the revisied TCAD'11"
 	@echo "infer_multidec_not_charfirst_nowall_cnt : inferring assertion and all possible decoders in TCAD'12"
 #	@echo "relational                 : relational uniqueness for TODAES 14"
-	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
+#	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
 	@echo "relational_plr_inc_simBDD  : simplify with BDD"
 #	@echo "relational_plr_inc_plr1by1 : find out plr by increcing them one by one, only for comparing to relational_plr_inc"
 #	@echo "relational_plr_inc_nominlr : dont minimize LR, only for comparing to relational_plr_inc"
@@ -57,27 +57,27 @@ infer_multidec_not_charfirst_nowall_cnt : sed_res.v
 		echo "to simulate the result, source ../scr/sim.scr";\
 	fi
 
-relational: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
-
-
-relational_plr_inc: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational_plr_inc.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	  # then run syn.tcl in design compiler
-	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
-	# then synthesize a version to be translated into blif
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+#relational: sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+#	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+#	# then run syn.tcl in design compiler
+#	dc_shell-t -f syn_dual.tcl > syn_dual.log
+#
+#
+#relational_plr_inc: sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_relational_plr_inc.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+#	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+#	  # then run syn.tcl in design compiler
+#	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
+#	# then synthesize a version to be translated into blif
+#	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+#	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+#	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+#	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
 
 relational_plr_inc_simBDD: sed_res.v
 	@rm -rf container_c* ./continue.scr
@@ -93,48 +93,48 @@ relational_plr_inc_simBDD: sed_res.v
 	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
  
 
-relational_plr_inc_plr1by1: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational_plr_inc_plr1by1.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	  # then run syn.tcl in design compiler
-	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
-	# then synthesize a version to be translated into blif
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-
-relational_plr_inc_nominlr: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_relational_plr_inc_nominlr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-    #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-	  # then run syn.tcl in design compiler
-	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
-	# then synthesize a version to be translated into blif
-	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
-	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
-	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
-	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
-
-	
-multisat: sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
-
-pdr : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	# OCAMLRUNPARAM=b compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
-	compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
-
-sync : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_sync.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+#relational_plr_inc_plr1by1: sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_relational_plr_inc_plr1by1.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+#	  #m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+#	  # then run syn.tcl in design compiler
+#	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
+#	# then synthesize a version to be translated into blif
+#	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+#	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+#	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+#	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+#
+#relational_plr_inc_nominlr: sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_relational_plr_inc_nominlr.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+#    #	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+#	  # then run syn.tcl in design compiler
+#	  # dc_shell-t -f syn_dual.tcl > syn_dual.log
+#	# then synthesize a version to be translated into blif
+#	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual_blif.tcl.m4 > syn_dual_blif.tcl
+#	dc_shell-t -f syn_dual_blif.tcl > syn_dual_blif.log
+#	sed 's/\\\([A-Za-z0-9_]*\)\[\([0-9]*\)\] /\1_\2 /g' dc_synres_dual_blif.v > dc_synres_dual_blif2.v
+#	lsi10k2blif.exe dc_synres_dual_blif2.v resulting_dual
+#
+#	
+#multisat: sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_multisat.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  | tee compsyn.log
+#
+#pdr : sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	# OCAMLRUNPARAM=b compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
+#	compsyn_pdr.exe sed_res.v ${TOPMOD} c1 ${RESET_CONDITION} ${INPUT} ${OUTPUT}  | tee compsyn.log
+#
+#sync : sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_sync.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 pipeline : sed_res.v
 	@rm -rf container_c* ./continue.scr
@@ -146,10 +146,10 @@ pred : sed_res.v
 	@mkdir container_c1
 	compsyn_pred.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
 
-summ : sed_res.v
-	@rm -rf container_c* ./continue.scr
-	@mkdir container_c1
-	compsyn_summ.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+#summ : sed_res.v
+#	@rm -rf container_c* ./continue.scr
+#	@mkdir container_c1
+#	compsyn_summ.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
 
 decoderarea: resulting_dual_cnf.v
 	abc -f ../../scr/abc_syn_dual_blif.scr |tee abc.log
