@@ -1022,8 +1022,9 @@ object (self)
 			printf "relational p_pre %d l1_1 %d r1_1 %d \n" p_pre  l1_1 r1_1;
 			printf "relational p %d l %d r %d \n" p  l r ;
 			printf "l2right %d\n" l2right ;
-			assert (l2right=r);
 			printf "relational p1 %d l1 %d r1 %d \n" p1  l1 r1 ;
+			flush stdout;
+			assert (l2right=r);
 
 
 
@@ -1101,9 +1102,11 @@ object (self)
 				end
 				in
 				(*p? state -> p input*)
+				(*realList is the list of ov,last stg,...,first stg*)
 				let (realList,invalidReglist) = getHeadListTail ((p1+l1,bv_outstrlist)::(((p1+l1),p_l1_sub1_state_list)::finalList))
 				in
 				let revRealList = begin
+					(*revRealList is first stg, ..., last stg, ov*)
 					assert ((isEmptyList realList) = false );
 
 					let procL x = begin
@@ -1144,7 +1147,7 @@ object (self)
 					end
 				end
 				in
-				let (statePos,regList) = checkRevRealList revRealList
+				let (statePos,regList) = checkRevRealList revRealList (*statePos is the first stg*)
 				in
 				let rec getPosList pos lst = begin
 					match lst with
@@ -1154,9 +1157,9 @@ object (self)
 					| _ -> assert false
 				end
 				in
-				let pipeList = getPosList statePos revRealList
+				let pipeList = getPosList statePos revRealList (*pipeList is first stg,...,last stg, ov*)
 				in
-				let pipeCFList = begin
+				let pipeCFList = begin (*first stg,...,last stg with pos,f and d*)
 					let rec computeCF pL = begin
 						match pL with
 						[(pos1,rlst1);(pos2,rlst2)] -> begin
@@ -1239,7 +1242,7 @@ object (self)
 							(pos2,uL2,nuL2,pred)
 				end
 				in
-				let inputCFPredList = List.map procCF pipeCFList 
+				let inputCFPredList = List.map procCF pipeCFList (*first to last stg with pos, f, d and pred*)
 				in
 				let procCFP cfp = begin
 					match cfp with
@@ -1252,14 +1255,14 @@ object (self)
 				end
 				in
 				List.iter procCFP inputCFPredList;
-(*
 					self#genDecoderVerilog 
 						p1 l1 r1
+						listUniqBitI listNonuniqBitI
 						statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
-						revRealList (*the list of pair, (statepos,stage)*)
+						inputCFPredList (*the list of pair, (statepos,stage)*)
+						[finalass]
 						;
 
-*)
 					dbg_print "finished";
 				end
 			end
@@ -1274,10 +1277,18 @@ object (self)
 
 	method genDecoderVerilog 
 		p1 (l1:int) r1
+		f_inputlst d_inputlst
 		statePos regList (*regList at statePos uniquly determine bv_instrlist at p1*)
-		revRealList (*the list of pair, (statepos,stage)*)
+		inputCFPredList (*the list of pair, (statepos,stage)*)
+		finalasslst
 		=
 	begin
+		printf "genDecoderVerilog : p1 %d l1 %d r1 %d\n" p1 l1 r1;
+		printf "statePos %d\n" statePos;
+		List.iter (fun x -> printf "%s\n" (self#idx2name x)) regList;
+		printf "inputCFPredList\n";
+		List.iter (fun x -> match x with (pos,f,d,pred) -> begin printf "pos %d\nf\n"  pos; List.iter (fun y -> printf "%s\n" (self#idx2name y)) f ;printf "d\n"; List.iter (fun y -> printf "%s\n" (self#idx2name y)) d ;end ) inputCFPredList;
+
 		(*open file *)
 		let decoderVerilog = open_out "resulting_dual_cnf.v" 
 		and bvo = self#bitnamelst2namerangelst bv_outstrlist 
@@ -1319,97 +1330,119 @@ object (self)
 			fprintf decoderVerilog  "  input clk);\n";
 			
 (* 			print out the register used *)
-(* 			first find out the statePos *)
-			let rec getStatePosHeadList rrl = begin
-				match rrl with
-				(stp,regl)::tl -> begin
-					if(stp=statePos) then rrl
-					else getStatePosHeadList tl
+			let prtreg x = begin
+				match x with 
+				(nm,-1,_) -> begin
+					fprintf decoderVerilog " reg %s;\n" nm
 				end
-				| [] -> assert false
+				| (nm,l,r) -> begin
+					assert(l!=(-1));
+					assert(r!=(-1));
+					fprintf decoderVerilog " reg [%d:%d] %s;\n" l r nm
+				end
 			end
-			in 
-			let statePosHeadRevRealList = getStatePosHeadList revRealList
 			in
-			let statePosHeadRevRealList_noOutput = remove_last statePosHeadRevRealList
-			in begin
-				let prtreg x = begin
-					match x with 
-					(nm,-1,_) -> begin
-						fprintf decoderVerilog " reg %s;\n" nm
-					end
-					| (nm,l,r) -> begin
-						assert(l!=(-1));
-						assert(r!=(-1));
-						fprintf decoderVerilog " reg [%d:%d] %s;\n" l r nm
-					end
+			let prtrr rr = begin
+				match rr with
+				(stp,f,d,_) -> begin
+					fprintf decoderVerilog "  // pipeline state f %d\n" stp;
+					List.iter prtreg (self#bitnamelst2namerangelst f);
+					fprintf decoderVerilog "  // pipeline state d %d\n" stp;
+					List.iter prtreg (self#bitnamelst2namerangelst d);
 				end
-				in
-				let prtrr rr = begin
-					match rr with
-					(stp,regl) -> begin
-						fprintf decoderVerilog "  // pipeline state %d\n" stp;
-						List.iter prtreg (self#bitnamelst2namerangelst regl);
-					end
-				end
-				in
-				List.iter prtrr statePosHeadRevRealList_noOutput;
+			end
+			in
+			List.iter prtrr inputCFPredList;
 
 (* 			characterize the input function *)
-				let instCNF = begin
-				(*****************************************)
-				(*the CNF for characterizing flow control vars*)
-				(*****************************************)
-					self#construct_nonloop_1copy p1 0 r1 [] [];
-					clause_list_multiple 
-				end 
-				in 
-				let idx2fucList_input = begin
-					let idx2fucList = self#genDecoderFunction 
-						bv_instrlist
-						(p1*final_index_oneinst)
-						(List.map (fun x -> x+statePos*final_index_oneinst) regList)
-						instCNF
-					in
-					List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((statePos)*final_index_oneinst)) in (i,newass) ) idx2fucList  
-				end
-				and idx2fucList_reg = begin
-					let rec procstg stgl = begin
-						match stgl with
-						(stp1,regl1)::((stp2,regl2)::tl) -> begin
-							(*more than 1 stgs remain, we can char stg1 with stg2*)
-							let idx2fucList = self#genDecoderFunction 
-								regl1
-								(stp1*final_index_oneinst)
-								(List.map (fun x -> x+stp2*final_index_oneinst) regl2)
-								instCNF
-							in
-							let current_idx2fucList = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((stp2)*final_index_oneinst)) in (i,newass) ) idx2fucList  
-							in
-							(stp1,current_idx2fucList) :: (procstg ((stp2,regl2)::tl))
-						end
-						| [(stp1,regl1)] -> begin
-							(*only stg1 remain,char it with output*)
-							let idx2fucList = self#genDecoderFunction 
-								regl1
-								(stp1*final_index_oneinst)
-								(List.map (fun x -> x+(p1+r1)*final_index_oneinst) bv_outstrlist)
-								instCNF
-							in
-							let current_idx2fucList = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((p1+r1)*final_index_oneinst)) in (i,newass) ) idx2fucList  
-							in
-							[(stp1,current_idx2fucList)]
-						end
-						| _ -> assert false
+			let instCNF_4f = begin
+			(*****************************************)
+			(*the CNF for characterizing flow control vars*)
+			(*****************************************)
+				self#construct_nonloop_1copy p1 0 r1 [] [];
+				clause_list_multiple 
+			end 
+			in 
+			let instCNF_4d = begin
+			(*****************************************)
+			(*the CNF for characterizing flow control vars*)
+			(*****************************************)
+				self#construct_nonloop_1copy p1 0 r1 finalasslst [];
+				clause_list_multiple 
+			end 
+			in
+			let idx2fucList_input = begin
+				let idx2fucList_f = self#genDecoderFunction 
+					f_inputlst
+					(p1*final_index_oneinst)
+					(List.map (fun x -> x+statePos*final_index_oneinst) regList)
+					instCNF_4f
+				in
+				let idx2fucList_f_shifback = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((statePos)*final_index_oneinst)) in (i,newass) ) idx2fucList_f  
+				in
+				let idx2fucList_d = self#genDecoderFunction
+					d_inputlst
+					(p1*final_index_oneinst)
+					(List.map (fun x -> x+statePos*final_index_oneinst) regList)
+					instCNF_4d
+				in
+				let idx2fucList_d_shifback = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((statePos)*final_index_oneinst)) in (i,newass) ) idx2fucList_d  
+				in
+				idx2fucList_f_shifback @ idx2fucList_d_shifback
+			end
+			and idx2fucList_reg = begin
+				let rec procstg stgl = begin
+					match stgl with
+					(stp1,f1,d1,_)::((stp2,f2,d2,_)::tl) -> begin
+						(*more than 1 stgs remain, we can char stg1 with stg2*)
+						let regl2 = f2@d2
+						in
+						let idx2fucList_f = self#genDecoderFunction 
+							f1
+							(stp1*final_index_oneinst)
+							(List.map (fun x -> x+stp2*final_index_oneinst) regl2)
+							instCNF_4f
+						in
+						let current_idx2fucList_f = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((stp2)*final_index_oneinst)) in (i,newass) ) idx2fucList_f  
+						in
+						let idx2fucList_d = self#genDecoderFunction 
+							d1
+							(stp1*final_index_oneinst)
+							(List.map (fun x -> x+stp2*final_index_oneinst) regl2)
+							instCNF_4d
+						in
+						let current_idx2fucList_d = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((stp2)*final_index_oneinst)) in (i,newass) ) idx2fucList_d  
+						in
+						(stp1,current_idx2fucList_f@current_idx2fucList_d) :: (procstg (List.tl stgl))
 					end
-					in
-					procstg statePosHeadRevRealList_noOutput
+					| [(stp1,f1,d1,_)] -> begin
+						(*only stg1 remain,char it with output*)
+						let idx2fucList_f = self#genDecoderFunction 
+							f1
+							(stp1*final_index_oneinst)
+							(List.map (fun x -> x+(p1+r1)*final_index_oneinst) bv_outstrlist)
+							instCNF_4f
+						in
+						let current_idx2fucList_f = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((p1+r1)*final_index_oneinst)) in (i,newass) ) idx2fucList_f  
+						in
+						let idx2fucList_d = self#genDecoderFunction 
+							d1
+							(stp1*final_index_oneinst)
+							(List.map (fun x -> x+(p1+r1)*final_index_oneinst) bv_outstrlist)
+							instCNF_4d
+						in
+						let current_idx2fucList_d = List.map (fun x -> match x with (i,ass) -> let newass = shiftAssertion ass (-((p1+r1)*final_index_oneinst)) in (i,newass) ) idx2fucList_d  
+						in
+						[(stp1,current_idx2fucList_f@current_idx2fucList_d)]
+					end
+					| _ -> assert false
 				end
-				in begin
-					self#printdecfunction  decoderVerilog idx2fucList_input true;
-					List.iter (fun x -> match x with (stp,func) -> fprintf decoderVerilog "//pipeline stage %d\n" stp; self#printdecfunction  decoderVerilog func false) idx2fucList_reg;
-				end
-				;
+				in
+				procstg inputCFPredList
+			end
+			in begin
+				self#printdecfunction  decoderVerilog idx2fucList_input true;
+				List.iter (fun x -> match x with (stp,func) -> fprintf decoderVerilog "//pipeline stage %d\n" stp; self#printdecfunction  decoderVerilog func false) idx2fucList_reg;
 			end
 			;
 			fprintf decoderVerilog "\n\n endmodule\n";

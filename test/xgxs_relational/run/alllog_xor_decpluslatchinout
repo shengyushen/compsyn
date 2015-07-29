@@ -1,0 +1,1835 @@
+
+                      Design Compiler Graphical
+                            DC Ultra (TM)
+                             DFTMAX (TM)
+                         Power Compiler (TM)
+                           DesignWare (R)
+                           DC Expert (TM)
+                         Design Vision (TM)
+                          HDL Compiler (TM)
+                         VHDL Compiler (TM)
+                            DFT Compiler
+                        Library Compiler (TM)
+                         Design Compiler(R)
+
+           Version F-2011.09-SP1 for amd64 -- Oct 17, 2011
+               Copyright (c) 1988-2011 Synopsys, Inc.
+
+This software and the associated documentation are confidential and 
+proprietary to Synopsys, Inc. Your use or disclosure of this software 
+is subject to the terms and conditions of a written license agreement 
+between you, or your company, and Synopsys, Inc.
+
+Initializing...
+######################################
+# following two variables are the only 
+# two that need to be modified by user
+######################################
+# where to find include files and synthesis lib
+set my_lib_path "        ../src/verilog       /CAD/synopsys/libraries/syn "
+        ../src/verilog       /CAD/synopsys/libraries/syn 
+set filelist "resulting_dual_cnf.v ../scr/latchinout.v"
+resulting_dual_cnf.v ../scr/latchinout.v
+set top_design latchinout
+latchinout
+######################################
+# following variables should
+# not be edited by user
+######################################
+set synthetic_library {lsi_10k.db} 
+lsi_10k.db
+set target_library [list lsi_10k.db        ]
+lsi_10k.db
+set link_library " *	  		   lsi_10k.db 		   "
+ *	  		   lsi_10k.db 		   
+set symbol_library [list lsi_10k.sdb ]
+lsi_10k.sdb
+set search_path "../src/verilog 		$search_path  		$my_lib_path "
+../src/verilog   . /home/syshen/EDA_tools/syn_2011/libraries/syn /home/syshen/EDA_tools/syn_2011/minpower/syn /home/syshen/EDA_tools/syn_2011/dw/syn_ver /home/syshen/EDA_tools/syn_2011/dw/sim_ver            ../src/verilog       /CAD/synopsys/libraries/syn  
+set wastefile "wastefile"
+wastefile
+set verilogout_no_tri true
+true
+set verilogout_single_bit false
+false
+set verilogout_show_unconnected_pins true
+true
+set gen_show_created_symbols true
+true
+set view_log_file  "view_log.log"
+view_log.log
+set view_command_log_file  "view_command.log"
+view_command.log
+set exit_delete_filename_log_file false
+false
+set view_report_output2file true
+true
+set sh_enable_line_editing true
+true
+set trans_dc_max_depth 1  
+1
+set hdlin_seqmap_sync_search_depth 1 
+Information: Use of Variable 'hdlin_seqmap_sync_search_depth' is not recommended. This variable will be obsolete in a future release. (INFO-101)
+1
+define_design_lib WORK -path WORK
+1
+analyze 	-library WORK 	-f verilog  	${filelist}
+Running PRESTO HDLC
+Searching for ../src/verilog/resulting_dual_cnf.v
+Searching for ./resulting_dual_cnf.v
+Compiling source file ./resulting_dual_cnf.v
+Compiling source file ../scr/latchinout.v
+Presto compilation completed successfully.
+Loading db file '/home/syshen/EDA_tools/syn_2011/libraries/syn/lsi_10k.db'
+1
+elaborate ${top_design}
+Loading db file '/home/syshen/EDA_tools/syn_2011/libraries/syn/gtech.db'
+Loading db file '/home/syshen/EDA_tools/syn_2011/libraries/syn/standard.sldb'
+  Loading link library 'lsi_10k'
+  Loading link library 'gtech'
+Running PRESTO HDLC
+
+Inferred memory devices in process
+	in routine latchinout line 22 in file
+		'../scr/latchinout.v'.
+====================================================================================
+|      Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+====================================================================================
+| encode_data_out_pipe_reg | Flip-flop |  10   |  Y  | N  | N  | N  | N  | N  | N  |
+| encode_data_in_pipe_reg  | Flip-flop |   8   |  Y  | N  | N  | N  | N  | N  | N  |
+|    konstant_pipe_reg     | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+====================================================================================
+Presto compilation completed successfully.
+Elaborated 1 design.
+Current design is now 'latchinout'.
+Information: Building the design 'resulting_dual'. (HDL-193)
+
+Inferred memory devices in process
+	in routine resulting_dual line 68 in file
+		'./resulting_dual_cnf.v'.
+================================================================================
+|    Register Name     |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+================================================================================
+| bad_code_reg_reg_reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 70 in file
+		'./resulting_dual_cnf.v'.
+====================================================================================
+|      Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+====================================================================================
+| ip_data_latch_reg_0__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 74 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_1__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 76 in file
+		'./resulting_dual_cnf.v'.
+====================================================================================
+|      Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+====================================================================================
+| ip_data_latch_reg_2__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 78 in file
+		'./resulting_dual_cnf.v'.
+==================================================================================
+|     Register Name      |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+==================================================================================
+| konstant_latch_reg_reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+==================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 80 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_3__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 82 in file
+		'./resulting_dual_cnf.v'.
+===============================================================================
+|    Register Name    |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+===============================================================================
+|  kx_latch_reg_reg   | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+===============================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 84 in file
+		'./resulting_dual_cnf.v'.
+====================================================================================
+|      Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+====================================================================================
+| ip_data_latch_reg_1__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 86 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_0__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 88 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_5__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 90 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_4__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+
+Inferred memory devices in process
+	in routine resulting_dual line 92 in file
+		'./resulting_dual_cnf.v'.
+=====================================================================================
+|       Register Name       |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+=====================================================================================
+| data_out_latch_reg_2__reg | Flip-flop |   1   |  N  | N  | N  | N  | N  | N  | N  |
+=====================================================================================
+Presto compilation completed successfully.
+1
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+link
+
+  Linking design 'latchinout'
+  Using the following designs and libraries:
+  --------------------------------------------------------------------------
+  * (2 designs)               /home/syshen/compsyn/test/xgxs_relational/run/latchinout.db, etc
+  lsi_10k (library)           /home/syshen/EDA_tools/syn_2011/libraries/syn/lsi_10k.db
+
+1
+uniquify
+1
+ungroup -all -flatten -simple_names
+Information: Updating design information... (UID-85)
+1
+replace_synthetic -ungroup 
+Information: Evaluating DesignWare library utilization. (UISN-27)
+
+============================================================================
+| DesignWare Building Block Library  |         Version         | Available |
+============================================================================
+| Basic DW Building Blocks           | F-2011.09-DWBB_201109.1 |     *     |
+| Licensed DW Building Blocks        |                         |           |
+| lsi_10k                            |                         |           |
+============================================================================
+
+1
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+set_ideal_network [get_ports clk]
+1
+set maxD 6
+6
+create_clock -name clk -period ${maxD} -waveform [list 0.0 [expr ${maxD}/2.0]] [ get_ports clk]
+1
+set_max_delay ${maxD} -from [all_inputs] -to [all_outputs]
+1
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+#remove_attribute [get_designs ${top_design}] max_area
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+#set_map_only [get_cells *] true
+set_max_transition 0.2 [all_designs]
+1
+set_max_fanout 10 [all_designs]
+1
+set_max_area 0
+1
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+#set_dont_use lsi_10k/*
+#remove_attribute [list lsi_10k/AN2] dont_use
+#remove_attribute [list lsi_10k/OR2] dont_use
+#remove_attribute [list lsi_10k/IV] dont_use
+#remove_attribute [list lsi_10k/FD1] dont_use
+current_design ${top_design}
+Current design is 'latchinout'.
+{latchinout}
+compile_ultra
+Analyzing: "/home/syshen/EDA_tools/syn_2011/libraries/syn/lsi_10k.db"
+Library analysis succeeded.
+Loading db file '/home/syshen/EDA_tools/syn_2011/libraries/syn/dw_foundation.sldb'
+Warning: DesignWare synthetic library dw_foundation.sldb is added to the synthetic_library in the current command. (UISN-40)
+Information: Evaluating DesignWare library utilization. (UISN-27)
+
+============================================================================
+| DesignWare Building Block Library  |         Version         | Available |
+============================================================================
+| Basic DW Building Blocks           | F-2011.09-DWBB_201109.1 |     *     |
+| Licensed DW Building Blocks        | F-2011.09-DWBB_201109.1 |     *     |
+| lsi_10k                            |                         |           |
+============================================================================
+
+Information: Sequential output inversion is enabled.  SVF file must be used for formal verification. (OPT-1208)
+
+Information: There are 1 potential problems in your design. Please run 'check_design' for more information. (LINT-99)
+
+
+Loaded alib file './alib-52/lsi_10k.db.alib'
+Information: Ungrouping 0 of 1 hierarchies before Pass 1 (OPT-775)
+
+  Beginning Pass 1 Mapping
+  ------------------------
+  Processing 'latchinout'
+Information: The register 'bad_code_reg_reg_reg' will be removed. (OPT-1207)
+Memory usage for J1 task 134 Mbytes -- main task 134 Mbytes.
+
+  Updating timing information
+Information: Updating design information... (UID-85)
+
+  Beginning Mapping Optimizations  (Ultra High effort)
+  -------------------------------
+  Mapping Optimization (Phase 1)
+  Mapping Optimization (Phase 2)
+
+   ELAPSED            WORST NEG TOTAL NEG  DESIGN                            
+    TIME      AREA      SLACK     SLACK   RULE COST         ENDPOINT         
+  --------- --------- --------- --------- --------- -------------------------
+    0:00:06     800.0      1.20      10.2      40.0                          
+    0:00:06     800.0      1.20      10.2      40.0                          
+    0:00:06     800.0      1.20      10.2      40.0                          
+    0:00:06     800.0      1.20      10.2      40.0                          
+  Re-synthesis Optimization (Phase 1)
+  Re-synthesis Optimization (Phase 2)
+  Global Optimization (Phase 1)
+  Global Optimization (Phase 2)
+  Global Optimization (Phase 3)
+  Global Optimization (Phase 4)
+  Global Optimization (Phase 5)
+  Global Optimization (Phase 6)
+  Global Optimization (Phase 7)
+  Global Optimization (Phase 8)
+  Global Optimization (Phase 9)
+  Global Optimization (Phase 10)
+  Global Optimization (Phase 11)
+  Global Optimization (Phase 12)
+  Global Optimization (Phase 13)
+  Global Optimization (Phase 14)
+  Global Optimization (Phase 15)
+  Global Optimization (Phase 16)
+  Global Optimization (Phase 17)
+  Global Optimization (Phase 18)
+  Global Optimization (Phase 19)
+  Global Optimization (Phase 20)
+  Global Optimization (Phase 21)
+  Global Optimization (Phase 22)
+  Global Optimization (Phase 23)
+  Global Optimization (Phase 24)
+  Global Optimization (Phase 25)
+  Global Optimization (Phase 26)
+  Global Optimization (Phase 27)
+  Global Optimization (Phase 28)
+  Global Optimization (Phase 29)
+  Global Optimization (Phase 30)
+  Global Optimization (Phase 31)
+
+
+
+  Beginning Delay Optimization Phase
+  ----------------------------------
+
+   ELAPSED            WORST NEG TOTAL NEG  DESIGN                            
+    TIME      AREA      SLACK     SLACK   RULE COST         ENDPOINT         
+  --------- --------- --------- --------- --------- -------------------------
+    0:00:07     627.0      1.22       7.9      36.9                          
+    0:00:08     659.0      0.93       5.6      33.8                          
+    0:00:08     694.0      0.73       5.4      34.8                          
+    0:00:09     694.0      0.73       5.4      34.8                          
+    0:00:09     694.0      0.73       5.4      34.8                          
+    0:00:09     694.0      0.73       5.4      34.8                          
+    0:00:09     694.0      0.73       5.4      34.8                          
+    0:00:09     694.0      0.73       5.4      34.8                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+
+  Beginning Delay Optimization
+  ----------------------------
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+    0:00:09     701.0      0.70       5.3      35.7                          
+
+
+  Beginning Design Rule Fixing  (max_transition)  (max_fanout)
+  ----------------------------
+
+   ELAPSED            WORST NEG TOTAL NEG  DESIGN                            
+    TIME      AREA      SLACK     SLACK   RULE COST         ENDPOINT         
+  --------- --------- --------- --------- --------- -------------------------
+    0:00:09     701.0      0.70       5.3      35.7                          
+  Global Optimization (Phase 1)
+  Global Optimization (Phase 2)
+  Global Optimization (Phase 3)
+    0:00:11     738.0      0.66       4.8      21.0 net2323                  
+    0:00:12     753.0      0.66       4.7      19.1 net2266                  
+    0:00:13     822.0      0.82       5.8      14.3 net2016                  
+    0:00:14    1087.0      3.30      29.8       0.1 encode_data_in_pipe_reg[3]/D
+    0:00:14    1090.0      2.81      28.0       0.1                          
+    0:00:15    1067.0      2.81      26.8       0.1                          
+    0:00:15    1067.0      2.81      26.8       0.1                          
+    0:00:17    1067.0      2.43      23.7       0.1                          
+    0:00:19    1115.0      1.56      14.8      13.2                          
+
+   ELAPSED            WORST NEG TOTAL NEG  DESIGN                            
+    TIME      AREA      SLACK     SLACK   RULE COST         ENDPOINT         
+  --------- --------- --------- --------- --------- -------------------------
+    0:00:19    1115.0      1.56      14.8      13.2                          
+    0:00:20    1113.0      1.56      14.8      13.5                          
+    0:00:20    1008.0      1.20      11.3      21.2                          
+
+
+  Beginning Area-Recovery Phase  (max_area 0)
+  -----------------------------
+
+   ELAPSED            WORST NEG TOTAL NEG  DESIGN                            
+    TIME      AREA      SLACK     SLACK   RULE COST         ENDPOINT         
+  --------- --------- --------- --------- --------- -------------------------
+    0:00:20    1008.0      1.20      11.3      21.2                          
+  Global Optimization (Phase 1)
+  Global Optimization (Phase 2)
+  Global Optimization (Phase 3)
+  Global Optimization (Phase 4)
+  Global Optimization (Phase 5)
+  Global Optimization (Phase 6)
+  Global Optimization (Phase 7)
+  Global Optimization (Phase 1)
+  Global Optimization (Phase 2)
+  Global Optimization (Phase 3)
+  Global Optimization (Phase 4)
+  Global Optimization (Phase 5)
+  Global Optimization (Phase 6)
+  Global Optimization (Phase 7)
+  Global Optimization (Phase 8)
+  Global Optimization (Phase 9)
+  Global Optimization (Phase 10)
+  Global Optimization (Phase 11)
+  Global Optimization (Phase 12)
+  Global Optimization (Phase 13)
+  Global Optimization (Phase 14)
+  Global Optimization (Phase 15)
+    0:00:22    1099.0      2.52      23.0       0.1 ip_data_latch_reg_2__reg/CR
+    0:00:23    1112.0      2.45      22.3       0.1                          
+    0:00:24    1178.0      1.76      17.5       9.2                          
+    0:00:25    1164.0      1.58      16.0       6.2                          
+    0:00:25    1167.0      1.58      14.6       5.8                          
+    0:00:25    1163.0      1.54      14.5       6.8                          
+    0:00:25    1163.0      1.54      14.5       6.8                          
+    0:00:25    1159.0      1.52      14.4       7.6                          
+    0:00:25    1159.0      1.52      14.4       7.6                          
+    0:00:26    1159.0      1.43      13.4       9.5                          
+    0:00:26    1159.0      1.43      13.4       9.5                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+    0:00:28    1122.0      1.05      10.2      18.1                          
+Loading db file '/home/syshen/EDA_tools/syn_2011/libraries/syn/lsi_10k.db'
+
+  Optimization Complete
+  ---------------------
+1
+#source ../scr/gen_scr.tcl
+write -f verilog -o dc_res.v 
+Writing verilog file '/home/syshen/compsyn/test/xgxs_relational/run/dc_res.v'.
+1
+#write -f equation -o ssy.equation -no_implicit
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_registers -data_pins] 
+Information: Updating graph... (UID-83)
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 100
+        -transition_time
+        -capacitance
+Design : latchinout
+Version: F-2011.09-SP1
+Date   : Tue Jul 28 22:09:44 2015
+****************************************
+
+Operating Conditions: 
+Wire Load Model Mode: top
+
+  Startpoint: data_out_latch_reg_5__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[0]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  data_out_latch_reg_5__reg/CP (FD1P)                0.00      0.00       0.00 r
+  data_out_latch_reg_5__reg/Q (FD1P)                 0.26      1.42       1.42 r
+  n25 (net)                      2         4.00                0.00       1.42 r
+  U457/Z2 (B2IP)                                     0.24      0.87       2.29 r
+  n527 (net)                     5        11.00                0.00       2.29 r
+  U275/Z (IVAP)                                      0.10      0.24       2.53 f
+  n228 (net)                     1         3.00                0.00       2.53 f
+  U375/Z (IVAP)                                      0.13      0.39       2.92 r
+  n286 (net)                     2         4.00                0.00       2.92 r
+  U349/Z (IVAP)                                      0.07      0.21       3.13 f
+  n266 (net)                     1         2.00                0.00       3.13 f
+  U347/Z (NR2P)                                      0.51      1.07       4.21 r
+  n512 (net)                     2         4.00                0.00       4.21 r
+  U345/Z (ND2P)                                      0.09      0.25       4.46 f
+  n261 (net)                     1         2.00                0.00       4.46 f
+  U338/Z (AO3P)                                      0.26      0.76       5.22 r
+  n251 (net)                     1         2.00                0.00       5.22 r
+  U162/Y (IVDAP)                                     0.04      0.22       5.44 f
+  n257 (net)                     1         1.00                0.00       5.44 f
+  U318/Z (ND4)                                       0.14      0.79       6.23 r
+  encode_data_in_w[0] (net)      1         1.00                0.00       6.23 r
+  encode_data_in_pipe_reg[0]/D (FD1)                 0.14      0.00       6.23 r
+  data arrival time                                                       6.23
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[0]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -6.23
+  -------------------------------------------------------------------------------
+  slack (VIOLATED)                                                       -1.03
+
+
+  Startpoint: data_out_latch_reg_2__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[2]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  data_out_latch_reg_2__reg/CP (FD1P)                0.00      0.00       0.00 r
+  data_out_latch_reg_2__reg/Q (FD1P)                 0.20      1.36       1.36 r
+  n590 (net)                     2         3.00                0.00       1.36 r
+  U214/Y (IVDAP)                                     0.16      0.34       1.69 f
+  n314 (net)                     2         4.00                0.00       1.69 f
+  U485/Z (OR2P)                                      0.07      1.01       2.70 f
+  n499 (net)                     1         2.00                0.00       2.70 f
+  U431/Z2 (B2IP)                                     0.07      0.89       3.59 f
+  n367 (net)                     1         6.00                0.00       3.59 f
+  U420/Z (B5IP)                                      0.15      0.48       4.07 r
+  n521 (net)                     4         7.00                0.00       4.07 r
+  U266/Z (ND4P)                                      0.07      0.49       4.57 f
+  n568 (net)                     1         1.00                0.00       4.57 f
+  U505/Z (AN3)                                       0.12      0.97       5.53 f
+  n567 (net)                     1         2.00                0.00       5.53 f
+  U170/Z (ND4P)                                      0.07      0.69       6.23 r
+  encode_data_in_w[2] (net)      1         1.00                0.00       6.23 r
+  encode_data_in_pipe_reg[2]/D (FD1)                 0.07      0.00       6.23 r
+  data arrival time                                                       6.23
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[2]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -6.23
+  -------------------------------------------------------------------------------
+  slack (VIOLATED)                                                       -1.03
+
+
+  Startpoint: data_out_latch_reg_4__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[4]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  data_out_latch_reg_4__reg/CP (FD1P)                0.00      0.00       0.00 r
+  data_out_latch_reg_4__reg/Q (FD1P)                 0.10      1.54       1.54 f
+  n380 (net)                     2         3.00                0.00       1.54 f
+  U190/Z (IVDAP)                                     0.26      0.79       2.34 f
+  n419 (net)                     6         9.00                0.00       2.34 f
+  U196/Z (IVDA)                                      0.21      0.88       3.22 f
+  n172 (net)                     2         4.00                0.00       3.22 f
+  U379/Z (NR2P)                                      0.13      0.69       3.90 r
+  n289 (net)                     1         1.00                0.00       3.90 r
+  U211/Z (AO3)                                       0.11      0.50       4.41 f
+  n235 (net)                     1         1.00                0.00       4.41 f
+  U212/Z (ND2)                                       0.14      0.64       5.05 r
+  n234 (net)                     1         1.00                0.00       5.05 r
+  U237/Z (AN2P)                                      0.14      0.68       5.73 r
+  n188 (net)                     1         2.00                0.00       5.73 r
+  U230/Z (ND4P)                                      0.07      0.49       6.22 f
+  encode_data_in_w[4] (net)      1         1.00                0.00       6.22 f
+  encode_data_in_pipe_reg[4]/D (FD1)                 0.07      0.00       6.22 f
+  data arrival time                                                       6.22
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[4]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -6.22
+  -------------------------------------------------------------------------------
+  slack (VIOLATED)                                                       -1.02
+
+
+  Startpoint: konstant_latch_reg_reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[1]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  konstant_latch_reg_reg/CP (FD1P)                   0.00      0.00       0.00 r
+  konstant_latch_reg_reg/Q (FD1P)                    0.07      1.51       1.51 f
+  konstant_w (net)               1         2.00                0.00       1.51 f
+  U449/Z2 (B2IP)                                     0.07      0.89       2.40 f
+  n385 (net)                     3         6.00                0.00       2.40 f
+  U268/Z (IVAP)                                      0.07      0.33       2.73 r
+  n470 (net)                     1         2.00                0.00       2.73 r
+  U395/Z2 (B2IP)                                     0.06      0.69       3.42 r
+  n312 (net)                     2         3.00                0.00       3.42 r
+  U352/Z (AN2P)                                      0.07      0.61       4.03 r
+  n294 (net)                     1         1.00                0.00       4.03 r
+  U174/Z (ND3)                                       0.11      0.48       4.52 f
+  n244 (net)                     1         1.00                0.00       4.52 f
+  U330/Z (AN2P)                                      0.07      0.91       5.43 f
+  n243 (net)                     1         2.00                0.00       5.43 f
+  U171/Z (ND4P)                                      0.07      0.69       6.12 r
+  n1 (net)                       1         1.00                0.00       6.12 r
+  encode_data_in_pipe_reg[1]/D (FDS2)                0.07      0.00       6.12 r
+  data arrival time                                                       6.12
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[1]/CP (FDS2)                         0.00       6.00 r
+  library setup time                                          -0.90       5.10
+  data required time                                                      5.10
+  -------------------------------------------------------------------------------
+  data required time                                                      5.10
+  data arrival time                                                      -6.12
+  -------------------------------------------------------------------------------
+  slack (VIOLATED)                                                       -1.02
+
+
+  Startpoint: data_out_latch_reg_0__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[3]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  data_out_latch_reg_0__reg/CP (FD1)                 0.00      0.00       0.00 r
+  data_out_latch_reg_0__reg/QN (FD1)                 0.10      1.67       1.67 f
+  data_out_latch_reg_0_ (net)     1        2.00                0.00       1.67 f
+  U466/Z2 (B2IP)                                     0.12      0.94       2.62 f
+  n413 (net)                     3        10.00                0.00       2.62 f
+  U181/Y (IVDAP)                                     0.14      0.54       3.15 r
+  n226 (net)                     1         2.00                0.00       3.15 r
+  U487/Z (EOP)                                       0.04      1.09       4.24 f
+  n447 (net)                     1         1.00                0.00       4.24 f
+  U398/Z (ND3)                                       0.14      0.79       5.03 r
+  n434 (net)                     1         1.00                0.00       5.03 r
+  U479/Z (AN2P)                                      0.14      0.68       5.72 r
+  n433 (net)                     1         2.00                0.00       5.72 r
+  U177/Z (ND4P)                                      0.07      0.49       6.21 f
+  encode_data_in_w[3] (net)      1         1.00                0.00       6.21 f
+  encode_data_in_pipe_reg[3]/D (FD1)                 0.07      0.00       6.21 f
+  data arrival time                                                       6.21
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[3]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -6.21
+  -------------------------------------------------------------------------------
+  slack (VIOLATED)                                                       -1.01
+
+
+  Startpoint: encode_data_out_pipe_reg[4]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: ip_data_latch_reg_1__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[4]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[4]/Q (FD1P)                              0.14      1.58       1.58 f
+  encode_data_out_pipe[4] (net)                 3         4.00                0.00       1.58 f
+  U264/Z (NR3P)                                                     0.39      1.21       2.79 r
+  n465 (net)                                    2         2.00                0.00       2.79 r
+  U261/Z2 (B2I)                                                     0.19      0.75       3.54 r
+  n202 (net)                                    2         4.00                0.00       3.54 r
+  U488/Z (ND2P)                                                     0.09      0.25       3.79 f
+  n503 (net)                                    1         2.00                0.00       3.79 f
+  U458/Z2 (B2IP)                                                    0.11      0.93       4.72 f
+  n396 (net)                                    2         9.00                0.00       4.72 f
+  U293/Z (B4IP)                                                     0.03      0.38       5.10 r
+  n215 (net)                                    1         2.00                0.00       5.10 r
+  U292/Z (AO7P)                                                     0.09      0.37       5.47 f
+  n214 (net)                                    1         2.00                0.00       5.47 f
+  U354/Z (ND4P)                                                     0.07      0.69       6.16 r
+  w_292_0 (net)                                 1         1.00                0.00       6.16 r
+  ip_data_latch_reg_1__reg/D (FD1)                                  0.07      0.00       6.16 r
+  data arrival time                                                                      6.16
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  ip_data_latch_reg_1__reg/CP (FD1)                                           0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -6.16
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.96
+
+
+  Startpoint: encode_data_out_pipe_reg[8]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: ip_data_latch_reg_2__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[8]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[8]/Q (FD1P)                              0.13      1.29       1.29 r
+  n581 (net)                                    1         2.00                0.00       1.29 r
+  U307/Z2 (B2IP)                                                    0.30      0.93       2.22 r
+  n365 (net)                                    6        14.00                0.00       2.22 r
+  U243/Z (IVAP)                                                     0.07      0.21       2.43 f
+  n582 (net)                                    2         2.00                0.00       2.43 f
+  U513/Z (OR2P)                                                     0.07      1.01       3.44 f
+  n531 (net)                                    1         2.00                0.00       3.44 f
+  U514/Z (IVP)                                                      0.07      0.43       3.86 r
+  n481 (net)                                    1         1.00                0.00       3.86 r
+  U554/Z (ND2)                                                      0.09      0.22       4.08 f
+  n615 (net)                                    1         1.00                0.00       4.08 f
+  U443/Z (OR2P)                                                     0.07      1.01       5.09 f
+  n617 (net)                                    1         2.00                0.00       5.09 f
+  U499/Z (ND3P)                                                     0.13      0.77       5.86 r
+  n459 (net)                                    1         2.00                0.00       5.86 r
+  U498/Z (NR2P)                                                     0.03      0.19       6.06 f
+  n484 (net)                                    1         1.00                0.00       6.06 f
+  ip_data_latch_reg_2__reg/D (FDS2P)                                0.03      0.00       6.06 f
+  data arrival time                                                                      6.06
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  ip_data_latch_reg_2__reg/CP (FDS2P)                                         0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -6.06
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.96
+
+
+  Startpoint: encode_data_out_pipe_reg[8]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: ip_data_latch_reg_0__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[8]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[8]/Q (FD1P)                              0.07      1.51       1.51 f
+  n581 (net)                                    1         2.00                0.00       1.51 f
+  U307/Z2 (B2IP)                                                    0.17      0.99       2.50 f
+  n365 (net)                                    6        14.00                0.00       2.50 f
+  U295/Z (B4I)                                                      0.07      0.42       2.92 r
+  n217 (net)                                    2         2.00                0.00       2.92 r
+  U469/Z (OR2P)                                                     0.20      0.66       3.57 r
+  n627 (net)                                    3         3.00                0.00       3.57 r
+  U452/Z (OR2P)                                                     0.20      0.66       4.23 r
+  n598 (net)                                    1         3.00                0.00       4.23 r
+  U484/Z (IVAP)                                                     0.07      0.21       4.44 f
+  n439 (net)                                    1         2.00                0.00       4.44 f
+  U483/Z (AO6P)                                                     0.13      0.93       5.37 r
+  n438 (net)                                    1         1.00                0.00       5.37 r
+  U482/Z (AN2P)                                                     0.07      0.61       5.98 r
+  n483 (net)                                    1         1.00                0.00       5.98 r
+  ip_data_latch_reg_0__reg/CR (FDS2)                                0.07      0.00       5.98 r
+  data arrival time                                                                      5.98
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  ip_data_latch_reg_0__reg/CP (FDS2)                                          0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -5.98
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.88
+
+
+  Startpoint: encode_data_out_pipe_reg[0]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: konstant_latch_reg_reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[0]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[0]/QN (FD1P)                             0.07      1.81       1.81 f
+  n530 (net)                                    1         2.00                0.00       1.81 f
+  U179/Y (IVDAP)                                                    0.07      0.47       2.28 r
+  n501 (net)                                    1         1.00                0.00       2.28 r
+  U446/Z1 (B2I)                                                     0.05      0.45       2.73 f
+  n298 (net)                                    1         1.00                0.00       2.73 f
+  U410/Y (IVDA)                                                     0.14      0.69       3.42 r
+  n468 (net)                                    1         1.00                0.00       3.42 r
+  U560/Z (ND4)                                                      0.14      0.59       4.01 f
+  n620 (net)                                    1         1.00                0.00       4.01 f
+  U553/Z (ND2)                                                      0.14      0.64       4.65 r
+  n621 (net)                                    1         1.00                0.00       4.65 r
+  U552/Z (ND4)                                                      0.14      0.59       5.24 f
+  n622 (net)                                    1         1.00                0.00       5.24 f
+  U551/Z (ND4)                                                      0.14      0.79       6.03 r
+  w_312_0 (net)                                 1         1.00                0.00       6.03 r
+  konstant_latch_reg_reg/D (FD1P)                                   0.14      0.00       6.03 r
+  data arrival time                                                                      6.03
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  konstant_latch_reg_reg/CP (FD1P)                                            0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -6.03
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.83
+
+
+  Startpoint: encode_data_out_pipe_reg[3]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: ip_data_latch_reg_0__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[3]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[3]/QN (FD1P)                             0.20      2.04       2.04 r
+  n15 (net)                                     2         3.00                0.00       2.04 r
+  U248/Z (ND4P)                                                     0.44      0.86       2.90 f
+  n509 (net)                                    3         6.00                0.00       2.90 f
+  U464/Z2 (B2IP)                                                    0.04      0.86       3.76 f
+  n409 (net)                                    2         3.00                0.00       3.76 f
+  U301/Z2 (B2I)                                                     0.06      0.91       4.67 f
+  n225 (net)                                    2         3.00                0.00       4.67 f
+  U542/Z (EO1P)                                                     0.13      1.13       5.80 r
+  n31 (net)                                     1         1.00                0.00       5.80 r
+  ip_data_latch_reg_0__reg/D (FDS2)                                 0.13      0.00       5.80 r
+  data arrival time                                                                      5.80
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  ip_data_latch_reg_0__reg/CP (FDS2)                                          0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -5.80
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.70
+
+
+  Startpoint: encode_data_out_pipe_reg[3]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: ip_data_latch_reg_2__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[3]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[3]/QN (FD1P)                             0.20      2.04       2.04 r
+  n15 (net)                                     2         3.00                0.00       2.04 r
+  U248/Z (ND4P)                                                     0.44      0.86       2.90 f
+  n509 (net)                                    3         6.00                0.00       2.90 f
+  U245/Z (ND2P)                                                     0.12      0.62       3.53 r
+  n390 (net)                                    2         2.00                0.00       3.53 r
+  U313/Z (AO6)                                                      0.08      0.35       3.88 f
+  n453 (net)                                    1         1.00                0.00       3.88 f
+  U433/Z2 (B2I)                                                     0.04      0.89       4.77 f
+  n373 (net)                                    1         2.00                0.00       4.77 f
+  U185/Z (AO6P)                                                     0.13      0.93       5.70 r
+  n40 (net)                                     1         1.00                0.00       5.70 r
+  ip_data_latch_reg_2__reg/CR (FDS2P)                               0.13      0.00       5.70 r
+  data arrival time                                                                      5.70
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  ip_data_latch_reg_2__reg/CP (FDS2P)                                         0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -5.70
+  ----------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                                      -0.60
+
+
+  Startpoint: encode_data_out_pipe_reg[4]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: kx_latch_reg_reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[4]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[4]/Q (FD1P)                              0.14      1.58       1.58 f
+  encode_data_out_pipe[4] (net)                 3         4.00                0.00       1.58 f
+  U264/Z (NR3P)                                                     0.39      1.21       2.79 r
+  n465 (net)                                    2         2.00                0.00       2.79 r
+  U261/Z2 (B2I)                                                     0.19      0.75       3.54 r
+  n202 (net)                                    2         4.00                0.00       3.54 r
+  U488/Z (ND2P)                                                     0.09      0.25       3.79 f
+  n503 (net)                                    1         2.00                0.00       3.79 f
+  U458/Z2 (B2IP)                                                    0.11      0.93       4.72 f
+  n396 (net)                                    2         9.00                0.00       4.72 f
+  kx_latch_reg_reg/CR (FDS2)                                        0.11      0.00       4.72 f
+  data arrival time                                                                      4.72
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  kx_latch_reg_reg/CP (FDS2)                                                  0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -4.72
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            0.38
+
+
+  Startpoint: encode_data_out_pipe_reg[2]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: kx_latch_reg_reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[2]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[2]/QN (FD1P)                             0.20      2.04       2.04 r
+  n6 (net)                                      2         3.00                0.00       2.04 r
+  U302/Z1 (B2I)                                                     0.05      0.45       2.49 f
+  n345 (net)                                    1         1.00                0.00       2.49 f
+  U509/Z (AN2P)                                                     0.07      0.91       3.40 f
+  n532 (net)                                    1         2.00                0.00       3.40 f
+  U507/Z (ND2P)                                                     0.12      0.62       4.02 r
+  n3 (net)                                      2         2.00                0.00       4.02 r
+  kx_latch_reg_reg/D (FDS2)                                         0.12      0.00       4.02 r
+  data arrival time                                                                      4.02
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  kx_latch_reg_reg/CP (FDS2)                                                  0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -4.02
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            1.08
+
+
+  Startpoint: kx_latch_reg_reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[1]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  kx_latch_reg_reg/CP (FDS2)                                        0.00      0.00       0.00 r
+  kx_latch_reg_reg/Q (FDS2)                                         0.10      1.37       1.37 f
+  n4 (net)                                      1         2.00                0.00       1.37 f
+  U535/Z2 (B2IP)                                                    0.11      0.93       2.30 f
+  n519 (net)                                    2         9.00                0.00       2.30 f
+  U546/Z (B4IP)                                                     0.16      0.52       2.82 r
+  n584 (net)                                    2        10.00                0.00       2.82 r
+  U463/Z (B4IP)                                                     0.08      0.10       2.92 f
+  n610 (net)                                    4         7.00                0.00       2.92 f
+  U316/Z2 (B2I)                                                     0.06      0.91       3.83 f
+  n233 (net)                                    2         3.00                0.00       3.83 f
+  encode_data_in_pipe_reg[1]/CR (FDS2)                              0.06      0.00       3.83 f
+  data arrival time                                                                      3.83
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  encode_data_in_pipe_reg[1]/CP (FDS2)                                        0.00       6.00 r
+  library setup time                                                         -0.90       5.10
+  data required time                                                                     5.10
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.10
+  data arrival time                                                                     -3.83
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            1.27
+
+
+  Startpoint: encode_data_out_pipe_reg[0]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_5__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[0]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[0]/QN (FD1P)                             0.13      1.97       1.97 r
+  n530 (net)                                    1         2.00                0.00       1.97 r
+  U179/Y (IVDAP)                                                    0.04      0.22       2.19 f
+  n501 (net)                                    1         1.00                0.00       2.19 f
+  U446/Z1 (B2I)                                                     0.14      0.86       3.05 r
+  n298 (net)                                    1         1.00                0.00       3.05 r
+  U410/Z (IVDA)                                                     0.14      0.62       3.68 r
+  n329 (net)                                    1         1.00                0.00       3.68 r
+  data_out_latch_reg_5__reg/D (FD1P)                                0.14      0.00       3.68 r
+  data arrival time                                                                      3.68
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_5__reg/CP (FD1P)                                         0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -3.68
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            1.52
+
+
+  Startpoint: konstant_latch_reg_reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: konstant_pipe_reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  konstant_latch_reg_reg/CP (FD1P)                   0.00      0.00       0.00 r
+  konstant_latch_reg_reg/Q (FD1P)                    0.13      1.29       1.29 r
+  konstant_w (net)               1         2.00                0.00       1.29 r
+  U449/Z2 (B2IP)                                     0.13      0.76       2.05 r
+  n385 (net)                     3         6.00                0.00       2.05 r
+  U268/Z (IVAP)                                      0.07      0.21       2.26 f
+  n470 (net)                     1         2.00                0.00       2.26 f
+  U395/Z1 (B2IP)                                     0.43      1.13       3.39 r
+  n313 (net)                     6         6.00                0.00       3.39 r
+  konstant_pipe_reg/D (FD1)                          0.43      0.00       3.39 r
+  data arrival time                                                       3.39
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  konstant_pipe_reg/CP (FD1)                                   0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -3.39
+  -------------------------------------------------------------------------------
+  slack (MET)                                                             1.81
+
+
+  Startpoint: encode_data_out_pipe_reg[1]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_4__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[1]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[1]/Q (FD1P)                              0.14      1.58       1.58 f
+  encode_data_out_pipe[1] (net)                 2         4.00                0.00       1.58 f
+  U456/Z2 (B2I)                                                     0.08      0.93       2.51 f
+  n389 (net)                                    2         4.00                0.00       2.51 f
+  U470/Z1 (B2IP)                                                    0.14      0.84       3.35 r
+  n539 (net)                                    2         2.00                0.00       3.35 r
+  data_out_latch_reg_4__reg/D (FD1P)                                0.14      0.00       3.35 r
+  data arrival time                                                                      3.35
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_4__reg/CP (FD1P)                                         0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -3.35
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            1.85
+
+
+  Startpoint: encode_data_out_pipe_reg[4]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_1__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[4]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[4]/Q (FD1P)                              0.14      1.58       1.58 f
+  encode_data_out_pipe[4] (net)                 3         4.00                0.00       1.58 f
+  U419/Y (IVDA)                                                     0.14      0.69       2.27 r
+  n350 (net)                                    1         1.00                0.00       2.27 r
+  U545/Z2 (B2I)                                                     0.09      0.65       2.92 r
+  n538 (net)                                    2         2.00                0.00       2.92 r
+  data_out_latch_reg_1__reg/D (FD1P)                                0.09      0.00       2.92 r
+  data arrival time                                                                      2.92
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_1__reg/CP (FD1P)                                         0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -2.92
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            2.28
+
+
+  Startpoint: encode_data_out_pipe_reg[2]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_3__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[2]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[2]/QN (FD1P)                             0.10      1.84       1.84 f
+  n6 (net)                                      2         3.00                0.00       1.84 f
+  U302/Z2 (B2I)                                                     0.06      0.91       2.75 f
+  n346 (net)                                    3         3.00                0.00       2.75 f
+  data_out_latch_reg_3__reg/D (FD1P)                                0.06      0.00       2.75 f
+  data arrival time                                                                      2.75
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_3__reg/CP (FD1P)                                         0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -2.75
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            2.45
+
+
+  Startpoint: encode_data_out_pipe_reg[5]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_0__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[5]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[5]/QN (FD1P)                             0.10      1.84       1.84 f
+  n8 (net)                                      2         3.00                0.00       1.84 f
+  U544/Z2 (B2I)                                                     0.04      0.89       2.73 f
+  n537 (net)                                    2         2.00                0.00       2.73 f
+  data_out_latch_reg_0__reg/D (FD1)                                 0.04      0.00       2.73 f
+  data arrival time                                                                      2.73
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_0__reg/CP (FD1)                                          0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -2.73
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            2.47
+
+
+  Startpoint: ip_data_latch_reg_2__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[5]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  ip_data_latch_reg_2__reg/CP (FDS2P)                0.00      0.00       0.00 r
+  ip_data_latch_reg_2__reg/Q (FDS2P)                 0.07      1.51       1.51 f
+  n391 (net)                     1         2.00                0.00       1.51 f
+  U418/Z (IVP)                                       0.26      0.62       2.13 r
+  n392 (net)                     2         4.00                0.00       2.13 r
+  encode_data_in_pipe_reg[5]/D (FD1)                 0.26      0.00       2.13 r
+  data arrival time                                                       2.13
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[5]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -2.13
+  -------------------------------------------------------------------------------
+  slack (MET)                                                             3.07
+
+
+  Startpoint: encode_data_out_pipe_reg[3]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: data_out_latch_reg_2__reg
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                                       0.00       0.00
+  clock network delay (ideal)                                                 0.00       0.00
+  encode_data_out_pipe_reg[3]/CP (FD1P)                             0.00      0.00       0.00 r
+  encode_data_out_pipe_reg[3]/Q (FD1P)                              0.14      1.58       1.58 f
+  n583 (net)                                    2         4.00                0.00       1.58 f
+  U501/Y (IVDAP)                                                    0.07      0.47       2.05 r
+  n220 (net)                                    1         1.00                0.00       2.05 r
+  data_out_latch_reg_2__reg/D (FD1P)                                0.07      0.00       2.05 r
+  data arrival time                                                                      2.05
+
+  clock clk (rise edge)                                                       6.00       6.00
+  clock network delay (ideal)                                                 0.00       6.00
+  data_out_latch_reg_2__reg/CP (FD1P)                                         0.00       6.00 r
+  library setup time                                                         -0.80       5.20
+  data required time                                                                     5.20
+  ----------------------------------------------------------------------------------------------
+  data required time                                                                     5.20
+  data arrival time                                                                     -2.05
+  ----------------------------------------------------------------------------------------------
+  slack (MET)                                                                            3.15
+
+
+  Startpoint: ip_data_latch_reg_0__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[7]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  ip_data_latch_reg_0__reg/CP (FDS2)                 0.00      0.00       0.00 r
+  ip_data_latch_reg_0__reg/QN (FDS2)                 0.15      1.64       1.64 r
+  encode_data_in_w[7] (net)      1         1.00                0.00       1.64 r
+  encode_data_in_pipe_reg[7]/D (FD1)                 0.15      0.00       1.64 r
+  data arrival time                                                       1.64
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[7]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -1.64
+  -------------------------------------------------------------------------------
+  slack (MET)                                                             3.56
+
+
+  Startpoint: ip_data_latch_reg_1__reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in_pipe_reg[6]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  clock clk (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                  0.00       0.00
+  ip_data_latch_reg_1__reg/CP (FD1)                  0.00      0.00       0.00 r
+  ip_data_latch_reg_1__reg/Q (FD1)                   0.05      1.42       1.42 f
+  encode_data_in_w[6] (net)      1         1.00                0.00       1.42 f
+  encode_data_in_pipe_reg[6]/D (FD1)                 0.05      0.00       1.42 f
+  data arrival time                                                       1.42
+
+  clock clk (rise edge)                                        6.00       6.00
+  clock network delay (ideal)                                  0.00       6.00
+  encode_data_in_pipe_reg[6]/CP (FD1)                          0.00       6.00 r
+  library setup time                                          -0.80       5.20
+  data required time                                                      5.20
+  -------------------------------------------------------------------------------
+  data required time                                                      5.20
+  data arrival time                                                      -1.42
+  -------------------------------------------------------------------------------
+  slack (MET)                                                             3.78
+
+
+1
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_registers -data_pins] 
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 100
+        -transition_time
+        -capacitance
+Design : latchinout
+Version: F-2011.09-SP1
+Date   : Tue Jul 28 22:09:44 2015
+****************************************
+
+Operating Conditions: 
+Wire Load Model Mode: top
+
+  Startpoint: encode_data_out[0]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[0]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[0] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[0] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[0]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[1]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[1]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[1] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[1] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[1]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[2]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[2]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[2] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[2] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[2]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[3]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[3]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[3] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[3] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[3]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[4]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[4]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[4] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[4] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[4]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[5]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[5]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[5] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[5] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[5]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[6]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[6]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[6] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[6] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[6]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[7]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[7]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[7] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[7] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[7]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[8]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[8]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  input external delay                                                        0.00       0.00 r
+  encode_data_out[8] (in)                                           0.00      0.00       0.00 r
+  encode_data_out[8] (net)                      1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[8]/D (FD1P)                              0.00      0.00       0.00 r
+  data arrival time                                                                      0.00
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_out[9]
+              (input port)
+  Endpoint: encode_data_out_pipe_reg[9]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  input external delay                                         0.00       0.00 r
+  encode_data_out[9] (in)                            0.00      0.00       0.00 r
+  encode_data_out[9] (net)       1         1.00                0.00       0.00 r
+  encode_data_out_pipe_reg[9]/D (FD1)                0.00      0.00       0.00 r
+  data arrival time                                                       0.00
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+1
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_outputs             ] 
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 100
+        -transition_time
+        -capacitance
+Design : latchinout
+Version: F-2011.09-SP1
+Date   : Tue Jul 28 22:09:44 2015
+****************************************
+
+Operating Conditions: 
+Wire Load Model Mode: top
+
+  Startpoint: encode_data_in_pipe_reg[0]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[0]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[0]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[0]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[0] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[0] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[2]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[2]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[2]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[2]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[2] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[2] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[3]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[3]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[3]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[3]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[3] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[3] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[4]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[4]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[4]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[4]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[4] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[4] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[5]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[5]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[5]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[5]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[5] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[5] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[6]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[6]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[6]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[6]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[6] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[6] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[7]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[7]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[7]/CP (FD1)                0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[7]/Q (FD1)                 0.00      1.37       1.37 f
+  encode_data_in[7] (net)        1         0.00                0.00       1.37 f
+  encode_data_in[7] (out)                            0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: konstant_pipe_reg
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: konstant (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                        Fanout       Cap     Trans      Incr       Path
+  -------------------------------------------------------------------------------
+  konstant_pipe_reg/CP (FD1)                         0.00      0.00       0.00 r
+  konstant_pipe_reg/Q (FD1)                          0.00      1.37       1.37 f
+  konstant (net)                 1         0.00                0.00       1.37 f
+  konstant (out)                                     0.00      0.00       1.37 f
+  data arrival time                                                       1.37
+  -------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+  Startpoint: encode_data_in_pipe_reg[1]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: encode_data_in[1]
+            (output port)
+  Path Group: (none)
+  Path Type: max
+
+  Point                                       Fanout       Cap     Trans      Incr       Path
+  ----------------------------------------------------------------------------------------------
+  encode_data_in_pipe_reg[1]/CP (FDS2)                              0.00      0.00       0.00 r
+  encode_data_in_pipe_reg[1]/Q (FDS2)                               0.00      1.27       1.27 f
+  encode_data_in[1] (net)                       1         0.00                0.00       1.27 f
+  encode_data_in[1] (out)                                           0.00      0.00       1.27 f
+  data arrival time                                                                      1.27
+  ----------------------------------------------------------------------------------------------
+  (Path is unconstrained)
+
+
+1
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_outputs             ] 
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 100
+        -transition_time
+        -capacitance
+Design : latchinout
+Version: F-2011.09-SP1
+Date   : Tue Jul 28 22:09:44 2015
+****************************************
+
+Operating Conditions: 
+Wire Load Model Mode: top
+No paths.
+
+1
+report_area
+ 
+****************************************
+Report : area
+Design : latchinout
+Version: F-2011.09-SP1
+Date   : Tue Jul 28 22:09:44 2015
+****************************************
+
+Library(s) Used:
+
+    lsi_10k (File: /home/syshen/EDA_tools/syn_2011/libraries/syn/lsi_10k.db)
+
+Number of ports:                           20
+Number of nets:                           521
+Number of cells:                          435
+Number of combinational cells:            405
+Number of sequential cells:                30
+Number of macros:                           0
+Number of buf/inv:                        175
+Number of references:                      44
+
+Combinational area:        878.000000
+Noncombinational area:     226.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:          1104.000000
+Total area:                 undefined
+1
+quit
+
+Memory usage for main task 140 Mbytes.
+Memory usage for this session 140 Mbytes.
+CPU usage for this session 135 seconds ( 0.04 hours ).
+
+Thank you...
