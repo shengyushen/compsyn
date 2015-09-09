@@ -1,0 +1,1 @@
+vp_proc1_complete_interp.scr -S ../src/verilog/filelist.v -T PCIEXP_TX -I ../src/verilog -B 10 -Input TXDATA -Input TXDATAK -Output HSS_TXD 

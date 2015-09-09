@@ -1,0 +1,4 @@
+read_verilog resulting_dual_cnf.v
+collapse 
+dc2
+dc2
