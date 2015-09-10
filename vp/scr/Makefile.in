@@ -7,7 +7,7 @@ default :
 	@echo "naive                      : incomplete approach in ICCAD'09 and TCAD'10"
 	@echo "halting_fast               : faster complete approach in the revisied TCAD'11"
 	@echo "infer_multidec_not_charfirst_nowall_cnt : inferring assertion and all possible decoders in TCAD'12"
-#	@echo "relational                 : relational uniqueness for TODAES 14"
+	@echo "relational                 : relational uniqueness for TODAES 14"
 #	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
 	@echo "relational_plr_inc_simBDD  : simplify with BDD"
 #	@echo "relational_plr_inc_plr1by1 : find out plr by increcing them one by one, only for comparing to relational_plr_inc"
@@ -57,15 +57,15 @@ infer_multidec_not_charfirst_nowall_cnt : sed_res.v
 		echo "to simulate the result, source ../scr/sim.scr";\
 	fi
 
-#relational: sed_res.v
-#	@rm -rf container_c* ./continue.scr
-#	@mkdir container_c1
-#	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
-#	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
-#	# then run syn.tcl in design compiler
-#	dc_shell-t -f syn_dual.tcl > syn_dual.log
-#
-#
+relational: sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
+	# then run syn.tcl in design compiler
+	dc_shell-t -f syn_dual.tcl > syn_dual.log
+
+
 #relational_plr_inc: sed_res.v
 #	@rm -rf container_c* ./continue.scr
 #	@mkdir container_c1
