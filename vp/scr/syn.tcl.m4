@@ -53,7 +53,7 @@ current_design ${top_design}
 link
 uniquify
 ungroup -all -flatten -simple_names
-#replace_synthetic -ungroup
+replace_synthetic -ungroup
 
 current_design ${top_design}
 #set_ideal_network [get_ports *]

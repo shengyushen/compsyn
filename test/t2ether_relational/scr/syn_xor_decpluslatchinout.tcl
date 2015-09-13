@@ -64,7 +64,7 @@ current_design ${top_design}
 #remove_attribute [get_designs ${top_design}] max_area
 current_design ${top_design}
 #set_map_only [get_cells *] true
-#set_max_transition 0.2 [all_designs]
+set_max_transition 0.2 [all_designs]
 set_max_fanout 10 [all_designs]
 set_max_area 0
 
@@ -83,7 +83,7 @@ compile_ultra
 
 write -f verilog -o dc_res.v 
 #write -f equation -o ssy.equation -no_implicit
-report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_registers -data_pins]  > report_timing
+report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_registers -data_pins] > report_timing
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_registers -data_pins] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_registers -clock_pins] -to [all_outputs             ] 
 report_timing -transition_time -net -cap -nospl -max_paths 100 -from [all_inputs               ] -to [all_outputs             ] 

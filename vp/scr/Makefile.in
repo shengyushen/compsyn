@@ -6,6 +6,7 @@ default :
 	@echo "decoderarea                : computing the hand written decoder's area in mcgn.genlib"
 	@echo "naive                      : incomplete approach in ICCAD'09 and TCAD'10"
 	@echo "halting_fast               : faster complete approach in the revisied TCAD'11"
+	@echo "halting_fast_qy               : qy's version with dumped out"
 	@echo "infer_multidec_not_charfirst_nowall_cnt : inferring assertion and all possible decoders in TCAD'12"
 	@echo "relational                 : relational uniqueness for TODAES 14"
 #	@echo "relational_plr_inc         : incremental SAT with assumption in characterizing, used in TODAES 14 rev 1"
@@ -46,6 +47,12 @@ halting_fast : sed_res.v
 		echo "to simulate the result, source ../scr/sim.scr";\
 	fi
 
+halting_fast_qy : sed_res.v
+	@rm -rf container_c* ./continue.scr
+	@mkdir container_c1
+	compsyn_halting_fast_qy.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
+
+
 
 infer_multidec_not_charfirst_nowall_cnt : sed_res.v
 	@rm -rf container_c* ./continue.scr
@@ -63,7 +70,8 @@ relational: sed_res.v
 	compsyn_relational.exe sed_res.v ${TOPMOD} c1 10 ${INPUT} ${OUTPUT}  |tee compsyn.log
 	m4  -D FILELIST=resulting_dual_cnf.v  -D DC_INCPATH=${DCINCPATH}  -D TOP_DESIGN=resulting_dual ../../../vp/scr/syn_dual.tcl.m4 > syn_dual.tcl
 	# then run syn.tcl in design compiler
-	dc_shell-t -f syn_dual.tcl > syn_dual.log
+#	dc_shell-t -f syn_dual.tcl > syn_dual.log
+	dc_shell-t -f ../scr/syn_xor_decpluslatchinout.tcl|tee syn_xor_dec.log
 
 
 #relational_plr_inc: sed_res.v
@@ -140,11 +148,13 @@ pipeline : sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_pipeline.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+	dc_shell-t -f ../scr/syn_xor_decpluslatchinout.tcl|tee syn_xor_dec.log
 
 pred : sed_res.v
 	@rm -rf container_c* ./continue.scr
 	@mkdir container_c1
 	compsyn_pred.exe sed_res.v ${TOPMOD} c1 assertions ${INPUT} ${OUTPUT}  | tee compsyn.log
+	dc_shell-t -f ../scr/syn_xor_decpluslatchinout.tcl|tee syn_xor_dec.log
 
 #summ : sed_res.v
 #	@rm -rf container_c* ./continue.scr
