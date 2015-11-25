@@ -8,7 +8,8 @@
 # VPATH = ../share/:$(MINISATDIR)
 
 OCAMLC	= ocamlopt
-OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
+#OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
+OCAMLC_OPT = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
 OBJS	= lextype.cmx very.cmx parser.cmx main.cmx 
 
 

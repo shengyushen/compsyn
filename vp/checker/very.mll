@@ -70,7 +70,11 @@ rule veriloglex = parse
 			stringssy_string := "";
 			stringssy lexbuf 
 		}
-	|"`begin_keywords"			{  MACRO_BEGIN_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"`begin_keywords"			{  
+			(*MACRO_BEGIN_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `begin_keywords\n";
+			endofline lexbuf
+		}
 	|"`celldefine"        	{  MACRO_CELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`default_nettype"   	{  MACRO_DEFAULT_NETTYPE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`define"            	{  MACRO_DEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
