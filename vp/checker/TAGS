@@ -371,12 +371,12 @@ very.ml,465
 let __ocaml_lex_tables__ocaml_lex_tables24,453
 let rec veriloglexveriloglex630,41678
 and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec632,41746
-and endoflineendofline1508,69260
-and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1510,69324
-and stringssystringssy1539,70000
-and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1541,70064
-and commentcomment1577,70922
-and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1579,71006
+and endoflineendofline1566,70758
+and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1568,70822
+and stringssystringssy1597,71498
+and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1599,71562
+and commentcomment1635,72420
+and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1637,72504
 
 very.mll,161
 let stringssy_stringstringssy_string7,42

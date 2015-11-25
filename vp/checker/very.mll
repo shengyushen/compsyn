@@ -63,6 +63,8 @@ rule veriloglex = parse
 			comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf
 		}
 	| '\n'									{	(*incleasing line number*)
+			printf "newline at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
 			Lexing.new_line lexbuf ;
 			veriloglex lexbuf
 		}
@@ -72,26 +74,82 @@ rule veriloglex = parse
 		}
 	|"`begin_keywords"			{  
 			(*MACRO_BEGIN_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
-			printf "Warning : Ignoring `begin_keywords\n";
-			endofline lexbuf
+			printf "Warning : Ignoring `begin_keywords at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
 		}
-	|"`celldefine"        	{  MACRO_CELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`default_nettype"   	{  MACRO_DEFAULT_NETTYPE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"`celldefine"        	{  
+			(*MACRO_CELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `celldefine at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`default_nettype"   	{  
+			(*MACRO_DEFAULT_NETTYPE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `default_nettype at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`end_keywords"      	{  
+			(*MACRO_END_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `end_keywords at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`endcelldefine"     	{  
+			(*MACRO_ENDCELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `endcelldefine at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`line"              	{  
+			(*MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `line at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`nounconnected_drive"	{  
+			(*MACRO_NOUNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `nounconnected_drive at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`pragma"            	{  
+			(*MACRO_PRAGMA(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `pragma at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`timescale"         	{  
+			(*MACRO_TIMESCALE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `timescale at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`unconnected_drive" 	{  
+			(*MACRO_UNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			printf "Warning : Ignoring `unconnected_drive at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);
+			endofline lexbuf;
+			veriloglex lexbuf
+		}
+	|"`include"           	{  MACRO_INCLUDE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`define"            	{  MACRO_DEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`else"              	{  MACRO_ELSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`elsif"             	{  MACRO_ELSIF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`end_keywords"      	{  MACRO_END_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`endcelldefine"     	{  MACRO_ENDCELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`endif"             	{  MACRO_ENDIF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`ifdef"             	{  MACRO_IFDEF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`ifndef"            	{  MACRO_IFNDEF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`include"           	{  MACRO_INCLUDE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`line"              	{  MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`nounconnected_drive"	{  MACRO_NOUNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`pragma"            	{  MACRO_PRAGMA(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`resetall"          	{  MACRO_RESETALL(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`timescale"         	{  MACRO_TIMESCALE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
-	|"`unconnected_drive" 	{  MACRO_UNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`undef"             	{  MACRO_UNDEF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"always"								{  KEY_ALWAYS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"and"									{KEY_AND(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
