@@ -14,9 +14,9 @@ and clear_stringssy () = begin
 	stringssy_string := ""
 end
 and print_pos pos = begin
-	Printf.printf "F %s " pos.Lexing.pos_fname;
-	Printf.printf "L %d " pos.Lexing.pos_lnum;
-	Printf.printf "C %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+	Printf.printf "%s " pos.Lexing.pos_fname;
+	Printf.printf "Line %d " pos.Lexing.pos_lnum;
+	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
 end
 }
 
