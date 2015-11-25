@@ -21,6 +21,6 @@ let lexbuf = Lexing.from_channel inputFileChannle;;
 
 lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = inputFileName };;
 
-let very_struct = Parser.source_text Very.veriloglex  lexbuf ;;
+let very_struct = Parser.source_text (Very.veriloglex 1) lexbuf ;;
 
 close_in  inputFileChannle ;; 

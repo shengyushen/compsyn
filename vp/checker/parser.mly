@@ -205,6 +205,7 @@ end
 
 %token <Lexing.position*Lexing.position*string> COMMENT 
 %token <Lexing.position*Lexing.position*string> EOL
+%token <Lexing.position*Lexing.position*string> EOF_INCLUDED
 %token <Lexing.position*Lexing.position*string> EOF 
 %token <Lexing.position*Lexing.position*string> STRING
 
@@ -246,7 +247,7 @@ item :
 	|	MACRO_ENDIF										{printf "macro_endif\n"}
 	|	MACRO_IFDEF										{printf "macro_ifdef\n"}
 	|	MACRO_IFNDEF									{printf "macro_ifndef\n"}
-	|	MACRO_INCLUDE									{printf "macro_include\n"}
+	|	MACRO_INCLUDE									{printf "macro_include %s\n" (get_string_ssy $1)}
 	|	MACRO_LINE										{printf "macro_line\n"}
 	|	MACRO_NOUNCONNECTED_DRIVE			{printf "macro_nounconnected_drive\n"}
 	|	MACRO_PRAGMA									{printf "macro_pragma\n"}

@@ -152,7 +152,7 @@ let inputFileChannleinputFileChannle18,341
 let lexbuflexbuf20,389
 let very_structvery_struct24,533
 
-parser.ml,6860
+parser.ml,6901
 Parser1,0
 type tokentoken1,0
   | MACRO_BEGIN_KEYWORDSMACRO_BEGIN_KEYWORDS2,13
@@ -320,29 +320,30 @@ type tokentoken1,0
   | SYSFUN_SREADMEMHSYSFUN_SREADMEMH164,9769
   | COMMENTCOMMENT165,9834
   | EOLEOL166,9890
-  | EOFEOF167,9942
-  | STRINGSTRING168,9994
-  | DECIMAL_NUMBERDECIMAL_NUMBER169,10049
-  | BINARY_NUMBERBINARY_NUMBER170,10112
-  | OCTAL_NUMBEROCTAL_NUMBER171,10174
-  | HEX_NUMBERHEX_NUMBER172,10235
-let yytransl_constyytransl_const210,10937
-let yytransl_blockyytransl_block213,10970
-let yylhsyylhs387,15299
-let yylenyylen411,16719
-let yydefredyydefred435,18139
-let yydgotoyydgoto459,19586
-let yysindexyysindex462,19638
-let yyrindexyyrindex486,21085
-let yygindexyygindex510,22532
-let yytablesizeyytablesize513,22585
-let yytableyytable514,22607
-let yycheckyycheck537,24019
-let yynames_constyynames_const560,25431
-let yynames_blockyynames_block563,25459
-let yyactyyact737,28757
-let yytablesyytables1922,70861
-let source_textsource_text1939,71382
+  | EOF_INCLUDEDEOF_INCLUDED167,9942
+  | EOFEOF168,10003
+  | STRINGSTRING169,10055
+  | DECIMAL_NUMBERDECIMAL_NUMBER170,10110
+  | BINARY_NUMBERBINARY_NUMBER171,10173
+  | OCTAL_NUMBEROCTAL_NUMBER172,10235
+  | HEX_NUMBERHEX_NUMBER173,10296
+let yytransl_constyytransl_const211,10998
+let yytransl_blockyytransl_block214,11031
+let yylhsyylhs389,15386
+let yylenyylen413,16806
+let yydefredyydefred437,18226
+let yydgotoyydgoto461,19673
+let yysindexyysindex464,19725
+let yyrindexyyrindex488,21172
+let yygindexyygindex512,22619
+let yytablesizeyytablesize515,22672
+let yytableyytable516,22694
+let yycheckyycheck539,24106
+let yynames_constyynames_const562,25518
+let yynames_blockyynames_block565,25546
+let yyactyyact740,28864
+let yytablesyytables1925,70992
+let source_textsource_text1942,71513
 
 parser.mly,190
 let get_begin_posget_begin_pos6,26
@@ -366,20 +367,25 @@ class rtlrtl13,131
 	method print_rtlprint_rtl71,1851
 	method compsyncompsyn82,2090
 
-very.ml,465
+very.ml,733
 Very1,0
-let __ocaml_lex_tables__ocaml_lex_tables24,457
-let rec veriloglexveriloglex630,41682
-and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec632,41750
-and endoflineendofline1566,70762
-and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1568,70826
-and stringssystringssy1597,71502
-and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1599,71566
-and commentcomment1635,72424
-and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1637,72508
+let __ocaml_lex_tables__ocaml_lex_tables29,550
+let rec veriloglexveriloglex638,42001
+and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec640,42081
+and endoflineendofline1580,71355
+and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1582,71419
+and stringssystringssy1611,72095
+and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1613,72159
+and commentcomment1649,73017
+and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1651,73101
+and include_skip_blanksinclude_skip_blanks1687,73903
+and __ocaml_lex_include_skip_blanks_rec__ocaml_lex_include_skip_blanks_rec1689,73999
+and include_stringsinclude_strings1709,74553
+and __ocaml_lex_include_strings_rec__ocaml_lex_include_strings_rec1711,74641
 
-very.mll,161
+very.mll,208
 let stringssy_stringstringssy_string7,42
 let append_stringssyappend_stringssy10,76
 and clear_stringssyclear_stringssy13,176
 and print_posprint_pos16,235
+and isNotEof_includedisNotEof_included21,426

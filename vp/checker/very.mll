@@ -18,6 +18,11 @@ and print_pos pos = begin
 	Printf.printf "Line %d " pos.Lexing.pos_lnum;
 	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
 end
+and isNotEof_included t = begin
+	match t with
+	EOF_INCLUDED(_,_,_) -> false
+	| _ -> true
+end
 }
 
 
@@ -40,10 +45,13 @@ let octal_value  = octal_digit  ( _ | octal_digit  )*
 let hex_value    = hex_digit    ( _ | hex_digit    )*
 
 
-rule veriloglex = parse
-		[' ' '\t']+	{veriloglex lexbuf} (*skip blank*)
+rule veriloglex depth = parse
+		[' ' '\t']+	{veriloglex depth lexbuf} (*skip blank*)
   | eof										{ 
-			EOF(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
+			if(depth==1) then
+				EOF(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
+			else
+				EOF_INCLUDED(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
 	| "//"                	{	(*comment to end of line*)
 			let stpos = Lexing.lexeme_start_p lexbuf
@@ -66,7 +74,7 @@ rule veriloglex = parse
 			printf "newline at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			Lexing.new_line lexbuf ;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	| '\"'									{ (*matching string*)
 			stringssy_string := "";
@@ -77,72 +85,75 @@ rule veriloglex = parse
 			printf "Warning : Ignoring `begin_keywords at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`celldefine"        	{  
 			(*MACRO_CELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `celldefine at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`default_nettype"   	{  
 			(*MACRO_DEFAULT_NETTYPE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `default_nettype at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`end_keywords"      	{  
 			(*MACRO_END_KEYWORDS(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `end_keywords at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`endcelldefine"     	{  
 			(*MACRO_ENDCELLDEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `endcelldefine at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`line"              	{  
 			(*MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `line at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`nounconnected_drive"	{  
 			(*MACRO_NOUNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `nounconnected_drive at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`pragma"            	{  
 			(*MACRO_PRAGMA(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `pragma at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`timescale"         	{  
 			(*MACRO_TIMESCALE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `timescale at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
 	|"`unconnected_drive" 	{  
 			(*MACRO_UNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `unconnected_drive at ";
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			endofline lexbuf;
-			veriloglex lexbuf
+			veriloglex depth lexbuf
 		}
-	|"`include"           	{  MACRO_INCLUDE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"`include"           	{  
+			(*MACRO_INCLUDE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			include_skip_blanks depth lexbuf
+		}
 	|"`define"            	{  MACRO_DEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`else"              	{  MACRO_ELSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`elsif"             	{  MACRO_ELSIF(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
@@ -342,6 +353,34 @@ and comment depth stpos = parse
 	}
 	| _ {
 		comment depth stpos lexbuf
+	}
+and include_skip_blanks depth = parse
+	[' ' '\t']+	{
+		include_strings depth lexbuf
+	}
+	| _ {
+		Printf.printf "FATAL : `include must be followed by blanks and filename\n";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		exit 1;
+	}
+and include_strings depth = parse
+	'"'[^ '\n' '"' ]*'"' as fn {
+		let realfn=String.sub fn 1 ((String.length fn) -2 )
+		and current_fname = lexbuf.Lexing.lex_curr_p.Lexing.pos_fname
+		in
+		let realfn_channel = open_in realfn
+		in
+		let lexbuf1=Lexing.from_channel realfn_channel
+		in begin
+			printf "jump to included file %s\n" realfn;
+			lexbuf1.Lexing.lex_curr_p <- { lexbuf1.Lexing.lex_curr_p with pos_fname = realfn };
+			while( isNotEof_included (veriloglex (depth+1) lexbuf1)) do
+				flush stdout;
+			done
+			;
+			printf "jump to back to file %s\n" current_fname;
+			veriloglex depth lexbuf
+		end
 	}
 
 {                       
