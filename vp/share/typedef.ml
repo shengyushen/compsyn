@@ -2,18 +2,26 @@ open Intlist
 open Printf
 
 type	module_def	=
-		T_module_def of string*(port list)*(module_item list)
+		T_module_def of string*(port list)*port_list*(module_item list)
 		| T_module_def_NOSPEC
+and port_list = 
+		T_port_list of port list
+		| T_port_declaration_list of module_item list
 and	port		=
 		string list
 and	module_item	=
-		T_parameter_declaration of param_assignment list
-		| T_input_declaration    of range*(string list)
-		| T_output_declaration    of range*(string list)
-		| T_inout_declaration    of range*(string list)
-		| T_net_declaration    of string*charge_strength*expandrange*delay*(string list)
-		| T_reg_declaration   of range*(register_variables list)
+		T_parameter_declaration_signed of bool*range *(param_assignment list)
+		| T_parameter_declaration_type of string*(param_assignment list)
+		| T_input_declaration    of net_type*bool*range*(string list)
+		| T_output_declaration   of net_type*bool*range*(string list)
+		| T_output_declaration_reg   of bool*range*(assignment list)
+		| T_output_declaration_integer_or_time integer_or_time*(assignment list)
+		| T_inout_declaration    of net_type*bool*range*(string list)
+		| T_net_declaration    of string*strength_type*expandrange*bool*delay*(assignment list)
+		| T_reg_declaration   of bool*range*(register_variables list)
 		| T_time_declaration   of register_variables list
+		| T_realtime_declaration of register_variables list
+		| T_realtime_declaration
 		| T_integer_declaration   of register_variables list
 		| T_real_declaration   of string list
 		| T_event_declaration   of string list
@@ -25,7 +33,10 @@ and	module_item	=
 		| T_initial_statement   of statement
 		| T_always_statement   of statement
 		| T_task   of string*(module_item list)*statement
-		| T_function_avoid_amb   of range_or_type*string*(module_item list)*statement
+		| T_function_avoid_amb   of automatic*function_range_or_type*string*(function_item_declaration list)*function_statement
+		| T_function_avoid_amb2   of automatic*function_range_or_type*string*(function_port list)*(block_item_declaration list)*function_statement
+		| T_localparam_declaration_signed of bool*range*(param_assignment list)
+		| T_localparam_declaration_type of string*(param_assignment list)
 and	statement	=
 		T_blocking_assignment of blocking_assignment
 		| T_non_blocking_assignment of non_blocking_assignment
@@ -50,6 +61,24 @@ and	statement	=
 		| T_casez_statement of expression*(case_item list)
 		| T_casex_statement of expression*(case_item list)
 		| T_delay_statement of delay_control*statement
+and integer_or_time = 
+	KEY_INTEGER
+	| KEY_TIME
+and net_type = 
+	T_net_type_supply0
+	| T_net_type_supply1
+	| T_net_type_tri
+	| T_net_type_triand
+	| T_net_type_trior
+	| T_net_type_tri0
+	| T_net_type_tri1
+	| T_net_type_uwire
+	| T_net_type_wire
+	| T_net_type_wand
+	| T_net_type_wor
+and real_type = 
+	T_real_type_range of (string list)*range
+	| T_real_type_assign (string list)*expression
 and	blocking_assignment	=
 	  T_blocking_assignment_direct of lvalue*expression
 	| T_blocking_assignment_delay of lvalue*expression*delay_control
@@ -100,7 +129,7 @@ and	expression	=
 and	case_item	=
 	T_case_item_normal of (expression list)*statement
 	| T_case_item_default of statement
-and	assignment	=
+and assignment	=
 	T_assignment of lvalue*expression
 and	delay_control	= T_delay_control of expression
 and	event_control	=
@@ -110,6 +139,7 @@ and	lvalue 		=
 	T_lvalue_id of string list
 	| T_lvalue_arrbit  of (string list)*expression
 	| T_lvalue_arrrange of (string list)*expression*expression
+	| T_lvalue_event_id_range_list of (string list)*(range list)
 	| T_lvalue_concat of expression list
 and	primary		=
 	T_primary_num of number
@@ -121,6 +151,8 @@ and	primary		=
 	| T_primary_funcall of (string list)*(expression list)
 	| T_primary_sysfuncall of (string list)*(expression list)
 	| T_primary_minmaxexp of mintypmax_expression
+and event_identifier_range_list =
+	T_event_identifier_range_list of (string list)*(range list)
 and	event_expression	=
 	T_event_expression of expression
 	| T_event_expression_posedge of expression
@@ -134,7 +166,12 @@ and	mintypmax_expression	=
 	| T_mintypmax_expression_3 of expression*expression*expression
 and	param_assignment	=
 	T_param_assignment of (string list)*expression
+	| T_param_assignment_NOSPEC
 and	specify_item	= int
+and strength_type =
+	T_strength_type_drive of drive_strength
+	| T_strength_type_charge of charge_strength
+	| T_strength_type_NOSPEC
 and	drive_strength	=
 	T_drive_strength of string*string
 	| T_drive_strength_NOSPEC
@@ -142,6 +179,7 @@ and	delay	=
 	 T_delay_number of number
 	 | T_delay_id of string list
 	 | T_delay_minmax1 of mintypmax_expression
+	 | T_delay_minmax2 of mintypmax_expression*mintypmax_expression
 	 | T_delay_minmax3 of mintypmax_expression*mintypmax_expression*mintypmax_expression
 	 | T_delay_NOSPEC
 and	gate_instance	=
@@ -174,11 +212,19 @@ and	charge_strength	=
 	| T_charge_strength_MEDIUM
 	| T_charge_strength_LARGE
 	| T_charge_strength_NOSPEC
-and	range_or_type	=
-	T_range_or_type_range of range
-	| T_range_or_type_INTEGER
-	| T_range_or_type_REAL
-	| T_range_or_type_NOSPEC
+and automatic = 
+	T_automatic_false
+	| T_automatic_true
+and function_range_or_type =
+	T_function_range_or_type_NOSPEC
+	| T_function_range_or_type_signed_range of bool*range
+	| T_function_range_or_type_integer
+	| T_function_range_or_type_real
+	| T_function_range_or_type_realtime
+	| T_function_range_or_type_time
+and function_item_declaration = 
+	T_function_item_declaration_block of block_item_declaration
+	| T_function_item_declaration_input of tf_input_declaration
 ;;
 
 

@@ -27,8 +27,10 @@ let string2base_number strg =
 			'b' -> begin
 				let lennum = String.length num
 				in begin
-					if lennum = len then T_number_base(len,'b',num)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');num]))
+					if lennum = len then 
+						T_number_base(len,'b',num)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');num]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub num (lennum-len) len))
@@ -38,8 +40,10 @@ let string2base_number strg =
 			| 'B' -> begin
 				let lennum = String.length num
 				in begin
-					if lennum = len then T_number_base(len,'b',num)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');num]))
+					if lennum = len then 
+						T_number_base(len,'b',num)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');num]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub num (lennum-len) len))
@@ -52,8 +56,10 @@ let string2base_number strg =
 				in
 				let lennum = String.length newnum
 				in begin
-					if lennum = len then T_number_base(len,'b',newnum)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
+					if lennum = len then 
+						T_number_base(len,'b',newnum)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub newnum (lennum-len) len))
@@ -66,8 +72,10 @@ let string2base_number strg =
 				in
 				let lennum = String.length newnum
 				in begin
-					if lennum = len then T_number_base(len,'b',newnum)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
+					if lennum = len then 
+						T_number_base(len,'b',newnum)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub newnum (lennum-len) len))
@@ -79,8 +87,10 @@ let string2base_number strg =
 				in
 				let lennum = String.length newnum
 				in begin
-					if lennum = len then T_number_base(len,'b',newnum)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
+					if lennum = len then 
+						T_number_base(len,'b',newnum)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub newnum (lennum-len) len))
@@ -92,8 +102,10 @@ let string2base_number strg =
 				in
 				let lennum = String.length newnum
 				in begin
-					if lennum = len then T_number_base(len,'b',newnum)
-					else if lennum < len then T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
+					if lennum = len then 
+						T_number_base(len,'b',newnum)
+					else if lennum < len then 
+						T_number_base(len,'b',(String.concat "" [(String.make (len - lennum) '0');newnum]))
 					else begin
 						Printf.printf  "warning : lennum > len %s\n" strg;
 						T_number_base(len,'b',(String.sub newnum (lennum-len) len))
@@ -105,7 +117,8 @@ let string2base_number strg =
 				exit 1
 			end
 		end
-	with Not_found -> print_endline "not found";print_endline strg; exit 1
+	with Not_found -> 
+		print_endline "not found";print_endline strg; exit 1
 ;;
 
 let parse_error str = begin
@@ -184,6 +197,39 @@ end
 %token <Lexing.position*Lexing.position> LEADTO
 %token <Lexing.position*Lexing.position> AT
 
+
+/*newly defined keywords*/
+%token <Lexing.position*Lexing.position> KEY_AUTOMATIC
+%token <Lexing.position*Lexing.position> KEY_CELL
+%token <Lexing.position*Lexing.position> KEY_CONFIG
+%token <Lexing.position*Lexing.position> KEY_DEASSIGN
+%token <Lexing.position*Lexing.position> KEY_DESIGN
+%token <Lexing.position*Lexing.position> KEY_ENDCONFIG
+%token <Lexing.position*Lexing.position> KEY_ENDGENERATE
+%token <Lexing.position*Lexing.position> KEY_ENDPRIMITIVE
+%token <Lexing.position*Lexing.position> KEY_ENDTABLE
+%token <Lexing.position*Lexing.position> KEY_GENERATE
+%token <Lexing.position*Lexing.position> KEY_GENVAR
+%token <Lexing.position*Lexing.position> KEY_IFNONE
+%token <Lexing.position*Lexing.position> KEY_INCDIR
+%token <Lexing.position*Lexing.position> KEY_INSTANCE
+%token <Lexing.position*Lexing.position> KEY_LIBLIST
+%token <Lexing.position*Lexing.position> KEY_LIBRARY
+%token <Lexing.position*Lexing.position> KEY_LOCALPARAM
+%token <Lexing.position*Lexing.position> KEY_MACROMODULE
+%token <Lexing.position*Lexing.position> KEY_NOSHOWCANCELLED
+%token <Lexing.position*Lexing.position> KEY_PULSESTYLE_ONEVENT
+%token <Lexing.position*Lexing.position> KEY_PULSESTYLE_ONDETECT
+%token <Lexing.position*Lexing.position> KEY_REALTIME
+%token <Lexing.position*Lexing.position> KEY_SHOWCANCELLED
+%token <Lexing.position*Lexing.position> KEY_SIGNED
+%token <Lexing.position*Lexing.position> KEY_TABLE
+%token <Lexing.position*Lexing.position> KEY_UNSIGNED
+%token <Lexing.position*Lexing.position> KEY_USE
+%token <Lexing.position*Lexing.position> KEY_UWIRE
+
+
+
 %token <string> IDENTIFIER
 /*
 %token <string> DECIMAL_NUMBER
@@ -220,36 +266,6 @@ end
 %token <Lexing.position*Lexing.position> PATHTO
 %token <Lexing.position*Lexing.position> PATHTOSTAR
 %token <Lexing.position*Lexing.position> QUESTION_MARK_COLON
-/*
-      | "+"                                          { ADD                      }
-      | "-"                                          { SUB                      }
-      | "*"                                          { MUL                      }
-      | "/"                                          { DIV                      }
-      | "%"                                          { MOD                      }
-      | ">"                                          { GT                       }
-      | ">="                                         { GE                       }
-      | "<"                                          { LT                       }
-      | "<="                                         { LE                       }
-      | "!"                                          { LOGIC_NEG                }
-      | "&&"                                         { LOGIC_AND                }
-      | "||"                                         { LOGIC_OR                 }
-      | "=="                                         { LOGIC_EQU                }
-      | "!="                                         { LOGIC_INE                }
-      | "==="                                        { CASE_EQU                 }
-      | "!=="                                        { CASE_INE                 }
-      | "~"                                          { BIT_NEG                  }
-      | "&"                                          { BIT_AND                  }
-      | "|"                                          { BIT_OR                   }
-      | "^"                                          { BIT_XOR                  }
-      | "^~"                                         { BIT_EQU                  }
-      | "~^"                                         { BIT_EQU                  }
-      | "~&"                                         { RED_NAND                 }
-      | "~|"                                         { RED_NOR                  }
-      | "<<"                                         { LEFT_SHIFT               }
-      | ">>"                                         { RIGHT_SHIFT              }
-      | "?"                                          { QUESTION_MARK            }
-
-*/
 
 %token  <Lexing.position*Lexing.position> LOGIC_OR
 %token  <Lexing.position*Lexing.position> LOGIC_AND
@@ -296,6 +312,12 @@ end
 
 
 %%
+
+
+/* A.1.1 Library source text is nto supported*/
+
+
+/* A.1.2 Verilog source text */
 source_text	:
 		description_list EOF		
 			{
@@ -313,24 +335,48 @@ description	:
 		module_def	{
 					$1
 				}
-/*		| primitive   {0}*/
-/* not supported */
+	 | udp_declaration {
+	 				$1
+	      }
+/*	 | config_declaration {
+	        $1
+	      }*/
 ;
 
 module_def			:
-		KEY_MODULE IDENTIFIER list_of_ports_opt SEMICOLON module_item_optlist KEY_ENDMODULE		
+		attribute_instance_list module_keyword  IDENTIFIER module_parameter_port_list_opt list_of_ports SEMICOLON module_item_optlist KEY_ENDMODULE		
 			{
 				(*print_endline $2;*)
-				get_endpos $6;
-				T_module_def($2,$3,$5)
+				get_endpos $8;
+				T_module_def($3,$4,T_port_list($5),$7)
+			}
+		| attribute_instance_list module_keyword  IDENTIFIER module_parameter_port_list_opt list_of_port_declarations_opt SEMICOLON module_item_optlist KEY_ENDMODULE		
+			{
+				(*print_endline $2;*)
+				get_endpos $8;
+				T_module_def($3,$4,T_port_declaration_list($5),$7)
 			}
 ;
 
-list_of_ports_opt :
-			{[]}
-		|	list_of_ports	{$1}
+module_keyword   :
+			KEY_MODULE
+			| KEY_MACROMODULE
 ;
 
+/* A.1.3 Module parameters and ports */
+
+module_parameter_port_list_opt : 
+			{[]}
+		|	module_parameter_port_list	{$1}
+;
+
+module_parameter_port_list :
+   JING LPAREN parameter_declaration comma_parameter_declaration_list RPAREN {$3::$4}
+
+comma_parameter_declaration_list :
+   {[]}
+	 | COMMA parameter_declaration comma_parameter_declaration_list {$2::$3}
+;
 list_of_ports	:
 		LPAREN  port comma_port_optlist RPAREN	
 			{
@@ -338,6 +384,8 @@ list_of_ports	:
 				$2::$3
 			}
 ;
+
+
 
 comma_port_optlist:
 			{[]}
@@ -351,10 +399,21 @@ comma_port	:
 			}
 ;
 
+list_of_port_declarations_opt :
+      {[]}
+	|  LPAREN port_declaration comma_port_declaration_list RPAREN {$2::$3}
+;
+
+comma_port_declaration_list :
+  {[]}
+	| COMMA port_declaration comma_port_declaration_list {$2::$3}
+
 port :
 	port_expression_opt			{$1}
-/*	| DOT IDENTIFIER LPAREN port_expression_opt LPAREN	{0}*/
-/*this seems incorrect*/
+	| DOT IDENTIFIER LPAREN port_expression_opt LPAREN	{
+		printf "Fatal Error : not supported .name() in module definition\n";
+		0
+		}
 ;
 
 port_expression_opt	:
@@ -384,60 +443,566 @@ port_reference :
 	IDENTIFIER				{$1}
 ;
 
+
+port_declaration : 
+    attribute_instance_list inout_declaration {$2}
+		| attribute_instance_list input_declaration  ($2)
+		| attribute_instance_list output_declaration ($2)
+;
+
+/* A.1.4 Module items */
+
 module_item_optlist	:
 					{[]}
 		|	module_item module_item_optlist	{$1::$2}
 ;
 
 module_item	:
-		parameter_declaration   {$1}
-		| input_declaration   {$1}
-		| output_declaration   {$1}
-		| inout_declaration   {$1}
-		| net_declaration   {$1}
-		| reg_declaration  {$1}
-		| time_declaration  {T_time_declaration($1)}
-		| integer_declaration  {T_integer_declaration($1)}
-		| real_declaration  {$1}
-		| event_declaration  {$1}
-		| gate_declaration  {$1}
+		  attribute_instance_list input_declaration    SEMICOLON {$2}
+		| attribute_instance_list output_declaration   SEMICOLON {$2}
+		| attribute_instance_list inout_declaration    SEMICOLON {$2}
+		| attribute_instance_list net_declaration       {$2}
+		| attribute_instance_list reg_declaration       {$2}
+		| attribute_instance_list integer_declaration   {$2}
+		| attribute_instance_list real_declaration      {$2}
+		| attribute_instance_list time_declaration      {$2}
+		| attribute_instance_list realtime_declaration  {$2}
+		| attribute_instance_list event_declaration     {$2}
+		| attribute_instance_list genvar_declaration    {$2}
+		| attribute_instance_list task_declaration      {$2}
+		| attribute_instance_list function_declaration  {$2}
+		| attribute_instance_list local_parameter_declaration SEMICOLON($2)
+		| attribute_instance_list parameter_override    {$2}
+		| attribute_instance_list continuous_assign     {$2}
+		| attribute_instance_list gate_instantiation    {$2}
+		| attribute_instance_list udp_instantiation     {$2}
+		| attribute_instance_list module_instantiation  {$2}
+		| attribute_instance_list initial_construct     {$2}
+		| attribute_instance_list always_construct      {$2}
+		| attribute_instance_list loop_generate_construct  {$2}
+		| attribute_instance_list conditional_generate_construct {$2}
+		| generate_region {$1}
+		| specify_block  {$1}
+		| attribute_instance_list parameter_declaration  SEMICOLON {$2}
+		| attribute_instance_list specparam_declaration   {$2}
 /*because UDP and module cannot be distinguished,so we select to make them into same*/
 /*		| UDP_instantiation  {$1}*/
-		| module_instantiation  {$1}
-		| parameter_override  {$1}
-		| continuous_assign  {T_continuous_assign($1)}
-		| specify_block  {$1}
-		| initial_statement  {T_initial_statement($1)}
-		| always_statement  {T_always_statement($1)}
-		| task  {$1}
-		| function_avoid_amb  {$1}
 ;
 
-function_avoid_amb:
-	KEY_FUNCTION range_or_type_opt IDENTIFIER SEMICOLON tf_declaration_list statement KEY_ENDFUNCTION
-			{
-				get_endpos $7;
-				T_function_avoid_amb($2,$3,$5,$6)
-			}
+parameter_override:
+	KEY_DEFPARAM list_of_param_assignments SEMICOLON   
+	{
+		get_endpos $3;
+		T_parameter_override($2)
+	}
 ;
+
+
+
+/* A.1.5 Configuration source text : not supported*/
+
+
+/*
+A.2 Declarations
+A.2.1 Declaration types
+A.2.1.1 Module parameter declarations
+*/
+
+local_parameter_declaration :
+	KEY_LOCALPARAM signed_opt range_opt list_of_param_assignments {T_localparam_declaration_signed($2,$3,$4)}
+| KEY_LOCALPARAM parameter_type list_of_param_assignments {T_localparam_declaration_type($2,$3)}
+;
+
+parameter_type : 
+  KEY_INTEGER | KEY_REAL | KEY_REALTIME | KEY_TIME {$1}
+;
+
+signed_opt :
+  {false}
+	| KEY_SIGNED {true}
+;
+
+
+parameter_declaration:
+	KEY_PARAMETER signed_opt range_opt list_of_param_assignments 
+		{
+			get_endpos $4;
+			T_parameter_declaration_signed($2,$3,$4)
+		}
+	| KEY_PARAMETER parameter_type list_of_param_assignments 
+		{
+			get_endpos $3;
+			T_parameter_declaration_type($2,$3)
+		}
+;
+
+
+specparam_declaration :
+	KEY_SPECPARAM range_opt list_of_specparam_assignments SEMICOLON
+		{
+			printf "Fatal Error : not supported specparam \n";
+			0
+		}
+;
+/* A.2.1.2 Port declarations */
+
+inout_declaration:
+	KEY_INOUT net_type_opt signed_opt range_opt list_of_variables  
+		{
+			get_endpos $6;
+			T_inout_declaration($2,$3,$4,$5)
+		}
+;
+
+input_declaration :
+	KEY_INPUT  net_type_opt signed_opt range_opt list_of_variables 
+		{
+			get_endpos $6;
+			T_input_declaration($2,$3,$4,$5)
+		}
+;
+
+output_declaration :
+	KEY_OUTPUT net_type_opt signed_opt range_opt list_of_variables
+		{
+			get_endpos $5;
+			T_output_declaration($2,$3,$4,$5)
+		}
+	| KEY_OUTPUT KEY_REG signed_opt range_opt list_of_variable_port_identifiers
+		{
+			get_endpos $5;
+			T_output_declaration_reg($3,$4,$5)
+		}
+	| KEY_OUTPUT KEY_INTEGER list_of_variable_port_identifiers
+		{
+			get_endpos $3;
+			T_output_declaration_integer_or_time(KEY_INTEGER,$3)
+		}
+	| KEY_OUTPUT KEY_TIME list_of_variable_port_identifiers
+		{
+			get_endpos $3;
+			T_output_declaration_integer_or_time(KEY_TIME,$3)
+		}
+;
+
+/* A.2.1.3 Type declarations */
+
+event_declaration:
+	KEY_EVENT list_of_event_or_net_identifiers SEMICOLON   
+		{
+			get_endpos $3;
+			T_event_declaration($2)
+		}
+;
+
+integer_declaration : 
+	KEY_INTEGER list_of_variable_identifiers SEMICOLON
+		{
+			get_endpos $3;
+			T_integer_declaration($2)
+		}
+;
+net_declaration :
+	net_type signed_opt delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			get_endpos $5;
+			let new4 = List.map (fun x -> match x with T_event_identifier_range_list(y,z) -> T_assignment(T_lvalue_event_id_range_list(y,z),T_expandrange_NOSPEC)) $4
+			in
+			T_net_declaration($1,T_strength_type_NOSPEC,T_expandrange_NOSPEC,$2,$3,new4)
+		}
+	| net_type drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			get_endpos $6;
+			T_net_declaration($1,T_strength_type_drive($2),T_expandrange_NOSPEC,$3,$4,$5)
+		}
+	| net_type signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			let new4 = List.map (fun x -> match x with T_event_identifier_range_list(y,z) -> T_assignment(T_lvalue_event_id_range_list(y,z),T_expandrange_NOSPEC)) $5
+			in
+			T_net_declaration($1,T_strength_type_NOSPEC,T_expandrange_range($3),$2,$4,new4)
+		}
+	| net_type KEY_VECTORED signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			let new4 = List.map (fun x -> match x with T_event_identifier_range_list(y,z) -> T_assignment(T_lvalue_event_id_range_list(y,z),T_expandrange_NOSPEC)) $6
+			in
+			T_net_declaration($1,T_strength_type_NOSPEC,T_expandrange_vectored($4),$3,$5,new4)
+		}
+	| net_type KEY_SCALARED signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			let new4 = List.map (fun x -> match x with T_event_identifier_range_list(y,z) -> T_assignment(T_lvalue_event_id_range_list(y,z),T_expandrange_NOSPEC)) $6
+			in
+			T_net_declaration($1,T_strength_type_NOSPEC,T_expandrange_scalared($4),$3,$5,new4)
+		}
+	| net_type drive_strength_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			T_net_declaration($1,T_strength_type_drive($2),T_expandrange_range($4),$3,$5,$6)
+		}
+	| net_type drive_strength_opt vectored signed_opt range delay3_opt list_of_net_decl_assignments ;
+		{
+			T_net_declaration($1,T_strength_type_drive($2),T_expandrange_vectored($5),$4,$6,$7)
+		}
+	| net_type drive_strength_opt scalared signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			T_net_declaration($1,T_strength_type_drive($2),T_expandrange_scalared($5),$4,$6,$7)
+		}
+	| trireg charge_strength_opt signed_opt delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg charge_strength_opt signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg charge_strength_opt KEY_VECTORED signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg charge_strength_opt KEY_SCALARED signed_opt range delay3_opt list_of_event_or_net_identifiers SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg drive_strength_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg drive_strength_opt KEY_VECTORED signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+	| trireg drive_strength_opt KEY_SCALARED signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{
+			printf "Fatal Error : not supported trireg \n";
+			0
+		}
+;
+charge_strength_opt : 
+  {T_charge_strength_NOSPEC}
+	| charge_strength {$1}
+;
+
+real_declaration :
+	KEY_REAL list_of_real_identifiers SEMICOLON   
+		{
+			get_endpos $3;
+			T_real_declaration($2)
+		}
+;
+
+realtime_declaration :
+	KEY_REALTIME list_of_real_identifiers SEMICOLON
+		{
+			printf "Fatal Error : not supported realtime \n";
+			0
+		}
+;
+
+reg_declaration :
+	KEY_REG signed_opt range_opt list_of_variable_identifiers SEMICOLON
+	{
+			get_endpos $5;
+			T_reg_declaration($2,$3,$4)
+	}
+;
+
+time_declaration :
+	KEY_TIME list_of_variable_identifiers SEMICOLON
+	{
+			printf "Fatal Error : not supported time \n";
+			0
+	}
+;
+/*
+A.2.2 Declaration data types
+A.2.2.1 Net and variable types
+*/
+net_type_opt :
+  {NETTYPE("uwire")}
+	| net_type
+;
+net_type :
+	NETTYPE {$1}
+;
+
+real_type : 
+	real_identifier range_list
+	{
+		T_real_type_range($1,$2)
+	}
+	| real_identifier SINGLEASSIGN constant_expression
+	{
+		T_real_type_assign($1,$3)
+	}
+;
+
+range_list :
+  {[]}
+	| range range_list {$1::$2}
+;
+variable_type :
+	identifier range_list
+	| identifier SINGLEASSIGN constant_expression
+;
+/* A.2.2.2 Strengths */
+
+drive_strength :
+	LPAREN STRENGTH0 COMMA STRENGTH1 RPAREN    
+		{
+			get_endpos $5;
+			T_drive_strength($2,$4)
+		}
+	| LPAREN STRENGTH1 COMMA STRENGTH0 RPAREN   
+		{
+			get_endpos $5;
+			T_drive_strength($2,$4)
+		}
+;
+charge_strength:
+	LPAREN KEY_SMALL RPAREN  
+		{
+			get_endpos $3;
+			T_charge_strength_SMALL
+		}
+	| LPAREN KEY_MEDIUM RPAREN  
+		{
+			get_endpos $3;
+			T_charge_strength_MEDIUM
+		}
+	| LPAREN KEY_LARGE RPAREN  
+		{
+			get_endpos $3;
+			T_charge_strength_LARGE
+		}
+;
+
+/*  A.2.2.3 Delays */
+
+delay3_opt :
+	{T_delay_NOSPEC}
+	| delay
+;
+delay :
+	JING number {T_delay_number($1)}
+	| JING identifier {T_delay_id($1)}
+	| JING LPAREN mintypmax_expression RPAREN
+		{T_delay_minmax1($3)}
+	| JING LPAREN mintypmax_expression COMMA mintypmax_expression RPAREN
+		{T_delay_minmax2($3,$5)}
+	| JING LPAREN mintypmax_expression COMMA mintypmax_expression RPAREN
+		{T_delay_minmax3($3,$5,$7)}
+;
+
+/* A.2.3 Declaration lists */
+
+list_of_event_or_net_identifiers :
+	event_identifier_dimension_list comma_event_identifier_dimension_list_list
+	{$1::$2}
+;
+event_identifier_dimension_list :
+	identifier range_list 
+	{T_event_identifier_range_list($1,$2)}
+;
+comma_event_identifier_dimension_list_list :
+	{[]}
+	| COMMA event_identifier_dimension_list comma_event_identifier_dimension_list_list
+		{$2::$3}
+;
+
+
+
+
+list_of_net_decl_assignments :
+	net_decl_assignment comma_net_decl_assignment_list
+		{$1::$2}
+;
+comma_net_decl_assignment_list :
+	{[]}
+	| COMMA net_decl_assignment comma_net_decl_assignment_list
+		{$2::$3}
+;
+
+
+list_of_param_assignments:
+	param_assignment comma_param_assignment_list  {$1::$2}
+;
+
+comma_param_assignment_list:
+			{[]}
+	| comma_param_assignment comma_param_assignment_list  {$1::$2}
+;
+
+comma_param_assignment:
+	COMMA param_assignment  {$2}
+;
+
+
+list_of_real_identifiers :
+	real_type comma_real_type_list {$1::$2}
+;
+
+comma_real_type_list :
+	{[]}
+	| COMMA real_type comma_real_type_list {$2::$3}
+;
+
+
+list_of_specparam_assignments :
+	specparam_assignment comma_specparam_assignment_list
+	{$1::$2}
+;
+
+comma_specparam_assignment_list :
+	{[]}
+	| COMMA specparam_assignment comma_specparam_assignment_list 
+		{$2::$3}
+;
+
+list_of_variable_identifiers : 
+	variable_type comma_variable_type_list
+		{$1::$2}
+;
+
+comma_variable_type_list :
+	{[]}
+	| COMMA variable_type comma_variable_type_list
+		{$2::$3}
+;
+list_of_variable_port_identifiers :
+	port_identifier_SINGLEASSIGN_constant_expression comma_port_identifier_SINGLEASSIGN_constant_expression;
+		{$1::$2}
+;
+
+comma_port_identifier_SINGLEASSIGN_constant_expression :
+	{[]}
+	| COMMA port_identifier_SINGLEASSIGN_constant_expression comma_port_identifier_SINGLEASSIGN_constant_expression
+		{$2::$3}
+;
+port_identifier_SINGLEASSIGN_constant_expression :
+	port_identifier {T_assignment(T_lvalue_id($1),T_expression_NOSPEC)}
+	| port_identifier SINGLEASSIGN constant_expression
+		{T_assignment(T_lvalue_id($1),$3)}
+;
+/*  A.2.4 Declaration assignments*/
+ 
+defparam_assignment :
+	hierarchical_parameter_identifier SINGLEASSIGN constant_mintypmax_expression
+		{T_param_assignment($1,$3)}
+;
+
+net_decl_assignment :
+	net_identifier SINGLEASSIGN expression
+		{T_assignment(T_lvalue_id($1),$3)}
+;
+param_assignment : identifier SINGLEASSIGN constant_mintypmax_expression
+		{
+			get_endpos $3;
+			T_param_assignment($1,$3)
+		}
+;
+
+
+
+
+specparam_assignment :
+	specparam_identifier SINGLEASSIGN constant_mintypmax_expression
+		{ T_param_assignment($1,$3)}
+;
+/*not supported*/
+/*pulse_control_specparam ::=
+PATHPULSE$ = ( reject_limit_value [ , error_limit_value ] )
+| PATHPULSE$specify_input_terminal_descriptor$specify_output_terminal_descriptor
+= ( reject_limit_value [ , error_limit_value ] )
+error_limit_value ::= limit_value
+reject_limit_value ::= limit_value
+limit_value ::= constant_mintypmax_expression
+*/
+
+
+/* A.2.5 Declaration ranges */
+range :
+	LBRACKET constant_expression COLON constant_expression RBRACKET   
+		{
+			get_endpos $5;
+			T_range($2,$4)
+		}
+;
+
+/* A.2.6 Function declarations */
+
+
+function_declaration :
+	KEY_FUNCTION automatic_opt function_range_or_type function_identifier SEMICOLON
+	function_item_declaration  function_item_declaration_list
+	function_statement
+	KEY_ENDFUNCTION
+	{
+		T_function_avoid_amb($2,$3,$4,$6::$7,$8)
+	}
+	| KEY_FUNCTION automatic_opt function_range_or_type  function_identifier LPAREN function_port_list RPAREN SEMICOLON
+	block_item_declaration_list
+	function_statement
+	KEY_ENDFUNCTION 
+	{
+		T_function_avoid_amb2($2,$3,$4,$6,$9,$10)
+	}
+;
+
+automatic_opt :
+	{T_automatic_false}
+	| KEY_AUTOMATIC {T_automatic_true}
+
+function_range_or_type :
+	{T_function_range_or_type_NOSPEC}
+	| KEY_SIGNED  {T_function_range_or_type_signed_range(true,T_range_NOSPEC)}
+	| range   {T_function_range_or_type_signed_range(false, T_range($1))}
+	| KEY_SIGNED range {T_function_range_or_type_signed_range(true,$2)}
+	| KEY_INTEGER {T_function_range_or_type_integer}
+	| KEY_REAL    {T_function_range_or_type_real}
+	| KEY_REALTIME {T_function_range_or_type_realtime}
+	| KEY_TIME {T_function_range_or_type_time}
+;
+
+
+function_item_declaration_list :
+	{[]}
+	| function_item_declaration function_item_declaration_list 
+		{$1::$2}
+;
+block_item_declaration_list :
+	{[]}
+	| block_item_declaration block_item_declaration_list 
+		{$1::$2}
+;
+
+
+function_item_declaration ::=
+	block_item_declaration {T_function_item_declaration_block($1)}
+	| attribute_instance_list tf_input_declaration SEMICOLONa
+	{
+		printf "Fatal Error : not supported attribute_instance_list\n";
+		T_function_item_declaration_input($2)
+	}
+
+function_port_list { attribute_instance } tf_input_declaration { , { attribute_instance }
+tf_input_declaration }
+
 
 tf_declaration_list:
 	tf_declaration   {[$1]}
 	| tf_declaration tf_declaration_list  {$1::$2}
 ;
 
-range_or_type_opt:
-				{T_range_or_type_NOSPEC}
-	| range_or_type		{$1}
-;
-
-range_or_type:
-	range	{T_range_or_type_range($1)}
-	| KEY_INTEGER   {T_range_or_type_INTEGER}
-	| KEY_REAL   {T_range_or_type_REAL}
-;
-
-task:
+task_declaration:
 	KEY_TASK IDENTIFIER SEMICOLON tf_declaration_optlist statement_or_null KEY_ENDTASK  
 		{
 			get_endpos $6;
@@ -456,14 +1021,14 @@ tf_declaration:
 	| output_declaration	{$1}
 	| inout_declaration	{$1}
 	| reg_declaration	{$1}
-	| time_declaration	{T_time_declaration($1)}
-	| integer_declaration	{T_integer_declaration($1)}
+	| time_declaration	{$1}
+	| integer_declaration	{$1}
 	| real_declaration	{$1}
 	| event_declaration	{$1}
 ;
 
-initial_statement:
-	KEY_INITIAL statement    {$2}
+initial_construct:
+	KEY_INITIAL statement    {T_initial_statement($2)}
 ;
 
 specify_block:
@@ -780,18 +1345,12 @@ specparam_declaration:
 	KEY_SPECPARAM list_of_param_assignments  SEMICOLON   
 	{
 		get_endpos $3;
+		printf "Fatal Error : not supported specparam\n";
 		0
 	}
 ;
 
 
-parameter_override:
-	KEY_DEFPARAM list_of_param_assignments SEMICOLON   
-	{
-		get_endpos $3;
-		T_parameter_override($2)
-	}
-;
 /*
 UDP_instantiation:
 	IDENTIFIER drive_strength_opt delay_opt UDP_instance comma_UDP_instance_optlist  SEMICOLON   {0}
@@ -814,7 +1373,7 @@ name_of_UDP_instance_opt:
 	| IDENTIFIER   {0}
 ;
 */
-gate_declaration:
+gate_instantiation :
 	GATETYPE drive_strength_opt delay_opt gate_instance comma_gate_instance_optlist  SEMICOLON   
 	{
 		get_endpos $6;
@@ -864,24 +1423,17 @@ drive_strength_opt:
 	| drive_strength	{$1}
 ;
 
-integer_declaration:
-	KEY_INTEGER list_of_register_variables SEMICOLON 
-		{
-			get_endpos $3;
-			$2
-		}
-;
 
 time_declaration:
 	KEY_TIME list_of_register_variables SEMICOLON 
 		{
 			get_endpos $3;
-			$2
+			T_time_declaration($2)
 		}
 ;
 
-always_statement:
-	KEY_ALWAYS statement   {$2}
+always_construct :
+	KEY_ALWAYS statement   {T_always_statement($2)}
 ;
 
 statement:
@@ -1022,18 +1574,10 @@ block_declaration_optlist:
 block_declaration:
 	parameter_declaration {$1}
 	| reg_declaration {$1}
-	| integer_declaration {T_integer_declaration($1)}
+	| integer_declaration {$1}
 	| real_declaration {$1}
-	| time_declaration {T_time_declaration($1)}
+	| time_declaration {$1}
 	| event_declaration {$1}
-;
-
-event_declaration:
-	KEY_EVENT name_of_event comma_name_of_event_optlist SEMICOLON   
-		{
-			get_endpos $4;
-			T_event_declaration($2::$3)
-		}
 ;
 
 comma_name_of_event_optlist:
@@ -1050,43 +1594,10 @@ name_of_event:
 ;
 
 
-real_declaration:
-	KEY_REAL list_of_variables SEMICOLON   
-		{
-			get_endpos $3;
-			T_real_declaration($2)
-		}
-;
 
 
-parameter_declaration:
-	KEY_PARAMETER list_of_param_assignments SEMICOLON   
-		{
-			get_endpos $3;
-			T_parameter_declaration($2)
-		}
-;
 
-list_of_param_assignments:
-	param_assignment comma_param_assignment_optlist  {$1::$2}
-;
 
-comma_param_assignment_optlist:
-			{[]}
-	| comma_param_assignment comma_param_assignment_optlist  {$1::$2}
-;
-
-comma_param_assignment:
-	COMMA param_assignment  {$2}
-;
-
-param_assignment:
-	identifier SINGLEASSIGN constant_expression
-		{
-			get_endpos $2;
-			T_param_assignment($1,$3)
-		}
-;
 
 name_of_system_task:
 	DOLLOR_SYSTEM_IDENTIFIER {$1}
@@ -1169,13 +1680,6 @@ statement_or_null:
 		}
 ;
 
-reg_declaration:
-	KEY_REG range_opt list_of_register_variables SEMICOLON   
-		{
-			get_endpos $4;
-			T_reg_declaration($2,$3)
-		}
-;
 
 
 list_of_register_variables:
@@ -1286,22 +1790,22 @@ continuous_assign:
 	 KEY_ASSIGN delay_opt list_of_assignments SEMICOLON   
 	 	{
 			get_endpos $4;
-			T_continuous_assign_assign(T_drive_strength_NOSPEC,$2,$3)
+			T_continuous_assign(T_continuous_assign_assign(T_drive_strength_NOSPEC,$2,$3))
 		}
 	| KEY_ASSIGN drive_strength delay_opt list_of_assignments SEMICOLON   
 		{
 			get_endpos $5;
-			T_continuous_assign_assign($2,$3,$4)
+			T_continuous_assign(T_continuous_assign_assign($2,$3,$4))
 		}
 	| NETTYPE expandrange_opt delay_opt list_of_assignments SEMICOLON   
 		{
 			get_endpos $5;
-			T_continuous_assign_net($1,T_drive_strength_NOSPEC,$2,$3,$4)
+			T_continuous_assign(T_continuous_assign_net($1,T_drive_strength_NOSPEC,$2,$3,$4))
 		}
 	| NETTYPE drive_strength expandrange_opt delay_opt list_of_assignments SEMICOLON   
 		{
 			get_endpos $6;
-			T_continuous_assign_net($1,$2,$3,$4,$5)
+			T_continuous_assign(T_continuous_assign_net($1,$2,$3,$4,$5))
 		}
 ;
 
@@ -1459,17 +1963,6 @@ dot_IDENTIFIER:
 	DOT IDENTIFIER			{$2}
 ;
 
-drive_strength:
-	LPAREN STRENGTH0 COMMA STRENGTH1 RPAREN    
-		{
-			get_endpos $5;
-			T_drive_strength($2,$4)
-		}
-	| LPAREN STRENGTH1 COMMA STRENGTH0 RPAREN   
-		{
-			get_endpos $5;
-			T_drive_strength($2,$4)
-		}
 ;
 
 
@@ -1481,25 +1974,9 @@ input_declaration:
 			T_input_declaration($2,$3)
 		}
 ;
-output_declaration:
-	KEY_OUTPUT range_opt list_of_variables SEMICOLON 
-		{
-			get_endpos $4;
-			T_output_declaration($2,$3)
-		}
-;
-inout_declaration:
-	KEY_INOUT range_opt list_of_variables SEMICOLON 
-		{
-			get_endpos $4;
-			T_inout_declaration($2,$3)
-		}
-;
 net_declaration:
 	NETTYPE expandrange_opt delay_opt list_of_variables SEMICOLON 
 		{
-			get_endpos $5;
-			T_net_declaration($1,T_charge_strength_NOSPEC,$2,$3,$4)
 		}
 	| NETTYPE charge_strength expandrange_opt delay_opt list_of_variables SEMICOLON 
 		{
@@ -1508,25 +1985,6 @@ net_declaration:
 		}
 ;
 
-delay_opt:
-			{T_delay_NOSPEC}
-	| delay		{$1}
-;
-
-delay:
-	 JING number	{T_delay_number($2)}
-	 | JING identifier {T_delay_id($2)}
-	 | JING LPAREN mintypmax_expression RPAREN   
-	 	{
-			get_endpos $4;
-			T_delay_minmax1($3)
-		}
-	 | JING LPAREN mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression RPAREN   
-	 	{
-			get_endpos $8;
-			T_delay_minmax3($3,$5,$7)
-		}
-;
 
 expandrange_opt:
 			{T_expandrange_NOSPEC}
@@ -1539,36 +1997,12 @@ expandrange:
 	| KEY_VECTORED  range {T_expandrange_vectored($2)}
 ;
 
-charge_strength:
-	LPAREN KEY_SMALL RPAREN  
-		{
-			get_endpos $3;
-			T_charge_strength_SMALL
-		}
-	| LPAREN KEY_MEDIUM RPAREN  
-		{
-			get_endpos $3;
-			T_charge_strength_MEDIUM
-		}
-	| LPAREN KEY_LARGE RPAREN  
-		{
-			get_endpos $3;
-			T_charge_strength_LARGE
-		}
-;
 
 range_opt :
 				{T_range_NOSPEC}
 	| range {$1}
 ;
 
-range :
-	LBRACKET constant_expression COLON constant_expression RBRACKET   
-		{
-			get_endpos $5;
-			T_range($2,$4)
-		}
-;
 
 constant_expression:
 	expression		{$1}
