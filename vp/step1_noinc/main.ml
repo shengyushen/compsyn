@@ -69,4 +69,4 @@ with Proc_inc.Ssyeof s ->
 		exit 0
 ;;
 
-
+close_in inputFileChannle;;

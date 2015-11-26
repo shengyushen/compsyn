@@ -27,6 +27,9 @@
 
 `undef ssy2
 
+
+`resetall
+
 `ifdef ssy
 	`ssy2
 `elsif ssy2

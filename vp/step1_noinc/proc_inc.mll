@@ -38,8 +38,8 @@ and proc_include pathlist = parse
 									try 
 											List.find (fun x -> Sys.file_exists x) nl
 									with Not_found -> begin
-										Printf.printf  "FATAL : not found %s \n"  tfn1;
-										exit 1
+										Printf.printf  "// FATAL : not found %s \n"  tfn1;
+										""
 									end
 								end
 								in begin
@@ -51,14 +51,20 @@ and proc_include pathlist = parse
 						in 
 						begin
 							Printf.printf  "`line 1 \"%s\" 1\n" fn ;
-							let inputFileChannle = open_in fn in
-							let lexbuf1 = Lexing.from_channel inputFileChannle in
-							while (proc_inc pathlist lexbuf1)!=Eof do
-								flush stdout;
-							done
-							;
-							Printf.printf  "//jump back to %s\n" (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname);
-							Printf.printf  "`line %d \"%s\" 2\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+							if(fn<>"") then begin
+								let inputFileChannle = open_in fn in
+								let lexbuf1 = Lexing.from_channel inputFileChannle 
+								in begin
+									lexbuf1.Lexing.lex_curr_p <- { lexbuf1.Lexing.lex_curr_p with pos_fname = fn};
+									while (proc_inc pathlist lexbuf1)!=Eof do
+										flush stdout;
+									done
+								end
+								;
+								Printf.printf  "//jump back to %s\n" (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname);
+								Printf.printf  "`line %d \"%s\" 2\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+								close_in inputFileChannle
+							end
 						end
 						;
 						Other
