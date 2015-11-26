@@ -71,8 +71,8 @@ rule veriloglex depth = parse
 			comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf
 		}
 	| '\n'									{	(*incleasing line number*)
-			printf "newline at ";
-			print_pos (Lexing.lexeme_start_p lexbuf);
+			(*printf "newline at ";
+			print_pos (Lexing.lexeme_start_p lexbuf);*)
 			Lexing.new_line lexbuf ;
 			veriloglex depth lexbuf
 		}
@@ -117,10 +117,7 @@ rule veriloglex depth = parse
 		}
 	|"`line"              	{  
 			(*MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
-			printf "Warning : Ignoring `line at ";
-			print_pos (Lexing.lexeme_start_p lexbuf);
-			endofline lexbuf;
-			veriloglex depth lexbuf
+			line_skip_blank depth lexbuf
 		}
 	|"`nounconnected_drive"	{  
 			(*MACRO_NOUNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
@@ -382,6 +379,58 @@ and include_strings depth = parse
 			veriloglex depth lexbuf
 		end
 	}
+and line_skip_blank depth = parse
+	[' ' '\t']+	{
+		line_number depth lexbuf
+	}
+	| _ {
+		Printf.printf "FATAL : `line must be followed by blanks and line number and  filename\n";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		exit 1;
+	}
+and line_number depth = parse
+	['0'-'9']+ as linenum {
+		let ln = int_of_string linenum
+		in begin
+			if(ln<=0) then begin
+				Printf.printf "Warning : line number <=0 may leads to incorrect referring to original files\n";
+				print_pos (lexbuf.Lexing.lex_curr_p)
+			end
+			;
+			line_skip_blank2 depth (ln-1) lexbuf
+		end
+	}
+	| _ {
+		Printf.printf "FATAL : `line and blanks must be followed by line number and  filename\n";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		exit 1;
+	}
+and line_skip_blank2 depth ln = parse
+	[' ' '\t']+	{
+		line_filename depth ln lexbuf
+	}
+	| _ {
+		Printf.printf "FATAL : `line and blanks and line number must be followed by  blanks\n";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		exit 1;
+	}
+and line_filename depth ln = parse
+	'\"' [^ '\n' ' ' '\t' ]+ '\"' as fn {
+		let realfn = String.sub fn 1 ((String.length fn)-2)
+		in begin
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
+			endofline lexbuf;
+			veriloglex depth lexbuf
+		end
+	}
+	| _ {
+		Printf.printf "FATAL : `line and blanks and line number and blanks must be followed by filename\n";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		exit 1;
+	}
+	
+
 
 {                       
 (*trailer here*)        

@@ -1,5 +1,5 @@
 //first line in file_in_include.v
-
+`celldefine
 
 
 

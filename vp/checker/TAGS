@@ -342,8 +342,8 @@ let yycheckyycheck539,24106
 let yynames_constyynames_const562,25518
 let yynames_blockyynames_block565,25546
 let yyactyyact740,28864
-let yytablesyytables1925,70992
-let source_textsource_text1942,71513
+let yytablesyytables1925,70996
+let source_textsource_text1942,71517
 
 parser.mly,190
 let get_begin_posget_begin_pos6,26
@@ -367,21 +367,29 @@ class rtlrtl13,131
 	method print_rtlprint_rtl71,1851
 	method compsyncompsyn82,2090
 
-very.ml,733
+very.ml,1217
 Very1,0
 let __ocaml_lex_tables__ocaml_lex_tables29,550
-let rec veriloglexveriloglex638,42001
-and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec640,42081
-and endoflineendofline1580,71355
-and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1582,71419
-and stringssystringssy1611,72095
-and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1613,72159
-and commentcomment1649,73017
-and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1651,73101
-and include_skip_blanksinclude_skip_blanks1687,73903
-and __ocaml_lex_include_skip_blanks_rec__ocaml_lex_include_skip_blanks_rec1689,73999
-and include_stringsinclude_strings1709,74553
-and __ocaml_lex_include_strings_rec__ocaml_lex_include_strings_rec1711,74641
+let rec veriloglexveriloglex650,42777
+and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec652,42857
+and endoflineendofline1589,72034
+and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1591,72098
+and stringssystringssy1620,72774
+and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1622,72838
+and commentcomment1658,73696
+and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1660,73780
+and include_skip_blanksinclude_skip_blanks1696,74582
+and __ocaml_lex_include_skip_blanks_rec__ocaml_lex_include_skip_blanks_rec1698,74678
+and include_stringsinclude_strings1718,75232
+and __ocaml_lex_include_strings_rec__ocaml_lex_include_strings_rec1720,75320
+and line_skip_blankline_skip_blank1751,76355
+and __ocaml_lex_line_skip_blank_rec__ocaml_lex_line_skip_blank_rec1753,76443
+and line_numberline_number1773,76999
+and __ocaml_lex_line_number_rec__ocaml_lex_line_number_rec1775,77079
+and line_skip_blank2line_skip_blank21808,78023
+and __ocaml_lex_line_skip_blank2_rec__ocaml_lex_line_skip_blank2_rec1810,78119
+and line_filenameline_filename1830,78686
+and __ocaml_lex_line_filename_rec__ocaml_lex_line_filename_rec1832,78776
 
 very.mll,208
 let stringssy_stringstringssy_string7,42

@@ -43,7 +43,7 @@ and proc_include pathlist = parse
 									end
 								end
 								in begin
-									Printf.printf "INFO : using %s as %s\n" found_filename tfn1;
+									Printf.printf "// INFO : using %s as %s\n" found_filename tfn1;
 									found_filename
 								end
 							end

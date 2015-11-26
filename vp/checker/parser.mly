@@ -401,8 +401,8 @@ item :
 	|	SYSFUN_SREADMEMH							{printf "sysfun_sreadmemh\n"}
 	| STRING												{printf "string %s\n" (get_string_ssy $1)}
 	| COMMENT												{
-			printf "comment \n" ;  
-			print_both_pos $1;
+			(*printf "comment \n" ;  
+			print_both_pos $1;*)
 		}
 	
 
