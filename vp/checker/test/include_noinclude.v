@@ -45,6 +45,7 @@
 `define ssy 1
 `define ssy2 ssy
 `define ssy3 `ssy
+`define ssy4 sdf
 
 `ssy
 `ssy2
@@ -53,14 +54,26 @@
 
 `ifdef ssy
 	`ssy2
-`else
-	`ssy3
 `endif
 
 
 `undef ssy
 
-`ssy
+`ifdef ssy
+	`ssy2
+`elsif ssy2
+	`ssy3
+`endif
+
+`undef ssy2
+
+`ifdef ssy
+	`ssy2
+`elsif ssy2
+	`ssy3
+`else 
+	`ssy4
+`endif
 //last line in file_in_include.v
 //jump back to include.v
 `line 9 "include.v" 2

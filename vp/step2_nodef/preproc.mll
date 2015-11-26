@@ -30,6 +30,12 @@ rule preproc = parse
      					}
      | "`ifdef"				{ proc_ifdef lexbuf; DIRECTIVE_ifdef }
      | "`ifndef"			{ proc_ifndef lexbuf; DIRECTIVE_ifndef }
+		 | "`else"|"elsif"|"`endif" as impdef{
+		 		Printf.printf  "// FATAL : unmatched %s\n//"  impdef;
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				endline lexbuf;
+				Other
+		 	}
 		 | "`undef"				{
 		 		(*removing the defined*)
 				proc_undef lexbuf; Other
@@ -193,6 +199,10 @@ and do_then  = parse
      						skip_else lexbuf; 
 						DIRECTIVE_else 
 					}
+     | "`elsif"				{
+     						skip_else lexbuf; 
+						DIRECTIVE_else 
+					}
      | "`endif"				{
 						DIRECTIVE_endif 
 					}
@@ -314,9 +324,13 @@ and do_else  = parse
 						Other
 					}
      | "`else"				{
-     						do_else_in lexbuf ; 
+ 						do_else_in lexbuf ; 
 						Other
-     					}
+ 					}
+     | "`elsif"				{
+		 				proc_ifdef lexbuf;
+						Other
+ 					}
      | "`endif"				{
 						DIRECTIVE_endif 
 					}
@@ -432,4 +446,7 @@ and proc_undef = parse
 	| _ as lsm 	{
 				proc_undef lexbuf
 			}
+and endline = parse
+	'\n' {Other}
+	| _ {endline lexbuf}
 	
