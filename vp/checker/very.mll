@@ -115,10 +115,6 @@ rule veriloglex depth = parse
 			endofline lexbuf;
 			veriloglex depth lexbuf
 		}
-	|"`line"              	{  
-			(*MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
-			line_skip_blank depth lexbuf
-		}
 	|"`nounconnected_drive"	{  
 			(*MACRO_NOUNCONNECTED_DRIVE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			printf "Warning : Ignoring `nounconnected_drive at ";
@@ -150,6 +146,10 @@ rule veriloglex depth = parse
 	|"`include"           	{  
 			(*MACRO_INCLUDE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
 			include_skip_blanks depth lexbuf
+		}
+	|"`line"              	{  
+			(*MACRO_LINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)*)
+			line_skip_blank depth lexbuf
 		}
 	|"`define"            	{  MACRO_DEFINE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	|"`else"              	{  MACRO_ELSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}

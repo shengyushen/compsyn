@@ -13,6 +13,13 @@
               | Other
               | Eof
               | Eol
+
+let print_pos pos = begin
+	Printf.printf "%s " pos.Lexing.pos_fname;
+	Printf.printf "Line %d " pos.Lexing.pos_lnum;
+	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+end
+
 }
 
 
@@ -23,27 +30,35 @@ rule preproc = parse
      					}
      | "`ifdef"				{ proc_ifdef lexbuf; DIRECTIVE_ifdef }
      | "`ifndef"			{ proc_ifndef lexbuf; DIRECTIVE_ifndef }
+		 | "`undef"				{
+		 		(*removing the defined*)
+				proc_undef lexbuf; Other
+			 }
      | '`'['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as defname {
 						begin
 						match defname with
 							| "`accelerate"			-> print_string "`accelerate"
 							| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
+							| "`begin_keywords"	-> print_string "`begin_keywords"
 							| "`celldefine"			-> print_string "`celldefine"
 							| "`default_nettype"		-> print_string "`default_nettype"
 							| "`define"			-> print_string "`define"
 							| "`else"			-> print_string "`else"
 							| "`endcelldefine"		-> print_string "`endcelldefine"
+							| "`end_keywords"		-> print_string "`end_keywords"
 							| "`endif"			-> print_string "`endif"
 							| "`endprotect"			-> print_string "`endprotect"
 							| "`endprotected"		-> print_string "`endprotected"
 							| "`expand_vectornets"		-> print_string "`expand_vectornets"
 							| "`ifdef"			-> print_string "`ifdef"
 							| "`include"			-> print_string "`include"
+							| "`line"			-> print_string "`line"
 							| "`noaccelerate"		-> print_string "`noaccelerate"
 							| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
 							| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
 							| "`noremove_netnames"		-> print_string "`noremove_netnames"
 							| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
+							| "`pragma"			-> print_string "`pragma"
 							| "`protect"			-> print_string "`protect"
 							| "`protected"			-> print_string "`protected"
 							| "`remove_gatenames"		-> print_string "`remove_gatenames"
@@ -55,9 +70,9 @@ rule preproc = parse
 										let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
 										print_string defedname
 									with Not_found -> begin
-										Printf.fprintf stderr "%s" "no such definition";
-										Printf.fprintf stderr "%s" defname;
-										exit 1
+										Printf.printf  "// FATAL : no such definition %s\n//" defname;
+										print_pos (Lexing.lexeme_start_p lexbuf);
+										()
 									end 
 						end
 						;
@@ -76,9 +91,9 @@ and preproc_str = parse
 									try 
 										(List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list) ^ (preproc_str lexbuf)
 									with Not_found -> begin
-										Printf.fprintf stderr "%s" "no such definition in preproc_str \n";
-										Printf.fprintf stderr "%s" defname;
-										exit 1
+										Printf.printf "//FATAL : no such definition in preproc_str %s \n//" defname;
+										print_pos (Lexing.lexeme_start_p lexbuf);
+										preproc_str lexbuf
 									end 
 						end
 					}
@@ -191,22 +206,26 @@ and do_then  = parse
 						match defname with
 							| "`accelerate"			-> print_string "`accelerate"
 							| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
+							| "`begin_keywords"	-> print_string "`begin_keywords"
 							| "`celldefine"			-> print_string "`celldefine"
 							| "`default_nettype"		-> print_string "`default_nettype"
 							| "`define"			-> print_string "`define"
 							| "`else"			-> print_string "`else"
 							| "`endcelldefine"		-> print_string "`endcelldefine"
+							| "`end_keywords"		-> print_string "`end_keywords"
 							| "`endif"			-> print_string "`endif"
 							| "`endprotect"			-> print_string "`endprotect"
 							| "`endprotected"		-> print_string "`endprotected"
 							| "`expand_vectornets"		-> print_string "`expand_vectornets"
 							| "`ifdef"			-> print_string "`ifdef"
 							| "`include"			-> print_string "`include"
+							| "`line"			-> print_string "`line"
 							| "`noaccelerate"		-> print_string "`noaccelerate"
 							| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
 							| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
 							| "`noremove_netnames"		-> print_string "`noremove_netnames"
 							| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
+							| "`pragma"			-> print_string "`pragma"
 							| "`protect"			-> print_string "`protect"
 							| "`protected"			-> print_string "`protected"
 							| "`remove_gatenames"		-> print_string "`remove_gatenames"
@@ -221,9 +240,9 @@ and do_then  = parse
 										do_then lexbuf;
 										()
 									with Not_found -> begin
-										Printf.fprintf stderr "%s" "no such definition";
-										Printf.fprintf stderr "%s" defname;
-										exit 1
+										Printf.printf  "FATAL : no such definition %s\n" defname;
+										print_pos (Lexing.lexeme_start_p lexbuf);
+										()
 									end 
 						end
 						;
@@ -333,22 +352,26 @@ and do_else_in  = parse
 						match defname with
 							| "`accelerate"			-> print_string "`accelerate"
 							| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
+							| "`begin_keywords"	-> print_string "`begin_keywords"
 							| "`celldefine"			-> print_string "`celldefine"
 							| "`default_nettype"		-> print_string "`default_nettype"
 							| "`define"			-> print_string "`define"
 							| "`else"			-> print_string "`else"
 							| "`endcelldefine"		-> print_string "`endcelldefine"
+							| "`end_keywords"		-> print_string "`end_keywords"
 							| "`endif"			-> print_string "`endif"
 							| "`endprotect"			-> print_string "`endprotect"
 							| "`endprotected"		-> print_string "`endprotected"
 							| "`expand_vectornets"		-> print_string "`expand_vectornets"
 							| "`ifdef"			-> print_string "`ifdef"
 							| "`include"			-> print_string "`include"
+							| "`line"			-> print_string "`line"
 							| "`noaccelerate"		-> print_string "`noaccelerate"
 							| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
 							| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
 							| "`noremove_netnames"		-> print_string "`noremove_netnames"
 							| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
+							| "`pragma"			-> print_string "`pragma"
 							| "`protect"			-> print_string "`protect"
 							| "`protected"			-> print_string "`protected"
 							| "`remove_gatenames"		-> print_string "`remove_gatenames"
@@ -363,9 +386,9 @@ and do_else_in  = parse
 										do_else_in lexbuf;
 										()
 									with Not_found -> begin
-										Printf.fprintf stderr "%s" "no such definition";
-										Printf.fprintf stderr "%s" defname;
-										exit 1
+										Printf.printf "FATAL : no such definition %s \n\\" defname;
+										print_pos (Lexing.lexeme_start_p lexbuf);
+										()
 									end 
 						end
 						;
@@ -381,3 +404,32 @@ and do_else_in  = parse
 						do_else_in lexbuf; 
 						Other 
 					}
+and proc_undef = parse
+	['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as def 	{
+			(*if it is defined?*)
+			let found = 
+			try 
+				List.assoc def !def_list ;
+				1
+			with Not_found -> 0
+			in 
+			if found == 0 then begin
+				Printf.printf "Warning : undefined macro name %s is used in `undef\n" def;
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				Other
+			end
+			else begin
+				def_list:=(List.remove_assoc def !def_list);
+				Other
+			end
+
+		}
+	| '\n'|eof		{
+		Printf.printf "FATAL : undef dont contains the macro to be undefined\n\\";
+		print_pos (Lexing.lexeme_start_p lexbuf);
+		Other
+	}
+	| _ as lsm 	{
+				proc_undef lexbuf
+			}
+	
