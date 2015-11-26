@@ -50,6 +50,8 @@ let inputFileChannle = open_in inputFileName;;
 
 let lexbuf = Lexing.from_channel inputFileChannle;;
 
+lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = inputFileName };;
+
 let parseverilog lexbuf1 = 
 	while true do
 		if (Proc_inc.proc_inc pathlist lexbuf1)==Proc_inc.Eof then  raise (Proc_inc.Ssyeof "Ssyeof") ;
