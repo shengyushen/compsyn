@@ -36,27 +36,6 @@ end
 /*declarations*/
 
 /*tokens for interfacing with lex*/
-%token  <Lexing.position*Lexing.position*string> MACRO_BEGIN_KEYWORDS
-%token  <Lexing.position*Lexing.position*string> MACRO_CELLDEFINE
-%token  <Lexing.position*Lexing.position*string> MACRO_DEFAULT_NETTYPE
-%token  <Lexing.position*Lexing.position*string> MACRO_DEFINE
-%token  <Lexing.position*Lexing.position*string> MACRO_ELSE
-%token  <Lexing.position*Lexing.position*string> MACRO_ELSIF
-%token  <Lexing.position*Lexing.position*string> MACRO_END_KEYWORDS
-%token  <Lexing.position*Lexing.position*string> MACRO_ENDCELLDEFINE
-%token  <Lexing.position*Lexing.position*string> MACRO_ENDIF
-%token  <Lexing.position*Lexing.position*string> MACRO_IFDEF
-%token  <Lexing.position*Lexing.position*string> MACRO_IFNDEF
-%token  <Lexing.position*Lexing.position*string> MACRO_INCLUDE
-%token  <Lexing.position*Lexing.position*string> MACRO_LINE
-%token  <Lexing.position*Lexing.position*string> MACRO_NOUNCONNECTED_DRIVE
-%token  <Lexing.position*Lexing.position*string> MACRO_PRAGMA
-%token  <Lexing.position*Lexing.position*string> MACRO_RESETALL
-%token  <Lexing.position*Lexing.position*string> MACRO_TIMESCALE
-%token  <Lexing.position*Lexing.position*string> MACRO_UNCONNECTED_DRIVE
-%token  <Lexing.position*Lexing.position*string> MACRO_UNDEF              
-
-
 %token  <Lexing.position*Lexing.position*string> KEY_ALWAYS
 %token  <Lexing.position*Lexing.position*string> KEY_AND
 %token  <Lexing.position*Lexing.position*string> KEY_ASSIGN
@@ -182,41 +161,80 @@ end
 %token  <Lexing.position*Lexing.position*string> KEY_XNOR
 %token  <Lexing.position*Lexing.position*string> KEY_XOR                            
 
-%token  <Lexing.position*Lexing.position*string> SYSFUN_COUNTDRIVERS
-%token  <Lexing.position*Lexing.position*string> SYSFUN_GETPATTERN  
-%token  <Lexing.position*Lexing.position*string> SYSFUN_INCSAVE     
-%token  <Lexing.position*Lexing.position*string> SYSFUN_INPUT       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_KEY         
-%token  <Lexing.position*Lexing.position*string> SYSFUN_LIST        
-%token  <Lexing.position*Lexing.position*string> SYSFUN_LOG         
-%token  <Lexing.position*Lexing.position*string> SYSFUN_NOKEY       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_NOLOG       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_RESET       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_RESET_COUNT 
-%token  <Lexing.position*Lexing.position*string> SYSFUN_RESET_VALUE 
-%token  <Lexing.position*Lexing.position*string> SYSFUN_RESTART     
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SAVE        
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SCALE       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SCOPE       
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SHOWSCOPES  
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SHOWVARS    
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SREADMEMB   
-%token  <Lexing.position*Lexing.position*string> SYSFUN_SREADMEMH   
 
 %token <Lexing.position*Lexing.position*string> COMMENT 
 %token <Lexing.position*Lexing.position*string> EOL
 %token <Lexing.position*Lexing.position*string> EOF_INCLUDED
 %token <Lexing.position*Lexing.position*string> EOF 
+
+/*A.8.6 Operators*/
+/*op for both unary and binary*/
+%token <Lexing.position*Lexing.position*string> OP12_ADD
+%token <Lexing.position*Lexing.position*string> OP12_SUB
+%token <Lexing.position*Lexing.position*string> OP12_AND
+%token <Lexing.position*Lexing.position*string> OP12_OR
+%token <Lexing.position*Lexing.position*string> OP12_XOR
+%token <Lexing.position*Lexing.position*string> OP12_XNOR
+
+/*ops for unary*/
+%token <Lexing.position*Lexing.position*string> OP1_GANTANHAO
+%token <Lexing.position*Lexing.position*string> OP1_BOLANGHAO
+%token <Lexing.position*Lexing.position*string> OP1_REDUCE_NAND
+%token <Lexing.position*Lexing.position*string> OP1_REDUCE_NOR
+
+/*ops for binary*/
+%token <Lexing.position*Lexing.position*string> OP2_MULTIPLE
+%token <Lexing.position*Lexing.position*string> OP2_DIV
+%token <Lexing.position*Lexing.position*string> OP2_MOD
+%token <Lexing.position*Lexing.position*string> OP2_EQU2
+%token <Lexing.position*Lexing.position*string> OP2_NEQ2
+%token <Lexing.position*Lexing.position*string> OP2_EQU3
+%token <Lexing.position*Lexing.position*string> OP2_NEQ3
+%token <Lexing.position*Lexing.position*string> OP2_AND
+%token <Lexing.position*Lexing.position*string> OP2_OR
+%token <Lexing.position*Lexing.position*string> OP2_POWER
+%token <Lexing.position*Lexing.position*string> OP2_LT
+%token <Lexing.position*Lexing.position*string> OP2_LE
+%token <Lexing.position*Lexing.position*string> OP2_GT
+%token <Lexing.position*Lexing.position*string> OP2_GE
+%token <Lexing.position*Lexing.position*string> OP2_LOGICAL_RIGHTSHIFT
+%token <Lexing.position*Lexing.position*string> OP2_LOGICAL_LEFTSHIFT
+%token <Lexing.position*Lexing.position*string> OP2_ARITHMETIC_RIGHTSHIFT
+%token <Lexing.position*Lexing.position*string> OP2_ARITHMETIC_LEFTSHIFT
+%token <Lexing.position*Lexing.position*string> OP2_QUESTION
+
+%token <Lexing.position*Lexing.position*string> LPARENT
+%token <Lexing.position*Lexing.position*string> RPARENT
+%token <Lexing.position*Lexing.position*string> COMMA    /*,*/
+%token <Lexing.position*Lexing.position*string> SEMICOLON /*;*/
+%token <Lexing.position*Lexing.position*string> COLON  /*:*/
+%token <Lexing.position*Lexing.position*string> LSQUARE  
+%token <Lexing.position*Lexing.position*string> RSQUARE
+%token <Lexing.position*Lexing.position*string> LHUA
+%token <Lexing.position*Lexing.position*string> RHUA
+%token <Lexing.position*Lexing.position*string> PERIOD
+%token <Lexing.position*Lexing.position*string> AT
+%token <Lexing.position*Lexing.position*string> JING
+
+%token <Lexing.position*Lexing.position*string> EQU1 /*=*/
+
+
+
+
+
+
+
+
+/*A.8.7 Numbers */
+%token <Lexing.position*Lexing.position*string> UNSIGNED_NUMBER
+%token <Lexing.position*Lexing.position*string> REAL_NUMBER
+%token <Lexing.position*Lexing.position*string> NUMBER
+/*A.8.8 Strings*/
 %token <Lexing.position*Lexing.position*string> STRING
-
-
-
-%token <Lexing.position*Lexing.position*string> DECIMAL_NUMBER
-%token <Lexing.position*Lexing.position*string> BINARY_NUMBER
-%token <Lexing.position*Lexing.position*string> OCTAL_NUMBER
-%token <Lexing.position*Lexing.position*string> HEX_NUMBER
-
-
+/*A.9.3 Identifiers*/
+%token <Lexing.position*Lexing.position*string> ESCAPED_IDENTIFIER
+%token <Lexing.position*Lexing.position*string> SIMPLE_IDENTIFIER
+%token  <Lexing.position*Lexing.position*string> SYSTEM_TASK_FUNCTION_IDENTIFIER
 
 
 %start source_text
@@ -234,27 +252,7 @@ item_list :
 	| item item_list {0}
 ;
 
-
 item :
-	  MACRO_BEGIN_KEYWORDS					{printf "macro_begin_keywords\n"}
-	|	MACRO_CELLDEFINE							{printf "macro_celldefine\n"}
-	|	MACRO_DEFAULT_NETTYPE					{printf "macro_default_nettype\n"}
-	|	MACRO_DEFINE									{printf "macro_define\n"}
-	|	MACRO_ELSE										{printf "macro_else\n"}
-	|	MACRO_ELSIF										{printf "macro_elsif\n"}
-	|	MACRO_END_KEYWORDS						{printf "macro_end_keywords\n"}
-	|	MACRO_ENDCELLDEFINE						{printf "macro_endcelldefine\n"}
-	|	MACRO_ENDIF										{printf "macro_endif\n"}
-	|	MACRO_IFDEF										{printf "macro_ifdef\n"}
-	|	MACRO_IFNDEF									{printf "macro_ifndef\n"}
-	|	MACRO_INCLUDE									{printf "macro_include %s\n" (get_string_ssy $1)}
-	|	MACRO_LINE										{printf "macro_line\n"}
-	|	MACRO_NOUNCONNECTED_DRIVE			{printf "macro_nounconnected_drive\n"}
-	|	MACRO_PRAGMA									{printf "macro_pragma\n"}
-	|	MACRO_RESETALL								{printf "macro_resetall\n"}
-	|	MACRO_TIMESCALE								{printf "macro_timescale\n"}
-	|	MACRO_UNCONNECTED_DRIVE				{printf "macro_unconnected_drive\n"}
-	|	MACRO_UNDEF										{printf "macro_undef\n"}
 	|	KEY_ALWAYS										{printf "key_always\n"}
 	|	KEY_AND												{printf "key_and\n"}
 	|	KEY_ASSIGN										{printf "key_assign\n"}
@@ -379,31 +377,59 @@ item :
 	|	KEY_WOR												{printf "key_wor\n"}
 	|	KEY_XNOR											{printf "key_xnor\n"}
 	|	KEY_XOR												{printf "key_xor\n"}
-	|	SYSFUN_COUNTDRIVERS						{printf "sysfun_countdrivers\n"}
-	|	SYSFUN_GETPATTERN							{printf "sysfun_getpattern\n"}
-	|	SYSFUN_INCSAVE								{printf "sysfun_incsave\n"}
-	|	SYSFUN_INPUT									{printf "sysfun_input\n"}
-	|	SYSFUN_KEY										{printf "sysfun_key\n"}
-	|	SYSFUN_LIST										{printf "sysfun_list\n"}
-	|	SYSFUN_LOG										{printf "sysfun_log\n"}
-	|	SYSFUN_NOKEY									{printf "sysfun_nokey\n"}
-	|	SYSFUN_NOLOG									{printf "sysfun_nolog\n"}
-	|	SYSFUN_RESET									{printf "sysfun_reset\n"}
-	|	SYSFUN_RESET_COUNT						{printf "sysfun_reset_count\n"}
-	|	SYSFUN_RESET_VALUE						{printf "sysfun_reset_value\n"}
-	|	SYSFUN_RESTART								{printf "sysfun_restart\n"}
-	|	SYSFUN_SAVE										{printf "sysfun_save\n"}
-	|	SYSFUN_SCALE									{printf "sysfun_scale\n"}
-	|	SYSFUN_SCOPE									{printf "sysfun_scope\n"}
-	|	SYSFUN_SHOWSCOPES							{printf "sysfun_showscopes\n"}
-	|	SYSFUN_SHOWVARS								{printf "sysfun_showvars\n"}
-	|	SYSFUN_SREADMEMB							{printf "sysfun_sreadmemb\n"}
-	|	SYSFUN_SREADMEMH							{printf "sysfun_sreadmemh\n"}
 	| STRING												{printf "string %s\n" (get_string_ssy $1)}
 	| COMMENT												{
 			(*printf "comment \n" ;  
 			print_both_pos $1;*)
 		}
+	| OP12_ADD    {printf "%s\n" (get_string_ssy $1);}
+	| OP12_SUB    {printf "%s\n" (get_string_ssy $1);}
+	| OP12_AND    {printf "%s\n" (get_string_ssy $1);}
+	| OP12_OR     {printf "%s\n" (get_string_ssy $1);}
+	| OP12_XOR    {printf "%s\n" (get_string_ssy $1);}
+	| OP12_XNOR    {printf "%s\n" (get_string_ssy $1);}
+	| OP1_GANTANHAO    {printf "%s\n" (get_string_ssy $1);}
+	| OP1_BOLANGHAO    {printf "%s\n" (get_string_ssy $1);}
+	| OP1_REDUCE_NAND    {printf "%s\n" (get_string_ssy $1);}
+	| OP1_REDUCE_NOR    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_MULTIPLE    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_DIV    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_MOD    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_EQU2    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_NEQ2    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_EQU3    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_NEQ3    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_AND    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_OR    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_POWER    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_LT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_LE    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_GT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_GE    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_LOGICAL_RIGHTSHIFT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_LOGICAL_LEFTSHIFT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_ARITHMETIC_RIGHTSHIFT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_ARITHMETIC_LEFTSHIFT    {printf "%s\n" (get_string_ssy $1);}
+	| OP2_QUESTION {printf "%s\n" (get_string_ssy $1);}
+	| UNSIGNED_NUMBER	{ printf "%s\n" (get_string_ssy $1); }
+	| REAL_NUMBER	{ printf "%s\n" (get_string_ssy $1); }
+	| NUMBER	{ printf "%s\n" (get_string_ssy $1); }
+	| ESCAPED_IDENTIFIER	{ printf "%s\n" (get_string_ssy $1); }
+	| SIMPLE_IDENTIFIER	{ printf "%s\n" (get_string_ssy $1); }
+	| SYSTEM_TASK_FUNCTION_IDENTIFIER	{ printf "%s\n" (get_string_ssy $1); }
+	| LPARENT	{ printf "%s\n" (get_string_ssy $1); }
+	| RPARENT	{ printf "%s\n" (get_string_ssy $1); }
+	| COMMA	{ printf "%s\n" (get_string_ssy $1); }
+	| SEMICOLON	{ printf "%s\n" (get_string_ssy $1); }
+	| COLON	{ printf "%s\n" (get_string_ssy $1); }
+	| LSQUARE	{ printf "%s\n" (get_string_ssy $1); }
+	| RSQUARE	{ printf "%s\n" (get_string_ssy $1); }
+	| EQU1	{ printf "%s\n" (get_string_ssy $1); }
+	| LHUA	{ printf "%s\n" (get_string_ssy $1); }
+	| RHUA	{ printf "%s\n" (get_string_ssy $1); }
+	| PERIOD	{ printf "%s\n" (get_string_ssy $1); }
+	| AT	{ printf "%s\n" (get_string_ssy $1); }
+	| JING	{ printf "%s\n" (get_string_ssy $1); }
 	
 
 

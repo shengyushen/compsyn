@@ -1,0 +1,5 @@
+../../step1_noinc/vp_step1.exe  -S $1 >  include_noinclude.v
+dos2unix include_noinclude.v
+../../step2_nodef/vp_step2.exe  include_noinclude.v > nodef.v
+dos2unix nodef.v
+OCAMLRUNPARAM=b ../checker.exe nodef.v
