@@ -46,14 +46,14 @@ let unsigned_number = decimal_digit ( '_' | decimal_digit )* (*referred in parse
 let non_zero_unsigned_number = non_zero_decimal_digit ( '_' | decimal_digit)* 
 let size         = non_zero_unsigned_number
 let sign         = '+' | '-'
-let hex_number   = size? hex_base hex_value
-let octal_number = size? octal_base octal_value
-let binary_number= size? binary_base binary_value
+let hex_number   = size? hex_base [' ']* hex_value   (*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
+let octal_number = size? octal_base [' ']* octal_value(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
+let binary_number= size? binary_base [' ']* binary_value(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
 let decimal_number =
 	unsigned_number
-	| size?  decimal_base unsigned_number
-	| size?  decimal_base x_digit '_'*
-	| size?  decimal_base z_digit '_'*
+	| size?  decimal_base [' ']* unsigned_number(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
+	| size?  decimal_base [' ']* x_digit '_'*(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
+	| size?  decimal_base [' ']* z_digit '_'*(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
 let exp          = 'e' | 'E'
 let real_number  =   (*referred in parser*)
 	unsigned_number '.' unsigned_number

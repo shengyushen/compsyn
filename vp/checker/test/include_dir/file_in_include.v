@@ -12,16 +12,16 @@
 `ssy3
 
 
-`ifdef ssy
+`ifdef ssy  sdf
 	`ssy2
 `endif
 
 
 `undef ssy
 
-`ifdef ssy
+`ifdef ssy `ssy2
 	`ssy2
-`elsif ssy2
+`elsif ssy2  `ssy2
 	`ssy3
 `endif
 
@@ -36,5 +36,5 @@
 	`ssy3
 `else 
 	`ssy4
-`endif
+`endif `ssy4
 //last line in file_in_include.v
