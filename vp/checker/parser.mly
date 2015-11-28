@@ -160,6 +160,7 @@ end
 %token  <Lexing.position*Lexing.position*string> KEY_WOR
 %token  <Lexing.position*Lexing.position*string> KEY_XNOR
 %token  <Lexing.position*Lexing.position*string> KEY_XOR                            
+%token  <Lexing.position*Lexing.position*string> KEY_PATHPULSE
 
 
 %token <Lexing.position*Lexing.position*string> COMMENT 
@@ -323,7 +324,8 @@ list_of_ports :
 ;
 
 comma_port_list :
-	COMMA port comma_port_list
+	{[]}
+	| COMMA port comma_port_list
 	{$2::$3}
 ;
 
@@ -498,310 +500,993 @@ inst_name :
 ;
 
 comma_instance_identifier_list :
-	COMMA instance_identifier comma_instance_identifier_list
+	{[]}
+	| COMMA instance_identifier comma_instance_identifier_list
 	{$2::$3}
 ;
 
-cell_clause ::= cell [ library_identifier.]cell_identifier
-liblist_clause ::= liblist { library_identifier }
-use_clause ::= use [library_identifier.]cell_identifier[:config]
-A.2 Declarations
+cell_clause :
+	KEY_CELL library_identifier_period_opt_cell_identifier {$2}
+;
+
+liblist_clause :
+	KEY_LIBLIST library_identifier_list {$2}
+;
+
+library_identifier_list :
+	{[]}
+	| library_identifier library_identifier_list {$1::$2}
+
+use_clause :
+	KEY_USE library_identifier_period_opt_cell_identifier colon_config_opt
+		{T_use_clause($1,$2)}
+;
+
+colon_config_opt :
+	{T_colon_config_opt_FALSE}
+	| COLON KEY_CONFIG  {T_colon_config_opt_TRUE}
+;
+
+/*A.2 Declarations
 A.2.1 Declaration types
-A.2.1.1 Module parameter declarations
-local_parameter_declaration ::=
-localparam [ signed ] [ range ] list_of_param_assignments
-| localparam parameter_type list_of_param_assignments
-parameter_declaration ::=
-parameter [ signed ] [ range ] list_of_param_assignments
-| parameter parameter_type list_of_param_assignments
-specparam_declaration ::= specparam [ range ] list_of_specparam_assignments ;
-parameter_type ::=
-integer | real | realtime | time
-A.2.1.2 Port declarations
-inout_declaration ::= inout [ net_type ] [ signed ] [ range ]
-list_of_port_identifiers
-input_declaration ::= input [ net_type ] [ signed ] [ range ]
-list_of_port_identifiers
-output_declaration ::=
-output [ net_type ] [ signed ] [ range ]
-list_of_port_identifiers
-| output reg [ signed ] [ range ]
-list_of_variable_port_identifiers
-| output output_variable_type
-list_of_variable_port_identifiers
-Copyright © 2006 IEEE. All rights reserved.
-489
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-A.2.1.3 Type declarations
-event_declaration ::= event list_of_event_identifiers ;
-integer_declaration ::= integer list_of_variable_identifiers ;
-net_declaration ::=
-net_type [ signed ]
-[ delay3 ] list_of_net_identifiers ;
-| net_type [ drive_strength ] [ signed ]
-[ delay3 ] list_of_net_decl_assignments ;
-| net_type [ vectored | scalared ] [ signed ]
-range [ delay3 ] list_of_net_identifiers ;
-| net_type [ drive_strength ] [ vectored | scalared ] [ signed ]
-range [ delay3 ] list_of_net_decl_assignments ;
-| trireg [ charge_strength ] [ signed ]
-[ delay3 ] list_of_net_identifiers ;
-| trireg [ drive_strength ] [ signed ]
-[ delay3 ] list_of_net_decl_assignments ;
-| trireg [ charge_strength ] [ vectored | scalared ] [ signed ]
-range [ delay3 ] list_of_net_identifiers ;
-| trireg [ drive_strength ] [ vectored | scalared ] [ signed ]
-range [ delay3 ] list_of_net_decl_assignments ;
-real_declaration ::= real list_of_real_identifiers ;
-realtime_declaration ::= realtime list_of_real_identifiers ;
-reg_declaration ::= reg [ signed ] [ range ]
-list_of_variable_identifiers ;
-time_declaration ::= time list_of_variable_identifiers ;
-A.2.2 Declaration data types
-A.2.2.1 Net and variable types
-net_type ::=
-supply0 | supply1
-| tri
-| triand | trior | tri0 | tri1
-| uwire | wire | wand | wor
-output_variable_type ::= integer | time
-real_type ::=
-real_identifier { dimension }
-| real_identifier = constant_expression
-variable_type ::=
-variable_identifier { dimension }
-| variable_identifier = constant_expression
-A.2.2.2 Strengths
-drive_strength ::=
-( strength0 , strength1 )
-| ( strength1 , strength0 )
-| ( strength0 , highz1 )
-| ( strength1 , highz0 )
-490
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-| ( highz0 , strength1 )
-| ( highz1 , strength0 )
-strength0 ::= supply0 | strong0 | pull0 | weak0
-strength1 ::= supply1 | strong1 | pull1 | weak1
-charge_strength ::= ( small ) | ( medium ) | ( large )
-A.2.2.3 Delays
-delay3 ::=
-# delay_value
-| # ( mintypmax_expression [ , mintypmax_expression [ , mintypmax_expression ] ] )
-delay2 ::=
-# delay_value
-| # ( mintypmax_expression [ , mintypmax_expression ] )
-delay_value ::=
-unsigned_number
-| real_number
-| identifier
-A.2.3 Declaration lists
-list_of_defparam_assignments ::= defparam_assignment { , defparam_assignment }
-list_of_event_identifiers ::= event_identifier { dimension }
-{ , event_identifier { dimension } }
-list_of_net_decl_assignments ::= net_decl_assignment { , net_decl_assignment }
-list_of_net_identifiers ::= net_identifier { dimension }
-{ , net_identifier { dimension } }
-list_of_param_assignments ::= param_assignment { , param_assignment }
-list_of_port_identifiers ::= port_identifier { , port_identifier }
-list_of_real_identifiers ::= real_type { , real_type }
-list_of_specparam_assignments ::= specparam_assignment { , specparam_assignment }
-list_of_variable_identifiers ::= variable_type { , variable_type }
-list_of_variable_port_identifiers ::= port_identifier [ = constant_expression ]
-{ , port_identifier [ = constant_expression ] }
-A.2.4 Declaration assignments
-defparam_assignment ::= hierarchical_parameter_identifier = constant_mintypmax_expression
-net_decl_assignment ::= net_identifier = expression
-param_assignment ::= parameter_identifier = constant_mintypmax_expression
-specparam_assignment ::=
-specparam_identifier = constant_mintypmax_expression
-| pulse_control_specparam
-pulse_control_specparam ::=
-PATHPULSE$ = ( reject_limit_value [ , error_limit_value ] )
-| PATHPULSE$specify_input_terminal_descriptor$specify_output_terminal_descriptor
-= ( reject_limit_value [ , error_limit_value ] )
-error_limit_value ::= limit_value
-reject_limit_value ::= limit_value
-limit_value ::= constant_mintypmax_expression
-Copyright © 2006 IEEE. All rights reserved.
-491
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-A.2.5 Declaration ranges
-dimension ::= [ dimension_constant_expression : dimension_constant_expression ]
-range ::= [ msb_constant_expression : lsb_constant_expression ]
-A.2.6 Function declarations
-function_declaration ::=
-function [ automatic ] [ function_range_or_type ] function_identifier ;
-function_item_declaration { function_item_declaration }
-function_statement
-endfunction
-| function [ automatic ] [ function_range_or_type ] function_identifier ( function_port_list ) ;
-{ block_item_declaration }
-function_statement
-endfunction
-function_item_declaration ::=
-block_item_declaration
-| { attribute_instance } tf_input_declaration ;
-function_port_list ::= { attribute_instance } tf_input_declaration { , { attribute_instance }
-tf_input_declaration }
-function_range_or_type ::=
-[ signed ] [ range ]
-| integer
-| real
-| realtime
-| time
-A.2.7 Task declarations
-task_declaration ::=
-task [ automatic ] task_identifier ;
-{ task_item_declaration }
-statement_or_null
-endtask
-| task [ automatic ] task_identifier ( [ task_port_list ] ) ;
-{ block_item_declaration }
-statement_or_null
-endtask
-task_item_declaration ::=
-block_item_declaration
-| { attribute_instance } tf_input_declaration ;
-| { attribute_instance } tf_output_declaration ;
-| { attribute_instance } tf_inout_declaration ;
-task_port_list ::= task_port_item { , task_port_item }
-task_port_item ::=
-{ attribute_instance } tf_input_declaration
-| { attribute_instance } tf_output_declaration
-| { attribute_instance } tf_inout_declaration
-492
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-tf_input_declaration ::=
-input [ reg ] [ signed ] [ range ] list_of_port_identifiers
-| input task_port_type list_of_port_identifiers
-tf_output_declaration ::=
-output [ reg ] [ signed ] [ range ] list_of_port_identifiers
-| output task_port_type list_of_port_identifiers
-tf_inout_declaration ::=
-inout [ reg ] [ signed ] [ range ] list_of_port_identifiers
-| inout task_port_type list_of_port_identifiers
-task_port_type ::=
-integer | real | realtime | time
-A.2.8 Block item declarations
-block_item_declaration ::=
-{ attribute_instance } reg [ signed ] [ range ] list_of_block_variable_identifiers ;
-| { attribute_instance } integer list_of_block_variable_identifiers ;
-| { attribute_instance } time list_of_block_variable_identifiers ;
-| { attribute_instance } real list_of_block_real_identifiers ;
-| { attribute_instance } realtime list_of_block_real_identifiers ;
-| { attribute_instance } event_declaration
-| { attribute_instance } local_parameter_declaration ;
-| { attribute_instance } parameter_declaration ;
-list_of_block_variable_identifiers ::= block_variable_type { , block_variable_type }
-list_of_block_real_identifiers ::= block_real_type { , block_real_type }
-block_variable_type ::= variable_identifier { dimension }
-block_real_type ::= real_identifier { dimension }
-A.3 Primitive instances
-A.3.1 Primitive instantiation and instances
-gate_instantiation ::=
-cmos_switchtype [delay3]
-cmos_switch_instance { , cmos_switch_instance } ;
-| enable_gatetype [drive_strength] [delay3]
-enable_gate_instance { , enable_gate_instance } ;
-| mos_switchtype [delay3]
-mos_switch_instance { , mos_switch_instance } ;
-| n_input_gatetype [drive_strength] [delay2]
-n_input_gate_instance { , n_input_gate_instance } ;
-| n_output_gatetype [drive_strength] [delay2]
-n_output_gate_instance { , n_output_gate_instance } ;
-| pass_en_switchtype [delay2]
-pass_enable_switch_instance { , pass_enable_switch_instance } ;
-| pass_switchtype
-pass_switch_instance { , pass_switch_instance } ;
-| pulldown [pulldown_strength]
-Copyright © 2006 IEEE. All rights reserved.
-493
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-pull_gate_instance { , pull_gate_instance } ;
-| pullup [pullup_strength]
-pull_gate_instance { , pull_gate_instance } ;
-cmos_switch_instance ::= [ name_of_gate_instance ] ( output_terminal , input_terminal ,
-ncontrol_terminal , pcontrol_terminal )
-enable_gate_instance ::= [ name_of_gate_instance ] ( output_terminal , input_terminal , enable_terminal )
-mos_switch_instance ::= [ name_of_gate_instance ] ( output_terminal , input_terminal , enable_terminal )
-n_input_gate_instance ::= [ name_of_gate_instance ] ( output_terminal , input_terminal { , input_terminal } )
-n_output_gate_instance ::= [ name_of_gate_instance ] ( output_terminal { , output_terminal } ,
-input_terminal )
-pass_switch_instance ::= [ name_of_gate_instance ] ( inout_terminal , inout_terminal )
-pass_enable_switch_instance ::= [ name_of_gate_instance ] ( inout_terminal , inout_terminal ,
-enable_terminal )
-pull_gate_instance ::= [ name_of_gate_instance ] ( output_terminal )
-name_of_gate_instance ::= gate_instance_identifier [ range ]
-A.3.2 Primitive strengths
-pulldown_strength ::=
-( strength0 , strength1 )
-| ( strength1 , strength0 )
-| ( strength0 )
-pullup_strength ::=
-( strength0 , strength1 )
-| ( strength1 , strength0 )
-| ( strength1 )
-A.3.3 Primitive terminals
-enable_terminal ::= expression
-inout_terminal ::= net_lvalue
-input_terminal ::= expression
-ncontrol_terminal ::= expression
-output_terminal ::= net_lvalue
-pcontrol_terminal ::= expression
-A.3.4 Primitive gate and switch types
-cmos_switchtype ::= cmos | rcmos
-enable_gatetype ::= bufif0 | bufif1 | notif0 | notif1
-mos_switchtype ::= nmos | pmos | rnmos | rpmos
-n_input_gatetype ::= and | nand | or | nor | xor | xnor
-n_output_gatetype ::= buf | not
-pass_en_switchtype ::= tranif0 | tranif1 | rtranif1 | rtranif0
-pass_switchtype ::= tran | rtran
-494
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-A.4 Module instantiation and generate construct
-A.4.1 Module instantiation
-module_instantiation ::=
-module_identifier [ parameter_value_assignment ]
-module_instance { , module_instance } ;
-parameter_value_assignment ::= # ( list_of_parameter_assignments )
-list_of_parameter_assignments ::=
-ordered_parameter_assignment { , ordered_parameter_assignment } |
-named_parameter_assignment { , named_parameter_assignment }
-ordered_parameter_assignment ::= expression
-named_parameter_assignment ::= . parameter_identifier ( [ mintypmax_expression ] )
-module_instance ::= name_of_module_instance ( [ list_of_port_connections ] )
-name_of_module_instance ::= module_instance_identifier [ range ]
-list_of_port_connections ::=
-ordered_port_connection { , ordered_port_connection }
-| named_port_connection { , named_port_connection }
-ordered_port_connection ::= { attribute_instance } [ expression ]
-named_port_connection ::= { attribute_instance } . port_identifier ( [ expression ] )
-A.4.2 Generate construct
-generate_region ::=
-generate { module_or_generate_item } endgenerate
-genvar_declaration ::=
-genvar list_of_genvar_identifiers ;
-list_of_genvar_identifiers ::=
-genvar_identifier { , genvar_identifier }
-loop_generate_construct ::=
-for ( genvar_initialization ; genvar_expression ; genvar_iteration )
-generate_block
+A.2.1.1 Module parameter declarations*/
+
+local_parameter_declaration :
+	KEY_LOCALPARAM signed_opt range_opt list_of_param_assignments
+		{T_local_parameter_declaration_1($2,$3,$4)}
+	| KEY_LOCALPARAM parameter_type list_of_param_assignments
+		{T_local_parameter_declaration_2($2,$3)}
+;
+
+signed_opt :
+	{false}
+	| KEY_SIGNED {true}
+;
+
+range_opt :
+	{T_range_NOSPEC}
+	| range {$1}
+;
+
+parameter_declaration :
+	KEY_PARAMETER signed_opt range_opt list_of_param_assignments
+		{T_parameter_declaration_1($2,$3,$4)}
+	| KEY_PARAMETER parameter_type list_of_param_assignments
+		{T_parameter_declaration_2($2,$3)}
+;
+
+specparam_declaration :
+	KEY_SPECPARAM range_opt list_of_specparam_assignments SEMICOLON
+		{T_specparam_declaration($2,$3)}
+;
+
+parameter_type :
+	KEY_INTEGER {T_parameter_type__INTEGER}
+	| KEY_REAL 	{T_parameter_type__REAL}
+	| KEY_REALTIME {T_parameter_type__REALTIME}
+	| KEY_TIME	{T_parameter_type__TIME}
+;
+
+/*A.2.1.2 Port declarations*/
+inout_declaration :
+	KEY_INOUT net_type_opt signed_opt range_opt list_of_port_identifiers
+		{T_inout_declaration($2,$3,$4,$5)}
+;
+
+net_type_opt :
+	{T_net_type_NOSPEC}
+	| net_type {$1}
+
+input_declaration :
+	KEY_INPUT net_type_opt signed_opt  range_opt list_of_port_identifiers
+		{T_input_declaration($2,$3,$4,$5)}
+
+output_declaration :
+	KEY_OUTPUT net_type_opt signed_opt range_opt list_of_port_identifiers
+		{T_output_declaration_net($2,$3,$4,$5)}
+	| KEY_OUTPUT KEY_REG signed_opt range_opt list_of_variable_port_identifiers
+		{T_output_declaration_reg($3,$4,$5)}
+	| KEY_OUTPUT output_variable_type list_of_variable_port_identifiers
+		{T_output_declaration_var($2,$3)}
+		
+
+
+/*A.2.1.3 Type declarations*/
+event_declaration :
+	KEY_EVENT list_of_event_identifiers SEMICOLON
+		{T_event_declaration($2)}
+;
+
+integer_declaration :
+	KEY_INTEGER list_of_variable_identifiers SEMICOLON
+		{T_integer_declaration($2)}
+;
+
+net_declaration :
+	net_type signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_net_type1($1,$2,$3,$4)}
+	| net_type drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_net_type2($1,$2,$3,$4,$5)}
+	| net_type vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
+	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
+	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_trireg_1($2,$3,$4,$5)}
+	| KEY_TRIREG drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_trireg_2($2,$3,$4,$5)}
+	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
+	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_trireg_4($2,$3,$4,$5,$6)}
+
+delay3_opt :
+	{T_delay3_NOSPEC}
+	| delay3 {$1}
+
+vectored_scalared_opt :
+	{T_vectored_scalared_NOSPEC}
+	| KEY_VECTORED {T_vectored_scalared_vectored}
+	| KEY_SCALARED {T_vectored_scalared_scalared}
+;
+
+drive_strength_opt :
+	{T_drive_strength_NOSPEC}
+	| drive_strength {$1}
+;
+
+real_declaration :
+	KEY_REAL list_of_real_identifiers SEMICOLON
+		{T_real_declaration($2)}
+;
+
+realtime_declaration :
+	KEY_REALTIME list_of_real_identifiers SEMICOLON
+		{T_realtime_declaration($2)}
+;
+
+reg_declaration : 
+	KEY_REG signed_opt range_opt list_of_variable_identifiers SEMICOLON
+		{T_reg_declaration($2,$3,$4)}
+;
+
+time_declaration :
+	KEY_TIME list_of_variable_identifiers SEMICOLON
+		{T_time_declaration($2)}
+;
+
+/*A.2.2 Declaration data types
+A.2.2.1 Net and variable types*/
+net_type :
+	KEY_SUPPLY0 	{T_net_type__KEY_SUPPLY0}
+	| KEY_SUPPLY1	{T_net_type__KEY_SUPPLY1}
+	| KEY_TRI			{T_net_type__KEY_TRI}
+	| KEY_TRIAND 	{T_net_type__KEY_TRIAND}
+	| trior 			{T_net_type__KEY_TRIOR}
+	| tri0 				{T_net_type__KEY_TRI0}
+	| tri1				{T_net_type__KEY_TRI1}
+	| uwire 			{T_net_type__KEY_UWIRE}
+	| wire 				{T_net_type__KEY_WIRE}
+	| wand 				{T_net_type__KEY_WAND}
+	| wor					{T_net_type__KEY_WOR}
+;
+
+output_variable_type :
+	KEY_INTEGER | KEY_TIME
+real_type :
+	real_identifier dimension_list
+		{T_real_type_noass($1,$2)}
+	| real_identifier EQU1 constant_expression
+		{T_real_type_ass($1,$3)}
+;
+
+
+variable_type :
+	variable_identifier dimension_list
+		{T_variable_type_noass($1,$2)}
+	| variable_identifier EQU1 constant_expression
+		{T_variable_type_ass($1,$3)}
+;
+
+/*A.2.2.2 Strengths*/
+
+drive_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_drive_strength($1,$2)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_drive_strength($1,$2)}
+	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT
+		{T_drive_strength($1,$2)}
+	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT
+		{T_drive_strength($1,$2)}
+	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT
+		{T_drive_strength($1,$2)}
+	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT
+		{T_drive_strength($1,$2)}
+;
+
+
+
+strength0 :
+	KEY_SUPPLY0		{$1}
+	| KEY_STRONG0		{$1}
+	| KEY_PULL0			{$1}
+	| KEY_WEAK0 {$1}
+;
+strength1 :
+	KEY_SUPPLY1		{$1}
+	| KEY_STRONG1		{$1}
+	| KEY_PULL1			{$1}
+	| KEY_WEAK1 {$1}
+;
+
+charge_strength : 
+	LPARENT KEY_SMALL RPARENT 
+		{T_charge_strength__small}
+	| LPARENT KEY_MEDIUM RPARENT 
+		{T_charge_strength__medium}
+	| LPARENT KEY_LARGE RPARENT
+		{T_charge_strength__large}
+;
+
+/*A.2.2.3 Delays*/
+
+delay3 :
+	JING delay_value
+		{T_delay3_1($2)}
+	| JING LPARENT mintypmax_expression  RPARENT
+		{T_delay3_minmax1($3)}
+	| JING LPARENT mintypmax_expression  COMMA mintypmax_expression RPARENT
+		{T_delay3_minmax2($3,$5)}
+	| JING LPARENT mintypmax_expression  COMMA mintypmax_expression COMMA mintypmax_expression  RPARENT
+		{T_delay3_minmax3($3,$5,$7)}
+;
+
+
+delay2 :
+	JING delay_value
+		{T_delay2_1($2)}
+	| JING LPARENT mintypmax_expression RPARENT
+		{T_delay2_minmax1($3)}
+	| JING LPARENT mintypmax_expression COMMA mintypmax_expression  RPARENT
+		{$T_delay2_minmax2($3,$5)}
+;
+
+
+delay_value :
+	unsigned_number
+	| real_number
+	| identifier
+;
+
+/*A.2.3 Declaration lists*/
+list_of_defparam_assignments :
+	defparam_assignment comma_defparam_assignment_list
+		{$1::$2}
+;
+
+comma_defparam_assignment_list :
+	{[]}
+	|COMMA defparam_assignment comma_defparam_assignment_list
+		{$2::$3}
+;
+
+list_of_event_identifiers :
+	event_identifier_dimension_list comma_event_identifier_dimension_list_list
+		{$1::$2}
+;
+
+comma_event_identifier_dimension_list_list :
+	{[]}
+	| COMMA event_identifier_dimension_list comma_event_identifier_dimension_list_list
+		{$2::$3}
+;
+
+event_identifier_dimension_list :
+	event_identifier dimension_list
+		{T_event_identifier_dimension_list($1,$2)}
+;
+
+list_of_net_decl_assignments :
+	net_decl_assignment comma_net_decl_assignment_list
+		{$1::$2}
+;
+
+comma_net_decl_assignment_list :
+	{[]}
+	| COMMA net_decl_assignment comma_net_decl_assignment_list
+		{$2::$3}
+;
+
+
+list_of_net_identifiers :
+	net_identifier_dimension_list
+	comma_net_identifier_dimension_list_list
+		{$1::$2}
+;
+
+
+net_identifier_dimension_list :
+	net_identifier dimension_list
+		{T_net_identifier_dimension_list($1,$2)}
+;
+
+comma_net_identifier_dimension_list_list:
+	{[]}
+	| COMMA net_identifier_dimension_list comma_net_identifier_dimension_list_list
+		{$2::$3}
+
+list_of_param_assignments :
+	param_assignment comma_param_assignment_list
+		{$1::$2}
+;
+
+comma_param_assignment_list :
+	{[]}
+	| COMMA param_assignment comma_param_assignment_list
+		{$2::$3}
+
+list_of_port_identifiers :
+	port_identifier comma_port_identifier_list
+		{$1::$2}
+;
+
+comma_port_identifier_list :
+	{[]}
+	| COMMA port_identifier comma_port_identifier_list
+		{$2::$3}
+;
+
+list_of_real_identifiers :
+	real_type comma_real_type_list
+		{$1::$2}
+;
+
+comma_real_type_list :
+	{[]}
+	| COMMA real_type comma_real_type_list
+		{$2::$3}
+;
+
+list_of_specparam_assignments :
+	specparam_assignment comma_specparam_assignment_list
+		{}
+;
+
+comma_specparam_assignment_list :
+	{[]}
+	| COMMA specparam_assignment comma_specparam_assignment_list
+		{$2::$3}
+;
+
+list_of_variable_identifiers :
+	variable_type comma_variable_type_list
+		{$1::$2}
+;
+
+comma_variable_type_list :
+	{[]}
+	| COMMA variable_type comma_variable_type_list
+		{$2::$3}
+;
+
+list_of_variable_port_identifiers :
+	port_identifier_equ1_constant_expression_opt
+	comma_port_identifier_equ1_constant_expression_opt_list
+		{$1::$2}
+;
+
+port_identifier_equ1_constant_expression_opt :
+	port_identifier equ1_constant_expression_opt
+		{T_port_identifier_equ1_constant_expression_opt($1,$2)}
+
+equ1_constant_expression_opt :
+	{T_constant_expression_NOSPEC}
+	| EQU1 constant_expression {$2}
+;
+
+comma_port_identifier_equ1_constant_expression_opt_list :
+	{[]}
+	| COMMA port_identifier_equ1_constant_expression_opt comma_port_identifier_equ1_constant_expression_opt_list
+		{$2::$3}
+;
+
+	
+
+/*A.2.4 Declaration assignments*/
+defparam_assignment :
+	hierarchical_parameter_identifier EQU1 constant_mintypmax_expression
+		{T_defparam_assignment($1,$3)}
+;
+
+net_decl_assignment :
+	net_identifier EQU1 expression
+		{T_net_decl_assignment($1,$3)}
+;
+
+param_assignment :
+	parameter_identifier EQU1 constant_mintypmax_expression
+		{T_param_assignment($1,$3)}
+;
+
+specparam_assignment :
+	specparam_identifier EQU1 constant_mintypmax_expression
+		{T_specparam_assignment($1,$3)}
+	| pulse_control_specparam
+		{$1}
+;
+
+
+pulse_control_specparam :
+	KEY_PATHPULSE EQU1 LPARENT reject_limit_value comma_error_limit_value_opt RPARENT
+		{T_specparam_assignment_pulse1($4,$5)}
+	| KEY_PATHPULSE specify_input_terminal_descriptor DOLLOR specify_output_terminal_descriptor EQU1 LPARENT reject_limit_value comma_error_limit_value_opt RPARENT
+		{T_specparam_assignment_pulse2($2,$4,$7,$8)}
+;
+
+comma_error_limit_value_opt :
+	{T_constant_mintypmax_expression_NOSPEC}
+	| COMMA error_limit_value {$2}
+;	
+
+error_limit_value : 
+	limit_value
+	{$1}
+;
+
+reject_limit_value :
+	limit_value
+		{$1}
+;
+
+limit_value : 
+	constant_mintypmax_expression
+		{$1}
+;
+
+
+/*A.2.5 Declaration ranges*/
+dimension :
+	LSQUARE	dimension_constant_expression COLON dimension_constant_expression RSQUARE
+		{T_dimension($2,$4)}
+;
+
+range :
+	LSQUARE msb_constant_expression COLON lsb_constant_expression RSQUARE
+		{T_range($2,$4)}
+;
+
+
+/*A.2.6 Function declarations*/
+function_declaration :
+	KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier SEMICOLON
+	function_item_declaration function_item_declaration_list
+	function_statement
+	KEY_ENDFUNCTION
+		{T_function_declaration_1($2,$3,$4,$6::$7,$8)}	
+| KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier LPARENT function_port_list RPARENT SEMICOLON
+	 block_item_declaration_list
+	function_statement
+	KEY_ENDFUNCTION
+		{T_function_declaration_2($2,$3,$4,$6,$9,$10)}
+
+automatic_opt :
+	{T_automatic_false}
+	| KEY_AUTOMATIC {T_automatic_true}
+;
+
+function_range_or_type_opt :
+	{T_function_range_or_type_NOSPEC}
+	| function_range_or_type {$1}
+
+function_item_declaration :
+	block_item_declaration
+		{T_function_item_declaration_block($1)}
+	| attribute_instance_list tf_input_declaration SEMICOLON
+		{T_function_item_declaration_input($1,$2)}
+;
+
+function_port_list :
+	attribute_instance_list_tf_input_declaration 
+	comma_attribute_instance_list_tf_input_declaration_list
+		{$1::$2}
+;
+
+attribute_instance_list_tf_input_declaration :
+	attribute_instance_list tf_input_declaration
+		{T_attribute_instance_list_tf_input_declaration($1,$2)}
+		
+comma_attribute_instance_list_tf_input_declaration_list :
+	{[]}
+	| COMMA attribute_instance_list_tf_input_declaration comma_attribute_instance_list_tf_input_declaration_list
+		{$2::$3}
+;
+
+function_range_or_type :
+	{T_function_range_or_type_NOSPEC}
+	|	KEY_SIGNED {T_function_range_or_type(T_signed_TRUE,T_range_NOSPEC)}
+	| range				{T_function_range_or_type(T_signed_FALSE,range)}
+	|	KEY_SIGNED range {T_function_range_or_type(T_signed_TRUE,range)}
+	| KEY_INTEGER {T_function_range_or_type_INTEGER}
+	| real				{T_function_range_or_type_REAL}
+	| realtime		{T_function_range_or_type_REALTIME}
+	| time				{T_function_range_or_type_TIME}
+;
+
+
+
+/*A.2.7 Task declarations*/
+
+task_declaration :
+	KEY_TASK automatic_opt task_identifier SEMICOLON
+		task_item_declaration_list
+		statement_or_null
+		KEY_ENDTASK
+		{T_task_declaration1($2,$3,$5,$6)}
+	| KEY_TASK automatic_opt task_identifier LPARENT task_port_list  RPARENT SEMICOLON
+		block_item_declaration_list
+		statement_or_null
+		KEY_ENDTASK
+		{T_task_declaration2($2,$3,$5,$8,$9)}
+
+
+task_item_declaration_list :
+	{[]}
+	| task_item_declaration task_item_declaration_list {$1::$2}
+;
+
+block_item_declaration_list :
+	{[]}
+	| block_item_declaration block_item_declaration_list
+		{$1::$2}
+;
+
+task_item_declaration :
+	block_item_declaration
+		{T_task_item_declaration_block($1)}
+	|  attribute_instance_list  tf_input_declaration SEMICOLON 
+		{T_task_item_declaration_input($2)}
+	|  attribute_instance_list  tf_output_declaration SEMICOLON
+		{T_task_item_declaration_output($2)}
+	|  attribute_instance_list  tf_inout_declaration SEMICOLON
+		{T_task_item_declaration_inout($2)}
+
+task_port_list :
+	task_port_item comma_task_port_item_list
+		{$1::$2}
+;
+
+
+
+task_port_item :
+		 attribute_instance_list tf_input_declaration
+		 	{T_task_port_item_input($2)}
+	|  attribute_instance_list tf_output_declaration
+		 	{T_task_port_item_output($2)}
+	|  attribute_instance_list tf_inout_declaration
+		 	{T_task_port_item_inout($2)}
+;
+
+
+tf_input_declaration :
+	KEY_INPUT reg_opt signed_opt range_opt list_of_port_identifiers
+		{T_tf_input_declaration_reg($2,$3,$4,$5)}
+	| KEY_INPUT task_port_type list_of_port_identifiers
+		{T_tf_input_declaration_type($2,$3)}
+
+
+reg_opt :
+	{T_reg_false}
+	| KEY_REG {T_reg_true}
+;
+
+tf_output_declaration :
+	KEY_OUTPUT reg_opt signed_opt range_opt list_of_port_identifiers
+		{T_tf_output_declaration_reg($2,$3,$4,$5)}
+	| KEY_OUTPUT task_port_type list_of_port_identifiers
+		{T_tf_output_declaration_type($2,$3)}
+;
+
+tf_inout_declaration :
+	KEY_INOUT reg_opt signed_opt range_opt list_of_port_identifiers
+		{T_tf_inout_declaration_reg($2,$3,$4,$5)}
+	| KEY_INOUT task_port_type list_of_port_identifiers
+		{T_tf_inout_declaration_type($2,$3)}
+;
+
+task_port_type :
+	KEY_INTEGER			{T_task_port_type_integer}
+	| KEY_REAL  		{T_task_port_type_real}
+	| KEY_REALTIME	{T_task_port_type_realtime}
+	| KEY_TIME			{T_task_port_type_time}
+;
+
+
+/*A.2.8 Block item declarations*/
+
+block_item_declaration :
+	 attribute_instance_list  KEY_REG signed_opt range_opt list_of_block_variable_identifiers SEMICOLON
+	 	{T_block_item_declaration_reg($1,$3,$4,$5)}
+|  attribute_instance_list  KEY_INTEGER list_of_block_variable_identifiers SEMICOLON
+		{T_block_item_declaration_integer($1,$3)}
+|  attribute_instance_list  KEY_TIME list_of_block_variable_identifiers SEMICOLON
+		{T_block_item_declaration_time($1,$3)}
+|  attribute_instance_list  KEY_REAL list_of_block_real_identifiers SEMICOLON
+		{T_block_item_declaration_real($1,$3)}
+|  attribute_instance_list  KEY_REALTIME list_of_block_real_identifiers SEMICOLON
+		{T_block_item_declaration_realtime($1,$3)}
+|  attribute_instance_list  event_declaration
+		{T_block_item_declaration_event($1,$2)}
+|  attribute_instance_list  local_parameter_declaration SEMICOLON
+		{T_block_item_declaration_local_param($1,$2)}
+|  attribute_instance_list  parameter_declaration SEMICOLON
+		{T_block_item_declaration_param($1,$2)}
+;
+
+list_of_block_variable_identifiers : 
+	block_variable_type comma_block_variable_type_list
+		{$1::$2}
+;
+
+list_of_block_real_identifiers :
+	block_real_type comma_block_real_type_list
+		{$1::$2}
+;
+
+comma_block_real_type_list :
+	{[]}
+	| COMMA block_real_type comma_block_real_type_list
+		{$2::$3}
+;
+
+block_variable_type :
+	variable_identifier dimension_list
+		{T_block_variable_type($1,$2)}
+;
+
+block_real_type :
+	real_identifier dimension_list
+		{T_block_real_type($1,$2)}
+;
+
+
+/*A.3 Primitive instances
+A.3.1 Primitive instantiation and instances*/
+
+gate_instantiation :
+	cmos_switchtype delay3_opt cmos_switch_instance comma_cmos_switch_instance_list SEMICOLON
+		{T_gate_instantiation_cmos($1,$2,$3::$4)}
+	| enable_gatetype drive_strength_opt delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
+		{T_gate_instantiation_enable($1,$2,$3,$4::$5)}
+	| mos_switchtype delay3_opt mos_switch_instance comma_mos_switch_instance_list SEMICOLON
+		{T_gate_instantiation_mos($1,$2,$3::$4)}
+	| n_input_gatetype drive_strength_opt delay2_opt n_input_gate_instance comma_n_input_gate_instance_list SEMICOLON
+		{T_gate_instantiation_input($1,$2,$3,$4::$5)}
+	| n_output_gatetype drive_strength_opt delay2_opt n_output_gate_instance comma_n_output_gate_instance_list SEMICOLON
+		{T_gate_instantiation_output($1,$2,$3,$4::$5)}
+	| pass_en_switchtype delay2_opt pass_enable_switch_instance comma_pass_enable_switch_instance_list SEMICOLON
+		{T_gate_instantiation_pass_en($1,$2,$3::$4)}
+	| pass_switchtype pass_switch_instance comma_pass_switch_instance_list SEMICOLON
+		{T_gate_instantiation_pass($1,$2::$3)}
+	| KEY_PULLDOWN pulldown_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+		{T_gate_instantiation_pulldown($2,$3::$4)}
+	| KEY_PULLUP pullup_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+		{T_gate_instantiation_pullup($2,$3::$4)}
+
+
+comma_cmos_switch_instance_list :
+	{[]}
+	| COMMA cmos_switch_instance comma_cmos_switch_instance_list
+		{$2::$3}
+;
+
+comma_enable_gate_instance_list :
+	{[]}
+	| COMMA enable_gate_instance comma_enable_gate_instance_list 
+		{$2::$3}
+;
+
+comma_mos_switch_instance_list :
+	{[]}
+	| COMMA mos_switch_instance comma_mos_switch_instance_list
+		{$2::$3}
+;
+
+comma_n_input_gate_instance_list :
+	{[]}
+	| COMMA n_input_gate_instance comma_n_input_gate_instance_list 
+		{$2::$3}
+;
+
+
+delay2_opt :
+	{T_delay2_NOSPEC}
+	
+pulldown_strength_opt :
+	{T_pulldown_strength_NOSPEC}
+	| pulldown_strength {$1}
+;
+
+pullup_strength_opt :
+	{T_pullup_strength_NOSPEC}
+	| pullup_strength {$1}
+;
+
+cmos_switch_instance :
+	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA ncontrol_terminal COMMA pcontrol_terminal RPARENT
+		{T_cmos_switch_instance $1,$3,$5,$7,$9}
+;
+
+
+name_of_gate_instance_opt :
+	{T_name_of_gate_instance_NOSPEC}
+	| name_of_gate_instance {$1}
+;
+
+enable_gate_instance :
+	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA enable_terminal RPARENT
+		{T_enable_gate_instance($1,$3,$5,$7)}
+;
+
+mos_switch_instance : 
+	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA enable_terminal RPARENT
+		{T_mos_switch_instance($1,$3,$5,$7)}
+;
+
+n_input_gate_instance : 
+	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal comma_input_terminal_list RPARENT
+		{T_n_input_gate_instance($1,$3,$5,$6)}
+;
+
+comma_input_terminal_list :
+	{[]}
+	| COMMA input_terminal comma_input_terminal_list
+		{$2::$3}
+;
+
+n_output_gate_instance :
+	name_of_gate_instance_opt LPARENT output_terminal comma_output_terminal_list COMMA input_terminal RPARENT
+		{T_n_output_gate_instance($1,$3,$4,$6)}
+;
+
+comma_output_terminal_list :
+	{[]}
+	| COMMA output_terminal comma_output_terminal_list
+		{$2::$3}
+;
+
+pass_switch_instance :
+	name_of_gate_instance_opt LPARENT inout_terminal COMMA inout_terminal RPARENT
+		{T_pass_switch_instance($1,$3,$5)}
+;
+
+pass_enable_switch_instance :
+	name_of_gate_instance_opt LPARENT inout_terminal COMMA inout_terminal COMMA enable_terminal RPARENT
+		{T_pass_enable_switch_instance($1,$3,$5,$7)}
+;
+
+
+pull_gate_instance :
+	name_of_gate_instance_opt LPARENT output_terminal RPARENT
+		{T_pull_gate_instance($1,$3)}
+;
+
+name_of_gate_instance :
+	gate_instance_identifier LSQUARE range RSQUARE
+		{T_name_of_gate_instance($1,$3)}
+;
+
+/*A.3.2 Primitive strengths*/
+
+pulldown_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_pulldown_strength01($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_pulldown_strength10($2,$4)}
+	| LPARENT strength0 RPARENT
+		{T_pulldown_strength0($2)}
+;
+
+pullup_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_pullup_strength01($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_pullup_strength10($2,$4)}
+	| LPARENT strength1 RPARENT
+		{T_pullup_strength1($2)}
+;
+
+
+/*A.3.3 Primitive terminals*/
+enable_terminal : expression {$1} ;
+inout_terminal : net_lvalue {$1} ;
+input_terminal : expression {$1} ;
+ncontrol_terminal : expression {$1} ;
+output_terminal : net_lvalue {$1} ;
+pcontrol_terminal : expression {$1};
+
+
+
+/*A.3.4 Primitive gate and switch types*/
+
+cmos_switchtype :
+	KEY_CMOS   {T_cmos_switchtype_CMOS}
+	| KEY_RCMOS {T_cmos_switchtype_RCMOS}
+;
+
+enable_gatetype :
+		KEY_BUFIF0 	{T_enable_gatetype__BUFIF0}
+	| KEY_BUFIF1 	{T_enable_gatetype__BUFIF1}
+	| KEY_NOTIF0 	{T_enable_gatetype__NOTIF0}
+	| KEY_NOTIF1	{T_enable_gatetype__NOTIF1}
+;
+
+mos_switchtype : 
+		KEY_NMOS 	{T_mos_switchtype_NMOS }	
+	| KEY_PMOS 	{T_mos_switchtype_PMOS }
+	| KEY_RNMOS	{T_mos_switchtype_RNMOS} 
+	| KEY_RPMOS	{T_mos_switchtype_RPMOS}
+;
+
+n_input_gatetype :
+   	KEY_AND  {T_n_input_gatetype_AND }  
+	| KEY_NAND {T_n_input_gatetype_NAND}
+	| KEY_OR 	 {T_n_input_gatetype_OR 	}
+	| KEY_NOR  {T_n_input_gatetype_NOR }
+	| KEY_XOR  {T_n_input_gatetype_XOR }
+	| KEY_XNOR {T_n_input_gatetype_XNOR} 
+;
+
+n_output_gatetype :
+	KEY_BUF  {T_n_output_gatetype_BUF}
+	| KEY_NOT {T_n_output_gatetype_NOT}
+;
+
+pass_en_switchtype :
+	  KEY_TRANIF0 {T_pass_en_switchtype_TRANIF0 } 
+	| KEY_TRANIF1 {T_pass_en_switchtype_TRANIF1 }   
+	| KEY_RTRANIF1{T_pass_en_switchtype_RTRANIF1}  
+	| KEY_RTRANIF0{T_pass_en_switchtype_RTRANIF0} 
+;
+pass_switchtype :
+	  KEY_TRAN  {T_pass_switchtype_TRAN } 
+	| KEY_RTRAN {T_pass_switchtype_RTRAN} 
+;
+
+
+
+/*A.4 Module instantiation and generate construct
+A.4.1 Module instantiation*/
+
+module_instantiation :
+	module_identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
+		{T_module_instantiation($1,$2,$3::$4)}
+;
+
+parameter_value_assignment_opt :
+	{T_parameter_value_assignment_NOSPEC}
+	| parameter_value_assignment {$1}
+
+parameter_value_assignment :
+	JING LPARENT list_of_parameter_assignments RPARENT
+		{$1}
+;
+
+list_of_parameter_assignments :
+	ordered_parameter_assignment comma_ordered_parameter_assignment_list
+		{T_parameter_value_assignment_order($1::$2)} 
+	| named_parameter_assignment comma_named_parameter_assignment_list
+		{T_parameter_value_assignment_named($1::$2)}
+;
+
+comma_ordered_parameter_assignment_list :
+	{[]}
+	| COMMA ordered_parameter_assignment comma_ordered_parameter_assignment_list
+		{$2::$3}
+;
+
+comma_named_parameter_assignment_list :
+	{[]}
+	| COMMA named_parameter_assignment comma_named_parameter_assignment_list 
+		{$2::$3}
+;
+
+ordered_parameter_assignment :
+	expression {$1}
+;
+
+named_parameter_assignment :
+	PERIOD parameter_identifier LPARENT mintypmax_expression_opt RPARENT
+		{T_named_parameter_assignment($2,$4)}
+;
+
+mintypmax_expression_opt :
+	{T_mintypmax_expression_NOSPEC}
+	| mintypmax_expression {$1}
+;
+
+module_instance :
+	name_of_module_instance LPARENT list_of_port_connections_opt RPARENT
+		{T_module_instance($1,$3)}
+;
+
+list_of_port_connections_opt :
+	{T_list_of_port_connections_NOSPEC}
+	| list_of_port_connections {$1}
+
+name_of_module_instance :
+	module_instance_identifier range_opt
+		{T_name_of_module_instance($1,$2)}
+;
+
+list_of_port_connections :
+	ordered_port_connection comma_ordered_port_connection_list
+		T_list_of_port_connections_ordered($1::$2)
+	| named_port_connection comma_named_port_connection_list
+		T_list_of_port_connections_named($1::$2)
+;
+
+comma_ordered_port_connection_list :
+	{[]}
+	| COMMA ordered_port_connection comma_ordered_port_connection_list
+		{$2::$3}
+;
+
+comma_named_port_connection_list :
+	{[]}
+	| COMMA named_port_connection comma_named_port_connection_list
+		{$2::$3}
+;
+
+ordered_port_connection :
+	attribute_instance_list expression_opt
+		{T_ordered_port_connection($1,$2)}
+
+
+expression_opt :
+	{T_expression_NOSPEC}
+	| expression {$1}
+;
+
+named_port_connection :
+	attribute_instance_list PERIOD port_identifier LPARENT expression_opt RPARENT
+		{T_named_port_connection($1,$3,$5)}
+;
+
+
+/*A.4.2 Generate construct*/
+generate_region :
+	KEY_GENERATE module_or_generate_item_list KEY_ENDGENERATE
+		{T_generate_region($1)}
+
+module_or_generate_item_list :
+	{[]}
+	| module_or_generate_item module_or_generate_item_list {$1::$2}
+;
+
+genvar_declaration :
+	KEY_GENVAR list_of_genvar_identifiers SEMICOLON
+		{T_genvar_declaration($2)}
+;
+
+list_of_genvar_identifiers :
+	genvar_identifier comma_genvar_identifier_list
+		{$1::$2}
+;
+
+comma_genvar_identifier_list :
+	{[]}
+	| COMMA genvar_identifier comma_genvar_identifier_list 
+		{$2::$3}
+;
+
+loop_generate_construct :
+	KEY_FOR LPARENT genvar_initialization SEMICOLON genvar_expression SEMICOLON genvar_iteration RPARENT generate_block
+		{}
+;
+
+
+
 genvar_initialization ::=
 genvar_identifier = constant_expression
 genvar_expression ::=
@@ -906,14 +1591,12 @@ assign variable_assignment
 | release variable_lvalue
 | release net_lvalue
 variable_assignment ::= variable_lvalue = expression
+
+
+
 A.6.3 Parallel and sequential blocks
 par_block ::= fork [ : block_identifier
 { block_item_declaration } ] { statement } join
-Copyright © 2006 IEEE. All rights reserved.
-497
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
 seq_block ::= begin [ : block_identifier
 { block_item_declaration } ] { statement } end
 A.6.4 Statements

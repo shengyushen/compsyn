@@ -235,6 +235,8 @@ rule veriloglex  = parse
 			|"wor"                -> KEY_WOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xnor"               -> KEY_XNOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xor"                -> KEY_XOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"PATHPULSE$"					-> KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"$"									-> DOLLOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|_										-> SIMPLE_IDENTIFIER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
 	| unsigned_number{
