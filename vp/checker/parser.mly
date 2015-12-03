@@ -221,14 +221,19 @@ end
 
 
 
+%token <Lexing.position*Lexing.position*string> DOLLOR /*$*/
+%token <Lexing.position*Lexing.position*string> IMPLY /*IMPLY*/
+
+
+
 
 
 
 
 
 /*A.8.7 Numbers */
-%token <Lexing.position*Lexing.position*string> UNSIGNED_NUMBER
-%token <Lexing.position*Lexing.position*string> REAL_NUMBER
+/*%token <Lexing.position*Lexing.position*string> UNSIGNED_NUMBER
+%token <Lexing.position*Lexing.position*string> REAL_NUMBER*/
 %token <Lexing.position*Lexing.position*string> NUMBER
 /*A.8.8 Strings*/
 %token <Lexing.position*Lexing.position*string> STRING
@@ -357,10 +362,11 @@ port_expression :
 
 port_reference :
 	port_identifier lsquare_constant_range_expression_rsquare_opt
+		{T_port_reference($1,$2)}
 ;
 
 lsquare_constant_range_expression_rsquare_opt :
-	{T_range_expression_NOSPEC}
+	{T_constant_range_expression_NOSPEC}
 	| lsquare_constant_range_expression_rsquare {$1}
 
 
@@ -754,9 +760,11 @@ delay2 :
 
 
 delay_value :
-	unsigned_number
-	| real_number
+/*	unsigned_number
+	| real_number*/
+	number {T_delay_value_num($1)}
 	| identifier
+		{T_delay_value_id($1)}
 ;
 
 /*A.2.3 Declaration lists*/
@@ -1482,312 +1490,917 @@ comma_genvar_identifier_list :
 
 loop_generate_construct :
 	KEY_FOR LPARENT genvar_initialization SEMICOLON genvar_expression SEMICOLON genvar_iteration RPARENT generate_block
-		{}
+		{T_loop_generate_construct($3,$5,$7,$9)}
+;
+
+genvar_initialization :
+	genvar_identifier EQU1 constant_expression
+		{T_genvar_initialization($1,$3)}
+;
+
+genvar_expression :
+	genvar_primary
+		{T_genvar_expression_primary($1)}
+	| unary_operator attribute_instance_list genvar_primary
+		{T_genvar_expression_1op($1,$2,$3)}
+	| genvar_expression binary_operator attribute_instance_list  genvar_expression
+		{T_genvar_expression_2op($1,$2,$3,$4)}
+	| genvar_expression OP2_QUESTION attribute_instance_list genvar_expression COLON genvar_expression
+		{T_genvar_expression_sel($1,$3,$4,$6)}
+;
+
+genvar_iteration :
+	genvar_identifier EQU1 genvar_expression
+		{T_genvar_iteration($1,$3)}
+;
+
+genvar_primary :
+	constant_primary
+		{T_genvar_primary_const($1)}
+	| genvar_identifier
+		{T_genvar_primary_id($1)}
 ;
 
 
 
-genvar_initialization ::=
-genvar_identifier = constant_expression
-genvar_expression ::=
-genvar_primary
-| unary_operator { attribute_instance } genvar_primary
-| genvar_expression binary_operator { attribute_instance } genvar_expression
-| genvar_expression ? { attribute_instance } genvar_expression : genvar_expression
-genvar_iteration ::=
-genvar_identifier = genvar_expression
-genvar_primary ::=
-constant_primary
-| genvar_identifier
-conditional_generate_construct ::=
-if_generate_construct
-| case_generate_construct
-if_generate_construct ::=
-if ( constant_expression ) generate_block_or_null
-Copyright © 2006 IEEE. All rights reserved.
-495
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-[ else generate_block_or_null ]
-case_generate_construct ::=
-case ( constant_expression )
-case_generate_item { case_generate_item } endcase
-case_generate_item ::=
-constant_expression { , constant_expression } : generate_block_or_null
-| default [ : ] generate_block_or_null
-generate_block ::=
-module_or_generate_item
-| begin [ : generate_block_identifier ] { module_or_generate_item } end
-generate_block_or_null ::=
-generate_block
-| ;
-A.5 UDP declaration and instantiation
-A.5.1 UDP declaration
-udp_declaration ::=
-{ attribute_instance } primitive udp_identifier ( udp_port_list ) ;
-udp_port_declaration { udp_port_declaration }
-udp_body
-endprimitive
-| { attribute_instance } primitive udp_identifier ( udp_declaration_port_list ) ;
-udp_body
-endprimitive
-A.5.2 UDP ports
-udp_port_list ::= output_port_identifier , input_port_identifier { , input_port_identifier }
-udp_declaration_port_list ::=
-udp_output_declaration , udp_input_declaration { , udp_input_declaration }
-udp_port_declaration ::=
-udp_output_declaration ;
-| udp_input_declaration ;
-| udp_reg_declaration ;
-udp_output_declaration ::=
-{ attribute_instance } output port_identifier
-| { attribute_instance } output reg port_identifier [ = constant_expression ]
-udp_input_declaration ::= { attribute_instance } input list_of_port_identifiers
-udp_reg_declaration ::= { attribute_instance } reg variable_identifier
-A.5.3 UDP body
-udp_body ::= combinational_body | sequential_body
-combinational_body ::= table combinational_entry { combinational_entry } endtable
-combinational_entry ::= level_input_list : output_symbol ;
-sequential_body ::= [ udp_initial_statement ] table sequential_entry { sequential_entry } endtable
-496
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-udp_initial_statement ::= initial output_port_identifier = init_val ;
-init_val ::= 1'b0 | 1'b1 | 1'bx | 1'bX | 1'B0 | 1'B1 | 1'Bx | 1'BX | 1 | 0
-sequential_entry ::= seq_input_list : current_state : next_state ;
-seq_input_list ::= level_input_list | edge_input_list
-level_input_list ::= level_symbol { level_symbol }
-edge_input_list ::= { level_symbol } edge_indicator { level_symbol }
-edge_indicator ::= ( level_symbol level_symbol ) | edge_symbol
-current_state ::= level_symbol
+
+conditional_generate_construct :
+	if_generate_construct
+		{T_conditional_generate_construct_if($1)}
+	| case_generate_construct
+		{T_conditional_generate_construct_case($1)}
+;
+
+
+if_generate_construct :
+	KEY_IF LPARENT constant_expression RPARENT generate_block_or_null
+	else_generate_block_or_null_opt
+		{T_if_generate_construct($3,$5,$6)}
+;
+
+else_generate_block_or_null_opt :
+	{T_generate_block_NOSPEC}
+	| KEY_ELSE generate_block_or_null
+		{$2}
+;
+
+
+case_generate_construct :
+	KEY_CASE LPARENT constant_expression RPARENT
+	case_generate_item case_generate_item_list KEY_ENDCASE
+;
+
+case_generate_item_list :
+	{[]}
+	| case_generate_item case_generate_item_list
+		{$1::$2}
+;
+
+case_generate_item :
+	constant_expression comma_constant_expression_list COLON generate_block_or_null
+		{T_case_generate_item_case($1::$2,$4)}
+	| KEY_DEFAULT colon_opt  generate_block_or_null
+		{T_case_generate_item_default($3)}
+;
+
+colon_opt :
+	{0}
+	| COLON {0}
+
+generate_block :
+	module_or_generate_item
+		{T_generate_block_mgi($1)}
+	| KEY_BEGIN colon_generate_block_identifier_opt module_or_generate_item_list KEY_END
+		{T_generate_block_begin($2,$3)}
+;
+
+colon_generate_block_identifier_opt :
+	{T_generate_block_identifier_NOSPEC}
+	| COLON generate_block_identifier
+		{T_generate_block_identifier_string($2)}
+;
+
+generate_block_or_null :
+	generate_block
+		{$1}
+	| SEMICOLON
+		{T_generate_block_NOSPEC}
+;
+
+
+/*A.5 UDP declaration and instantiation
+A.5.1 UDP declaration*/
+
+udp_declaration :
+	attribute_instance_list KEY_PRIMITIVE udp_identifier LPARENT udp_port_list RPARENT SEMICOLON
+	udp_port_declaration udp_port_declaration_list
+	udp_body
+	KEY_ENDPRIMITIVE
+		{T_udp_declaration_1($1,$3,$5,$8::$9,$10)}
+| attribute_instance_list KEY_PRIMITIVE udp_identifier LPARENT udp_declaration_port_list RPARENT SEMICOLON
+	udp_body
+	KEY_ENDPRIMITIVE
+		{T_udp_declaration_2($1,$3,$5,$8)}
+;
+
+
+udp_port_declaration_list :
+	{[]}
+	| udp_port_declaration udp_port_declaration_list
+		{$1::$2}
+;
+
+/*A.5.2 UDP ports*/
+
+udp_port_list :
+	output_port_identifier COMMA input_port_identifier comma_input_port_identifier_list
+		{T_udp_port_list($1,$3::$4)}
+;
+
+comma_input_port_identifier_list :
+	{[]}
+	| COMMA input_port_identifier comma_input_port_identifier_list
+		{$2::$3}
+;
+
+udp_declaration_port_list :
+	udp_output_declaration COMMA udp_input_declaration comma_udp_input_declaration_list
+		{T_udp_declaration_port_list($1,$3::$4)}
+;
+
+comma_udp_input_declaration_list :
+	{[]}
+	| COMMA udp_input_declaration comma_udp_input_declaration_list
+		{$2::$3}
+;
+
+
+udp_port_declaration :
+	udp_output_declaration SEMICOLON
+		{T_udp_port_declaration_out($1)}
+	| udp_input_declaration SEMICOLON
+		{T_udp_port_declaration_input($1)}
+	| udp_reg_declaration SEMICOLON
+		{T_udp_port_declaration_reg($1)}
+;
+
+udp_output_declaration :
+	attribute_instance_list KEY_OUTPUT port_identifier
+		{T_udp_output_declaration_output($1,$3)}
+	| attribute_instance_list KEY_OUTPUT KEY_REG port_identifier equ1_constant_expression_opt
+		{T_udp_output_declaration_reg($1,$4,$5)}
+;
+
+equ1_constant_expression_opt :
+	{T_constant_expression_NOSPEC}
+	| EQU1 constant_expression
+		{$2}
+;
+
+udp_input_declaration : 
+	attribute_instance_list KEY_INPUT list_of_port_identifiers
+		{T_udp_input_declaration($1,$3)}
+;
+
+udp_reg_declaration :
+	attribute_instance_list  KEY_REG variable_identifier
+		{T_udp_reg_declaration($1,$3)}
+;
+
+/*A.5.3 UDP body*/
+
+udp_body : 
+	combinational_body 
+		{T_udp_body_comb($1)}
+	| sequential_body
+		{T_udp_body_seq($1)}
+;
+
+
+combinational_body :
+	KEY_TABLE combinational_entry combinational_entry_list KEY_ENDTABLE
+		{$2::$3}
+;
+
+combinational_entry_list :
+	{[]}
+	| combinational_entry combinational_entry_list
+		{$1::$2}
+;
+
+combinational_entry :
+	level_input_list COLON output_symbol SEMICOLON
+		{T_combinational_entry($1,$3)}
+;
+
+sequential_body :
+	udp_initial_statement_opt KEY_TABLE sequential_entry sequential_entry_list KEY_ENDTABLE
+		{T_sequential_body($1,$3::$4)}
+;
+
+udp_initial_statement_opt :
+	{T_udp_initial_statement_NOSPEC}
+	| udp_initial_statement
+		{$1}
+;
+
+
+sequential_entry_list :
+	{[]}
+	| sequential_entry sequential_entry_list
+		{$1::$2}
+;
+
+udp_initial_statement :
+	KEY_INITIAL output_port_identifier EQU1 init_val SEMICOLON
+		{T_udp_initial_statement($2,$4)}
+;
+
+
+
+/*init_val ::= 1'b0 | 1'b1 | 1'bx | 1'bX | 1'B0 | 1'B1 | 1'Bx | 1'BX | 1 | 0*/
+/*actually lex only return number*/
+init_val :
+	NUMBER
+		{$1}
+;
+
+sequential_entry :
+	seq_input_list COLON current_state COLON next_state SEMICOLON
+		{T_sequential_entry($1,$3,$5)}
+;
+
+seq_input_list :
+	level_input_list 
+		{T_seq_input_list_level($1)}
+	| edge_input_list
+		{T_seq_input_list_edge($1)}
+;
+
+level_input_list :
+	level_symbol level_symbol_list
+		{$1::$2}
+;
+
+level_symbol_list :
+	{[]}
+	| level_symbol level_symbol_list
+		{$1::$2}
+;
+
+edge_input_list :
+	level_symbol_list edge_indicator level_symbol_list
+		{T_edge_input_list($1,$2,$3)}
+;
+
+level_symbol_list :
+	{[]}
+	| level_symbol level_symbol_list
+		{$1::$2}
+;
+
+edge_indicator :
+	LPARENT level_symbol level_symbol RPARENT 
+		{T_edge_indicator_level($2,$3)}
+	| edge_symbol
+		{T_edge_indicator_edge($1)}
+;
+
+/*current_state : level_symbol
 next_state ::= output_symbol | -
 output_symbol ::= 0 | 1 | x | X
 level_symbol ::= 0 | 1 | x | X | ? | b | B
 edge_symbol ::= r | R | f | F | p | P | n | N | *
-A.5.4 UDP instantiation
-udp_instantiation ::= udp_identifier [ drive_strength ] [ delay2 ]
-udp_instance { , udp_instance } ;
-udp_instance ::= [ name_of_udp_instance ] ( output_terminal , input_terminal
-{ , input_terminal } )
-name_of_udp_instance ::= udp_instance_identifier [ range ]
-A.6 Behavioral statements
-A.6.1 Continuous assignment statements
-continuous_assign ::= assign [ drive_strength ] [ delay3 ] list_of_net_assignments ;
-list_of_net_assignments ::= net_assignment { , net_assignment }
-net_assignment ::= net_lvalue = expression
-A.6.2 Procedural blocks and assignments
-initial_construct ::= initial statement
-always_construct ::= always statement
-blocking_assignment ::= variable_lvalue = [ delay_or_event_control ] expression
-nonblocking_assignment ::= variable_lvalue <= [ delay_or_event_control ] expression
-procedural_continuous_assignments ::=
-assign variable_assignment
-| deassign variable_lvalue
-| force variable_assignment
-| force net_assignment
-| release variable_lvalue
-| release net_lvalue
-variable_assignment ::= variable_lvalue = expression
+*/
+/*lexer only return UNSIGNED_NUMBER, SIMPLE_IDENTIFIER and * and -*/
+
+edge_symbol :
+	SIMPLE_IDENTIFIER	{$1}
+	| OP2_MULTIPLE	{$1}
+;
+
+level_symbol :
+/*	UNSIGNED_NUMBER {$1}*/
+	NUMBER {$1}
+	| SIMPLE_IDENTIFIER  {$1}
+	| OP2_QUESTION {$1}
+;
+
+output_symbol :
+/*	UNSIGNED_NUMBER {$1}*/
+	NUMBER {$1}
+	| SIMPLE_IDENTIFIER  {$1}
+;
+
+next_state :
+/*	UNSIGNED_NUMBER {$1}*/
+	NUMBER {$1}
+	| SIMPLE_IDENTIFIER  {$1}
+	| OP12_SUB  {$1}
+;
+
+current_state :
+/*	UNSIGNED_NUMBER {$1}*/
+	NUMBER {$1}
+	| SIMPLE_IDENTIFIER  {$1}
+	| OP2_QUESTION {$1}
+;
+	
 
 
 
-A.6.3 Parallel and sequential blocks
-par_block ::= fork [ : block_identifier
-{ block_item_declaration } ] { statement } join
-seq_block ::= begin [ : block_identifier
-{ block_item_declaration } ] { statement } end
-A.6.4 Statements
-statement ::=
-{ attribute_instance } blocking_assignment ;
-| { attribute_instance } case_statement
-| { attribute_instance } conditional_statement
-| { attribute_instance } disable_statement
-| { attribute_instance } event_trigger
-| { attribute_instance } loop_statement
-| { attribute_instance } nonblocking_assignment ;
-| { attribute_instance } par_block
-| { attribute_instance } procedural_continuous_assignments ;
-| { attribute_instance } procedural_timing_control_statement
-| { attribute_instance } seq_block
-| { attribute_instance } system_task_enable
-| { attribute_instance } task_enable
-| { attribute_instance } wait_statement
-statement_or_null ::=
-statement
-| { attribute_instance } ;
-function_statement 1 ::= statement
-A.6.5 Timing control statements
-delay_control ::=
-# delay_value
-| # ( mintypmax_expression )
-delay_or_event_control ::=
-delay_control
-| event_control
-| repeat ( expression ) event_control
-disable_statement ::=
-disable hierarchical_task_identifier ;
-| disable hierarchical_block_identifier ;
-event_control ::=
-@ hierarchical_event_identifier
-| @ ( event_expression )
-| @*
-| @ (*)
-event_trigger ::=
--> hierarchical_event_identifier { [ expression ] } ;
-event_expression ::=
-expression
-| posedge expression
-| negedge expression
-| event_expression or event_expression
-498
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-| event_expression , event_expression
-procedural_timing_control ::=
-delay_control
-| event_control
-procedural_timing_control_statement ::=
-procedural_timing_control statement_or_null
-wait_statement ::=
-wait ( expression ) statement_or_null
-A.6.6 Conditional statements
-conditional_statement ::=
-if ( expression )
-statement_or_null [ else statement_or_null ]
-| if_else_if_statement
-if_else_if_statement ::=
-if ( expression ) statement_or_null
-{ else if ( expression ) statement_or_null }
-[ else statement_or_null ]
-A.6.7 Case statements
-case_statement ::=
-case ( expression )
-case_item { case_item } endcase
-| casez ( expression )
-case_item { case_item } endcase
-| casex ( expression )
-case_item { case_item } endcase
-case_item ::=
-expression { , expression } : statement_or_null
-| default [ : ] statement_or_null
-A.6.8 Looping statements
-loop_statement ::=
-forever statement
-| repeat ( expression ) statement
-| while ( expression ) statement
-| for ( variable_assignment ; expression ; variable_assignment )
-statement
-A.6.9 Task enable statements
-system_task_enable ::= system_task_identifier [ ( [ expression ] { , [ expression ] } ) ] ;
-task_enable ::= hierarchical_task_identifier [ ( expression { , expression } ) ] ;
-Copyright © 2006 IEEE. All rights reserved.
-499
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-A.7 Specify section
-A.7.1 Specify block declaration
-specify_block ::= specify { specify_item } endspecify
-specify_item ::=
-specparam_declaration
-| pulsestyle_declaration
-| showcancelled_declaration
-| path_declaration
-| system_timing_check
-pulsestyle_declaration ::=
-pulsestyle_onevent list_of_path_outputs ;
-| pulsestyle_ondetect list_of_path_outputs ;
-showcancelled_declaration ::=
-showcancelled list_of_path_outputs ;
-| noshowcancelled list_of_path_outputs ;
-A.7.2 Specify path declarations
-path_declaration ::=
-simple_path_declaration ;
-| edge_sensitive_path_declaration ;
-| state_dependent_path_declaration ;
-simple_path_declaration ::=
-parallel_path_description = path_delay_value
-| full_path_description = path_delay_value
-parallel_path_description ::=
-( specify_input_terminal_descriptor [ polarity_operator ] => specify_output_terminal_descriptor )
-full_path_description ::=
-( list_of_path_inputs [ polarity_operator ] *> list_of_path_outputs )
-list_of_path_inputs ::=
-specify_input_terminal_descriptor { , specify_input_terminal_descriptor }
-list_of_path_outputs ::=
-specify_output_terminal_descriptor { , specify_output_terminal_descriptor }
-A.7.3 Specify block terminals
-specify_input_terminal_descriptor ::=
-input_identifier [ [ constant_range_expression ] ]
-specify_output_terminal_descriptor ::=
-output_identifier [ [ constant_range_expression ] ]
-input_identifier ::= input_port_identifier | inout_port_identifier
-output_identifier ::= output_port_identifier | inout_port_identifier
-A.7.4 Specify path delays
-path_delay_value ::=
-list_of_path_delay_expressions
-500
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-| ( list_of_path_delay_expressions )
-list_of_path_delay_expressions ::=
-t_path_delay_expression
-| trise_path_delay_expression , tfall_path_delay_expression
-| trise_path_delay_expression , tfall_path_delay_expression , tz_path_delay_expression
-| t01_path_delay_expression , t10_path_delay_expression , t0z_path_delay_expression ,
-tz1_path_delay_expression , t1z_path_delay_expression , tz0_path_delay_expression
-| t01_path_delay_expression , t10_path_delay_expression , t0z_path_delay_expression ,
-tz1_path_delay_expression , t1z_path_delay_expression , tz0_path_delay_expression ,
-t0x_path_delay_expression , tx1_path_delay_expression , t1x_path_delay_expression ,
-tx0_path_delay_expression , txz_path_delay_expression , tzx_path_delay_expression
-t_path_delay_expression ::= path_delay_expression
-trise_path_delay_expression ::= path_delay_expression
-tfall_path_delay_expression ::= path_delay_expression
-tz_path_delay_expression ::= path_delay_expression
-t01_path_delay_expression ::= path_delay_expression
-t10_path_delay_expression ::= path_delay_expression
-t0z_path_delay_expression ::= path_delay_expression
-tz1_path_delay_expression ::= path_delay_expression
-t1z_path_delay_expression ::= path_delay_expression
-tz0_path_delay_expression ::= path_delay_expression
-t0x_path_delay_expression ::= path_delay_expression
-tx1_path_delay_expression ::= path_delay_expression
-t1x_path_delay_expression ::= path_delay_expression
-tx0_path_delay_expression ::= path_delay_expression
-txz_path_delay_expression ::= path_delay_expression
-tzx_path_delay_expression ::= path_delay_expression
-path_delay_expression ::= constant_mintypmax_expression
-edge_sensitive_path_declaration ::=
-parallel_edge_sensitive_path_description = path_delay_value
-| full_edge_sensitive_path_description = path_delay_value
-parallel_edge_sensitive_path_description ::=
-( [ edge_identifier ] specify_input_terminal_descriptor =>
-( specify_output_terminal_descriptor [ polarity_operator ] : data_source_expression ) )
-full_edge_sensitive_path_description ::=
-( [ edge_identifier ] list_of_path_inputs *>
-( list_of_path_outputs [ polarity_operator ] : data_source_expression ) )
-data_source_expression ::= expression
-edge_identifier ::= posedge | negedge
-state_dependent_path_declaration ::=
-if ( module_path_expression ) simple_path_declaration
-| if ( module_path_expression ) edge_sensitive_path_declaration
-| ifnone simple_path_declaration
-polarity_operator ::= + | -
-Copyright © 2006 IEEE. All rights reserved.
-501
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-A.7.5 System timing checks
-A.7.5.1 System timing check commands
-system_timing_check ::=
+
+/*A.5.4 UDP instantiation*/
+udp_instantiation :
+	udp_identifier drive_strength_opt delay2_opt
+		udp_instance comma_udp_instance_list  ;
+		{T_udp_instantiation($1,$2,$3,$4::$5)}
+;
+
+comma_udp_instance_list :
+	{[]}
+	| COMMA udp_instance comma_udp_instance_list
+		{$2::$3}
+;
+
+udp_instance :
+	name_of_udp_instance_opt LPARENT output_terminal COMMA input_terminal comma_input_terminal_list RPARENT
+	{T_udp_instance($1,$3,$5::$6)}
+
+name_of_udp_instance_opt :
+	{T_name_of_udp_instance_NOSPEC}
+	| name_of_udp_instance
+			{$1}
+;
+
+comma_input_terminal_list :
+	{[]}
+	| COMMA input_terminal comma_input_terminal_list
+		{$2::$3}
+;
+
+name_of_udp_instance :
+	udp_instance_identifier range_opt
+		{T_name_of_udp_instance($1,$2)}
+;
+
+/*A.6 Behavioral statements
+A.6.1 Continuous assignment statements*/
+
+
+continuous_assign :
+	KEY_ASSIGN drive_strength_opt delay3_opt list_of_net_assignments SEMICOLON
+		{T_continuous_assign($2,$3,$5)}
+;
+
+list_of_net_assignments :
+	net_assignment comma_net_assignment_list
+		{$1::$2}
+;
+
+comma_net_assignment_list :
+	{[]}
+	COMMA net_assignment comma_net_assignment_list
+		{$2::$3}
+;
+
+
+net_assignment :
+	net_lvalue EQU1 expression
+		{T_net_assignment($1,$2)}
+;
+
+/*A.6.2 Procedural blocks and assignments*/
+
+initial_construct :
+	KEY_INITIAL statement
+		{T_initial_construct($2)}
+;
+
+always_construct :
+	KEY_ALWAYS statement
+		{T_always_construct($2)}
+;
+
+blocking_assignment :
+	variable_lvalue EQU1 delay_or_event_control_opt expression
+		{}
+;
+
+delay_or_event_control_opt :
+	{T_delay_or_event_control_NOSPEC}
+	| delay_or_event_control
+		{$1}
+;
+
+nonblocking_assignment :
+	variable_lvalue OP2_LE delay_or_event_control_opt expression
+		{T_nonblocking_assignment($1,$2,$3)}
+;
+
+procedural_continuous_assignments :
+	KEY_ASSIGN variable_assignment
+		{T_procedural_continuous_assignments_assign($2)}
+	| KEY_DEASSIGN variable_lvalue
+		{T_procedural_continuous_assignments_deassign($2)}
+	| KEY_FORCE variable_assignment
+		{T_procedural_continuous_assignments_force1($2)}
+	| KEY_FORCE net_assignment
+		{T_procedural_continuous_assignments_force2($2)}
+	| KEY_RELEASE variable_lvalue
+		{T_procedural_continuous_assignments_release1($2)}
+	| KEY_RELEASE net_lvalue
+		{T_procedural_continuous_assignments_release2($2)}
+;
+
+variable_assignment :
+	variable_lvalue EQU1 expression
+		{T_variable_assignment($1,$3)}
+;
+
+
+/*A.6.3 Parallel and sequential blocks*/
+
+par_block :
+	KEY_FORK comma_block_identifier_block_item_declaration_list_opt
+	statement_list
+	KEY_JOIN
+		{T_par_block($3)}
+;
+
+comma_block_identifier_block_item_declaration_list_opt :
+	{0}
+	| COMMA block_identifier block_item_declaration_list
+		{0}
+;
+
+statement_list :
+	{[]}
+	| statement statement_list
+		{$1::$2}
+;
+
+seq_block :
+	KEY_BEGIN comma_block_identifier_block_item_declaration_list_opt 
+	statement_list
+	KEY_END
+		{T_seq_block($3)}
+;
+
+/*A.6.4 Statements*/
+
+statement :
+		attribute_instance_list blocking_assignment SEMICOLON
+			{T_statement_blocking_assignment($1,$2)}
+	| attribute_instance_list case_statement
+			{T_statement_case_statement($1,$2)}
+	| attribute_instance_list conditional_statement
+			{T_statement_conditional_statement($1,$2)}
+	| attribute_instance_list disable_statement
+			{T_statement_disable_statement($1,$2)}
+	| attribute_instance_list event_trigger
+			{T_statement_event_trigger($1,$2)}
+	| attribute_instance_list loop_statement
+			{T_statement_loop_statement($1,$2)}
+	| attribute_instance_list nonblocking_assignment SEMICOLON
+			{T_statement_nonblocking_assignment($1,$2)}
+	| attribute_instance_list par_block
+			{T_statement_par_block($1,$2)}
+	| attribute_instance_list procedural_continuous_assignments SEMICOLON
+			{T_statement_procedural_continuous_assignments($1,$2)}
+	| attribute_instance_list procedural_timing_control_statement
+			{T_statement_procedural_timing_control_statement($1,$2)}
+	| attribute_instance_list seq_block
+			{T_statement_seq_block($1,$2)}
+	| attribute_instance_list system_task_enable
+			{T_statement_system_task_enable($1,$2)}
+	| attribute_instance_list task_enable
+			{T_statement_task_enable($1,$2)}
+	| attribute_instance_list wait_statement
+			{T_statement_wait_statement($1,$2)}
+
+
+
+statement_or_null :
+	statement
+		{$1}
+	| attribute_instance_list SEMICOLON
+		{T_statement_NOSPEC}
+;
+
+function_statement :
+	statement
+		{$1}
+;
+
+/*A.6.5 Timing control statements*/
+
+delay_control :
+	JING delay_value
+		{T_delay_control_delay_value($2)}
+	| JING LPARENT mintypmax_expression RPARENT
+		{T_delay_control_mintypmax_expression($3)}
+;
+
+delay_or_event_control :
+	delay_control
+		{T_delay_or_event_control_delay_control($1)}
+	| event_control
+		{T_delay_or_event_control_event_control($1)}
+	| KEY_REPEAT LPARENT expression RPARENT event_control
+		{T_delay_or_event_control_3($3,$5)}
+;
+
+
+disable_statement :
+	KEY_DISABLE hierarchical_task_identifier SEMICOLON
+		{T_disable_statement_task($2)}
+	| KEY_DISABLE hierarchical_block_identifier SEMICOLON
+		{T_disable_statement_block($2)}
+;
+
+
+event_control :
+	AT hierarchical_event_identifier
+		{T_event_control_eventid($2)}
+	| AT LPARENT event_expression RPARENT
+		{T_event_control_event_exp($3)}
+	| AT OP2_MULTIPLE
+		{T_event_control_start}
+	| AT LPARENT OP2_MULTIPLE RPARENT
+		{T_event_control_start}
+;
+
+event_trigger :
+	IMPLY hierarchical_event_identifier square_expression_square_list SEMICOLON
+		{T_event_trigger($2,$3)}
+
+
+square_expression_square_list :
+	{[]}
+	| square_expression_square square_expression_square_list
+		{$1::$2}
+;
+
+square_expression_square :
+	LSQUARE expression RSQUARE
+		{$1}
+;
+
+event_expression :
+	expression
+		{T_event_expression_exp($1)}
+	| KEY_POSEDGE expression
+		{T_event_expression_pos($2)}
+	| KEY_NEGEDGE expression
+		{T_event_expression_neg($2)}
+	| event_expression KEY_OR event_expression
+		{T_event_expression_or($1,$3)}
+	| event_expression COMMA event_expression
+		{T_event_expression_or($1,$3)}
+
+
+
+procedural_timing_control :
+	delay_control
+		{T_procedural_timing_control_delay($1)}
+	| event_control
+		{T_procedural_timing_control_event($1)}
+;
+
+
+procedural_timing_control_statement :
+	procedural_timing_control statement_or_null
+		{T_procedural_timing_control_statement($1,$2)}
+;
+
+wait_statement :
+	KEY_WAIT LPARENT expression RPARENT statement_or_null
+		{T_wait_statement($3,$5)}
+;
+
+/*A.6.6 Conditional statements*/
+conditional_statement :
+	KEY_IF LPARENT expression RPARENT
+	statement_or_null else_statement_or_null_opt
+		{T_conditional_statement_ifelse($3,$5,$6)}
+	| KEY_IF LPARENT expression RPARENT statement_or_null
+		else_if_lp_expression_rp_statement_or_null_list
+		else_statement_or_null_opt
+		{T_conditional_statement_ifelseif($3,$5,$6,$7)}
+;
+
+else_statement_or_null_opt :
+	{T_statement_NOSPEC}
+	| KEY_ELSE statement_or_null
+		{$2}
+;
+
+
+else_if_lp_expression_rp_statement_or_null_list :
+	{[]}
+	| else_if_lp_expression_rp_statement_or_null else_if_lp_expression_rp_statement_or_null_list
+		{$1::$2}
+;
+
+
+else_if_lp_expression_rp_statement_or_null :
+	KEY_ELSE KEY_IF LPARENT expression RPARENT statement_or_null
+		{T_elseif($4,$6)}
+;
+
+
+
+
+/*A.6.7 Case statements*/
+case_statement :
+	KEY_CASE LPARENT expression RPARENT
+	case_item case_item_list
+	KEY_ENDCASE
+			{T_case_statement_case($3,$5::$6)}
+	| KEY_CASEZ LPARENT expression RPARENT
+		case_item case_item_list
+		KEY_ENDCASE
+			{T_case_statement_casez($3,$5::$6)}
+	| KEY_CASEX LPARENT expression RPARENT
+		case_item case_item_list
+		KEY_ENDCASE
+			{T_case_statement_casex($3,$5::$6)}
+;
+
+case_item_list :
+	{[]}
+	| case_item case_item_list
+			{$1::$2}
+;
+
+case_item :
+	expression comma_expression_list COLON statement_or_null
+		{T_case_item($1::$2,$3)}
+	| KEY_DEFAULT COLON_opt statement_or_null
+		{T_case_item_default($3)}
+;
+
+
+comma_expression_list :
+	{[]}
+	| COMMA expression comma_expression_list
+			{$2::$3}
+;
+
+/*A.6.8 Looping statements*/
+loop_statement :
+	KEY_FOREVER statement
+		{T_loop_statement_forever($2)}
+	| KEY_REPEAT LPARENT expression RPARENT statement
+		{T_loop_statement_repeat($3,$5)}
+	| KEY_WHILE LPARENT expression RPARENT statement
+		{T_loop_statement_while($3,$5)}
+	| KEY_FOR LPARENT variable_assignment SEMICOLON expression SEMICOLON variable_assignment RPARENT statement
+		{T_loop_statement_for($3,$5,$7,$9)}
+;
+
+
+
+
+/*A.6.9 Task enable statements*/
+system_task_enable :
+	SYSTEM_TASK_FUNCTION_IDENTIFIER lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
+		{T_system_task_enable($1,$2)}
+
+lp_expression_opt_comma_expression_list_rp_opt :
+	{[]}
+	| lp_expression_opt_comma_expression_list_rp {$1}
+;
+
+
+lp_expression_opt_comma_expression_list_rp :
+	LPARENT expression comma_expression_list RPARENT
+		{$2::$3}
+;
+
+
+task_enable :
+	hierarchical_task_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
+		{T_task_enable($1,$2)}
+;
+
+
+
+/*A.7 Specify section
+A.7.1 Specify block declaration*/
+specify_block :
+	KEY_SPECIFY specify_item_list KEY_ENDSPECIFY
+		{T_specify_block($2)}
+;
+
+specify_item_list :
+	{[]}
+	| specify_item specify_item_list
+		{$1::$2}
+;
+
+
+specify_item :
+	specparam_declaration
+		{T_specify_item_specparam($1)}
+	| pulsestyle_declaration
+		{T_specify_item_pulsestyle($1)}
+	| showcancelled_declaration
+		{T_specify_item_showcancelled($1)}
+	| path_declaration
+		{T_specify_item_path($1)}
+/*	| system_timing_check
+		{T_specify_item_system($1)}*/
+;
+
+
+pulsestyle_declaration :
+	KEY_PULSESTYLE_ONEVENT list_of_path_outputs SEMICOLON
+		{T_pulsestyle_declaration_oneevent($2)}
+	| KEY_PULSESTYLE_ONDETECT list_of_path_outputs SEMICOLON
+		{T_pulsestyle_declaration_onedetect($2)}
+;
+
+
+
+showcancelled_declaration :
+	KEY_SHOWCANCELLED list_of_path_outputs SEMICOLON
+		{T_showcancelled_declaration_show($2)}
+	| KEY_NOSHOWCANCELLED list_of_path_outputs SEMICOLON
+		{T_showcancelled_declaration_noshow($2)}
+;
+
+
+
+/*A.7.2 Specify path declarations*/
+path_declaration :
+	simple_path_declaration SEMICOLON
+		{T_path_declaration_simple($1)}
+	| edge_sensitive_path_declaration SEMICOLON
+		{T_path_declaration_edge($1)}
+	| state_dependent_path_declaration SEMICOLON
+		{T_path_declaration_state($1)}
+;
+
+
+simple_path_declaration :
+	parallel_path_description EQU1 path_delay_value
+		{T_simple_path_declaration_parallel($1,$3)}
+	| full_path_description EQU1 path_delay_value
+		{T_simple_path_declaration_full($1,$3)}
+;
+
+
+
+parallel_path_description :
+	LPARENT specify_input_terminal_descriptor polarity_operator_opt IMPLY2 specify_output_terminal_descriptor RPARENT
+		{T_parallel_path_description($2,$3,$5)}
+;
+
+polarity_operator_opt :
+	{T_polarity_operator_NOSPEC}
+	| polarity_operator {$1}
+;
+
+full_path_description :
+	LPARENT list_of_path_inputs  polarity_operator_opt IMPLYSTART list_of_path_outputs RPARENT
+		{T_full_path_description($2,$3,$5)}
+;
+
+
+list_of_path_inputs :
+	specify_input_terminal_descriptor comma_specify_input_terminal_descriptor_list
+		{$1::$2}
+;
+
+comma_specify_input_terminal_descriptor_list :
+	{[]}
+	| COMMA specify_input_terminal_descriptor comma_specify_input_terminal_descriptor_list
+		{$2::$3}
+;
+
+
+list_of_path_outputs :
+	specify_output_terminal_descriptor comma_specify_output_terminal_descriptor_list
+		{$1::$2}
+;
+
+comma_specify_output_terminal_descriptor_list :
+	{[]}
+	| COMMA specify_output_terminal_descriptor comma_specify_output_terminal_des
+		{$2::$3}
+;
+
+
+/*A.7.3 Specify block terminals*/
+specify_input_terminal_descriptor :
+	input_identifier rsq_constant_range_expression_rsq_opt
+		{T_specify_input_terminal_descriptor($1,$2)}
+;
+
+rsq_constant_range_expression_rsq_opt	:
+	{T_constant_range_expression_NOSPEC}
+	| LSQUARE constant_range_expression RSQUARE
+		{T_constant_range_expression($1)}
+;
+
+specify_output_terminal_descriptor :
+	output_identifier rsq_constant_range_expression_rsq_opt
+		{T_specify_output_terminal_descriptor($1,$2)}
+;
+
+input_identifier :
+	SIMPLE_IDENTIFIER {$1}
+;
+
+
+
+output_identifier :
+	SIMPLE_IDENTIFIER {$1}
+;
+
+
+/*A.7.4 Specify path delays*/
+path_delay_value :
+	list_of_path_delay_expressions
+		{$1}
+	| LPARENT list_of_path_delay_expressions RPARENT
+		{$2}
+;
+
+
+
+list_of_path_delay_expressions :
+	constant_mintypmax_expression
+		{T_list_of_constant_mintypmax_expressions_1($1)}
+	| constant_mintypmax_expression COMMA constant_mintypmax_expression
+		{T_list_of_constant_mintypmax_expressions_2($1,$3)}
+	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
+		{T_list_of_constant_mintypmax_expressions_3($1,$3,$5)}
+	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
+		{T_list_of_constant_mintypmax_expressions_6($1,$3,$5,$7,$9,$11)}
+	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA 	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
+		{T_list_of_constant_mintypmax_expressions_12($1,$3,$5,$7,$9,$11,$13,$15,$17,$19,$21,$23)}
+;
+
+edge_sensitive_path_declaration :
+	parallel_edge_sensitive_path_description EQU1 path_delay_value
+		{T_edge_sensitive_path_declaration_parallel($1,$3)}
+	| full_edge_sensitive_path_description EQU1 path_delay_value
+		{T_edge_sensitive_path_declaration_full($1,$3)}
+;
+
+
+parallel_edge_sensitive_path_description :
+LPARENT edge_identifier_opt  specify_input_terminal_descriptor IMPLY2
+LPARENT specify_output_terminal_descriptor polarity_operator_opt COLON data_source_expression RPARENT RPARENT
+		{T_parallel_edge_sensitive_path_description($2,$3,$6,$7,$9)}
+;
+
+edge_identifier_opt :
+	{T_edge_identifier_NOSPEC}
+	| edge_identifier {$1}
+;
+
+full_edge_sensitive_path_description :
+	LPARENT edge_identifier_opt list_of_path_inputs IMPLYSTART
+LPARENT list_of_path_outputs polarity_operator_opt COLON data_source_expression RPARENT RPARENT
+		{T_full_edge_sensitive_path_description($2,$3,$6,$7,$9)}
+;
+
+data_source_expression :
+	expression
+	{$1}
+;
+
+
+edge_identifier :
+	KEY_POSEDGE  {$1}
+	| KEY_NEGEDGE {$1}
+;
+
+
+state_dependent_path_declaration :
+	KEY_IF LPARENT module_path_expression RPARENT simple_path_declaration
+		{T_state_dependent_path_declaration_simple($3,$5)}
+	| KEY_IF LPARENT module_path_expression RPARENT edge_sensitive_path_declaration
+		{T_state_dependent_path_declaration_edge($3,$5)}
+	| KEY_IFNONE simple_path_declaration
+		{T_state_dependent_path_declaration_ifnone($2)}
+;
+
+
+polarity_operator :
+	OP12_ADD  {$1}
+	| OP12_SUB {$1}
+;
+
+
+/*A.7.5 System timing checks
+A.7.5.1 System timing check commands*/
+/* no time to do*/
+/*system_timing_check :
 $setup_timing_check
 | $hold_timing_check
 | $setuphold_timing_check
@@ -1832,12 +2445,10 @@ $width ( controlled_reference_event , timing_check_limit
 $nochange_timing_check ::=
 $nochange ( reference_event , data_event , start_edge_offset ,
 end_edge_offset [ , [ notifier ] ] ) ;
-502
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-A.7.5.2 System timing check command arguments
+*/
+
+/*A.7.5.2 System timing check command arguments*/
+/*
 checktime_condition ::= mintypmax_expression
 controlled_reference_event ::= controlled_timing_check_event
 data_event ::= timing_check_event
@@ -1879,11 +2490,6 @@ z_or_x ::= x | X | z | Z
 timing_check_condition ::=
 scalar_timing_check_condition
 | ( scalar_timing_check_condition )
-Copyright © 2006 IEEE. All rights reserved.
-503
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
 scalar_timing_check_condition ::=
 expression
 | ~ expression
@@ -1893,240 +2499,496 @@ expression
 | expression !== scalar_constant
 scalar_constant ::=
 1'b0 | 1'b1 | 1'B0 | 1'B1 | 'b0 | 'b1 | 'B0 | 'B1 | 1 | 0
-A.8 Expressions
-A.8.1 Concatenations
-concatenation ::= { expression { , expression } }
-constant_concatenation ::= { constant_expression { , constant_expression } }
-constant_multiple_concatenation ::= { constant_expression constant_concatenation }
-module_path_concatenation ::= { module_path_expression { , module_path_expression } }
-module_path_multiple_concatenation ::= { constant_expression module_path_concatenation }
-multiple_concatenation ::= { constant_expression concatenation }
-A.8.2 Function calls
-constant_function_call ::= function_identifier { attribute_instance }
-( constant_expression { , constant_expression } )
-constant_system_function_call ::= system_function_identifier
-( constant_expression { , constant_expression } )
-function_call ::= hierarchical_function_identifier{ attribute_instance }
-( expression { , expression } )
-system_function_call ::= system_function_identifier
-[ ( expression { , expression } ) ]
-A.8.3 Expressions
-base_expression ::= expression
-conditional_expression ::= expression1 ? { attribute_instance } expression2 : expression3
-constant_base_expression ::= constant_expression
-constant_expression ::=
-constant_primary
-| unary_operator { attribute_instance } constant_primary
-| constant_expression binary_operator { attribute_instance } constant_expression
-| constant_expression ? { attribute_instance } constant_expression : constant_expression
-constant_mintypmax_expression ::=
-constant_expression
-| constant_expression : constant_expression : constant_expression
-constant_range_expression ::=
-constant_expression
-| msb_constant_expression : lsb_constant_expression
-504
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-| constant_base_expression +: width_constant_expression
-| constant_base_expression -: width_constant_expression
-dimension_constant_expression ::= constant_expression
-expression ::=
-primary
-| unary_operator { attribute_instance } primary
-| expression binary_operator { attribute_instance } expression
-| conditional_expression
-expression1 ::= expression
-expression2 ::= expression
-expression3 ::= expression
-lsb_constant_expression ::= constant_expression
-mintypmax_expression ::=
-expression
-| expression : expression : expression
-module_path_conditional_expression ::= module_path_expression ? { attribute_instance }
-module_path_expression : module_path_expression
-module_path_expression ::=
-module_path_primary
-| unary_module_path_operator { attribute_instance } module_path_primary
-| module_path_expression binary_module_path_operator { attribute_instance }
-module_path_expression
-| module_path_conditional_expression
-module_path_mintypmax_expression ::=
-module_path_expression
-| module_path_expression : module_path_expression : module_path_expression
-msb_constant_expression ::= constant_expression
-range_expression ::=
-expression
-| msb_constant_expression : lsb_constant_expression
-| base_expression +: width_constant_expression
-| base_expression -: width_constant_expression
-width_constant_expression ::= constant_expression
-A.8.4 Primaries
-constant_primary ::=
-number
-| parameter_identifier [ [ constant_range_expression ] ]
-| specparam_identifier [ [ constant_range_expression ] ]
-| constant_concatenation
-| constant_multiple_concatenation
-| constant_function_call
-| constant_system_function_call
-| ( constant_mintypmax_expression )
-| string
-Copyright © 2006 IEEE. All rights reserved.
-505
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-module_path_primary ::=
-number
-| identifier
-| module_path_concatenation
-| module_path_multiple_concatenation
-| function_call
-| system_function_call
-| ( module_path_mintypmax_expression )
-primary ::=
-number
-| hierarchical_identifier [ { [ expression ] } [ range_expression ] ]
-| concatenation
-| multiple_concatenation
-| function_call
-| system_function_call
-| ( mintypmax_expression )
-| string
-A.8.5 Expression left-side values
-net_lvalue ::=
-hierarchical_net_identifier [ { [ constant_expression ] } [ constant_range_expression ] ]
-| { net_lvalue { , net_lvalue } }
-variable_lvalue ::=
-hierarchical_variable_identifier [ { [ expression ] } [ range_expression ] ]
-| { variable_lvalue { , variable_lvalue } }
-A.8.6 Operators
-unary_operator ::=
-+ | - | ! | ~ | & | ~& | | | ~| | ^ | ~^ | ^~
-binary_operator ::=
-+ | - | * | / | % | == | != | === | !== | && | || | **
-| < | <= | > | >= | & | | | ^ | ^~ | ~^ | >> | << | >>> | <<<
-unary_module_path_operator ::=
-! | ~ | & | ~& | | | ~| | ^ | ~^ | ^~
-binary_module_path_operator ::=
-== | != | && | || | & | | | ^ | ^~ | ~^
-A.8.7 Numbers
-number ::=
-decimal_number
-| octal_number
-| binary_number
-| hex_number
-| real_number
-real_number 2 ::=
-unsigned_number . unsigned_number
-506
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-| unsigned_number [ . unsigned_number ] exp [ sign ] unsigned_number
-exp ::= e | E
-decimal_number ::=
-unsigned_number
-| [ size ] decimal_base unsigned_number
-| [ size ] decimal_base x_digit { _ }
-| [ size ] decimal_base z_digit { _ }
-binary_number ::= [ size ] binary_base binary_value
-octal_number ::= [ size ] octal_base octal_value
-hex_number ::= [ size ] hex_base hex_value
-sign ::= + | -
-size ::= non_zero_unsigned_number
-non_zero_unsigned_number 2 ::= non_zero_decimal_digit { _ | decimal_digit}
-unsigned_number 2 ::= decimal_digit { _ | decimal_digit }
-binary_value 2 ::= binary_digit { _ | binary_digit }
-octal_value 2 ::= octal_digit { _ | octal_digit }
-hex_value 2 ::= hex_digit { _ | hex_digit }
-decimal_base 2 ::= '[s|S]d | '[s|S]D
-binary_base 2 ::= '[s|S]b | '[s|S]B
-octal_base 2 ::= '[s|S]o | '[s|S]O
-hex_base 2 ::= '[s|S]h | '[s|S]H
-non_zero_decimal_digit ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-decimal_digit ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-binary_digit ::= x_digit | z_digit | 0 | 1
-octal_digit ::= x_digit | z_digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
-hex_digit ::=
-x_digit | z_digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-| a | b | c | d | e | f | A | B | C | D | E | F
-x_digit ::= x | X
-z_digit ::= z | Z | ?
-A.8.8 Strings
-string ::= " { Any_ASCII_Characters_except_new_line } "
-A.9 General
-A.9.1 Attributes
-attribute_instance ::= (* attr_spec { , attr_spec } *)
-attr_spec ::=
-attr_name [ = constant_expression ]
-attr_name ::= identifier
-Copyright © 2006 IEEE. All rights reserved.
-507
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.IEEE
-Std 1364-2005
-IEEE STANDARD FOR VERILOG ®
-A.9.2 Comments
-comment ::=
-one_line_comment
-| block_comment
-one_line_comment ::= // comment_text \n
-block_comment ::= /* comment_text */
-comment_text ::= { Any_ASCII_character }
-A.9.3 Identifiers
-block_identifier ::= identifier
-cell_identifier ::= identifier
-config_identifier ::= identifier
-escaped_identifier ::= \ {Any_ASCII_character_except_white_space} white_space
-event_identifier ::= identifier
-function_identifier ::= identifier
-gate_instance_identifier ::= identifier
-generate_block_identifier ::= identifier
-genvar_identifier ::= identifier
-hierarchical_block_identifier ::= hierarchical_identifier
-hierarchical_event_identifier ::= hierarchical_identifier
-hierarchical_function_identifier ::= hierarchical_identifier
-hierarchical_identifier ::= { identifier [ [ constant_expression ] ] . } identifier
-hierarchical_net_identifier ::= hierarchical_identifier
-hierarchical_parameter_identifier ::= hierarchical_identifier
-hierarchical_variable_identifier ::= hierarchical_identifier
-hierarchical_task_identifier ::= hierarchical_identifier
-identifier ::=
-simple_identifier
-| escaped_identifier
-inout_port_identifier ::= identifier
-input_port_identifier ::= identifier
-instance_identifier ::= identifier
-library_identifier ::= identifier
-module_identifier ::= identifier
-module_instance_identifier ::= identifier
-net_identifier ::= identifier
-output_port_identifier ::= identifier
-parameter_identifier ::= identifier
-port_identifier ::= identifier
-real_identifier ::= identifier
-simple_identifier 3 ::= [ a-zA-Z_ ] { [ a-zA-Z0-9_$ ] }
-specparam_identifier ::= identifier
-system_function_identifier 4 ::= $[ a-zA-Z0-9_$ ]{ [ a-zA-Z0-9_$ ] }
-system_task_identifier 4 ::= $[ a-zA-Z0-9_$ ]{ [ a-zA-Z0-9_$ ] }
-task_identifier ::= identifier
-terminal_identifier ::= identifier
-text_macro_identifier ::= identifier
-508
-Copyright © 2006 IEEE. All rights reserved.
-Authorized licensed use limited to: University of Science and Technology of China. Downloaded on September 20,2012 at 02:33:32 UTC from IEEE Xplore. Restrictions apply.HARDWARE DESCRIPTION LANGUAGE
-IEEE
-Std 1364-2005
-topmodule_identifier ::= identifier
-udp_identifier ::= identifier
-udp_instance_identifier ::= identifier
-variable_identifier ::= identifier
-A.9.4 White space
-white_space ::= space | tab | newline | eof 5
+
+
+*/
+
+
+
+/*A.8 Expressions
+A.8.1 Concatenations*/
+concatenation :
+	LHUA expression comma_expression_list RHUA
+		{T_concatenation{$2::$3}}
+;
+
+constant_concatenation :
+	LHUA constant_expression comma_constant_expression_list RHUA
+		{T_constant_concatenation($2:$3)}
+;
+
+constant_multiple_concatenation :
+	LHUA constant_expression constant_concatenation RHUA
+		{T_constant_multiple_concatenation($2,$3)}
+;
+
+
+module_path_concatenation : 
+	LHUA module_path_expression comma_module_path_expression_list RHUA
+		{T_module_path_concatenation($2::$3)}
+;
+
+comma_module_path_expression_list :
+	{[]}
+	| COMMA module_path_expression comma_module_path_expression_list
+		{$2::$3}
+;
+
+
+module_path_multiple_concatenation :
+	LHUA constant_expression module_path_concatenation RHUA
+		{T_module_path_multiple_concatenation($2,$3)}
+;
+
+multiple_concatenation :
+	LHUA  constant_expression concatenation RHUA
+		{T_multiple_concatenation($2,$3)}
+;
+
+
+/*A.8.2 Function calls*/
+
+constant_function_call :
+	function_identifier attribute_instance_list
+LPARENT constant_expression comma_constant_expression_list RPARENT
+		{T_constant_function_call($1,$2,$4::$5)}
+;
+
+constant_system_function_call :
+	system_function_identifier
+LPARENT constant_expression comma_constant_expression_list RPARENT
+		{T_constant_system_function_call($1,$3::$4)}
+;
+
+
+function_call :
+	hierarchical_function_identifier attribute_instance_list
+LPARENT expression comma_expression_list RPARENT
+		{T_function_call($1,$2,$4::$5)}
+;
+
+system_function_call :
+	system_function_identifier
+lp_expression_comma_expression_list_rp_op
+		{T_system_function_call($1,$2)}
+;
+
+
+lp_expression_comma_expression_list_rp_op :
+	{[]}
+	| LPARENT expression comma_expression_list RPARENT
+		{$2::$3}
+;
+
+
+/*A.8.3 Expressions*/
+base_expression :
+	expression {$1}
+;
+
+conditional_expression :
+	expression1 OP2_QUESTION attribute_instance_list expression2 COLON expression3
+		{T_conditional_expression($1,$3,$4,$5)}
+;
+
+constant_base_expression :
+	constant_expression
+		{$1}
+;
+
+constant_expression :
+	constant_primary
+		{T_constant_expression_prim($1)}
+	| unary_operator  attribute_instance_list constant_primary
+		{T_constant_expression_op1($1,$2,$3)}
+	| constant_expression binary_operator attribute_instance_list constant_expression
+		{T_constant_expression_op2($1,$2,$3,$4)}
+	| constant_expression OP2_QUESTION attribute_instance_list constant_expression COLON constant_expression
+		{T_constant_expression_sel($1,$3,$4,$6)}
+;
+
+constant_mintypmax_expression :
+	constant_expression
+		{T_constant_mintypmax_expression_1($1)}
+	| constant_expression COLON constant_expression COLON constant_expression
+		{T_constant_mintypmax_expression_3($1,$3,$5)}
+;
+
+constant_range_expression :
+	constant_expression
+		{T_constant_range_expression_1($1)}
+	| msb_constant_expression COLON lsb_constant_expression
+		{T_constant_range_expression_2($1,$3)}
+	| constant_base_expression ADDRANGE width_constant_expression
+		{T_constant_range_expression_addrange($1,$3)}
+	| constant_base_expression SUBRANGE width_constant_expression
+		{T_constant_range_expression_subrange($1,$3)}
+;
+
+dimension_constant_expression :
+	constant_expression
+		{$1}
+;
+
+expression :
+	primary
+		{T_expression_prim($1)}
+	| unary_operator attribute_instance_list primary
+		{T_expression_op1($1,$2,$3)}
+	| expression binary_operator attribute_instance_list expression
+		{T_expression_op2($1,$2,$3,$4)}
+	| conditional_expression
+		{T_expression_condition($1)}
+;
+
+expression1 : expression {$1};
+expression2 : expression {$1};
+expression3 : expression {$1};
+
+lsb_constant_expression :
+	constant_expression
+		{$1}
+;
+
+mintypmax_expression :
+	expression
+		{T_mintypmax_expression_1($1)}
+	| expression COLON expression COLON expression
+		{T_mintypmax_expression_3($1,$3,$5)}
+;
+
+module_path_conditional_expression :
+	module_path_expression OP2_QUESTION attribute_instance_list
+	module_path_expression COLON module_path_expression
+		{T_module_path_conditional_expression($1,$3,$4,$6)}
+;
+
+
+module_path_expression :
+	module_path_primary
+		{T_module_path_expression_prim($1)}
+	| unary_module_path_operator attribute_instance_list module_path_primary
+		{T_module_path_expression_op1($1,$2,$3)}
+	| module_path_expression binary_module_path_operator attribute_instance_list module_path_expression
+		{T_module_path_expression_op2($1,$2,$3,$4)}
+	| module_path_conditional_expression
+		{T_module_path_expression_sel($1)}
+;
+
+
+module_path_mintypmax_expression :
+	module_path_expression
+		{T_module_path_mintypmax_expression_1($1)}
+	| module_path_expression COLON module_path_expression COLON module_path_expression
+		{T_module_path_mintypmax_expression_3($1,$3,$5)}
+;
+
+msb_constant_expression :
+	constant_expression
+		{$1}
+;
+
+
+range_expression :
+	expression
+		{T_range_expression_1($1)}
+	| msb_constant_expression COLON lsb_constant_expression
+		{T_range_expression_2($1,$3)}
+	| base_expression ADDRANGE width_constant_expression
+		{T_range_expression_addrange($1,$3)}
+	| base_expression SUBRANGE width_constant_expression
+		{T_range_expression_subrange($1,$3)}
+;
+
+
+width_constant_expression :
+	constant_expression
+		{$1}
+;
+
+/*A.8.4 Primaries*/
+constant_primary :
+	number
+		{T_constant_primary_num($1)}
+	| parameter_identifier lsquare_constant_range_expression_rsquare_opt 
+		{T_constant_primary_param($1,$3)}
+	| specparam_identifier lsquare_constant_range_expression_rsquare_opt
+		{T_constant_primary_specparam($1,$2)}
+	| constant_concatenation
+		{T_constant_primary_concat($1)}
+	| constant_multiple_concatenation
+		{T_constant_primary_mul_concat($1)}
+	| constant_function_call
+		{T_constant_primary_func($1)}
+	| constant_system_function_call
+		{T_constant_primary_sysfunc($1)}
+	| LPARENT constant_mintypmax_expression RPARENT
+		{T_constant_primary_mintypmax($2)}
+	| string
+		{T_constant_primary_string($1)}
+;
+
+
+
+module_path_primary :
+	number
+		{T_module_path_primary_num($1)}
+	| identifier
+		{T_module_path_primary_id($1)}
+	| module_path_concatenation
+		{T_module_path_primary_concat($1)}
+	| module_path_multiple_concatenation
+		{T_module_path_primary_mul_concat($1)}
+	| function_call
+		{T_module_path_primary_func($1)}
+	| system_function_call
+		{T_module_path_primary_sysfunc($1)}
+	| LPARENT module_path_mintypmax_expression RPARENT
+		{T_module_path_primary_mintypmax($2)}
+;
+
+primary :
+	number
+		{T_primary_num($1)}
+	| hierarchical_identifier 
+		{T_primary_id($1)}
+	| hierarchical_identifier  lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+		{T_primary_idexp($1,$2,$4)}
+	| concatenation
+		{T_primary_concat($1)}
+	| multiple_concatenation
+		{T_primary_mulcon($1)}
+	| function_call
+		{T_primary_func($1)}
+	| system_function_call
+		{T_primary_sysfunc($1)}
+	| LPARENT mintypmax_expression RPARENT
+		{T_primary_mintypmax($2)}
+	| string
+		{T_primary_string($1)}
+;
+
+
+lsq_expression_rsq_list :
+	{[]}
+	| LSQUARE expression RSQUARE lsq_expression_rsq_list
+		{$2::$4}
+;
+
+
+/*A.8.5 Expression left-side values*/
+net_lvalue :
+	hierarchical_net_identifier
+		{T_net_lvalue_id($1)}
+	| hierarchical_net_identifier lsq_constant_expression_rsq_list LSQUARE constant_range_expression RSQUARE
+		{T_net_lvalue_idexp($1,$2,$4)}
+	| LHUA net_lvalue comma_net_lvalue_list RHUA
+		{T_net_lvalue_lvlist($2::$4)}
+;
+
+lsq_constant_expression_rsq_list :
+	{[]}
+	| LSQUARE constant_expression RSQUARE lsq_constant_expression_rsq_list
+		{$2::$4}
+;
+
+comma_net_lvalue_list :
+	{[]}
+	| COMMA net_lvalue comma_net_lvalue_list
+		{$2::$3}
+;
+
+variable_lvalue :
+	hierarchical_variable_identifier 
+		{T_variable_lvalue_id($1)}
+	| hierarchical_variable_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+		{T_variable_lvalue_idexp($1,$2,$4)}
+	| LHUA variable_lvalue comma_variable_lvalue_list  RHUA
+		{T_variable_lvalue_vlvlist($2::$3)}
+		
+
+comma_variable_lvalue_list :
+	{[]}
+	| COMMA variable_lvalue comma_variable_lvalue_list
+		{$2::$3}
+;
+
+
+
+/*A.8.6 Operators*/
+
+
+unary_operator :
+	OP12_ADD {$1}
+	| OP12_SUB  {$1}
+	| OP1_GANTANHAO  {$1}
+	| OP1_BOLANGHAO  {$1}
+	| OP12_AND  {$1}
+	| OP1_REDUCE_NAND  {$1}
+	| OP12_OR  {$1}
+	| OP1_REDUCE_NOR  {$1}
+	| OP12_XOR  {$1}
+	| OP12_XNOR {$1}
+;
+binary_operator :
+	OP12_ADD  {$1}
+	| OP12_SUB  {$1}
+	| OP2_MULTIPLE  {$1}
+	| OP2_DIV  {$1}
+	| OP2_MOD  {$1}
+	| OP2_EQU2  {$1}
+	| OP2_NEQ2  {$1}
+	| OP2_EQU3  {$1}
+	| OP2_NEQ3  {$1}
+	| OP2_AND  {$1}
+	| OP2_OR  {$1}
+	| OP2_POWER {$1}
+	| OP2_LT  {$1}
+	| OP2_LE  {$1}
+	| OP2_GT  {$1}
+	| OP2_GE  {$1}
+	| OP12_AND  {$1}
+	| OP12_OR  {$1}
+	| OP12_XOR  {$1}
+	| OP12_XNOR  {$1}
+	| OP2_LOGICAL_RIGHTSHIFT  {$1}
+	| OP2_LOGICAL_LEFTSHIFT  {$1}
+	| OP2_ARITHMETIC_RIGHTSHIFT  {$1}
+	| OP2_ARITHMETIC_LEFTSHIFT {$1}
+;
+
+
+unary_module_path_operator :
+	OP1_GANTANHAO  {$1}
+	| OP1_BOLANGHAO  {$1}
+	| OP12_AND  {$1}
+	| OP1_REDUCE_NAND  {$1}
+	| OP12_OR  {$1}
+	| OP1_REDUCE_NOR  {$1}
+	| OP12_XOR  {$1}
+	| OP12_XNOR {$1}
+;
+
+
+binary_module_path_operator :
+	OP2_EQU2  {$1}
+	| OP2_NEQ2  {$1}
+	| OP2_AND  {$1}
+	| OP2_OR  {$1}
+	| OP12_AND  {$1}
+	| OP12_OR  {$1}
+	| OP12_XOR  {$1}
+	| OP12_XNOR {$1}
+;
+
+
+/*A.8.7 Numbers*/
+number : NUMBER {$1};
+
+/*A.8.8 Strings*/
+string : STRING {$1}
+
+
+/*A.9 General
+A.9.1 Attributes*/
+
+attribute_instance : LPARENTSTART attr_spec  comma_attr_spec_list RPARENTSTART
+	{T_attribute_instance($2::$3)}
+;
+
+comma_attr_spec_list :
+	{[]}
+	| COMMA attr_spec comma_attr_spec_list
+		{$2::$3}
+;
+
+attr_spec :
+	attr_name 
+		{T_attr_spec($1,T_constant_expression_NOSPEC)}
+	| attr_name  EQU1 constant_expression 
+		{T_attr_spec($1,$3)}
+;
+
+attr_name :
+	identifier {$1}
+;
+
+
+
+/*A.9.2 Comments*/
+comment :
+	COMMENT {$1}
+;
+
+/*A.9.3 Identifiers*/
+block_identifier : identifier {$1};
+cell_identifier : identifier {$1};
+config_identifier : identifier {$1};
+event_identifier : identifier {$1};
+function_identifier : identifier {$1};
+gate_instance_identifier : identifier {$1};
+generate_block_identifier : identifier {$1};
+genvar_identifier : identifier {$1};
+hierarchical_block_identifier : hierarchical_identifier {$1};
+hierarchical_event_identifier : hierarchical_identifier {$1};
+hierarchical_function_identifier : hierarchical_identifier {$1};
+
+
+hierarchical_identifier : 
+	identifier_lsq_expression_rsq_opt_list  identifier
+		{T_hierarchical_identifier($1,$2)}
+
+identifier_lsq_expression_rsq_opt_list :
+	{[]}
+	| identifier_lsq_expression_rsq_opt identifier_lsq_expression_rsq_opt_list
+		{$1::$2}
+;
+
+identifier_lsq_expression_rsq_opt :
+	identifier PERIOD
+		{T_identifier_lsq_expression_rsq($1,T_expression_NOSPEC)}
+	| identifier LSQUARE expression RSQUARE PERIOD
+		{T_identifier_lsq_expression_rsq($1,$3)}
+;
+
+hierarchical_net_identifier : hierarchical_identifier {$1};
+hierarchical_parameter_identifier : hierarchical_identifier {$1};
+hierarchical_variable_identifier : hierarchical_identifier {$1};
+hierarchical_task_identifier : hierarchical_identifier {$1};
+
+identifier :
+	SIMPLE_IDENTIFIER {$1}
+	| ESCAPED_IDENTIFIER {$1}
+;
+
+inout_port_identifier : identifier {$1};
+input_port_identifier : identifier {$1};
+instance_identifier : identifier {$1};
+library_identifier : identifier {$1};
+module_identifier : identifier {$1};
+module_instance_identifier : identifier {$1};
+net_identifier : identifier {$1};
+output_port_identifier : identifier {$1};
+parameter_identifier : identifier {$1};
+port_identifier : identifier {$1};
+real_identifier : identifier {$1};
+specparam_identifier : identifier {$1};
+
+
+system_function_identifier :
+	SYSTEM_TASK_FUNCTION_IDENTIFIER {$1}
+;
+
+
+task_identifier : identifier {$1};
+terminal_identifier : identifier {$1};
+text_macro_identifier : identifier {$1};
+topmodule_identifier : identifier {$1};
+udp_identifier : identifier {$1};
+udp_instance_identifier : identifier {$1};
+variable_identifier : identifier {$1};
+
+
 
 %%
 

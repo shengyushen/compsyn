@@ -1,3 +1,4 @@
 operator precedence
 replace lex token in par
 check that all comma*list have the option of empty
+check that all attribute have list

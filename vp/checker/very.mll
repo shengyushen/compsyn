@@ -235,16 +235,23 @@ rule veriloglex  = parse
 			|"wor"                -> KEY_WOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xnor"               -> KEY_XNOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xor"                -> KEY_XOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"PATHPULSE$"					-> KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"$"									-> DOLLOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"pulsestyle_onevent" -> KEY_PULSESTYLE_ONEVENT(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"pulsestyle_ondetect" -> KEY_PULSESTYLE_ONDETECT(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"showcancelled" -> KEY_SHOWCANCELLED(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+			|"noshowcancelled" -> KEY_NOSHOWCANCELLED(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|_										-> SIMPLE_IDENTIFIER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
-	| unsigned_number{
+	|"PATHPULSE$"					-> KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+	|"$"									-> DOLLOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+	|"->"									-> IMPLY(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+	|"=>"									-> IMPLY2(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+	|"*>"									-> IMPLYSTART(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+(*	| unsigned_number{
 			UNSIGNED_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
 	| real_number {
 			REAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
-		}
+		}*)
 	| number {
 			NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
@@ -281,7 +288,9 @@ rule veriloglex  = parse
 	| "<<<"	{OP2_ARITHMETIC_LEFTSHIFT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "?"		{OP2_QUESTION(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "("		{LPARENT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
+	| "(*"		{LPARENTSTART(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| ")"		{RPARENT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
+	| "*)"		{RPARENTSTART(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| ","		{COMMA(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| ";"		{SEMICOLON(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| ":"		{COLON(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
@@ -293,6 +302,8 @@ rule veriloglex  = parse
 	| "."		{PERIOD(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "@"		{AT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "#"		{JING(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
+	| "+:"	{ADDRANGE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
+	| "-:"	{SUBRANGE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "//"                	{	(*comment to end of line*)
 			let stpos = Lexing.lexeme_start_p lexbuf
 			in begin
