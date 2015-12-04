@@ -9,8 +9,8 @@
 
 OCAMLC	= ocamlopt
 #OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
-OCAMLC_OPT = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
-OBJS	= typedef.ml lextype.cmx very.cmx parser.cmx main.cmx 
+OCAMLC_OPT = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ 
+OBJS	= typedef.ml  very.cmx parser.cmx main.cmx 
 
 
 all : checker.exe

@@ -464,6 +464,13 @@ config_declaration :
 	{T_config_declaration($2,$4,$5)}
 ;
 
+
+config_rule_statement_list :
+	{[]}
+	| config_rule_statement config_rule_statement_list
+		{$1::$2}
+;
+
 design_statement : 
 	KEY_DESIGN 
 		library_identifier_period_opt_cell_identifier_list
