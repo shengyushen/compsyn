@@ -319,7 +319,7 @@ module_parameter_port_list :
 
 comma_parameter_declaration_list :
 	{[]}
-	| COMMA parameter_declaration parameter_declaration_list
+	| COMMA parameter_declaration comma_parameter_declaration_list
 		{$2::$3}
 ;
 
@@ -345,6 +345,12 @@ list_of_port_declarations :
 		{[]}
 ;
 
+
+comma_port_declaration_list :
+	{[]}
+	| COMMA port_declaration comma_port_declaration_list
+		{$2::$3}
+
 port :
 	port_expression_opt {T_port_position($1)}
 	| PERIOD  port_identifier LPARENT port_expression_opt RPARENT
@@ -362,6 +368,12 @@ port_expression :
 		{T_port_expression($2::$3)}
 ;
 
+comma_port_reference_list :
+	{[]}
+	| COMMA port_reference comma_port_reference_list 
+		{$2::$3}
+;
+
 port_reference :
 	port_identifier lsquare_constant_range_expression_rsquare_opt
 		{T_port_reference($1,$2)}
@@ -372,7 +384,7 @@ lsquare_constant_range_expression_rsquare_opt :
 	| lsquare_constant_range_expression_rsquare {$1}
 ;
 
-lsquare_constant_range_expression_rsquare_opt :
+lsquare_constant_range_expression_rsquare :
 	LSQUARE
 		constant_range_expression
 	RSQUARE
@@ -402,9 +414,9 @@ non_port_module_item :
 	| specify_block {
 		T_module_item__specify_block($1)}
 	| attribute_instance_list parameter_declaration SEMICOLON {
-		T_module_item__parameter_declaration($1,$2)
+		T_module_item__parameter_declaration($1,$2)}
 	| attribute_instance_list specparam_declaration {
-		T_module_item__specparam_declaration($1,$2)
+		T_module_item__specparam_declaration($1,$2)}
 ;
 
 module_or_generate_item :
@@ -423,7 +435,7 @@ module_or_generate_item :
 |	attribute_instance_list event_declaration    {
 		T_module_item__event_declaration($1,$2)}
 |	attribute_instance_list genvar_declaration   {
-		T_module_item__genvar_declaration($1,$2)
+		T_module_item__genvar_declaration($1,$2)}
 |	attribute_instance_list task_declaration     {
 		T_module_item__task_declaration($1,$2)}
 |	attribute_instance_list function_declaration {
@@ -640,6 +652,11 @@ net_declaration :
 		{T_net_declaration_trireg_4($2,$3,$4,$5,$6)}
 ;
 
+charge_strength_opt :
+	{T_charge_strength_NOSPEC}
+	| charge_strength {$1}
+;
+
 delay3_opt :
 	{T_delay3_NOSPEC}
 	| delay3 {$1}
@@ -683,13 +700,13 @@ net_type :
 	| KEY_SUPPLY1	{T_net_type__KEY_SUPPLY1}
 	| KEY_TRI			{T_net_type__KEY_TRI}
 	| KEY_TRIAND 	{T_net_type__KEY_TRIAND}
-	| trior 			{T_net_type__KEY_TRIOR}
-	| tri0 				{T_net_type__KEY_TRI0}
-	| tri1				{T_net_type__KEY_TRI1}
-	| uwire 			{T_net_type__KEY_UWIRE}
-	| wire 				{T_net_type__KEY_WIRE}
-	| wand 				{T_net_type__KEY_WAND}
-	| wor					{T_net_type__KEY_WOR}
+	| KEY_TRIOR 			{T_net_type__KEY_TRIOR}
+	| KEY_TRI0 				{T_net_type__KEY_TRI0}
+	| KEY_TRI1				{T_net_type__KEY_TRI1}
+	| KEY_UWIRE 			{T_net_type__KEY_UWIRE}
+	| KEY_WIRE 				{T_net_type__KEY_WIRE}
+	| KEY_WAND 				{T_net_type__KEY_WAND}
+	| KEY_WOR					{T_net_type__KEY_WOR}
 ;
 
 output_variable_type :
@@ -704,6 +721,11 @@ real_type :
 		{T_real_type_ass($1,$3)}
 ;
 
+dimension_list :
+	{[]}
+	| dimension dimension_list
+		{$1::$2}
+;
 
 variable_type :
 	variable_identifier dimension_list
@@ -2731,7 +2753,7 @@ constant_primary :
 	number
 		{T_constant_primary_num($1)}
 	| parameter_identifier lsquare_constant_range_expression_rsquare_opt 
-		{T_constant_primary_param($1,$3)}
+		{T_constant_primary_param($1,$2)}
 	| specparam_identifier lsquare_constant_range_expression_rsquare_opt
 		{T_constant_primary_specparam($1,$2)}
 	| constant_concatenation

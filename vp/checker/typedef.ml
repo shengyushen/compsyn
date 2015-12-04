@@ -145,7 +145,8 @@ and drive_strength =
 	T_drive_strength_NOSPEC
 	| T_drive_strength of strength*strength
 and charge_strength =
-	T_charge_strength__small
+	T_charge_strength_NOSPEC
+	| T_charge_strength__small
 	| T_charge_strength__medium
 	| T_charge_strength__large
 and delay3 =
