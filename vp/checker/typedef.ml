@@ -7,7 +7,7 @@ and module_declaration =
 	| T_module_declaration__2 of(attribute_instance list)*string*(parameter_declaration list)*(port_declaration list)*(module_item list)
 and port =
 	T_port_position of port_expression
-	| T_port_name of string*port_expression
+	| T_port_expression of string*port_expression
 and port_expression =
 	T_port_expression of (port_reference list)
 and	port_reference =
@@ -81,8 +81,8 @@ and input_declaration =
 	T_input_declaration of net_type*signed*range*(string list)
 and output_declaration =
 	T_output_declaration_net of net_type*signed*range*(string list)
-	|T_output_declaration_reg of signed*range*(string list)
-	|T_output_declaration_var of output_variable_type*(string list)
+	|T_output_declaration_reg of signed*range*(port_identifier_equ1_constant_expression_opt list)
+	|T_output_declaration_var of output_variable_type*(port_identifier_equ1_constant_expression_opt list)
 and	output_variable_type =
 	T_output_variable_type_INTEGER
 	| T_output_variable_type_TIME
@@ -92,7 +92,7 @@ and integer_declaration =
 	T_integer_declaration of (variable_type list)
 and net_declaration =
 	T_net_declaration_net_type1 of net_type*signed*delay3*(net_identifier_dimension_list list)
-	| T_net_declaration_net_type2 of net_type*drive_strength*signed*delay3*(net_identifier_dimension_list list)
+	| T_net_declaration_net_type2 of net_type*drive_strength*signed*delay3*(net_decl_assignment list)
 	| T_net_declaration_net_type3 of net_type*vectored_scalared*signed*range*delay3*(net_identifier_dimension_list list)
 	| T_net_declaration_net_type4 of net_type*drive_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
 	| T_net_declaration_trireg_1 of charge_strength*signed*delay3*(net_identifier_dimension_list list)
@@ -232,9 +232,10 @@ and block_item_declaration =
 	T_block_item_declaration_reg of (attribute_instance list)*signed*range*(block_variable_type list)
 	| T_block_item_declaration_integer of (attribute_instance list)*(block_variable_type list)
 	| T_block_item_declaration_time of (attribute_instance list)*(block_variable_type list)
-	| T_block_item_declaration_real of (attribute_instance list)*(block_variable_type list)
-	| T_block_item_declaration_realtime of (attribute_instance list)*(block_variable_type list)
-	| T_block_item_declaration_event of (attribute_instance list)*local_parameter_declaration
+	| T_block_item_declaration_real of (attribute_instance list)*(block_real_type list)
+	| T_block_item_declaration_realtime of (attribute_instance list)*(block_real_type list)
+	| T_block_item_declaration_event of (attribute_instance list)*event_declaration
+	| T_block_item_declaration_local_param of (attribute_instance list)*local_parameter_declaration
 	| T_block_item_declaration_param of (attribute_instance list)*parameter_declaration
 and block_variable_type =
 	T_block_variable_type of string*(dimension list)
@@ -311,7 +312,11 @@ and pass_switchtype =
 	  T_pass_switchtype_TRAN  
 	| T_pass_switchtype_RTRAN 
 and module_instantiation =
-	T_module_instantiation of string*parameter_value_assignment
+	T_module_instantiation of string*parameter_value_assignment*(module_instance list)
+and	module_instance =
+	T_module_instance of name_of_module_instance*list_of_port_connections
+and name_of_module_instance =
+	T_name_of_module_instance of string*range
 and parameter_value_assignment =
 	T_parameter_value_assignment_NOSPEC
 	| T_parameter_value_assignment_order of (expression list)
@@ -586,7 +591,8 @@ and	constant_base_expression =
 and width_constant_expression =
 	constant_expression
 and	expression =
-	T_expression_prim of primary
+	T_expression_NOSPEC
+	| T_expression_prim of primary
 	| T_expression_op1 of unary_operator*(attribute_instance list)*primary
 	| T_expression_op2 of expression*binary_operator*(attribute_instance list)*expression
 	|	T_expression_condition of conditional_expression

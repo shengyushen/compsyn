@@ -223,7 +223,13 @@ end
 
 
 %token <Lexing.position*Lexing.position*string> DOLLOR /*$*/
-%token <Lexing.position*Lexing.position*string> IMPLY /*IMPLY*/
+%token <Lexing.position*Lexing.position*string> IMPLY /* -> */
+%token <Lexing.position*Lexing.position*string> IMPLY2 /*=>*/
+%token <Lexing.position*Lexing.position*string> IMPLYSTART /* *> */
+%token <Lexing.position*Lexing.position*string> ADDRANGE /* +: */
+%token <Lexing.position*Lexing.position*string> SUBRANGE /* -: */
+%token <Lexing.position*Lexing.position*string> LPARENTSTART  /* -: */
+%token <Lexing.position*Lexing.position*string> RPARENTSTART  /* -: */
 
 
 
@@ -548,7 +554,7 @@ library_identifier_list :
 
 use_clause :
 	KEY_USE library_identifier_period_opt_cell_identifier colon_config_opt
-		{T_use_clause($1,$2)}
+		{T_use_clause($2,$3)}
 ;
 
 colon_config_opt :
@@ -568,8 +574,8 @@ local_parameter_declaration :
 ;
 
 signed_opt :
-	{false}
-	| KEY_SIGNED {true}
+	{T_signed_FALSE}
+	| KEY_SIGNED {T_signed_TRUE}
 ;
 
 range_opt :
@@ -649,7 +655,7 @@ net_declaration :
 	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
 	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
-		{T_net_declaration_trireg_4($2,$3,$4,$5,$6)}
+		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}
 ;
 
 charge_strength_opt :
@@ -738,32 +744,32 @@ variable_type :
 
 drive_strength :
 	LPARENT strength0 COMMA strength1 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength($2,$4)}
 	| LPARENT strength1 COMMA strength0 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength($2,$4)}
 	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength($2,KEY_HIGHZ1)}
 	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength($2,KEY_HIGHZ0)}
 	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength(KEY_HIGHZ0,$4)}
 	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT
-		{T_drive_strength($1,$2)}
+		{T_drive_strength(KEY_HIGHZ1,$4)}
 ;
 
 
 
 strength0 :
-	KEY_SUPPLY0		{$1}
-	| KEY_STRONG0		{$1}
-	| KEY_PULL0			{$1}
-	| KEY_WEAK0 {$1}
+	KEY_SUPPLY0		{KEY_SUPPLY0}
+	| KEY_STRONG0		{KEY_STRONG0}
+	| KEY_PULL0			{KEY_PULL0}
+	| KEY_WEAK0 {KEY_WEAK0}
 ;
 strength1 :
-	KEY_SUPPLY1		{$1}
-	| KEY_STRONG1		{$1}
-	| KEY_PULL1			{$1}
-	| KEY_WEAK1 {$1}
+	KEY_SUPPLY1		{KEY_SUPPLY1}
+	| KEY_STRONG1		{KEY_STRONG1}
+	| KEY_PULL1			{KEY_PULL1}
+	| KEY_WEAK1 {KEY_WEAK1}
 ;
 
 charge_strength : 
@@ -795,7 +801,7 @@ delay2 :
 	| JING LPARENT mintypmax_expression RPARENT
 		{T_delay2_minmax1($3)}
 	| JING LPARENT mintypmax_expression COMMA mintypmax_expression  RPARENT
-		{$T_delay2_minmax2($3,$5)}
+		{T_delay2_minmax2($3,$5)}
 ;
 
 
@@ -900,7 +906,7 @@ comma_real_type_list :
 
 list_of_specparam_assignments :
 	specparam_assignment comma_specparam_assignment_list
-		{}
+		{$1::$2}
 ;
 
 comma_specparam_assignment_list :
@@ -1022,6 +1028,13 @@ function_declaration :
 		{T_function_declaration_2($2,$3,$4,$6,$9,$10)}
 ;
 
+
+function_item_declaration_list :
+	{[]}
+	| function_item_declaration function_item_declaration_list
+		{$1::$2}
+;
+
 automatic_opt :
 	{T_automatic_false}
 	| KEY_AUTOMATIC {T_automatic_true}
@@ -1059,12 +1072,12 @@ comma_attribute_instance_list_tf_input_declaration_list :
 function_range_or_type :
 	{T_function_range_or_type_NOSPEC}
 	|	KEY_SIGNED {T_function_range_or_type(T_signed_TRUE,T_range_NOSPEC)}
-	| range				{T_function_range_or_type(T_signed_FALSE,range)}
-	|	KEY_SIGNED range {T_function_range_or_type(T_signed_TRUE,range)}
+	| range				{T_function_range_or_type(T_signed_FALSE,$1)}
+	|	KEY_SIGNED range {T_function_range_or_type(T_signed_TRUE,$2)}
 	| KEY_INTEGER {T_function_range_or_type_INTEGER}
-	| real				{T_function_range_or_type_REAL}
-	| realtime		{T_function_range_or_type_REALTIME}
-	| time				{T_function_range_or_type_TIME}
+	| KEY_REAL				{T_function_range_or_type_REAL}
+	| KEY_REALTIME		{T_function_range_or_type_REALTIME}
+	| KEY_TIME				{T_function_range_or_type_TIME}
 ;
 
 
@@ -1111,7 +1124,11 @@ task_port_list :
 		{$1::$2}
 ;
 
-
+comma_task_port_item_list :
+	{[]}
+	| COMMA task_port_item comma_task_port_item_list
+		{$2::$3}
+;
 
 task_port_item :
 		 attribute_instance_list tf_input_declaration
@@ -1183,6 +1200,12 @@ list_of_block_variable_identifiers :
 		{$1::$2}
 ;
 
+comma_block_variable_type_list :
+	{[]}
+	| COMMA block_variable_type comma_block_variable_type_list
+		{$2::$3}
+;
+
 list_of_block_real_identifiers :
 	block_real_type comma_block_real_type_list
 		{$1::$2}
@@ -1229,6 +1252,30 @@ gate_instantiation :
 		{T_gate_instantiation_pullup($2,$3::$4)}
 ;
 
+comma_n_output_gate_instance_list :
+	{[]}
+	| COMMA n_output_gate_instance comma_n_output_gate_instance_list
+		{$2::$3}
+;
+
+comma_pass_enable_switch_instance_list :
+	{[]}
+	| COMMA pass_enable_switch_instance comma_pass_enable_switch_instance_list
+		{$2::$3}
+;
+
+comma_pass_switch_instance_list :
+	{[]}
+	| COMMA pass_switch_instance comma_pass_switch_instance_list
+		{$2::$3}
+;
+
+comma_pull_gate_instance_list :
+	{[]}
+	| COMMA pull_gate_instance comma_pull_gate_instance_list
+		{$2::$3}
+;
+
 comma_cmos_switch_instance_list :
 	{[]}
 	| COMMA cmos_switch_instance comma_cmos_switch_instance_list
@@ -1269,7 +1316,7 @@ pullup_strength_opt :
 
 cmos_switch_instance :
 	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA ncontrol_terminal COMMA pcontrol_terminal RPARENT
-		{T_cmos_switch_instance $1,$3,$5,$7,$9}
+		{T_cmos_switch_instance($1,$3,$5,$7,$9)}
 ;
 
 
@@ -1412,6 +1459,12 @@ module_instantiation :
 		{T_module_instantiation($1,$2,$3::$4)}
 ;
 
+comma_module_instance_list :
+	{[]}
+	| COMMA module_instance  comma_module_instance_list
+		{$2::$3}
+;
+
 parameter_value_assignment_opt :
 	{T_parameter_value_assignment_NOSPEC}
 	| parameter_value_assignment {$1}
@@ -1419,7 +1472,7 @@ parameter_value_assignment_opt :
 
 parameter_value_assignment :
 	JING LPARENT list_of_parameter_assignments RPARENT
-		{$1}
+		{$3}
 ;
 
 list_of_parameter_assignments :
@@ -1508,7 +1561,7 @@ named_port_connection :
 /*A.4.2 Generate construct*/
 generate_region :
 	KEY_GENERATE module_or_generate_item_list KEY_ENDGENERATE
-		{T_generate_region($1)}
+		{T_generate_region($2)}
 ;
 
 module_or_generate_item_list :
@@ -1606,6 +1659,12 @@ case_generate_item :
 		{T_case_generate_item_case($1::$2,$4)}
 	| KEY_DEFAULT colon_opt  generate_block_or_null
 		{T_case_generate_item_default($3)}
+;
+
+comma_constant_expression_list :
+	{[]}
+	| COMMA constant_expression comma_constant_expression_list
+		{$2::$3}
 ;
 
 colon_opt :
@@ -2178,7 +2237,7 @@ case_item_list :
 case_item :
 	expression comma_expression_list COLON statement_or_null
 		{T_case_item($1::$2,$3)}
-	| KEY_DEFAULT COLON_opt statement_or_null
+	| KEY_DEFAULT colon_opt statement_or_null
 		{T_case_item_default($3)}
 ;
 
@@ -2330,7 +2389,7 @@ list_of_path_outputs :
 
 comma_specify_output_terminal_descriptor_list :
 	{[]}
-	| COMMA specify_output_terminal_descriptor comma_specify_output_terminal_des
+	| COMMA specify_output_terminal_descriptor comma_specify_output_terminal_descriptor_list
 		{$2::$3}
 ;
 
@@ -2551,7 +2610,7 @@ scalar_constant ::=
 A.8.1 Concatenations*/
 concatenation :
 	LHUA expression comma_expression_list RHUA
-		{T_concatenation{$2::$3}}
+		{T_concatenation($2::$3)}
 ;
 
 constant_concatenation :
