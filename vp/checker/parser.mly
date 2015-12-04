@@ -1879,7 +1879,7 @@ list_of_net_assignments :
 
 comma_net_assignment_list :
 	{[]}
-	COMMA net_assignment comma_net_assignment_list
+	| COMMA net_assignment comma_net_assignment_list
 		{$2::$3}
 ;
 
