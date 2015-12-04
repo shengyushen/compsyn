@@ -53,33 +53,6 @@ rule verilog  =      parse
       | "function"                                   { KEY_FUNCTION(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)             }
       | "endfunction"                                { KEY_ENDFUNCTION(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)          }
       | "specparam"                                  { KEY_SPECPARAM(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "automatic"                                  { KEY_AUTOMATIC(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "cell"                                       { KEY_CELL(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "config"                                     { KEY_CONFIG(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "deassign"                                   { KEY_DEASSIGN(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "design"                                     { KEY_DESIGN(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "endconfig"                                  { KEY_ENDCONFIG(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "endprimitive"                               { KEY_ENDPRIMITIVE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "endtable"                                   { KEY_ENDTABLE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "generate"                                   { KEY_GENERATE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "genvar"                                     { KEY_GENVAR(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "ifnone"                                     { KEY_IFNONE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "incdir"                                     { KEY_INCDIR(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "instance"                                   { KEY_INSTANCE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "liblist"                                    { KEY_LIBLIST(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "library"                                    { KEY_LIBRARY(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "localparam"                                 { KEY_LOCALPARAM(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "macromodule"                                { KEY_MACROMODULE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "noshowcancelled"                            { KEY_NOSHOWCANCELLED(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "pulsestyle_onevent"                         { KEY_PULSESTYLE_ONEVENT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "pulsestyle_ondetect"                        { KEY_PULSESTYLE_ONDETECT(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "realtime"                                   { KEY_REALTIME(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "showcancelled"                              { KEY_SHOWCANCELLED(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "signed"                              { KEY_SIGNED(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "table"                                      { KEY_TABLE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "unsigned"                                   { KEY_UNSIGNED(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "use"                                        { KEY_USE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
-      | "uwire"                                      { KEY_UWIRE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)            }
       | "and"					{ GATETYPE("and")	}
       | "nand"					{ GATETYPE("nand")	}
       | "or"					{ GATETYPE("or")	}
@@ -106,18 +79,17 @@ rule verilog  =      parse
       | "rtranif0"				{ GATETYPE("rtranif0")	}
       | "tranif1"				{ GATETYPE("tranif1")	}
       | "rtranif1"				{ GATETYPE("rtranif1")	}
-      | "supply0"                                    { NETTYPE("supply0")       }
-      | "supply1"                                    { NETTYPE("supply1")       }
-      | "tri"                                        { NETTYPE("tri")           }
-      | "triand"                                     { NETTYPE("triand")        }
-      | "trior"                                      { NETTYPE("trior")         }
-      | "tri0"                                       { NETTYPE("tri0")          }
-      | "tri1"                                       { NETTYPE("tri1")          }
-      | "uwire"                                      { NETTYPE("uwire")         }
       | "wire"                                       { NETTYPE("wire")          }
+      | "tri"                                        { NETTYPE("tri")           }
+      | "tri1"                                       { NETTYPE("tri1")          }
+      | "supply0"                                    { NETTYPE("supply0")       }
       | "wand"                                       { NETTYPE("wand")          }
+      | "triand"                                     { NETTYPE("triand")        }
+      | "tri0"                                       { NETTYPE("tri0")          }
+      | "supply1"                                    { NETTYPE("supply1")       }
       | "wor"                                        { NETTYPE("wor")           }
-      | "trireg"                                     { KEY_TRIREG(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf)        }
+      | "trior"                                      { NETTYPE("trior")         }
+      | "trireg"                                     { NETTYPE("trireg")        }
       | "supply0"                                    { STRENGTH0("supply0")     }
       | "strong0"                                    { STRENGTH0("strong0")     }
       | "pull0"                                      { STRENGTH0("pull0")       }
