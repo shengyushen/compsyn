@@ -1450,9 +1450,9 @@ name_of_module_instance :
 
 list_of_port_connections :
 	ordered_port_connection comma_ordered_port_connection_list
-		T_list_of_port_connections_ordered($1::$2)
+		{T_list_of_port_connections_ordered($1::$2)}
 	| named_port_connection comma_named_port_connection_list
-		T_list_of_port_connections_named($1::$2)
+		{T_list_of_port_connections_named($1::$2)}
 ;
 
 comma_ordered_port_connection_list :
