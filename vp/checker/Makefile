@@ -10,7 +10,7 @@
 OCAMLC	= ocamlopt
 #OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
 OCAMLC_OPT = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
-OBJS	= lextype.cmx very.cmx parser.cmx main.cmx 
+OBJS	= typedef.ml lextype.cmx very.cmx parser.cmx main.cmx 
 
 
 all : checker.exe
@@ -24,12 +24,12 @@ checker.exe :  $(OBJS)
 	otags -r *.ml 
 
 
-parser.ml: parser.mly lextype.cmx
+parser.ml: parser.mly typedef.cmx
 	ocamlyacc -v -b parser $<
 	$(OCAMLC) $(OCAMLC_OPT) -c parser.mli
 
 
-very.ml : very.mll lextype.cmx parser.cmx
+very.ml : very.mll typedef.cmx parser.cmx
 	ocamllex -o very.ml $<
 
 %.cmx: %.ml

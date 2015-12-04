@@ -2,3 +2,4 @@ operator precedence
 replace lex token in par
 check that all comma*list have the option of empty
 check that all attribute have list
+recover old step1 and step2 and share/very and share/parse shar/typdef
