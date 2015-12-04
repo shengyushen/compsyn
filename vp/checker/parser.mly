@@ -245,7 +245,7 @@ end
 
 
 %start source_text
-%type <Typdef.description list> source_text
+%type <Typedef.description list> source_text
 
 %%
 
@@ -532,6 +532,7 @@ liblist_clause :
 library_identifier_list :
 	{[]}
 	| library_identifier library_identifier_list {$1::$2}
+;
 
 use_clause :
 	KEY_USE library_identifier_period_opt_cell_identifier colon_config_opt
@@ -1270,12 +1271,6 @@ n_input_gate_instance :
 		{T_n_input_gate_instance($1,$3,$5,$6)}
 ;
 
-comma_input_terminal_list :
-	{[]}
-	| COMMA input_terminal comma_input_terminal_list
-		{$2::$3}
-;
-
 n_output_gate_instance :
 	name_of_gate_instance_opt LPARENT output_terminal comma_output_terminal_list COMMA input_terminal RPARENT
 		{T_n_output_gate_instance($1,$3,$4,$6)}
@@ -1782,12 +1777,6 @@ edge_input_list :
 		{T_edge_input_list($1,$2,$3)}
 ;
 
-level_symbol_list :
-	{[]}
-	| level_symbol level_symbol_list
-		{$1::$2}
-;
-
 edge_indicator :
 	LPARENT level_symbol level_symbol RPARENT 
 		{T_edge_indicator_level($2,$3)}
@@ -2197,6 +2186,7 @@ loop_statement :
 system_task_enable :
 	SYSTEM_TASK_FUNCTION_IDENTIFIER lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
 		{T_system_task_enable($1,$2)}
+;
 
 lp_expression_opt_comma_expression_list_rp_opt :
 	{[]}
