@@ -383,7 +383,7 @@ rule veriloglex  = parse
 	| "+:"	{ADDRANGE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "-:"	{SUBRANGE(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)}
 	| "//"                	{	(*comment to end of line*)
-			let stpos = Lexing.lexeme_start_p lexbuf
+			(*let stpos = Lexing.lexeme_start_p lexbuf
 			in begin
 				let xx=endofline lexbuf
 				in begin
@@ -394,10 +394,14 @@ rule veriloglex  = parse
 						COMMENT(stpos,endpos,"")
 					| _ -> assert false
 				end
-			end
+			end*)
+			(*dont return comment, just go on*)
+			endofline lexbuf;
+			veriloglex  lexbuf
 		}  
 	| "/*"									{	(*multiline comment*)
-			comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf
+			comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
+			veriloglex  lexbuf
 		}
 	| '\n'									{	(*incleasing line number*)
 			Lexing.new_line lexbuf ;
@@ -458,7 +462,9 @@ and stringssy   = parse
 and comment depth stpos = parse
 	"*/"	{	(*end of current comment*)
 		if(depth==1) then (*the first level of nested comment*)
-			COMMENT(stpos,Lexing.lexeme_end_p lexbuf,"")
+			(*COMMENT(stpos,Lexing.lexeme_end_p lexbuf,"")*)
+			(*dont return comment, just go on*)
+			0
 		else 
 			comment (depth-1) stpos lexbuf
 	}
@@ -482,7 +488,7 @@ and line_skip_blank  = parse
 		Printf.printf "//FATAL : `line must be followed by blanks and line number and  filename\n";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
-		veriloglex  lexbuf
+		0
 	}
 and line_number  = parse
 	['0'-'9']+ as linenum {
@@ -502,7 +508,7 @@ and line_number  = parse
 		Printf.printf "//FATAL : `line and blanks must be followed by line number and  filename\n";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
-		veriloglex  lexbuf
+		0
 	}
 and line_skip_blank2  ln = parse
 	[' ' '\t']+	{
@@ -512,7 +518,7 @@ and line_skip_blank2  ln = parse
 		Printf.printf "//FATAL : `line and blanks and line number must be followed by  blanks\n";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
-		veriloglex  lexbuf
+		0
 	}
 and line_filename  ln = parse
 	'\"' [^ '\n' ' ' '\t' ]+ '\"' as fn {
@@ -521,16 +527,16 @@ and line_filename  ln = parse
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
 			endofline lexbuf;
-			printf "//INFO : finish file name %s\n" realfn;
+			printf "//INFO : at file name %s\n" realfn;
 			flush stdout;
-			veriloglex  lexbuf
+			0
 		end
 	}
 	| _ {
 		Printf.printf "//FATAL : `line and blanks and line number and blanks must be followed by filename\n";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
-		veriloglex  lexbuf
+		0
 	}
 	
 

@@ -3,3 +3,4 @@ replace lex token in par
 check that all comma*list have the option of empty
 check that all attribute have list
 check all comma_* or period* should have list
+relation between trans off and ifdef
