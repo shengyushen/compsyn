@@ -4,15 +4,20 @@ open Printf
 open Typedef
 
 
-let get_begin_pos t = begin
+
+let get1 t = begin
 	match t with
 	(p,_,_) -> p
 end
 ;;
-let get_finish_pos t = begin
+let get_begin_pos t = get1 t 
+;;
+let get2 t = begin
 	match t with
 	(_,p,_) -> p
 end
+;;
+let get_finish_pos t = get2 t 
 ;;
 let print_pos pos = begin
 	Printf.printf "%s " pos.Lexing.pos_fname;
@@ -27,10 +32,12 @@ let print_both_pos t = begin
 	print_pos (get_finish_pos t);
 end
 ;;
-let get_string_ssy t = begin
+let get3 t = begin
 	match t with
 	(_,_,str) -> str
 end
+;;
+let get_string_ssy t = get3 t
 ;;
 %}
 
@@ -239,9 +246,12 @@ end
 
 
 /*A.8.7 Numbers */
-/*%token <Lexing.position*Lexing.position*string> UNSIGNED_NUMBER
-%token <Lexing.position*Lexing.position*string> REAL_NUMBER*/
-%token <Lexing.position*Lexing.position*string> NUMBER
+%token <Lexing.position*Lexing.position*int> UNSIGNED_NUMBER
+%token <Lexing.position*Lexing.position*(int*int) > UNSIGNED_NUMBER_size
+%token <Lexing.position*Lexing.position*(int*string) > OCTAL_NUMBER
+%token <Lexing.position*Lexing.position*(int*string) > BINARY_NUMBER
+%token <Lexing.position*Lexing.position*(int*string) > HEX_NUMBER
+%token <Lexing.position*Lexing.position*string> REAL_NUMBER
 /*A.8.8 Strings*/
 %token <Lexing.position*Lexing.position*string> STRING
 /*A.9.3 Identifiers*/
@@ -360,7 +370,7 @@ comma_port_declaration_list :
 port :
 	port_expression_opt {T_port_position($1)}
 	| PERIOD  port_identifier LPARENT port_expression_opt RPARENT
-		{T_port_expression($2,$4)}
+		{T_port_exp($2,$4)}
 ;
 
 port_expression_opt :
@@ -806,9 +816,10 @@ delay2 :
 
 
 delay_value :
-/*	unsigned_number
-	| real_number*/
-	number {T_delay_value_num($1)}
+	UNSIGNED_NUMBER
+		{T_delay_value_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| REAL_NUMBER
+	 {T_delay_value_REAL_NUMBER(get1 $1, get2 $1, get3 $1)}
 	| identifier
 		{T_delay_value_id($1)}
 ;
@@ -1826,8 +1837,10 @@ udp_initial_statement :
 /*init_val ::= 1'b0 | 1'b1 | 1'bx | 1'bX | 1'B0 | 1'B1 | 1'Bx | 1'BX | 1 | 0*/
 /*actually lex only return number*/
 init_val :
-	NUMBER
-		{$1}
+	BINARY_NUMBER  
+		{T_init_val_bin(get1 $1, get2 $1, get3 $1)}
+	| UNSIGNED_NUMBER
+		{T_init_val_unsigned(get1 $1, get2 $1, get3 $1)}
 ;
 
 sequential_entry :
@@ -1874,35 +1887,37 @@ edge_symbol ::= r | R | f | F | p | P | n | N | *
 /*lexer only return UNSIGNED_NUMBER, SIMPLE_IDENTIFIER and * and -*/
 
 edge_symbol :
-	SIMPLE_IDENTIFIER	{T_edge_symbol_SIMID($1)}
-	| OP2_MULTIPLE	{T_edge_symbol_MUL}
+	SIMPLE_IDENTIFIER	{T_edge_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP2_MULTIPLE	{T_edge_symbol_MUL(get1 $1, get2 $1)}
 ;
 
 level_symbol :
-/*	UNSIGNED_NUMBER {$1}*/
-	NUMBER {T_level_symbol_NUMBER($1)}
-	| SIMPLE_IDENTIFIER  {T_level_symbol_SIMID($1)}
-	| OP2_QUESTION {T_level_symbol_QUESTION}
+	UNSIGNED_NUMBER 
+	 {T_level_symbol_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  {T_level_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP2_QUESTION {T_level_symbol_QUESTION(get1 $1, get2 $1)}
 ;
 
 output_symbol :
-/*	UNSIGNED_NUMBER {$1}*/
-	NUMBER {T_output_symbol_NUM($1)}
-	| SIMPLE_IDENTIFIER  {T_output_symbol_SIMID($1)}
+	UNSIGNED_NUMBER 
+	 {T_output_symbol_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  {T_output_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
 ;
 
 next_state :
-/*	UNSIGNED_NUMBER {$1}*/
-	NUMBER {T_next_state_NUM($1)}
-	| SIMPLE_IDENTIFIER  {T_next_state_SIMID($1)}
-	| OP12_SUB  {T_next_state_SUB}
+	UNSIGNED_NUMBER 
+	 {T_next_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  {T_next_state_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP12_SUB  {T_next_state_SUB(get1 $1, get2 $1)}
 ;
 
 current_state :
-/*	UNSIGNED_NUMBER {$1}*/
-	NUMBER {$1}
-	| SIMPLE_IDENTIFIER  {$1}
-	| OP2_QUESTION {$1}
+	UNSIGNED_NUMBER 
+	 {T_current_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  
+		{T_current_state_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP2_QUESTION 
+		{T_current_state_OP2_QUESTION(get1 $1, get2 $1)}
 ;
 	
 
@@ -1950,7 +1965,7 @@ A.6.1 Continuous assignment statements*/
 
 continuous_assign :
 	KEY_ASSIGN drive_strength_opt delay3_opt list_of_net_assignments SEMICOLON
-		{T_continuous_assign($2,$3,$5)}
+		{T_continuous_assign($2,$3,$4)}
 ;
 
 list_of_net_assignments :
@@ -1967,7 +1982,7 @@ comma_net_assignment_list :
 
 net_assignment :
 	net_lvalue EQU1 expression
-		{T_net_assignment($1,$2)}
+		{T_net_assignment($1,$3)}
 ;
 
 /*A.6.2 Procedural blocks and assignments*/
@@ -1995,7 +2010,7 @@ delay_or_event_control_opt :
 
 nonblocking_assignment :
 	variable_lvalue OP2_LE delay_or_event_control_opt expression
-		{T_nonblocking_assignment($1,$2,$3)}
+		{T_nonblocking_assignment($1,$3,$4)}
 ;
 
 procedural_continuous_assignments :
@@ -2144,7 +2159,7 @@ square_expression_square_list :
 
 square_expression_square :
 	LSQUARE expression RSQUARE
-		{$1}
+		{$2}
 ;
 
 event_expression :
@@ -2236,7 +2251,7 @@ case_item_list :
 
 case_item :
 	expression comma_expression_list COLON statement_or_null
-		{T_case_item($1::$2,$3)}
+		{T_case_item($1::$2,$4)}
 	| KEY_DEFAULT colon_opt statement_or_null
 		{T_case_item_default($3)}
 ;
@@ -2265,7 +2280,7 @@ loop_statement :
 
 /*A.6.9 Task enable statements*/
 system_task_enable :
-	SYSTEM_TASK_FUNCTION_IDENTIFIER lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
+	system_function_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
 		{T_system_task_enable($1,$2)}
 ;
 
@@ -2403,7 +2418,7 @@ specify_input_terminal_descriptor :
 rsq_constant_range_expression_rsq_opt	:
 	{T_constant_range_expression_NOSPEC}
 	| LSQUARE constant_range_expression RSQUARE
-		{T_constant_range_expression($1)}
+		{$2}
 ;
 
 specify_output_terminal_descriptor :
@@ -2412,13 +2427,13 @@ specify_output_terminal_descriptor :
 ;
 
 input_identifier :
-	SIMPLE_IDENTIFIER {$1}
+	identifier {$1}
 ;
 
 
 
 output_identifier :
-	SIMPLE_IDENTIFIER {$1}
+	identifier {$1}
 ;
 
 
@@ -2615,7 +2630,7 @@ concatenation :
 
 constant_concatenation :
 	LHUA constant_expression comma_constant_expression_list RHUA
-		{T_constant_concatenation($2:$3)}
+		{T_constant_concatenation($2::$3)}
 ;
 
 constant_multiple_concatenation :
@@ -2689,7 +2704,7 @@ base_expression :
 
 conditional_expression :
 	expression1 OP2_QUESTION attribute_instance_list expression2 COLON expression3
-		{T_conditional_expression($1,$3,$4,$5)}
+		{T_conditional_expression($1,$3,$4,$6)}
 ;
 
 constant_base_expression :
@@ -2884,7 +2899,7 @@ net_lvalue :
 	| hierarchical_net_identifier lsq_constant_expression_rsq_list LSQUARE constant_range_expression RSQUARE
 		{T_net_lvalue_idexp($1,$2,$4)}
 	| LHUA net_lvalue comma_net_lvalue_list RHUA
-		{T_net_lvalue_lvlist($2::$4)}
+		{T_net_lvalue_lvlist($2::$3)}
 ;
 
 lsq_constant_expression_rsq_list :
@@ -2984,7 +2999,13 @@ binary_module_path_operator :
 
 
 /*A.8.7 Numbers*/
-number : NUMBER {T_number($1)};
+number :
+	UNSIGNED_NUMBER {T_number_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)};
+	| UNSIGNED_NUMBER_size {T_number_UNSIGNED_NUMBER_size(get1 $1, get2 $1, get3 $1)}
+	| OCTAL_NUMBER {T_number_OCTAL_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| BINARY_NUMBER {T_number_BINARY_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| HEX_NUMBER {T_number_HEX_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| REAL_NUMBER {T_number_REAL_NUMBER(get1 $1, get2 $1, get3 $1)}
 
 /*A.8.8 Strings*/
 string : STRING {$1};
@@ -3058,8 +3079,8 @@ hierarchical_variable_identifier : hierarchical_identifier {$1};
 hierarchical_task_identifier : hierarchical_identifier {$1};
 
 identifier :
-	SIMPLE_IDENTIFIER {$1}
-	| ESCAPED_IDENTIFIER {$1}
+	SIMPLE_IDENTIFIER {T_identifier($1)}
+	| ESCAPED_IDENTIFIER {T_identifier($1)}
 ;
 
 inout_port_identifier : identifier {$1};

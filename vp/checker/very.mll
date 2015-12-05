@@ -2,6 +2,7 @@
 (*head here*)
 open Parser
 open Printf
+open String
 
 
 let stringssy_string = ref "";;
@@ -22,6 +23,59 @@ and isNotEof_included t = begin
 	match t with
 	EOF_INCLUDED(_,_,_) -> false
 	| _ -> true
+end
+and char2int c = begin
+	match c with
+		'0' -> 0
+	|	'1' -> 1
+	|	'2' -> 2
+	|	'3' -> 3
+	|	'4' -> 4
+	|	'5' -> 5
+	|	'6' -> 6
+	|	'7' -> 7
+	|	'8' -> 8
+	|	'9' -> 9
+	| _ -> assert false
+end
+and string_no_ str = begin
+	let rec internal str1 = begin
+		match str1 with
+		"" -> str1
+		| _ -> begin
+			let hd = String.get str1 0
+			and tl = String.sub str1 1 ((String.length str1)-1)
+			in begin
+				match hd with
+				'_' -> internal tl
+				| _ -> Printf.sprintf "%c%s" hd (internal tl)
+			end
+		end
+	end
+	in internal str
+end
+and unsigned_numberStr2int str = begin
+	let rec internal str1 tmp = begin
+		match str1 with
+		"" -> tmp
+		| _ -> begin
+			let hd = String.get str1 0
+			and tl = String.sub str1 1 ((String.length str1)-1)
+			in begin
+				match hd with
+				'_' -> internal tl tmp
+				| _ -> internal tl (10*tmp + (char2int hd))
+			end
+		end
+	end
+	in internal str 0
+end
+and get_size sz = begin
+	let sz_no_  = unsigned_numberStr2int sz
+	in begin
+		if (sz_no_ == 0 ) then 32
+		else sz_no_
+	end
 end
 }
 
@@ -46,24 +100,10 @@ let unsigned_number = decimal_digit ( '_' | decimal_digit )* (*referred in parse
 let non_zero_unsigned_number = non_zero_decimal_digit ( '_' | decimal_digit)* 
 let size         = non_zero_unsigned_number
 let sign         = '+' | '-'
-let hex_number   = size? hex_base [' ']* hex_value   (*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
-let octal_number = size? octal_base [' ']* octal_value(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
-let binary_number= size? binary_base [' ']* binary_value(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
-let decimal_number =
-	unsigned_number
-	| size?  decimal_base [' ']* unsigned_number(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
-	| size?  decimal_base [' ']* x_digit '_'*(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
-	| size?  decimal_base [' ']* z_digit '_'*(*these additional space are not in 2005 std, but some code use such style, like /1202prj/common/pcs25g/pcssrc/cgfecrtl/CGFEC_RX_DECODER_GB.v *)
 let exp          = 'e' | 'E'
 let real_number  =   (*referred in parser*)
 	unsigned_number '.' unsigned_number
 	| unsigned_number ( '.' unsigned_number )? exp  sign? unsigned_number
-let number       =   (*referred in parser*)
-	decimal_number
-	| octal_number
-	| binary_number
-	| hex_number
-	| real_number
 
 
 (*A.8.8 Strings*)
@@ -246,14 +286,43 @@ rule veriloglex  = parse
 	|"->"									-> IMPLY(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 	|"=>"									-> IMPLY2(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 	|"*>"									-> IMPLYSTART(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-(*	| unsigned_number{
-			UNSIGNED_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
+	| unsigned_number as lxm {
+			let lxm_no_ =  unsigned_numberStr2int lxm
+			in
+			UNSIGNED_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, lxm_no_)
+		}
+	| (size? as sz)  decimal_base [' ']* (unsigned_number as lxm) {
+			let lxm_no_ =  unsigned_numberStr2int lxm
+			and sz_no_  = get_size sz
+			in
+			UNSIGNED_NUMBER_size(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf,(sz_no_,lxm_no_))
+		}
+	| (size? as sz)  decimal_base [' ']* x_digit '_'* {
+			assert false
+		}
+	| size?  decimal_base [' ']* z_digit '_'* {
+			assert false
+		}
+	|	(size? as sz) octal_base [' ']* (octal_value as lxm) {
+			let lxm_no_ =  string_no_ lxm
+			and sz_no_  = get_size sz
+			in 
+			OCTAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
+		}
+	| (size? as sz) binary_base [' ']* (binary_value as lxm) {
+			let lxm_no_ =  string_no_ lxm
+			and sz_no_  = get_size sz
+			in
+			BINARY_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
+		}
+	| (size? as sz) hex_base [' ']* (hex_value as lxm ) {
+			let lxm_no_ =  string_no_ lxm
+			and sz_no_  = get_size sz
+			in
+			HEX_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
 		}
 	| real_number {
 			REAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
-		}*)
-	| number {
-			NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
   | eof										{ 
 			EOF(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)

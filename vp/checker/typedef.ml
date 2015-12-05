@@ -7,7 +7,7 @@ and module_declaration =
 	| T_module_declaration__2 of(attribute_instance list)*string*(parameter_declaration list)*(port_declaration list)*(module_item list)
 and port =
 	T_port_position of port_expression
-	| T_port_expression of string*port_expression
+	| T_port_exp of string*port_expression
 and port_expression =
 	T_port_expression of (port_reference list)
 and	port_reference =
@@ -364,8 +364,8 @@ and	generate_block =
 	| T_generate_block_mgi of module_item 
 	| T_generate_block_begin of string*(module_item list)
 and	udp_declaration =
-	T_udp_declaration_1 of (attribute_instance list)*string*udp_port_list*(udp_port_declaration list)*udp_body
-	| T_udp_declaration_2 of (attribute_instance list)*string*udp_declaration_port_list*udp_body
+	T_udp_declaration_1 of (attribute_instance list)*identifier*udp_port_list*(udp_port_declaration list)*udp_body
+	| T_udp_declaration_2 of (attribute_instance list)*identifier*udp_declaration_port_list*udp_body
 and	udp_port_list =
 	T_udp_port_list of string*(string list)
 and	udp_declaration_port_list =
@@ -390,9 +390,12 @@ and sequential_body =
 	T_sequential_body of udp_initial_statement*(sequential_entry list)
 and	udp_initial_statement =
 	T_udp_initial_statement_NOSPEC
-	| T_udp_initial_statement of string*number
+	| T_udp_initial_statement of string*init_val
+and init_val =
+	T_init_val_bin of Lexing.position*Lexing.position*(int*string)
+	| T_init_val_unsigned of Lexing.position*Lexing.position*int
 and	sequential_entry =
-	T_sequential_entry of seq_input_list*level_symbol*next_state
+	T_sequential_entry of seq_input_list*current_state*next_state
 and	seq_input_list =
 	T_seq_input_list_level of level_symbol list
 	| T_seq_input_list_edge of edge_input_list
@@ -402,7 +405,9 @@ and	edge_indicator =
 	T_edge_indicator_level of level_symbol*level_symbol
 	| T_edge_indicator_edge of edge_symbol
 and	udp_instantiation =
-	T_udp_instantiation of string*drive_strength*delay2
+	T_udp_instantiation of identifier*drive_strength*delay2*(udp_instance list)
+and udp_instance =
+	T_udp_instance of name_of_udp_instance*net_lvalue*(expression list)
 and	name_of_udp_instance =
 	T_name_of_udp_instance_NOSPEC
 	| T_name_of_udp_instance of string*range
@@ -521,11 +526,11 @@ and	simple_path_declaration =
 and	parallel_path_description =
 	T_parallel_path_description of specify_input_terminal_descriptor*polarity_operator*specify_output_terminal_descriptor
 and	full_path_description =
-	T_full_path_description of (specify_input_terminal_descriptor list)*polarity_operator*specify_output_terminal_descriptor
+	T_full_path_description of (specify_input_terminal_descriptor list)*polarity_operator*(specify_output_terminal_descriptor list)
 and	specify_input_terminal_descriptor =
-	T_specify_input_terminal_descriptor of string*constant_range_expression
+	T_specify_input_terminal_descriptor of identifier*constant_range_expression
 and	specify_output_terminal_descriptor =
-	T_specify_output_terminal_descriptor of string*constant_range_expression
+	T_specify_output_terminal_descriptor of identifier*constant_range_expression
 and	list_of_path_delay_expressions =
 	T_list_of_constant_mintypmax_expressions_1 of constant_mintypmax_expression
 	| T_list_of_constant_mintypmax_expressions_2 of constant_mintypmax_expression*constant_mintypmax_expression
@@ -629,7 +634,7 @@ and	constant_primary =
 	| T_constant_primary_string of string
 and	module_path_primary =
 	T_module_path_primary_num of number
-	| T_module_path_primary_id of string
+	| T_module_path_primary_id of identifier
 	| T_module_path_primary_concat of module_path_concatenation
 	| T_module_path_primary_mul_concat of module_path_multiple_concatenation
 	| T_module_path_primary_func of function_call
@@ -654,8 +659,9 @@ and variable_lvalue =
 	| T_variable_lvalue_idexp of (string list)*(expression list)*range_expression
 	| T_variable_lvalue_vlvlist of variable_lvalue list
 and	delay_value =
-	T_delay_value_num of number
-	| T_delay_value_id of string
+	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_delay_value_REAL_NUMBER of  Lexing.position*Lexing.position*string
+	| T_delay_value_id of identifier
 and	attribute_instance =
 	T_attribute_instance of (attr_spec list)
 and	attr_spec =
@@ -727,20 +733,29 @@ and binary_module_path_operator =
   | T_binary_module_path_operator_XOR
   | T_binary_module_path_operator_XNOR
 and level_symbol =
-	T_level_symbol_NUMBER of string
-	| T_level_symbol_SIMID of string 
-	| T_level_symbol_QUESTION
+	T_level_symbol_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_level_symbol_SIMID of Lexing.position*Lexing.position*string 
+	| T_level_symbol_QUESTION of Lexing.position*Lexing.position
 and output_symbol =
-	T_output_symbol_NUM of string
-	| T_output_symbol_SIMID of string
+	T_output_symbol_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_output_symbol_SIMID of Lexing.position*Lexing.position*string
 and number =
-	T_number of string
+	T_number_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_number_UNSIGNED_NUMBER_size of Lexing.position*Lexing.position*(int*int)
+	| T_number_OCTAL_NUMBER of Lexing.position*Lexing.position*(int*string)
+	| T_number_BINARY_NUMBER of Lexing.position*Lexing.position*(int*string)
+	| T_number_HEX_NUMBER of Lexing.position*Lexing.position*(int*string)
+	| T_number_REAL_NUMBER of Lexing.position*Lexing.position*string
+and current_state =
+	T_current_state_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_current_state_SIMID of Lexing.position*Lexing.position*string
+	| T_current_state_OP2_QUESTION of Lexing.position*Lexing.position
 and next_state =
-	T_next_state_NUM of string
-	| T_next_state_SIMID of string
-	| T_next_state_SUB
+	T_next_state_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_next_state_SIMID of  Lexing.position*Lexing.position*string
+	| T_next_state_SUB of  Lexing.position*Lexing.position
 and edge_symbol =
-	T_edge_symbol_SIMID of string
-	| T_edge_symbol_MUL
+	T_edge_symbol_SIMID of Lexing.position*Lexing.position*string
+	| T_edge_symbol_MUL of Lexing.position*Lexing.position
 and identifier =
-	Lexing.position*Lexing.position*string
+	T_identifier of Lexing.position*Lexing.position*string
