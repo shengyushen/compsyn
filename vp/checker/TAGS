@@ -149,7 +149,7 @@ let inputFileChannleinputFileChannle18,341
 let lexbuflexbuf20,389
 let very_structvery_struct24,533
 
-parser.ml,7180
+parser.ml,7176
 Parser1,0
 type tokentoken1,0
   | KEY_ALWAYSKEY_ALWAYS2,13
@@ -281,85 +281,85 @@ type tokentoken1,0
   | EOLEOL128,7479
   | EOF_INCLUDEDEOF_INCLUDED129,7531
   | EOFEOF130,7592
-  | OP12_ADDOP12_ADD131,7644
-  | OP12_SUBOP12_SUB132,7701
-  | OP12_ANDOP12_AND133,7758
-  | OP12_OROP12_OR134,7815
-  | OP12_XOROP12_XOR135,7871
-  | OP12_XNOROP12_XNOR136,7928
-  | OP1_GANTANHAOOP1_GANTANHAO137,7986
-  | OP1_BOLANGHAOOP1_BOLANGHAO138,8048
-  | OP1_REDUCE_NANDOP1_REDUCE_NAND139,8110
-  | OP1_REDUCE_NOROP1_REDUCE_NOR140,8174
-  | OP2_MULTIPLEOP2_MULTIPLE141,8237
-  | OP2_DIVOP2_DIV142,8298
-  | OP2_MODOP2_MOD143,8354
-  | OP2_EQU2OP2_EQU2144,8410
-  | OP2_NEQ2OP2_NEQ2145,8467
-  | OP2_EQU3OP2_EQU3146,8524
-  | OP2_NEQ3OP2_NEQ3147,8581
-  | OP2_ANDOP2_AND148,8638
-  | OP2_OROP2_OR149,8694
-  | OP2_POWEROP2_POWER150,8749
-  | OP2_LTOP2_LT151,8807
-  | OP2_LEOP2_LE152,8862
-  | OP2_GTOP2_GT153,8917
-  | OP2_GEOP2_GE154,8972
-  | OP2_LOGICAL_RIGHTSHIFTOP2_LOGICAL_RIGHTSHIFT155,9027
-  | OP2_LOGICAL_LEFTSHIFTOP2_LOGICAL_LEFTSHIFT156,9098
-  | OP2_ARITHMETIC_RIGHTSHIFTOP2_ARITHMETIC_RIGHTSHIFT157,9168
-  | OP2_ARITHMETIC_LEFTSHIFTOP2_ARITHMETIC_LEFTSHIFT158,9242
-  | OP2_QUESTIONOP2_QUESTION159,9315
-  | LPARENTLPARENT160,9376
-  | RPARENTRPARENT161,9432
-  | COMMACOMMA162,9488
-  | SEMICOLONSEMICOLON163,9542
-  | COLONCOLON164,9600
-  | LSQUARELSQUARE165,9654
-  | RSQUARERSQUARE166,9710
-  | LHUALHUA167,9766
-  | RHUARHUA168,9819
-  | PERIODPERIOD169,9872
-  | ATAT170,9927
-  | JINGJING171,9978
-  | EQU1EQU1172,10031
-  | DOLLORDOLLOR173,10084
-  | IMPLYIMPLY174,10139
-  | IMPLY2IMPLY2175,10193
-  | IMPLYSTARTIMPLYSTART176,10248
-  | ADDRANGEADDRANGE177,10307
-  | SUBRANGESUBRANGE178,10364
-  | LPARENTSTARTLPARENTSTART179,10421
-  | RPARENTSTARTRPARENTSTART180,10482
-  | UNSIGNED_NUMBERUNSIGNED_NUMBER181,10543
-  | UNSIGNED_NUMBER_sizeUNSIGNED_NUMBER_size182,10604
-  | OCTAL_NUMBEROCTAL_NUMBER183,10677
-  | BINARY_NUMBERBINARY_NUMBER184,10745
-  | HEX_NUMBERHEX_NUMBER185,10814
-  | REAL_NUMBERREAL_NUMBER186,10880
-  | STRINGSTRING187,10940
-  | ESCAPED_IDENTIFIERESCAPED_IDENTIFIER188,10995
-  | SIMPLE_IDENTIFIERSIMPLE_IDENTIFIER189,11062
-  | SYSTEM_TASK_FUNCTION_IDENTIFIERSYSTEM_TASK_FUNCTION_IDENTIFIER190,11128
-let yytransl_constyytransl_const242,12009
-let yytransl_blockyytransl_block245,12042
-let yylhsyylhs437,16633
-let yylenyylen540,23307
-let yydefredyydefred643,29981
-let yydgotoyydgoto854,43754
-let yysindexyysindex903,46858
-let yyrindexyyrindex1114,60631
-let yygindexyygindex1325,74404
-let yytablesizeyytablesize1374,77509
-let yytableyytable1375,77532
-let yycheckyycheck2455,148698
-let yynames_constyynames_const3535,219864
-let yynames_blockyynames_block3538,219892
-let yyactyyact3730,223344
-let yytablesyytables10446,506074
-let source_textsource_text10463,506595
+  | OP2_ADDOP2_ADD131,7644
+  | OP2_SUBOP2_SUB132,7700
+  | OP2_ANDOP2_AND133,7756
+  | OP2_OROP2_OR134,7812
+  | OP2_XOROP2_XOR135,7867
+  | OP2_XNOROP2_XNOR136,7923
+  | OP1_LOGIC_NEGOP1_LOGIC_NEG137,7980
+  | OP1_BITWISE_NEGOP1_BITWISE_NEG138,8042
+  | OP1_REDUCE_NANDOP1_REDUCE_NAND139,8106
+  | OP1_REDUCE_NOROP1_REDUCE_NOR140,8170
+  | OP2_MULTIPLEOP2_MULTIPLE141,8233
+  | OP2_DIVOP2_DIV142,8294
+  | OP2_MODOP2_MOD143,8350
+  | OP2_EQU2OP2_EQU2144,8406
+  | OP2_NEQ2OP2_NEQ2145,8463
+  | OP2_EQU3OP2_EQU3146,8520
+  | OP2_NEQ3OP2_NEQ3147,8577
+  | OP2_AND2OP2_AND2148,8634
+  | OP2_OR2OP2_OR2149,8691
+  | OP2_POWEROP2_POWER150,8747
+  | OP2_LTOP2_LT151,8805
+  | OP2_LEOP2_LE152,8860
+  | OP2_GTOP2_GT153,8915
+  | OP2_GEOP2_GE154,8970
+  | OP2_LOGICAL_RIGHTSHIFTOP2_LOGICAL_RIGHTSHIFT155,9025
+  | OP2_LOGICAL_LEFTSHIFTOP2_LOGICAL_LEFTSHIFT156,9096
+  | OP2_ARITHMETIC_RIGHTSHIFTOP2_ARITHMETIC_RIGHTSHIFT157,9166
+  | OP2_ARITHMETIC_LEFTSHIFTOP2_ARITHMETIC_LEFTSHIFT158,9240
+  | OP2_QUESTIONOP2_QUESTION159,9313
+  | LPARENTLPARENT160,9374
+  | RPARENTRPARENT161,9430
+  | COMMACOMMA162,9486
+  | SEMICOLONSEMICOLON163,9540
+  | COLONCOLON164,9598
+  | LSQUARELSQUARE165,9652
+  | RSQUARERSQUARE166,9708
+  | LHUALHUA167,9764
+  | RHUARHUA168,9817
+  | PERIODPERIOD169,9870
+  | ATAT170,9925
+  | JINGJING171,9976
+  | EQU1EQU1172,10029
+  | DOLLORDOLLOR173,10082
+  | IMPLYIMPLY174,10137
+  | IMPLY2IMPLY2175,10191
+  | IMPLYSTARTIMPLYSTART176,10246
+  | ADDRANGEADDRANGE177,10305
+  | SUBRANGESUBRANGE178,10362
+  | LPARENTSTARTLPARENTSTART179,10419
+  | RPARENTSTARTRPARENTSTART180,10480
+  | UNSIGNED_NUMBERUNSIGNED_NUMBER181,10541
+  | UNSIGNED_NUMBER_sizeUNSIGNED_NUMBER_size182,10602
+  | OCTAL_NUMBEROCTAL_NUMBER183,10675
+  | BINARY_NUMBERBINARY_NUMBER184,10743
+  | HEX_NUMBERHEX_NUMBER185,10812
+  | REAL_NUMBERREAL_NUMBER186,10878
+  | STRINGSTRING187,10938
+  | ESCAPED_IDENTIFIERESCAPED_IDENTIFIER188,10993
+  | SIMPLE_IDENTIFIERSIMPLE_IDENTIFIER189,11060
+  | SYSTEM_TASK_FUNCTION_IDENTIFIERSYSTEM_TASK_FUNCTION_IDENTIFIER190,11126
+let yytransl_constyytransl_const236,11934
+let yytransl_blockyytransl_block239,11967
+let yylhsyylhs431,16556
+let yylenyylen539,23576
+let yydefredyydefred647,30596
+let yydgotoyydgoto880,45845
+let yysindexyysindex932,49147
+let yyrindexyyrindex1165,64396
+let yygindexyygindex1398,79645
+let yytablesizeyytablesize1450,82948
+let yytableyytable1451,82971
+let yycheckyycheck2556,155795
+let yynames_constyynames_const3661,228619
+let yynames_blockyynames_block3664,228647
+let yyactyyact3856,232097
+let yytablesyytables11022,546032
+let source_textsource_text11039,546553
 
-parser.mly,278
+parser.mly,253
 let get1get18,40
 let get_begin_posget_begin_pos13,94
 let get2get215,127
@@ -368,9 +368,8 @@ let print_posprint_pos22,215
 let print_both_posprint_both_pos28,409
 let get3get335,567
 let get_string_ssyget_string_ssy40,625
-let prtmsgprtmsg43,659
 
-typedef.ml,46194
+typedef.ml,43669
 Typedef1,0
 type descriptiondescription1,0
 	T_description__module_declarationT_description__module_declaration2,19
@@ -386,770 +385,737 @@ and port_expressionport_expression11,567
 	T_port_expressionT_port_expression12,589
 and	port_referenceport_reference13,633
 	T_port_referenceT_port_reference14,654
-and port_declarationport_declaration15,712
-	T_port_declaration__inout_declarationT_port_declaration__inout_declaration16,735
-	| T_port_declaration__input_declarationT_port_declaration__input_declaration17,821
-	| T_port_declaration__output_declarationT_port_declaration__output_declaration18,909
-and module_itemmodule_item19,999
-	T_module_item__port_declarationT_module_item__port_declaration20,1017
-	| T_module_item__generate_regionT_module_item__generate_region21,1070
-	| T_module_item__specify_blockT_module_item__specify_block22,1123
-	| T_module_item__parameter_declarationT_module_item__parameter_declaration23,1172
-	| T_module_item__specparam_declarationT_module_item__specparam_declaration24,1263
-	| T_module_item__net_declarationT_module_item__net_declaration25,1354
-	| T_module_item__reg_declarationT_module_item__reg_declaration26,1433
-	| T_module_item__integer_declarationT_module_item__integer_declaration27,1512
-	| T_module_item__real_declarationT_module_item__real_declaration28,1599
-	| T_module_item__time_declarationT_module_item__time_declaration29,1680
-	| T_module_item__realtime_declarationT_module_item__realtime_declaration30,1761
-	| T_module_item__event_declarationT_module_item__event_declaration31,1850
-	| T_module_item__genvar_declarationT_module_item__genvar_declaration32,1933
-	| T_module_item__task_declarationT_module_item__task_declaration33,2018
-	| T_module_item__function_declarationT_module_item__function_declaration34,2099
-	| T_module_item__local_parameter_declarationT_module_item__local_parameter_declaration35,2188
-	| T_module_item__parameter_overrideT_module_item__parameter_override36,2291
-	| T_module_item__continuous_assignT_module_item__continuous_assign37,2384
-	| T_module_item__gate_instantiationT_module_item__gate_instantiation38,2467
-	| T_module_item__udp_instantiationT_module_item__udp_instantiation39,2552
-	| T_module_item__module_instantiationT_module_item__module_instantiation40,2635
-	| T_module_item__initial_constructT_module_item__initial_construct41,2724
-	| T_module_item__always_constructT_module_item__always_construct42,2807
-	| T_module_item__loop_generate_constructT_module_item__loop_generate_construct43,2888
-	| T_module_item__conditional_generate_constructT_module_item__conditional_generate_construct44,2983
-and config_declarationconfig_declaration45,3092
-	T_config_declarationT_config_declaration46,3117
-and design_statementdesign_statement47,3199
-	T_design_statementT_design_statement48,3222
-and library_identifier_period_opt_cell_identifierlibrary_identifier_period_opt_cell_identifier49,3298
-	T_lib_cell_identifierT_lib_cell_identifier50,3350
-and config_rule_statementconfig_rule_statement51,3398
-	T_config_rule_statement__defaultT_config_rule_statement__default52,3426
-	| T_config_rule_statement__inst_libT_config_rule_statement__inst_lib53,3482
-	| T_config_rule_statement__inst_useT_config_rule_statement__inst_use54,3558
-	| T_config_rule_statement__cell_libT_config_rule_statement__cell_lib55,3627
-	| T_config_rule_statement__cell_useT_config_rule_statement__cell_use56,3731
-and use_clauseuse_clause57,3828
-	T_use_clauseT_use_clause58,3845
-and colon_config_optcolon_config_opt59,3925
-	T_colon_config_opt_FALSET_colon_config_opt_FALSE60,3948
-	| T_colon_config_opt_TRUET_colon_config_opt_TRUE61,3974
-and signedsigned62,4001
-	T_signed_FALSET_signed_FALSE63,4014
-	| T_signed_TRUET_signed_TRUE64,4031
-and local_parameter_declarationlocal_parameter_declaration65,4048
-	T_local_parameter_declaration_1T_local_parameter_declaration_166,4082
-	| T_local_parameter_declaration_2T_local_parameter_declaration_267,4155
-and parameter_declarationparameter_declaration68,4232
-	T_parameter_declaration_1T_parameter_declaration_169,4260
-	| T_parameter_declaration_2T_parameter_declaration_270,4327
-and specparam_declarationspecparam_declaration71,4398
-	T_specparam_declarationT_specparam_declaration72,4426
-and parameter_typeparameter_type73,4488
-	T_parameter_type__INTEGERT_parameter_type__INTEGER74,4509
-	| T_parameter_type__REALT_parameter_type__REAL75,4536
-	| T_parameter_type__REALTIMET_parameter_type__REALTIME76,4562
-	| T_parameter_type__TIMET_parameter_type__TIME77,4592
-and inout_declarationinout_declaration78,4618
-	T_inout_declarationT_inout_declaration79,4642
-and input_declarationinput_declaration80,4706
-	T_input_declarationT_input_declaration81,4730
-and output_declarationoutput_declaration82,4794
-	T_output_declaration_netT_output_declaration_net83,4819
-	|T_output_declaration_regT_output_declaration_reg84,4888
-	|T_output_declaration_varT_output_declaration_var85,4983
-and	output_variable_typeoutput_variable_type86,5086
-	T_output_variable_type_INTEGERT_output_variable_type_INTEGER87,5113
-	| T_output_variable_type_TIMET_output_variable_type_TIME88,5145
-and event_declarationevent_declaration89,5176
-	T_event_declarationT_event_declaration90,5200
-and integer_declarationinteger_declaration91,5263
-	T_integer_declarationT_integer_declaration92,5289
-and net_declarationnet_declaration93,5336
-	T_net_declaration_net_type1T_net_declaration_net_type194,5358
-	| T_net_declaration_net_type2T_net_declaration_net_type295,5450
-	| T_net_declaration_net_type3T_net_declaration_net_type396,5549
-	| T_net_declaration_net_type4T_net_declaration_net_type497,5667
-	| T_net_declaration_trireg_1T_net_declaration_trireg_198,5790
-	| T_net_declaration_trireg_2T_net_declaration_trireg_299,5890
-	| T_net_declaration_trireg_3T_net_declaration_trireg_3100,5979
-	| T_net_declaration_trireg_4T_net_declaration_trireg_4101,6066
-and vectored_scalaredvectored_scalared102,6179
-	T_vectored_scalared_NOSPECT_vectored_scalared_NOSPEC103,6203
-	|T_vectored_scalared_vectoredT_vectored_scalared_vectored104,6231
-	|T_vectored_scalared_scalaredT_vectored_scalared_scalared105,6262
-and real_declarationreal_declaration106,6293
-	T_real_declarationT_real_declaration107,6316
-and realtime_declarationrealtime_declaration108,6356
-	T_realtime_declarationT_realtime_declaration109,6383
-and reg_declarationreg_declaration110,6427
-	T_reg_declarationT_reg_declaration111,6449
-and time_declarationtime_declaration112,6505
-	T_time_declarationT_time_declaration113,6528
-and net_typenet_type114,6572
-	T_net_type_NOSPECT_net_type_NOSPEC115,6587
-	| T_net_type__KEY_SUPPLY0T_net_type__KEY_SUPPLY0116,6606
-	| T_net_type__KEY_SUPPLY1T_net_type__KEY_SUPPLY1117,6633
-	| T_net_type__KEY_TRIT_net_type__KEY_TRI118,6660
-	| T_net_type__KEY_TRIANDT_net_type__KEY_TRIAND119,6683
-	| T_net_type__KEY_TRIORT_net_type__KEY_TRIOR120,6709
-	| T_net_type__KEY_TRI0T_net_type__KEY_TRI0121,6734
-	| T_net_type__KEY_TRI1T_net_type__KEY_TRI1122,6758
-	| T_net_type__KEY_UWIRET_net_type__KEY_UWIRE123,6782
-	| T_net_type__KEY_WIRET_net_type__KEY_WIRE124,6807
-	| T_net_type__KEY_WANDT_net_type__KEY_WAND125,6831
-	| T_net_type__KEY_WORT_net_type__KEY_WOR126,6855
-and real_typereal_type127,6878
-	T_real_type_noassT_real_type_noass128,6894
-	| T_real_type_assT_real_type_ass129,6944
-and	variable_typevariable_type130,6997
-	T_variable_type_noassT_variable_type_noass131,7017
-	| T_variable_type_assT_variable_type_ass132,7071
-and strengthstrength133,7128
-	KEY_HIGHZ0KEY_HIGHZ0134,7143
-	| KEY_HIGHZ1KEY_HIGHZ1135,7155
-	| KEY_SUPPLY0KEY_SUPPLY0136,7169
-	| KEY_STRONG0KEY_STRONG0137,7185
-	| KEY_PULL0KEY_PULL0138,7201
-	| KEY_WEAK0KEY_WEAK0139,7216
-	|	KEY_SUPPLY1KEY_SUPPLY1140,7230
-	| KEY_STRONG1KEY_STRONG1141,7246
-	| KEY_PULL1KEY_PULL1142,7262
-	| KEY_WEAK1KEY_WEAK1143,7277
-and drive_strengthdrive_strength144,7291
-	T_drive_strength_NOSPECT_drive_strength_NOSPEC145,7312
-	| T_drive_strengthT_drive_strength146,7337
-and charge_strengthcharge_strength147,7378
-	T_charge_strength_NOSPECT_charge_strength_NOSPEC148,7400
-	| T_charge_strength__smallT_charge_strength__small149,7426
-	| T_charge_strength__mediumT_charge_strength__medium150,7454
-	| T_charge_strength__largeT_charge_strength__large151,7483
-and delay3delay3152,7511
-	T_delay3_NOSPECT_delay3_NOSPEC153,7524
-	| T_delay3_1T_delay3_1154,7541
-	| T_delay3_minmax1T_delay3_minmax1155,7570
-	| T_delay3_minmax2T_delay3_minmax2156,7614
-	| T_delay3_minmax3T_delay3_minmax3157,7679
-and delay2delay2158,7765
-	T_delay2_NOSPECT_delay2_NOSPEC159,7778
-	| T_delay2_1T_delay2_1160,7795
-	| T_delay2_minmax1T_delay2_minmax1161,7824
-	| T_delay2_minmax2T_delay2_minmax2162,7868
-and event_identifier_dimension_listevent_identifier_dimension_list163,7933
-	T_event_identifier_dimension_listT_event_identifier_dimension_list164,7971
-and net_identifier_dimension_listnet_identifier_dimension_list165,8037
-	T_net_identifier_dimension_listT_net_identifier_dimension_list166,8073
-and port_identifier_equ1_constant_expression_optport_identifier_equ1_constant_expression_opt167,8137
-	T_port_identifier_equ1_constant_expression_optT_port_identifier_equ1_constant_expression_opt168,8188
-and defparam_assignmentdefparam_assignment169,8270
-	T_defparam_assignmentT_defparam_assignment170,8296
-and net_decl_assignmentnet_decl_assignment171,8376
-	T_net_decl_assignmentT_net_decl_assignment172,8402
-and param_assignmentparam_assignment173,8450
-	T_param_assignmentT_param_assignment174,8473
-and specparam_assignmentspecparam_assignment175,8537
-	T_specparam_assignmentT_specparam_assignment176,8564
-	| T_specparam_assignment_pulse1T_specparam_assignment_pulse1177,8632
-	| T_specparam_assignment_pulse2T_specparam_assignment_pulse2178,8728
-and  dimensiondimension179,8893
-	T_dimensionT_dimension180,8910
-and rangerange181,8966
-	T_range_NOSPECT_range_NOSPEC182,8978
-	| T_rangeT_range183,8994
-and automaticautomatic184,9048
-	T_automatic_falseT_automatic_false185,9064
-	| T_automatic_trueT_automatic_true186,9083
-and function_declarationfunction_declaration187,9103
-	T_function_declaration_1T_function_declaration_1188,9130
-	| T_function_declaration_2T_function_declaration_2189,9246
-and function_item_declarationfunction_item_declaration190,9413
-	T_function_item_declaration_blockT_function_item_declaration_block191,9445
-	| T_function_item_declaration_inputT_function_item_declaration_input192,9506
-and attribute_instance_list_tf_input_declarationattribute_instance_list_tf_input_declaration193,9593
-	T_attribute_instance_list_tf_input_declarationT_attribute_instance_list_tf_input_declaration194,9644
-and function_range_or_typefunction_range_or_type195,9742
-	T_function_range_or_type_NOSPECT_function_range_or_type_NOSPEC196,9771
-	| T_function_range_or_typeT_function_range_or_type197,9804
-	| T_function_range_or_type_INTEGERT_function_range_or_type_INTEGER198,9848
-	| T_function_range_or_type_REALT_function_range_or_type_REAL199,9884
-	| T_function_range_or_type_REALTIMET_function_range_or_type_REALTIME200,9917
-	| T_function_range_or_type_TIMET_function_range_or_type_TIME201,9954
-and task_declarationtask_declaration202,9987
-	T_task_declaration1T_task_declaration1203,10010
-	| T_task_declaration2T_task_declaration2204,10094
-and task_item_declarationtask_item_declaration205,10203
-	T_task_item_declaration_blockT_task_item_declaration_block206,10231
-	| T_task_item_declaration_inputT_task_item_declaration_input207,10288
-	| T_task_item_declaration_outputT_task_item_declaration_output208,10345
-	| T_task_item_declaration_inoutT_task_item_declaration_inout209,10404
-and task_port_itemtask_port_item210,10461
-	T_task_port_item_inputT_task_port_item_input211,10482
-	| T_task_port_item_outputT_task_port_item_output212,10530
-	| T_task_port_item_inoutT_task_port_item_inout213,10582
-and regreg214,10632
-	T_reg_falseT_reg_false215,10642
-	| T_reg_trueT_reg_true216,10655
-and tf_input_declarationtf_input_declaration217,10669
-	T_tf_input_declaration_regT_tf_input_declaration_reg218,10696
-	| T_tf_input_declaration_typeT_tf_input_declaration_type219,10762
-and tf_output_declarationtf_output_declaration220,10829
-	T_tf_output_declaration_regT_tf_output_declaration_reg221,10857
-	| T_tf_output_declaration_typeT_tf_output_declaration_type222,10924
-and tf_inout_declarationtf_inout_declaration223,10992
-	T_tf_inout_declaration_regT_tf_inout_declaration_reg224,11019
-	| T_tf_inout_declaration_typeT_tf_inout_declaration_type225,11085
-and task_port_typetask_port_type226,11152
-	T_task_port_type_integerT_task_port_type_integer227,11173
-	| T_task_port_type_realT_task_port_type_real228,11199
-	| T_task_port_type_realtimeT_task_port_type_realtime229,11224
-	| T_task_port_type_timeT_task_port_type_time230,11253
-and block_item_declarationblock_item_declaration231,11278
-	T_block_item_declaration_regT_block_item_declaration_reg232,11307
-	| T_block_item_declaration_integerT_block_item_declaration_integer233,11406
-	| T_block_item_declaration_timeT_block_item_declaration_time234,11498
-	| T_block_item_declaration_realT_block_item_declaration_real235,11587
-	| T_block_item_declaration_realtimeT_block_item_declaration_realtime236,11672
-	| T_block_item_declaration_eventT_block_item_declaration_event237,11761
-	| T_block_item_declaration_local_paramT_block_item_declaration_local_param238,11842
-	| T_block_item_declaration_paramT_block_item_declaration_param239,11939
-and block_variable_typeblock_variable_type240,12024
-	T_block_variable_typeT_block_variable_type241,12050
-and block_real_typeblock_real_type242,12104
-	T_block_real_typeT_block_real_type243,12126
-and gate_instantiationgate_instantiation244,12176
-	T_gate_instantiation_cmosT_gate_instantiation_cmos245,12201
-	| T_gate_instantiation_enableT_gate_instantiation_enable246,12282
-	| T_gate_instantiation_mosT_gate_instantiation_mos247,12382
-	| T_gate_instantiation_inputT_gate_instantiation_input248,12462
-	| T_gate_instantiation_outputT_gate_instantiation_output249,12563
-	| T_gate_instantiation_pass_enT_gate_instantiation_pass_en250,12667
-	| T_gate_instantiation_passT_gate_instantiation_pass251,12763
-	| T_gate_instantiation_pulldownT_gate_instantiation_pulldown252,12839
-	| T_gate_instantiation_pullupT_gate_instantiation_pullup253,12919
-and cmos_switch_instancecmos_switch_instance254,12995
-	T_cmos_switch_instanceT_cmos_switch_instance255,13022
-and enable_gate_instanceenable_gate_instance256,13115
-	T_enable_gate_instanceT_enable_gate_instance257,13142
-and mos_switch_instancemos_switch_instance258,13224
-	T_mos_switch_instanceT_mos_switch_instance259,13250
-and n_input_gate_instancen_input_gate_instance260,13331
-	T_n_input_gate_instanceT_n_input_gate_instance261,13359
-and n_output_gate_instancen_output_gate_instance262,13449
-	T_n_output_gate_instanceT_n_output_gate_instance263,13478
-and pass_switch_instancepass_switch_instance264,13569
-	T_pass_switch_instanceT_pass_switch_instance265,13596
-and pass_enable_switch_instancepass_enable_switch_instance266,13667
-	T_pass_enable_switch_instanceT_pass_enable_switch_instance267,13701
-and pull_gate_instancepull_gate_instance268,13790
-	T_pull_gate_instanceT_pull_gate_instance269,13815
-and name_of_gate_instancename_of_gate_instance270,13873
-	T_name_of_gate_instance_NOSPECT_name_of_gate_instance_NOSPEC271,13901
-	| T_name_of_gate_instanceT_name_of_gate_instance272,13933
-and pulldown_strengthpulldown_strength273,13980
-	T_pulldown_strength_NOSPECT_pulldown_strength_NOSPEC274,14004
-	| T_pulldown_strength01T_pulldown_strength01275,14032
-	| T_pulldown_strength10T_pulldown_strength10276,14078
-	| T_pulldown_strength0T_pulldown_strength0277,14124
-and pullup_strengthpullup_strength278,14160
-	T_pullup_strength_NOSPECT_pullup_strength_NOSPEC279,14182
-	| T_pullup_strength01T_pullup_strength01280,14208
-	| T_pullup_strength10T_pullup_strength10281,14252
-	| T_pullup_strength1T_pullup_strength1282,14296
-and cmos_switchtypecmos_switchtype283,14330
-	T_cmos_switchtype_CMOST_cmos_switchtype_CMOS284,14352
-	| T_cmos_switchtype_RCMOST_cmos_switchtype_RCMOS285,14376
-and enable_gatetypeenable_gatetype286,14403
-		T_enable_gatetype__BUFIF0T_enable_gatetype__BUFIF0287,14425
-	| T_enable_gatetype__BUFIF1T_enable_gatetype__BUFIF1288,14453
-	| T_enable_gatetype__NOTIF0T_enable_gatetype__NOTIF0289,14482
-	| T_enable_gatetype__NOTIF1T_enable_gatetype__NOTIF1290,14511
-and mos_switchtypemos_switchtype291,14540
-		T_mos_switchtype_NMOST_mos_switchtype_NMOS292,14561
-	| T_mos_switchtype_PMOST_mos_switchtype_PMOS293,14587
-	| T_mos_switchtype_RNMOST_mos_switchtype_RNMOS294,14613
-	| T_mos_switchtype_RPMOST_mos_switchtype_RPMOS295,14640
-and n_input_gatetypen_input_gatetype296,14666
-   	T_n_input_gatetype_ANDT_n_input_gatetype_AND297,14689
-	| T_n_input_gatetype_NANDT_n_input_gatetype_NAND298,14719
-	| T_n_input_gatetype_ORT_n_input_gatetype_OR299,14746
-	| T_n_input_gatetype_NORT_n_input_gatetype_NOR300,14773
-	| T_n_input_gatetype_XORT_n_input_gatetype_XOR301,14800
-	| T_n_input_gatetype_XNORT_n_input_gatetype_XNOR302,14827
-and n_output_gatetypen_output_gatetype303,14855
-	T_n_output_gatetype_BUFT_n_output_gatetype_BUF304,14879
-	| T_n_output_gatetype_NOTT_n_output_gatetype_NOT305,14904
-and pass_en_switchtypepass_en_switchtype306,14931
-	  T_pass_en_switchtype_TRANIF0T_pass_en_switchtype_TRANIF0307,14956
-	| T_pass_en_switchtype_TRANIF1T_pass_en_switchtype_TRANIF1308,14990
-	| T_pass_en_switchtype_RTRANIF1T_pass_en_switchtype_RTRANIF1309,15026
-	| T_pass_en_switchtype_RTRANIF0T_pass_en_switchtype_RTRANIF0310,15061
-and pass_switchtypepass_switchtype311,15095
-	  T_pass_switchtype_TRANT_pass_switchtype_TRAN312,15117
-	| T_pass_switchtype_RTRANT_pass_switchtype_RTRAN313,15145
-and module_instantiationmodule_instantiation314,15173
-	T_module_instantiationT_module_instantiation315,15200
-and	module_instancemodule_instance316,15288
-	T_module_instanceT_module_instance317,15310
-and name_of_module_instancename_of_module_instance318,15381
-	T_name_of_module_instanceT_name_of_module_instance319,15411
-and parameter_value_assignmentparameter_value_assignment320,15458
-	T_parameter_value_assignment_NOSPECT_parameter_value_assignment_NOSPEC321,15491
-	| T_parameter_value_assignment_orderT_parameter_value_assignment_order322,15528
-	| T_parameter_value_assignment_namedT_parameter_value_assignment_named323,15587
-and named_parameter_assignmentnamed_parameter_assignment324,15662
-	T_named_parameter_assignmentT_named_parameter_assignment325,15695
-and list_of_port_connectionslist_of_port_connections326,15760
-	T_list_of_port_connections_NOSPECT_list_of_port_connections_NOSPEC327,15791
-	| T_list_of_port_connections_orderedT_list_of_port_connections_ordered328,15826
-	| T_list_of_port_connections_namedT_list_of_port_connections_named329,15898
-and ordered_port_connectionordered_port_connection330,15966
-	T_ordered_port_connectionT_ordered_port_connection331,15996
-and named_port_connectionnamed_port_connection332,16063
-	T_named_port_connectionT_named_port_connection333,16091
-and generate_regiongenerate_region334,16167
-	T_generate_regionT_generate_region335,16189
-and genvar_declarationgenvar_declaration336,16230
-	T_genvar_declarationT_genvar_declaration337,16255
-and loop_generate_constructloop_generate_construct338,16298
-	T_loop_generate_constructT_loop_generate_construct339,16328
-and	genvar_initializationgenvar_initialization340,16430
-	T_genvar_initializationT_genvar_initialization341,16458
-and genvar_expressiongenvar_expression342,16517
-	T_genvar_expression_primaryT_genvar_expression_primary343,16541
-	| T_genvar_expression_1opT_genvar_expression_1op344,16588
-	| T_genvar_expression_2opT_genvar_expression_2op345,16674
-	| T_genvar_expression_selT_genvar_expression_sel346,16782
-and	genvar_iterationgenvar_iteration347,16892
-	T_genvar_iterationT_genvar_iteration348,16915
-and	genvar_primarygenvar_primary349,16967
-	T_genvar_primary_constT_genvar_primary_const350,16988
-	| T_genvar_primary_idT_genvar_primary_id351,17032
-and conditional_generate_constructconditional_generate_construct352,17069
-	T_conditional_generate_construct_ifT_conditional_generate_construct_if353,17106
-	| T_conditional_generate_construct_caseT_conditional_generate_construct_case354,17168
-and case_generate_constructcase_generate_construct355,17236
-	T_case_generate_constructT_case_generate_construct356,17266
-and	case_generate_itemcase_generate_item357,17342
-	T_case_generate_item_caseT_case_generate_item_case358,17367
-	| T_case_generate_item_defaultT_case_generate_item_default359,17439
-and	if_generate_constructif_generate_construct360,17489
-	T_if_generate_constructT_if_generate_construct361,17517
-and	generate_blockgenerate_block362,17595
-	T_generate_block_NOSPECT_generate_block_NOSPEC363,17616
-	| T_generate_block_mgiT_generate_block_mgi364,17641
-	| T_generate_block_beginT_generate_block_begin365,17681
-and	udp_declarationudp_declaration366,17740
-	T_udp_declaration_1T_udp_declaration_1367,17762
-	| T_udp_declaration_2T_udp_declaration_2368,17878
-and	udp_declaration_port_listudp_declaration_port_list369,17976
-	T_udp_declaration_port_listT_udp_declaration_port_list370,18008
-and	udp_port_declarationudp_port_declaration371,18092
-	T_udp_port_declaration_outT_udp_port_declaration_out372,18119
-	| T_udp_port_declaration_inputT_udp_port_declaration_input373,18173
-	| T_udp_port_declaration_regT_udp_port_declaration_reg374,18230
-and	udp_output_declarationudp_output_declaration375,18283
-	T_udp_output_declaration_outputT_udp_output_declaration_output376,18312
-	| T_udp_output_declaration_regT_udp_output_declaration_reg377,18385
-and	udp_input_declarationudp_input_declaration378,18477
-	T_udp_input_declarationT_udp_input_declaration379,18505
-and	udp_reg_declarationudp_reg_declaration380,18577
-	T_udp_reg_declarationT_udp_reg_declaration381,18603
-and	udp_bodyudp_body382,18666
-	T_udp_body_combT_udp_body_comb383,18681
-	| T_udp_body_seqT_udp_body_seq384,18728
-and	combinational_entrycombinational_entry385,18765
-	T_combinational_entryT_combinational_entry386,18791
-and sequential_bodysequential_body387,18851
-	T_sequential_bodyT_sequential_body388,18873
-and	udp_initial_statementudp_initial_statement389,18941
-	T_udp_initial_statement_NOSPECT_udp_initial_statement_NOSPEC390,18969
-	| T_udp_initial_statementT_udp_initial_statement391,19001
-and init_valinit_val392,19051
-	T_init_val_binT_init_val_bin393,19066
-	| T_init_val_unsignedT_init_val_unsigned394,19130
-and	sequential_entrysequential_entry395,19192
-	T_sequential_entryT_sequential_entry396,19215
-and	seq_input_listseq_input_list397,19278
-	T_seq_input_list_levelT_seq_input_list_level398,19299
-	| T_seq_input_list_edgeT_seq_input_list_edge399,19344
-and	edge_input_listedge_input_list400,19388
-	T_edge_input_listT_edge_input_list401,19410
-and	edge_indicatoredge_indicator402,19487
-	T_edge_indicator_levelT_edge_indicator_level403,19508
-	| T_edge_indicator_edgeT_edge_indicator_edge404,19561
-and	udp_instantiationudp_instantiation405,19601
-	T_udp_instantiationT_udp_instantiation406,19625
-and udp_instanceudp_instance407,19702
-	T_udp_instanceT_udp_instance408,19721
-and	name_of_udp_instancename_of_udp_instance409,19790
-	T_name_of_udp_instance_NOSPECT_name_of_udp_instance_NOSPEC410,19817
-	| T_name_of_udp_instanceT_name_of_udp_instance411,19848
-and continuous_assigncontinuous_assign412,19894
-	T_continuous_assignT_continuous_assign413,19918
-and	net_assignmentnet_assignment414,19986
-	T_net_assignmentT_net_assignment415,20007
-and	initial_constructinitial_construct416,20050
-	T_initial_constructT_initial_construct417,20074
-and	always_constructalways_construct418,20108
-	T_always_constructT_always_construct419,20131
-and blocking_assignmentblocking_assignment420,20164
-	T_blocking_assignmentT_blocking_assignment421,20190
-and	nonblocking_assignmentnonblocking_assignment422,20266
-	T_nonblocking_assignmentT_nonblocking_assignment423,20295
-and	procedural_continuous_assignmentsprocedural_continuous_assignments424,20374
-	T_procedural_continuous_assignments_assignT_procedural_continuous_assignments_assign425,20414
-	| T_procedural_continuous_assignments_deassignT_procedural_continuous_assignments_deassign426,20481
-	| T_procedural_continuous_assignments_force1T_procedural_continuous_assignments_force1427,20548
-	| T_procedural_continuous_assignments_force2T_procedural_continuous_assignments_force2428,20617
-	| T_procedural_continuous_assignments_release1T_procedural_continuous_assignments_release1429,20681
-	| T_procedural_continuous_assignments_release2T_procedural_continuous_assignments_release2430,20748
-and	variable_assignmentvariable_assignment431,20810
-	T_variable_assignmentT_variable_assignment432,20836
-and	par_blockpar_block433,20889
-	T_par_blockT_par_block434,20905
-and	seq_blockseq_block435,20938
-	T_seq_blockT_seq_block436,20954
-and statementstatement437,20987
-	T_statement_NOSPECT_statement_NOSPEC438,21003
-	| T_statement_blocking_assignmentT_statement_blocking_assignment439,21023
-	| T_statement_case_statementT_statement_case_statement440,21107
-	| T_statement_conditional_statementT_statement_conditional_statement441,21181
-	| T_statement_disable_statementT_statement_disable_statement442,21270
-	| T_statement_event_triggerT_statement_event_trigger443,21350
-	| T_statement_loop_statementT_statement_loop_statement444,21422
-	| T_statement_nonblocking_assignmentT_statement_nonblocking_assignment445,21496
-	| T_statement_par_blockT_statement_par_block446,21586
-	| T_statement_procedural_continuous_assignmentsT_statement_procedural_continuous_assignments447,21650
-	| T_statement_procedural_timing_control_statementT_statement_procedural_timing_control_statement448,21763
-	| T_statement_seq_blockT_statement_seq_block449,21879
-	| T_statement_system_task_enableT_statement_system_task_enable450,21943
-	| T_statement_task_enableT_statement_task_enable451,22026
-	| T_statement_wait_statementT_statement_wait_statement452,22094
-and	delay_controldelay_control453,22168
-	T_delay_control_delay_valueT_delay_control_delay_value454,22188
-	| T_delay_control_mintypmax_expressionT_delay_control_mintypmax_expression455,22232
-and	delay_or_event_controldelay_or_event_control456,22296
-	T_delay_or_event_control_NOSPECT_delay_or_event_control_NOSPEC457,22325
-	| T_delay_or_event_control_delay_controlT_delay_or_event_control_delay_control458,22358
-	| T_delay_or_event_control_event_controlT_delay_or_event_control_event_control459,22417
-	| T_delay_or_event_control_3T_delay_or_event_control_3460,22476
-and disable_statementdisable_statement461,22534
-	T_disable_statement_taskT_disable_statement_task462,22558
-	| T_disable_statement_blockT_disable_statement_block463,22611
-and	event_controlevent_control464,22667
-	T_event_control_eventidT_event_control_eventid465,22687
-	| T_event_control_event_expT_event_control_event_exp466,22739
-	| T_event_control_startT_event_control_start467,22788
-and	event_triggerevent_trigger468,22813
-	T_event_triggerT_event_trigger469,22833
-and	event_expressionevent_expression470,22895
-	T_event_expression_expT_event_expression_exp471,22918
-	| T_event_expression_posT_event_expression_pos472,22956
-	| T_event_expression_negT_event_expression_neg473,22996
-	| T_event_expression_orT_event_expression_or474,23036
-and	procedural_timing_controlprocedural_timing_control475,23098
-	T_procedural_timing_control_delayT_procedural_timing_control_delay476,23130
-	| T_procedural_timing_control_eventT_procedural_timing_control_event477,23182
-and	procedural_timing_control_statementprocedural_timing_control_statement478,23236
-	T_procedural_timing_control_statementT_procedural_timing_control_statement479,23278
-and wait_statementwait_statement480,23356
-	T_wait_statementT_wait_statement481,23377
-and	conditional_statementconditional_statement482,23419
-	T_conditional_statement_ifelseT_conditional_statement_ifelse483,23447
-	| T_conditional_statement_ifelseifT_conditional_statement_ifelseif484,23513
-and	else_if_lp_expression_rp_statement_or_nullelse_if_lp_expression_rp_statement_or_null485,23633
-	T_elseifT_elseif486,23682
-and case_statementcase_statement487,23716
-	T_case_statement_caseT_case_statement_case488,23737
-	| T_case_statement_casezT_case_statement_casez489,23791
-	| T_case_statement_casexT_case_statement_casex490,23848
-and case_itemcase_item491,23905
-	T_case_itemT_case_item492,23921
-	| T_case_item_defaultT_case_item_default493,23965
-and	loop_statementloop_statement494,24001
-	T_loop_statement_foreverT_loop_statement_forever495,24022
-	| T_loop_statement_repeatT_loop_statement_repeat496,24061
-	| T_loop_statement_whileT_loop_statement_while497,24112
-	| T_loop_statement_forT_loop_statement_for498,24162
-and	system_task_enablesystem_task_enable499,24250
-	T_system_task_enableT_system_task_enable500,24275
-and	task_enabletask_enable501,24346
-	T_task_enableT_task_enable502,24364
-and specify_blockspecify_block503,24424
-	T_specify_blockT_specify_block504,24444
-and	specify_itemspecify_item505,24484
-	T_specify_item_specparamT_specify_item_specparam506,24503
-	| T_specify_item_pulsestyleT_specify_item_pulsestyle507,24554
-	| T_specify_item_showcancelledT_specify_item_showcancelled508,24609
-	| T_specify_item_pathT_specify_item_path509,24670
-and pulsestyle_declarationpulsestyle_declaration511,24765
-	T_pulsestyle_declaration_oneeventT_pulsestyle_declaration_oneevent512,24794
-	| T_pulsestyle_declaration_onedetectT_pulsestyle_declaration_onedetect513,24874
-and	showcancelled_declarationshowcancelled_declaration514,24957
-	T_showcancelled_declaration_showT_showcancelled_declaration_show515,24989
-	| T_showcancelled_declaration_noshowT_showcancelled_declaration_noshow516,25068
-and	path_declarationpath_declaration517,25151
-	T_path_declaration_simpleT_path_declaration_simple518,25174
-	| T_path_declaration_edgeT_path_declaration_edge519,25228
-	| T_path_declaration_stateT_path_declaration_state520,25291
-and	simple_path_declarationsimple_path_declaration521,25355
-	T_simple_path_declaration_parallelT_simple_path_declaration_parallel522,25385
-	| T_simple_path_declaration_fullT_simple_path_declaration_full523,25481
-and	parallel_path_descriptionparallel_path_description524,25571
-	T_parallel_path_descriptionT_parallel_path_description525,25603
-and	full_path_descriptionfull_path_description526,25722
-	T_full_path_descriptionT_full_path_description527,25750
-and	specify_input_terminal_descriptorspecify_input_terminal_descriptor528,25879
-	T_specify_input_terminal_descriptorT_specify_input_terminal_descriptor529,25919
-and	specify_output_terminal_descriptorspecify_output_terminal_descriptor530,25996
-	T_specify_output_terminal_descriptorT_specify_output_terminal_descriptor531,26037
-and	list_of_path_delay_expressionslist_of_path_delay_expressions532,26115
-	T_list_of_constant_mintypmax_expressions_1T_list_of_constant_mintypmax_expressions_1533,26152
-	| T_list_of_constant_mintypmax_expressions_2T_list_of_constant_mintypmax_expressions_2534,26229
-	| T_list_of_constant_mintypmax_expressions_3T_list_of_constant_mintypmax_expressions_3535,26338
-	| T_list_of_constant_mintypmax_expressions_6T_list_of_constant_mintypmax_expressions_6536,26477
-	| T_list_of_constant_mintypmax_expressions_12T_list_of_constant_mintypmax_expressions_12537,26706
-and	edge_sensitive_path_declarationedge_sensitive_path_declaration538,27116
-	T_edge_sensitive_path_declaration_parallelT_edge_sensitive_path_declaration_parallel539,27154
-	| T_edge_sensitive_path_declaration_fullT_edge_sensitive_path_declaration_full540,27273
-and	parallel_edge_sensitive_path_descriptionparallel_edge_sensitive_path_description541,27386
-	T_parallel_edge_sensitive_path_descriptionT_parallel_edge_sensitive_path_description542,27433
-and	full_edge_sensitive_path_descriptionfull_edge_sensitive_path_description543,27594
-	T_full_edge_sensitive_path_descriptionT_full_edge_sensitive_path_description544,27637
-and	state_dependent_path_declarationstate_dependent_path_declaration545,27808
-	T_state_dependent_path_declaration_simpleT_state_dependent_path_declaration_simple546,27847
-	| T_state_dependent_path_declaration_edgeT_state_dependent_path_declaration_edge547,27940
-	| T_state_dependent_path_declaration_ifnoneT_state_dependent_path_declaration_ifnone548,28041
-and	concatenationconcatenation550,28131
-	T_concatenationT_concatenation551,28151
-and	constant_concatenationconstant_concatenation552,28187
-	T_constant_concatenationT_constant_concatenation553,28216
-and	constant_multiple_concatenationconstant_multiple_concatenation554,28270
-	T_constant_multiple_concatenationT_constant_multiple_concatenation555,28308
-and	module_path_multiple_concatenationmodule_path_multiple_concatenation556,28389
-	T_module_path_multiple_concatenationT_module_path_multiple_concatenation557,28430
-and module_path_concatenationmodule_path_concatenation558,28517
-	T_module_path_concatenationT_module_path_concatenation559,28549
-and	multiple_concatenationmultiple_concatenation560,28609
-	T_multiple_concatenationT_multiple_concatenation561,28638
-and	constant_function_callconstant_function_call562,28701
-	T_constant_function_callT_constant_function_call563,28730
-and	constant_system_function_callconstant_system_function_call564,28823
-	T_constant_system_function_callT_constant_system_function_call565,28859
-and	function_callfunction_call566,28949
-	T_function_callT_function_call567,28969
-and	system_function_callsystem_function_call568,29057
-	T_system_function_callT_system_function_call569,29084
-and	conditional_expressionconditional_expression570,29156
-	T_conditional_expressionT_conditional_expression571,29185
-and	constant_expressionconstant_expression572,29273
-	T_constant_expression_NOSPECT_constant_expression_NOSPEC573,29299
-	| T_constant_expression_primT_constant_expression_prim574,29329
-	| T_constant_expression_op1T_constant_expression_op1575,29379
-	|	T_constant_expression_op2T_constant_expression_op2576,29469
-	|	T_constant_expression_selT_constant_expression_sel577,29583
-and constant_mintypmax_expressionconstant_mintypmax_expression578,29701
-	T_constant_mintypmax_expression_NOSPECT_constant_mintypmax_expression_NOSPEC579,29737
-	| T_constant_mintypmax_expression_1T_constant_mintypmax_expression_1580,29777
-	|	T_constant_mintypmax_expression_3T_constant_mintypmax_expression_3581,29837
-and constant_range_expressionconstant_range_expression582,29937
-	T_constant_range_expression_NOSPECT_constant_range_expression_NOSPEC583,29969
-	| T_constant_range_expression_1T_constant_range_expression_1584,30005
-	| T_constant_range_expression_2T_constant_range_expression_2585,30061
-	|	T_constant_range_expression_addrangeT_constant_range_expression_addrange586,30145
-	| T_constant_range_expression_subrangeT_constant_range_expression_subrange587,30239
-and	msb_constant_expressionmsb_constant_expression588,30333
-and	lsb_constant_expressionlsb_constant_expression590,30384
-and	constant_base_expressionconstant_base_expression592,30435
-and width_constant_expressionwidth_constant_expression594,30487
-and	expressionexpression596,30540
-	T_expression_NOSPECT_expression_NOSPEC597,30557
-	| T_expression_primT_expression_prim598,30578
-	| T_expression_op1T_expression_op1599,30610
-	| T_expression_op2T_expression_op2600,30682
-	|	T_expression_conditionT_expression_condition601,30769
-and	mintypmax_expressionmintypmax_expression602,30821
-	T_mintypmax_expression_NOSPECT_mintypmax_expression_NOSPEC603,30848
-	| T_mintypmax_expression_1T_mintypmax_expression_1604,30879
-	| T_mintypmax_expression_3T_mintypmax_expression_3605,30921
-and	module_path_conditional_expressionmodule_path_conditional_expression606,30985
-	T_module_path_conditional_expressionT_module_path_conditional_expression607,31026
-and	module_path_expressionmodule_path_expression608,31162
-	T_module_path_expression_primT_module_path_expression_prim609,31191
-	| T_module_path_expression_op1T_module_path_expression_op1610,31245
-	|	T_module_path_expression_op2T_module_path_expression_op2611,31353
-	|	T_module_path_expression_selT_module_path_expression_sel612,31488
-and	module_path_mintypmax_expressionmodule_path_mintypmax_expression613,31558
-	T_module_path_mintypmax_expression_1T_module_path_mintypmax_expression_1614,31597
-	| T_module_path_mintypmax_expression_3T_module_path_mintypmax_expression_3615,31661
-and	range_expressionrange_expression616,31773
-	T_range_expression_NOSPECT_range_expression_NOSPEC617,31796
-	| T_range_expression_1T_range_expression_1618,31823
-	| T_range_expression_2T_range_expression_2619,31861
-	|	T_range_expression_addrangeT_range_expression_addrange620,31936
-	| T_range_expression_subrangeT_range_expression_subrange621,32012
-and	base_expressionbase_expression622,32088
-and	constant_primaryconstant_primary623,32121
-	T_constant_primary_numT_constant_primary_num624,32144
-	| T_constant_primary_paramT_constant_primary_param625,32178
-	|	T_constant_primary_specparamT_constant_primary_specparam626,32246
-	|	T_constant_primary_concatT_constant_primary_concat627,32318
-	| T_constant_primary_mul_concatT_constant_primary_mul_concat628,32373
-	| T_constant_primary_funcT_constant_primary_func629,32441
-	| T_constant_primary_sysfuncT_constant_primary_sysfunc630,32494
-	| T_constant_primary_mintypmaxT_constant_primary_mintypmax631,32557
-	| T_constant_primary_stringT_constant_primary_string632,32622
-and	module_path_primarymodule_path_primary633,32661
-	T_module_path_primary_numT_module_path_primary_num634,32687
-	| T_module_path_primary_idT_module_path_primary_id635,32724
-	| T_module_path_primary_concatT_module_path_primary_concat636,32766
-	| T_module_path_primary_mul_concatT_module_path_primary_mul_concat637,32827
-	| T_module_path_primary_funcT_module_path_primary_func638,32901
-	| T_module_path_primary_sysfuncT_module_path_primary_sysfunc639,32948
-	| T_module_path_primary_mintypmaxT_module_path_primary_mintypmax640,33005
-and	primaryprimary641,33076
-	T_primary_numT_primary_num642,33090
-	| T_primary_idT_primary_id643,33115
-	| T_primary_idexpT_primary_idexp644,33158
-	| T_primary_concatT_primary_concat645,33239
-	| T_primary_mulconT_primary_mulcon646,33276
-	| T_primary_funcT_primary_func647,33322
-	| T_primary_sysfuncT_primary_sysfunc648,33357
-	| T_primary_mintypmaxT_primary_mintypmax649,33402
-	| T_primary_stringT_primary_string650,33449
-and	net_lvaluenet_lvalue651,33479
-	T_net_lvalue_idT_net_lvalue_id652,33496
-	| T_net_lvalue_idexpT_net_lvalue_idexp653,33540
-	| T_net_lvalue_lvlistT_net_lvalue_lvlist654,33642
-and variable_lvaluevariable_lvalue655,33686
-	T_variable_lvalue_idT_variable_lvalue_id656,33708
-	| T_variable_lvalue_idexpT_variable_lvalue_idexp657,33757
-	| T_variable_lvalue_vlvlistT_variable_lvalue_vlvlist658,33846
-and	delay_valuedelay_value659,33899
-	T_delay_value_UNSIGNED_NUMBERT_delay_value_UNSIGNED_NUMBER660,33917
-	| T_delay_value_REAL_NUMBERT_delay_value_REAL_NUMBER661,33987
-	| T_delay_value_idT_delay_value_id662,34059
-and	attribute_instanceattribute_instance663,34093
-	T_attribute_instanceT_attribute_instance664,34118
-and	attr_specattr_spec665,34160
-	T_attr_specT_attr_spec666,34176
-and	hierarchical_identifierhierarchical_identifier667,34223
-	T_hierarchical_identifierT_hierarchical_identifier668,34253
-and	identifier_lsq_expression_rsqidentifier_lsq_expression_rsq669,34331
-	T_identifier_lsq_expression_rsqT_identifier_lsq_expression_rsq670,34367
-and polarity_operatorpolarity_operator671,34425
-	T_polarity_operator_NOSPECT_polarity_operator_NOSPEC672,34449
-	| T_polarity_operator_ADDT_polarity_operator_ADD673,34477
-	| T_polarity_operator_SUBT_polarity_operator_SUB674,34504
-and edge_identifieredge_identifier675,34531
-	T_edge_identifier_NOSPECT_edge_identifier_NOSPEC676,34553
-	| T_edge_identifier_POST_edge_identifier_POS677,34579
-	| T_edge_identifier_NEGT_edge_identifier_NEG678,34604
-and unary_operatorunary_operator679,34629
-	T_unary_operator_ADDT_unary_operator_ADD680,34650
-	| T_unary_operator_SUBT_unary_operator_SUB681,34672
-	| T_unary_operator_GANTANHAOT_unary_operator_GANTANHAO682,34696
-	| T_unary_operator_BOLANGHAOT_unary_operator_BOLANGHAO683,34726
-	| T_unary_operator_REDUCE_ANDT_unary_operator_REDUCE_AND684,34756
-	| T_unary_operator_REDUCE_NANDT_unary_operator_REDUCE_NAND685,34787
-	| T_unary_operator_REDUCE_ORT_unary_operator_REDUCE_OR686,34819
-	| T_unary_operator_REDUCE_NORT_unary_operator_REDUCE_NOR687,34849
-	| T_unary_operator_REDUCE_XORT_unary_operator_REDUCE_XOR688,34880
-	| T_unary_operator_REDUCE_XNORT_unary_operator_REDUCE_XNOR689,34911
-and binary_operatorbinary_operator690,34943
-	T_binary_operator_ADDT_binary_operator_ADD691,34965
-|	T_binary_operator_SUBT_binary_operator_SUB692,34988
-|	T_binary_operator_MULT_binary_operator_MUL693,35012
-|	T_binary_operator_DIVT_binary_operator_DIV694,35036
-|	T_binary_operator_MODT_binary_operator_MOD695,35060
-|	T_binary_operator_EQU2T_binary_operator_EQU2696,35084
-|	T_binary_operator_NEQ2T_binary_operator_NEQ2697,35109
-|	T_binary_operator_EQU3T_binary_operator_EQU3698,35134
-|	T_binary_operator_NEQ3T_binary_operator_NEQ3699,35159
-|	T_binary_operator_AND2T_binary_operator_AND2700,35184
-|	T_binary_operator_OR2T_binary_operator_OR2701,35209
-|	T_binary_operator_POWERT_binary_operator_POWER702,35233
-|	T_binary_operator_LTT_binary_operator_LT703,35259
-|	T_binary_operator_LET_binary_operator_LE704,35282
-|	T_binary_operator_GTT_binary_operator_GT705,35305
-|	T_binary_operator_GET_binary_operator_GE706,35328
-|	T_binary_operator_AND1T_binary_operator_AND1707,35351
-|	T_binary_operator_OR1T_binary_operator_OR1708,35376
-|	T_binary_operator_XORT_binary_operator_XOR709,35400
-|	T_binary_operator_XNORT_binary_operator_XNOR710,35424
-|	T_binary_operator_LOGICAL_RIGHTSHIFTT_binary_operator_LOGICAL_RIGHTSHIFT711,35449
-|	T_binary_operator_LOGICAL_LEFTSHIFTT_binary_operator_LOGICAL_LEFTSHIFT712,35488
-|	T_binary_operator_ARITHMETIC_RIGHTSHIFTT_binary_operator_ARITHMETIC_RIGHTSHIFT713,35526
-|	T_binary_operator_ARITHMETIC_LEFTSHIFTT_binary_operator_ARITHMETIC_LEFTSHIFT714,35568
-and unary_module_path_operatorunary_module_path_operator715,35609
-	T_unary_module_path_operator_GANTANHAOT_unary_module_path_operator_GANTANHAO716,35642
-	| T_unary_module_path_operator_BOLANGHAOT_unary_module_path_operator_BOLANGHAO717,35682
-	| T_unary_module_path_operator_ANDT_unary_module_path_operator_AND718,35724
-	| T_unary_module_path_operator_NANDT_unary_module_path_operator_NAND719,35760
-	| T_unary_module_path_operator_ORT_unary_module_path_operator_OR720,35797
-	| T_unary_module_path_operator_NORT_unary_module_path_operator_NOR721,35832
-	| T_unary_module_path_operator_XORT_unary_module_path_operator_XOR722,35868
-	| T_unary_module_path_operator_XNORT_unary_module_path_operator_XNOR723,35904
-and binary_module_path_operatorbinary_module_path_operator724,35941
-	T_binary_module_path_operator_EQU2T_binary_module_path_operator_EQU2725,35975
-	| T_binary_module_path_operator_NEQ2T_binary_module_path_operator_NEQ2726,36011
-  | T_binary_module_path_operator_AND2T_binary_module_path_operator_AND2727,36049
-  | T_binary_module_path_operator_OR2T_binary_module_path_operator_OR2728,36088
-  | T_binary_module_path_operator_AND1T_binary_module_path_operator_AND1729,36126
-  | T_binary_module_path_operator_OR1T_binary_module_path_operator_OR1730,36165
-  | T_binary_module_path_operator_XORT_binary_module_path_operator_XOR731,36203
-  | T_binary_module_path_operator_XNORT_binary_module_path_operator_XNOR732,36241
-and level_symbollevel_symbol733,36280
-	T_level_symbol_UNSIGNED_NUMBERT_level_symbol_UNSIGNED_NUMBER734,36299
-	| T_level_symbol_SIMIDT_level_symbol_SIMID735,36370
-	| T_level_symbol_QUESTIONT_level_symbol_QUESTION736,36437
-and output_symboloutput_symbol737,36499
-	T_output_symbol_UNSIGNED_NUMBERT_output_symbol_UNSIGNED_NUMBER738,36519
-	| T_output_symbol_SIMIDT_output_symbol_SIMID739,36591
-and numbernumber740,36658
-	T_number_UNSIGNED_NUMBERT_number_UNSIGNED_NUMBER741,36671
-	| T_number_UNSIGNED_NUMBER_sizeT_number_UNSIGNED_NUMBER_size742,36736
-	| T_number_OCTAL_NUMBERT_number_OCTAL_NUMBER743,36814
-	| T_number_BINARY_NUMBERT_number_BINARY_NUMBER744,36887
-	| T_number_HEX_NUMBERT_number_HEX_NUMBER745,36961
-	| T_number_REAL_NUMBERT_number_REAL_NUMBER746,37032
-and current_statecurrent_state747,37098
-	T_current_state_UNSIGNED_NUMBERT_current_state_UNSIGNED_NUMBER748,37118
-	| T_current_state_SIMIDT_current_state_SIMID749,37190
-	| T_current_state_OP2_QUESTIONT_current_state_OP2_QUESTION750,37257
-and next_statenext_state751,37324
-	T_next_state_UNSIGNED_NUMBERT_next_state_UNSIGNED_NUMBER752,37341
-	| T_next_state_SIMIDT_next_state_SIMID753,37410
-	| T_next_state_SUBT_next_state_SUB754,37475
-and edge_symboledge_symbol755,37531
-	T_edge_symbol_SIMIDT_edge_symbol_SIMID756,37549
-	| T_edge_symbol_MULT_edge_symbol_MUL757,37612
-and identifieridentifier758,37668
-	T_identifier_NOSPECT_identifier_NOSPEC759,37685
-	| T_identifierT_identifier760,37706
-and	stringstring761,37764
-	T_stringT_string762,37777
-and	system_function_identifiersystem_function_identifier763,37829
-	T_system_function_identifierT_system_function_identifier764,37862
+and port_declarationport_declaration15,703
+	T_port_declaration__inout_declarationT_port_declaration__inout_declaration16,726
+	| T_port_declaration__input_declarationT_port_declaration__input_declaration17,812
+	| T_port_declaration__output_declarationT_port_declaration__output_declaration18,900
+and module_itemmodule_item19,990
+	T_module_item__port_declarationT_module_item__port_declaration20,1008
+	| T_module_item__generate_regionT_module_item__generate_region21,1061
+	| T_module_item__specify_blockT_module_item__specify_block22,1114
+	| T_module_item__parameter_declarationT_module_item__parameter_declaration23,1163
+	| T_module_item__specparam_declarationT_module_item__specparam_declaration24,1254
+	| T_module_item__net_declarationT_module_item__net_declaration25,1345
+	| T_module_item__reg_declarationT_module_item__reg_declaration26,1424
+	| T_module_item__integer_declarationT_module_item__integer_declaration27,1503
+	| T_module_item__real_declarationT_module_item__real_declaration28,1590
+	| T_module_item__time_declarationT_module_item__time_declaration29,1671
+	| T_module_item__realtime_declarationT_module_item__realtime_declaration30,1752
+	| T_module_item__event_declarationT_module_item__event_declaration31,1841
+	| T_module_item__genvar_declarationT_module_item__genvar_declaration32,1924
+	| T_module_item__task_declarationT_module_item__task_declaration33,2009
+	| T_module_item__function_declarationT_module_item__function_declaration34,2090
+	| T_module_item__local_parameter_declarationT_module_item__local_parameter_declaration35,2179
+	| T_module_item__parameter_overrideT_module_item__parameter_override36,2282
+	| T_module_item__continuous_assignT_module_item__continuous_assign37,2375
+	| T_module_item__gate_instantiationT_module_item__gate_instantiation38,2458
+	| T_module_item__udp_instantiationT_module_item__udp_instantiation39,2543
+	| T_module_item__module_instantiationT_module_item__module_instantiation40,2626
+	| T_module_item__initial_constructT_module_item__initial_construct41,2715
+	| T_module_item__always_constructT_module_item__always_construct42,2798
+	| T_module_item__loop_generate_constructT_module_item__loop_generate_construct43,2879
+	| T_module_item__conditional_generate_constructT_module_item__conditional_generate_construct44,2974
+and config_declarationconfig_declaration45,3083
+	T_config_declarationT_config_declaration46,3108
+and design_statementdesign_statement47,3190
+	T_design_statementT_design_statement48,3213
+and library_identifier_period_opt_cell_identifierlibrary_identifier_period_opt_cell_identifier49,3289
+	T_lib_cell_identifierT_lib_cell_identifier50,3341
+and config_rule_statementconfig_rule_statement51,3389
+	T_config_rule_statement__defaultT_config_rule_statement__default52,3417
+	| T_config_rule_statement__inst_libT_config_rule_statement__inst_lib53,3473
+	| T_config_rule_statement__inst_useT_config_rule_statement__inst_use54,3549
+	| T_config_rule_statement__cell_libT_config_rule_statement__cell_lib55,3618
+	| T_config_rule_statement__cell_useT_config_rule_statement__cell_use56,3722
+and use_clauseuse_clause57,3819
+	T_use_clauseT_use_clause58,3836
+and colon_config_optcolon_config_opt59,3916
+	T_colon_config_opt_FALSET_colon_config_opt_FALSE60,3939
+	| T_colon_config_opt_TRUET_colon_config_opt_TRUE61,3965
+and signedsigned62,3992
+	T_signed_FALSET_signed_FALSE63,4005
+	| T_signed_TRUET_signed_TRUE64,4022
+and local_parameter_declarationlocal_parameter_declaration65,4039
+	T_local_parameter_declaration_1T_local_parameter_declaration_166,4073
+	| T_local_parameter_declaration_2T_local_parameter_declaration_267,4146
+and parameter_declarationparameter_declaration68,4223
+	T_parameter_declaration_1T_parameter_declaration_169,4251
+	| T_parameter_declaration_2T_parameter_declaration_270,4318
+and specparam_declarationspecparam_declaration71,4389
+	T_specparam_declarationT_specparam_declaration72,4417
+and parameter_typeparameter_type73,4479
+	T_parameter_type__INTEGERT_parameter_type__INTEGER74,4500
+	| T_parameter_type__REALT_parameter_type__REAL75,4527
+	| T_parameter_type__REALTIMET_parameter_type__REALTIME76,4553
+	| T_parameter_type__TIMET_parameter_type__TIME77,4583
+and inout_declarationinout_declaration78,4609
+	T_inout_declarationT_inout_declaration79,4633
+and input_declarationinput_declaration80,4697
+	T_input_declarationT_input_declaration81,4721
+and output_declarationoutput_declaration82,4785
+	T_output_declaration_netT_output_declaration_net83,4810
+	|T_output_declaration_regT_output_declaration_reg84,4879
+	|T_output_declaration_varT_output_declaration_var85,4965
+and	output_variable_typeoutput_variable_type86,5059
+	T_output_variable_type_INTEGERT_output_variable_type_INTEGER87,5086
+	| T_output_variable_type_TIMET_output_variable_type_TIME88,5118
+and event_declarationevent_declaration89,5149
+	T_event_declarationT_event_declaration90,5173
+and integer_declarationinteger_declaration91,5236
+	T_integer_declarationT_integer_declaration92,5262
+and net_declarationnet_declaration93,5309
+	T_net_declaration_net_type1T_net_declaration_net_type194,5331
+	| T_net_declaration_net_type2T_net_declaration_net_type295,5423
+	| T_net_declaration_net_type3T_net_declaration_net_type396,5522
+	| T_net_declaration_net_type4T_net_declaration_net_type497,5640
+	| T_net_declaration_trireg_1T_net_declaration_trireg_198,5763
+	| T_net_declaration_trireg_2T_net_declaration_trireg_299,5863
+	| T_net_declaration_trireg_3T_net_declaration_trireg_3100,5952
+	| T_net_declaration_trireg_4T_net_declaration_trireg_4101,6039
+and vectored_scalaredvectored_scalared102,6152
+	T_vectored_scalared_NOSPECT_vectored_scalared_NOSPEC103,6176
+	|T_vectored_scalared_vectoredT_vectored_scalared_vectored104,6204
+	|T_vectored_scalared_scalaredT_vectored_scalared_scalared105,6235
+and real_declarationreal_declaration106,6266
+	T_real_declarationT_real_declaration107,6289
+and realtime_declarationrealtime_declaration108,6329
+	T_realtime_declarationT_realtime_declaration109,6356
+and reg_declarationreg_declaration110,6400
+	T_reg_declarationT_reg_declaration111,6422
+and time_declarationtime_declaration112,6478
+	T_time_declarationT_time_declaration113,6501
+and net_typenet_type114,6545
+	T_net_type_NOSPECT_net_type_NOSPEC115,6560
+	| T_net_type__KEY_SUPPLY0T_net_type__KEY_SUPPLY0116,6579
+	| T_net_type__KEY_SUPPLY1T_net_type__KEY_SUPPLY1117,6606
+	| T_net_type__KEY_TRIT_net_type__KEY_TRI118,6633
+	| T_net_type__KEY_TRIANDT_net_type__KEY_TRIAND119,6656
+	| T_net_type__KEY_TRIORT_net_type__KEY_TRIOR120,6682
+	| T_net_type__KEY_TRI0T_net_type__KEY_TRI0121,6707
+	| T_net_type__KEY_TRI1T_net_type__KEY_TRI1122,6731
+	| T_net_type__KEY_UWIRET_net_type__KEY_UWIRE123,6755
+	| T_net_type__KEY_WIRET_net_type__KEY_WIRE124,6780
+	| T_net_type__KEY_WANDT_net_type__KEY_WAND125,6804
+	| T_net_type__KEY_WORT_net_type__KEY_WOR126,6828
+and real_typereal_type127,6851
+	T_real_type_noassT_real_type_noass128,6867
+	| T_real_type_assT_real_type_ass129,6917
+and	variable_typevariable_type130,6961
+	T_variable_type_noassT_variable_type_noass131,6981
+	| T_variable_type_assT_variable_type_ass132,7035
+and strengthstrength133,7083
+	KEY_HIGHZ0KEY_HIGHZ0134,7098
+	| KEY_HIGHZ1KEY_HIGHZ1135,7110
+	| KEY_SUPPLY0KEY_SUPPLY0136,7124
+	| KEY_STRONG0KEY_STRONG0137,7140
+	| KEY_PULL0KEY_PULL0138,7156
+	| KEY_WEAK0KEY_WEAK0139,7171
+	|	KEY_SUPPLY1KEY_SUPPLY1140,7185
+	| KEY_STRONG1KEY_STRONG1141,7201
+	| KEY_PULL1KEY_PULL1142,7217
+	| KEY_WEAK1KEY_WEAK1143,7232
+and drive_strengthdrive_strength144,7246
+	T_drive_strength_NOSPECT_drive_strength_NOSPEC145,7267
+	| T_drive_strengthT_drive_strength146,7292
+and charge_strengthcharge_strength147,7333
+	T_charge_strength_NOSPECT_charge_strength_NOSPEC148,7355
+	| T_charge_strength__smallT_charge_strength__small149,7381
+	| T_charge_strength__mediumT_charge_strength__medium150,7409
+	| T_charge_strength__largeT_charge_strength__large151,7438
+and delay3delay3152,7466
+	T_delay3_NOSPECT_delay3_NOSPEC153,7479
+	| T_delay3_1T_delay3_1154,7496
+	| T_delay3_minmax1T_delay3_minmax1155,7525
+	| T_delay3_minmax2T_delay3_minmax2156,7569
+	| T_delay3_minmax3T_delay3_minmax3157,7634
+and delay2delay2158,7720
+	T_delay2_NOSPECT_delay2_NOSPEC159,7733
+	| T_delay2_1T_delay2_1160,7750
+	| T_delay2_minmax1T_delay2_minmax1161,7779
+	| T_delay2_minmax2T_delay2_minmax2162,7823
+and event_identifier_dimension_listevent_identifier_dimension_list163,7888
+	T_event_identifier_dimension_listT_event_identifier_dimension_list164,7926
+and net_identifier_dimension_listnet_identifier_dimension_list165,7992
+	T_net_identifier_dimension_listT_net_identifier_dimension_list166,8028
+and port_identifier_equ1_expression_optport_identifier_equ1_expression_opt167,8092
+	T_port_identifier_equ1_expression_optT_port_identifier_equ1_expression_opt168,8134
+and defparam_assignmentdefparam_assignment169,8198
+	T_defparam_assignmentT_defparam_assignment170,8224
+and net_decl_assignmentnet_decl_assignment171,8295
+	T_net_decl_assignmentT_net_decl_assignment172,8321
+and param_assignmentparam_assignment173,8369
+	T_param_assignmentT_param_assignment174,8392
+and specparam_assignmentspecparam_assignment175,8447
+	T_specparam_assignmentT_specparam_assignment176,8474
+	| T_specparam_assignment_pulse1T_specparam_assignment_pulse1177,8533
+	| T_specparam_assignment_pulse2T_specparam_assignment_pulse2178,8611
+and  dimensiondimension179,8758
+	T_dimensionT_dimension180,8775
+and rangerange181,8813
+	T_range_NOSPECT_range_NOSPEC182,8825
+	| T_rangeT_range183,8841
+and automaticautomatic184,8877
+	T_automatic_falseT_automatic_false185,8893
+	| T_automatic_trueT_automatic_true186,8912
+and function_declarationfunction_declaration187,8932
+	T_function_declaration_1T_function_declaration_1188,8959
+	| T_function_declaration_2T_function_declaration_2189,9075
+and function_item_declarationfunction_item_declaration190,9242
+	T_function_item_declaration_blockT_function_item_declaration_block191,9274
+	| T_function_item_declaration_inputT_function_item_declaration_input192,9335
+and attribute_instance_list_tf_input_declarationattribute_instance_list_tf_input_declaration193,9422
+	T_attribute_instance_list_tf_input_declarationT_attribute_instance_list_tf_input_declaration194,9473
+and function_range_or_typefunction_range_or_type195,9571
+	T_function_range_or_type_NOSPECT_function_range_or_type_NOSPEC196,9600
+	| T_function_range_or_typeT_function_range_or_type197,9633
+	| T_function_range_or_type_INTEGERT_function_range_or_type_INTEGER198,9677
+	| T_function_range_or_type_REALT_function_range_or_type_REAL199,9713
+	| T_function_range_or_type_REALTIMET_function_range_or_type_REALTIME200,9746
+	| T_function_range_or_type_TIMET_function_range_or_type_TIME201,9783
+and task_declarationtask_declaration202,9816
+	T_task_declaration1T_task_declaration1203,9839
+	| T_task_declaration2T_task_declaration2204,9923
+and task_item_declarationtask_item_declaration205,10032
+	T_task_item_declaration_blockT_task_item_declaration_block206,10060
+	| T_task_item_declaration_inputT_task_item_declaration_input207,10117
+	| T_task_item_declaration_outputT_task_item_declaration_output208,10174
+	| T_task_item_declaration_inoutT_task_item_declaration_inout209,10233
+and task_port_itemtask_port_item210,10290
+	T_task_port_item_inputT_task_port_item_input211,10311
+	| T_task_port_item_outputT_task_port_item_output212,10359
+	| T_task_port_item_inoutT_task_port_item_inout213,10411
+and regreg214,10461
+	T_reg_falseT_reg_false215,10471
+	| T_reg_trueT_reg_true216,10484
+and tf_input_declarationtf_input_declaration217,10498
+	T_tf_input_declaration_regT_tf_input_declaration_reg218,10525
+	| T_tf_input_declaration_typeT_tf_input_declaration_type219,10591
+and tf_output_declarationtf_output_declaration220,10658
+	T_tf_output_declaration_regT_tf_output_declaration_reg221,10686
+	| T_tf_output_declaration_typeT_tf_output_declaration_type222,10753
+and tf_inout_declarationtf_inout_declaration223,10821
+	T_tf_inout_declaration_regT_tf_inout_declaration_reg224,10848
+	| T_tf_inout_declaration_typeT_tf_inout_declaration_type225,10914
+and task_port_typetask_port_type226,10981
+	T_task_port_type_integerT_task_port_type_integer227,11002
+	| T_task_port_type_realT_task_port_type_real228,11028
+	| T_task_port_type_realtimeT_task_port_type_realtime229,11053
+	| T_task_port_type_timeT_task_port_type_time230,11082
+and block_item_declarationblock_item_declaration231,11107
+	T_block_item_declaration_regT_block_item_declaration_reg232,11136
+	| T_block_item_declaration_integerT_block_item_declaration_integer233,11235
+	| T_block_item_declaration_timeT_block_item_declaration_time234,11327
+	| T_block_item_declaration_realT_block_item_declaration_real235,11416
+	| T_block_item_declaration_realtimeT_block_item_declaration_realtime236,11501
+	| T_block_item_declaration_eventT_block_item_declaration_event237,11590
+	| T_block_item_declaration_local_paramT_block_item_declaration_local_param238,11671
+	| T_block_item_declaration_paramT_block_item_declaration_param239,11768
+and block_variable_typeblock_variable_type240,11853
+	T_block_variable_typeT_block_variable_type241,11879
+and block_real_typeblock_real_type242,11933
+	T_block_real_typeT_block_real_type243,11955
+and gate_instantiationgate_instantiation244,12005
+	T_gate_instantiation_cmosT_gate_instantiation_cmos245,12030
+	| T_gate_instantiation_enableT_gate_instantiation_enable246,12111
+	| T_gate_instantiation_mosT_gate_instantiation_mos247,12211
+	| T_gate_instantiation_inputT_gate_instantiation_input248,12291
+	| T_gate_instantiation_outputT_gate_instantiation_output249,12392
+	| T_gate_instantiation_pass_enT_gate_instantiation_pass_en250,12496
+	| T_gate_instantiation_passT_gate_instantiation_pass251,12592
+	| T_gate_instantiation_pulldownT_gate_instantiation_pulldown252,12668
+	| T_gate_instantiation_pullupT_gate_instantiation_pullup253,12748
+and cmos_switch_instancecmos_switch_instance254,12824
+	T_cmos_switch_instanceT_cmos_switch_instance255,12851
+and enable_gate_instanceenable_gate_instance256,12944
+	T_enable_gate_instanceT_enable_gate_instance257,12971
+and mos_switch_instancemos_switch_instance258,13053
+	T_mos_switch_instanceT_mos_switch_instance259,13079
+and n_input_gate_instancen_input_gate_instance260,13160
+	T_n_input_gate_instanceT_n_input_gate_instance261,13188
+and n_output_gate_instancen_output_gate_instance262,13278
+	T_n_output_gate_instanceT_n_output_gate_instance263,13307
+and pass_switch_instancepass_switch_instance264,13398
+	T_pass_switch_instanceT_pass_switch_instance265,13425
+and pass_enable_switch_instancepass_enable_switch_instance266,13496
+	T_pass_enable_switch_instanceT_pass_enable_switch_instance267,13530
+and pull_gate_instancepull_gate_instance268,13619
+	T_pull_gate_instanceT_pull_gate_instance269,13644
+and name_of_gate_instancename_of_gate_instance270,13702
+	T_name_of_gate_instance_NOSPECT_name_of_gate_instance_NOSPEC271,13730
+	| T_name_of_gate_instanceT_name_of_gate_instance272,13762
+and pulldown_strengthpulldown_strength273,13809
+	T_pulldown_strength_NOSPECT_pulldown_strength_NOSPEC274,13833
+	| T_pulldown_strength01T_pulldown_strength01275,13861
+	| T_pulldown_strength10T_pulldown_strength10276,13907
+	| T_pulldown_strength0T_pulldown_strength0277,13953
+and pullup_strengthpullup_strength278,13989
+	T_pullup_strength_NOSPECT_pullup_strength_NOSPEC279,14011
+	| T_pullup_strength01T_pullup_strength01280,14037
+	| T_pullup_strength10T_pullup_strength10281,14081
+	| T_pullup_strength1T_pullup_strength1282,14125
+and cmos_switchtypecmos_switchtype283,14159
+	T_cmos_switchtype_CMOST_cmos_switchtype_CMOS284,14181
+	| T_cmos_switchtype_RCMOST_cmos_switchtype_RCMOS285,14205
+and enable_gatetypeenable_gatetype286,14232
+		T_enable_gatetype__BUFIF0T_enable_gatetype__BUFIF0287,14254
+	| T_enable_gatetype__BUFIF1T_enable_gatetype__BUFIF1288,14282
+	| T_enable_gatetype__NOTIF0T_enable_gatetype__NOTIF0289,14311
+	| T_enable_gatetype__NOTIF1T_enable_gatetype__NOTIF1290,14340
+and mos_switchtypemos_switchtype291,14369
+		T_mos_switchtype_NMOST_mos_switchtype_NMOS292,14390
+	| T_mos_switchtype_PMOST_mos_switchtype_PMOS293,14416
+	| T_mos_switchtype_RNMOST_mos_switchtype_RNMOS294,14442
+	| T_mos_switchtype_RPMOST_mos_switchtype_RPMOS295,14469
+and n_input_gatetypen_input_gatetype296,14495
+   	T_n_input_gatetype_ANDT_n_input_gatetype_AND297,14518
+	| T_n_input_gatetype_NANDT_n_input_gatetype_NAND298,14548
+	| T_n_input_gatetype_ORT_n_input_gatetype_OR299,14575
+	| T_n_input_gatetype_NORT_n_input_gatetype_NOR300,14602
+	| T_n_input_gatetype_XORT_n_input_gatetype_XOR301,14629
+	| T_n_input_gatetype_XNORT_n_input_gatetype_XNOR302,14656
+and n_output_gatetypen_output_gatetype303,14684
+	T_n_output_gatetype_BUFT_n_output_gatetype_BUF304,14708
+	| T_n_output_gatetype_NOTT_n_output_gatetype_NOT305,14733
+and pass_en_switchtypepass_en_switchtype306,14760
+	  T_pass_en_switchtype_TRANIF0T_pass_en_switchtype_TRANIF0307,14785
+	| T_pass_en_switchtype_TRANIF1T_pass_en_switchtype_TRANIF1308,14819
+	| T_pass_en_switchtype_RTRANIF1T_pass_en_switchtype_RTRANIF1309,14855
+	| T_pass_en_switchtype_RTRANIF0T_pass_en_switchtype_RTRANIF0310,14890
+and pass_switchtypepass_switchtype311,14924
+	  T_pass_switchtype_TRANT_pass_switchtype_TRAN312,14946
+	| T_pass_switchtype_RTRANT_pass_switchtype_RTRAN313,14974
+and module_instantiationmodule_instantiation314,15002
+	T_module_instantiationT_module_instantiation315,15029
+and	module_instancemodule_instance316,15117
+	T_module_instanceT_module_instance317,15139
+and name_of_module_instancename_of_module_instance318,15210
+	T_name_of_module_instanceT_name_of_module_instance319,15240
+and parameter_value_assignmentparameter_value_assignment320,15287
+	T_parameter_value_assignment_NOSPECT_parameter_value_assignment_NOSPEC321,15320
+	| T_parameter_value_assignment_orderT_parameter_value_assignment_order322,15357
+	| T_parameter_value_assignment_namedT_parameter_value_assignment_named323,15416
+and named_parameter_assignmentnamed_parameter_assignment324,15491
+	T_named_parameter_assignmentT_named_parameter_assignment325,15524
+and list_of_port_connectionslist_of_port_connections326,15589
+	T_list_of_port_connections_NOSPECT_list_of_port_connections_NOSPEC327,15620
+	| T_list_of_port_connections_orderedT_list_of_port_connections_ordered328,15655
+	| T_list_of_port_connections_namedT_list_of_port_connections_named329,15727
+and ordered_port_connectionordered_port_connection330,15795
+	T_ordered_port_connectionT_ordered_port_connection331,15825
+and named_port_connectionnamed_port_connection332,15892
+	T_named_port_connectionT_named_port_connection333,15920
+and generate_regiongenerate_region334,15996
+	T_generate_regionT_generate_region335,16018
+and genvar_declarationgenvar_declaration336,16059
+	T_genvar_declarationT_genvar_declaration337,16084
+and loop_generate_constructloop_generate_construct338,16127
+	T_loop_generate_constructT_loop_generate_construct339,16157
+and	genvar_initializationgenvar_initialization340,16259
+	T_genvar_initializationT_genvar_initialization341,16287
+and genvar_expressiongenvar_expression342,16337
+	T_genvar_expression_primaryT_genvar_expression_primary343,16361
+	| T_genvar_expression_1opT_genvar_expression_1op344,16408
+	| T_genvar_expression_2opT_genvar_expression_2op345,16494
+	| T_genvar_expression_selT_genvar_expression_sel346,16602
+and	genvar_iterationgenvar_iteration347,16712
+	T_genvar_iterationT_genvar_iteration348,16735
+and	genvar_primarygenvar_primary349,16787
+	T_genvar_primary_constT_genvar_primary_const350,16808
+	| T_genvar_primary_idT_genvar_primary_id351,16843
+and conditional_generate_constructconditional_generate_construct352,16880
+	T_conditional_generate_construct_ifT_conditional_generate_construct_if353,16917
+	| T_conditional_generate_construct_caseT_conditional_generate_construct_case354,16979
+and case_generate_constructcase_generate_construct355,17047
+	T_case_generate_constructT_case_generate_construct356,17077
+and	case_generate_itemcase_generate_item357,17144
+	T_case_generate_item_caseT_case_generate_item_case358,17169
+	| T_case_generate_item_defaultT_case_generate_item_default359,17232
+and	if_generate_constructif_generate_construct360,17282
+	T_if_generate_constructT_if_generate_construct361,17310
+and	generate_blockgenerate_block362,17379
+	T_generate_block_NOSPECT_generate_block_NOSPEC363,17400
+	| T_generate_block_mgiT_generate_block_mgi364,17425
+	| T_generate_block_beginT_generate_block_begin365,17465
+and	udp_declarationudp_declaration366,17524
+	T_udp_declaration_1T_udp_declaration_1367,17546
+	| T_udp_declaration_2T_udp_declaration_2368,17658
+and	udp_port_listudp_port_list369,17756
+	T_udp_port_listT_udp_port_list370,17776
+and	udp_declaration_port_listudp_declaration_port_list371,17825
+	T_udp_declaration_port_listT_udp_declaration_port_list372,17857
+and	udp_port_declarationudp_port_declaration373,17941
+	T_udp_port_declaration_outT_udp_port_declaration_out374,17968
+	| T_udp_port_declaration_inputT_udp_port_declaration_input375,18022
+	| T_udp_port_declaration_regT_udp_port_declaration_reg376,18079
+and	udp_output_declarationudp_output_declaration377,18132
+	T_udp_output_declaration_outputT_udp_output_declaration_output378,18161
+	| T_udp_output_declaration_regT_udp_output_declaration_reg379,18234
+and	udp_input_declarationudp_input_declaration380,18317
+	T_udp_input_declarationT_udp_input_declaration381,18345
+and	udp_reg_declarationudp_reg_declaration382,18417
+	T_udp_reg_declarationT_udp_reg_declaration383,18443
+and	udp_bodyudp_body384,18506
+	T_udp_body_combT_udp_body_comb385,18521
+	| T_udp_body_seqT_udp_body_seq386,18568
+and	combinational_entrycombinational_entry387,18605
+	T_combinational_entryT_combinational_entry388,18631
+and sequential_bodysequential_body389,18691
+	T_sequential_bodyT_sequential_body390,18713
+and	udp_initial_statementudp_initial_statement391,18781
+	T_udp_initial_statement_NOSPECT_udp_initial_statement_NOSPEC392,18809
+	| T_udp_initial_statementT_udp_initial_statement393,18841
+and init_valinit_val394,18891
+	T_init_val_binT_init_val_bin395,18906
+	| T_init_val_unsignedT_init_val_unsigned396,18970
+and	sequential_entrysequential_entry397,19032
+	T_sequential_entryT_sequential_entry398,19055
+and	seq_input_listseq_input_list399,19118
+	T_seq_input_list_levelT_seq_input_list_level400,19139
+	| T_seq_input_list_edgeT_seq_input_list_edge401,19184
+and	edge_input_listedge_input_list402,19228
+	T_edge_input_listT_edge_input_list403,19250
+and	edge_indicatoredge_indicator404,19327
+	T_edge_indicator_levelT_edge_indicator_level405,19348
+	| T_edge_indicator_edgeT_edge_indicator_edge406,19401
+and	udp_instantiationudp_instantiation407,19441
+	T_udp_instantiationT_udp_instantiation408,19465
+and udp_instanceudp_instance409,19542
+	T_udp_instanceT_udp_instance410,19561
+and	name_of_udp_instancename_of_udp_instance411,19630
+	T_name_of_udp_instance_NOSPECT_name_of_udp_instance_NOSPEC412,19657
+	| T_name_of_udp_instanceT_name_of_udp_instance413,19688
+and continuous_assigncontinuous_assign414,19734
+	T_continuous_assignT_continuous_assign415,19758
+and	net_assignmentnet_assignment416,19826
+	T_net_assignmentT_net_assignment417,19847
+and	initial_constructinitial_construct418,19890
+	T_initial_constructT_initial_construct419,19914
+and	always_constructalways_construct420,19948
+	T_always_constructT_always_construct421,19971
+and blocking_assignmentblocking_assignment422,20004
+	T_blocking_assignmentT_blocking_assignment423,20030
+and	nonblocking_assignmentnonblocking_assignment424,20106
+	T_nonblocking_assignmentT_nonblocking_assignment425,20135
+and	procedural_continuous_assignmentsprocedural_continuous_assignments426,20214
+	T_procedural_continuous_assignments_assignT_procedural_continuous_assignments_assign427,20254
+	| T_procedural_continuous_assignments_deassignT_procedural_continuous_assignments_deassign428,20321
+	| T_procedural_continuous_assignments_force1T_procedural_continuous_assignments_force1429,20388
+	| T_procedural_continuous_assignments_force2T_procedural_continuous_assignments_force2430,20457
+	| T_procedural_continuous_assignments_release1T_procedural_continuous_assignments_release1431,20521
+	| T_procedural_continuous_assignments_release2T_procedural_continuous_assignments_release2432,20588
+and	variable_assignmentvariable_assignment433,20650
+	T_variable_assignmentT_variable_assignment434,20676
+and	par_blockpar_block435,20729
+	T_par_blockT_par_block436,20745
+and	seq_blockseq_block437,20778
+	T_seq_blockT_seq_block438,20794
+and statementstatement439,20827
+	T_statement_NOSPECT_statement_NOSPEC440,20843
+	| T_statement_blocking_assignmentT_statement_blocking_assignment441,20863
+	| T_statement_case_statementT_statement_case_statement442,20947
+	| T_statement_conditional_statementT_statement_conditional_statement443,21021
+	| T_statement_disable_statementT_statement_disable_statement444,21110
+	| T_statement_event_triggerT_statement_event_trigger445,21190
+	| T_statement_loop_statementT_statement_loop_statement446,21262
+	| T_statement_nonblocking_assignmentT_statement_nonblocking_assignment447,21336
+	| T_statement_par_blockT_statement_par_block448,21426
+	| T_statement_procedural_continuous_assignmentsT_statement_procedural_continuous_assignments449,21490
+	| T_statement_procedural_timing_control_statementT_statement_procedural_timing_control_statement450,21603
+	| T_statement_seq_blockT_statement_seq_block451,21719
+	| T_statement_system_task_enableT_statement_system_task_enable452,21783
+	| T_statement_task_enableT_statement_task_enable453,21866
+	| T_statement_wait_statementT_statement_wait_statement454,21934
+and	delay_controldelay_control455,22008
+	T_delay_control_delay_valueT_delay_control_delay_value456,22028
+	| T_delay_control_mintypmax_expressionT_delay_control_mintypmax_expression457,22072
+and	delay_or_event_controldelay_or_event_control458,22136
+	T_delay_or_event_control_NOSPECT_delay_or_event_control_NOSPEC459,22165
+	| T_delay_or_event_control_delay_controlT_delay_or_event_control_delay_control460,22198
+	| T_delay_or_event_control_event_controlT_delay_or_event_control_event_control461,22257
+	| T_delay_or_event_control_3T_delay_or_event_control_3462,22316
+and disable_statementdisable_statement463,22374
+	T_disable_statement_taskT_disable_statement_task464,22398
+	| T_disable_statement_blockT_disable_statement_block465,22451
+and	event_controlevent_control466,22507
+	T_event_control_eventidT_event_control_eventid467,22527
+	| T_event_control_event_expT_event_control_event_exp468,22579
+	| T_event_control_startT_event_control_start469,22628
+and	event_triggerevent_trigger470,22653
+	T_event_triggerT_event_trigger471,22673
+and	event_expressionevent_expression472,22735
+	T_event_expression_expT_event_expression_exp473,22758
+	| T_event_expression_posT_event_expression_pos474,22796
+	| T_event_expression_negT_event_expression_neg475,22836
+	| T_event_expression_orT_event_expression_or476,22876
+and	procedural_timing_controlprocedural_timing_control477,22938
+	T_procedural_timing_control_delayT_procedural_timing_control_delay478,22970
+	| T_procedural_timing_control_eventT_procedural_timing_control_event479,23022
+and	procedural_timing_control_statementprocedural_timing_control_statement480,23076
+	T_procedural_timing_control_statementT_procedural_timing_control_statement481,23118
+and wait_statementwait_statement482,23196
+	T_wait_statementT_wait_statement483,23217
+and	conditional_statementconditional_statement484,23259
+	T_conditional_statement_ifelseT_conditional_statement_ifelse485,23287
+	| T_conditional_statement_ifelseifT_conditional_statement_ifelseif486,23353
+and	else_if_lp_expression_rp_statement_or_nullelse_if_lp_expression_rp_statement_or_null487,23473
+	T_elseifT_elseif488,23522
+and case_statementcase_statement489,23556
+	T_case_statement_caseT_case_statement_case490,23577
+	| T_case_statement_casezT_case_statement_casez491,23631
+	| T_case_statement_casexT_case_statement_casex492,23688
+and case_itemcase_item493,23745
+	T_case_itemT_case_item494,23761
+	| T_case_item_defaultT_case_item_default495,23805
+and	loop_statementloop_statement496,23841
+	T_loop_statement_foreverT_loop_statement_forever497,23862
+	| T_loop_statement_repeatT_loop_statement_repeat498,23901
+	| T_loop_statement_whileT_loop_statement_while499,23952
+	| T_loop_statement_forT_loop_statement_for500,24002
+and	system_task_enablesystem_task_enable501,24090
+	T_system_task_enableT_system_task_enable502,24115
+and	task_enabletask_enable503,24186
+	T_task_enableT_task_enable504,24204
+and specify_blockspecify_block505,24264
+	T_specify_blockT_specify_block506,24284
+and	specify_itemspecify_item507,24324
+	T_specify_item_specparamT_specify_item_specparam508,24343
+	| T_specify_item_pulsestyleT_specify_item_pulsestyle509,24394
+	| T_specify_item_showcancelledT_specify_item_showcancelled510,24449
+	| T_specify_item_pathT_specify_item_path511,24510
+and pulsestyle_declarationpulsestyle_declaration513,24605
+	T_pulsestyle_declaration_oneeventT_pulsestyle_declaration_oneevent514,24634
+	| T_pulsestyle_declaration_onedetectT_pulsestyle_declaration_onedetect515,24714
+and	showcancelled_declarationshowcancelled_declaration516,24797
+	T_showcancelled_declaration_showT_showcancelled_declaration_show517,24829
+	| T_showcancelled_declaration_noshowT_showcancelled_declaration_noshow518,24908
+and	path_declarationpath_declaration519,24991
+	T_path_declaration_simpleT_path_declaration_simple520,25014
+	| T_path_declaration_edgeT_path_declaration_edge521,25068
+	| T_path_declaration_stateT_path_declaration_state522,25131
+and	simple_path_declarationsimple_path_declaration523,25195
+	T_simple_path_declaration_parallelT_simple_path_declaration_parallel524,25225
+	| T_simple_path_declaration_fullT_simple_path_declaration_full525,25321
+and	parallel_path_descriptionparallel_path_description526,25411
+	T_parallel_path_descriptionT_parallel_path_description527,25443
+and	full_path_descriptionfull_path_description528,25562
+	T_full_path_descriptionT_full_path_description529,25590
+and	specify_input_terminal_descriptorspecify_input_terminal_descriptor530,25719
+	T_specify_input_terminal_descriptorT_specify_input_terminal_descriptor531,25759
+and	specify_output_terminal_descriptorspecify_output_terminal_descriptor532,25827
+	T_specify_output_terminal_descriptorT_specify_output_terminal_descriptor533,25868
+and	list_of_path_delay_expressionslist_of_path_delay_expressions534,25937
+	T_list_of_mintypmax_expressions_1T_list_of_mintypmax_expressions_1535,25974
+	| T_list_of_mintypmax_expressions_2T_list_of_mintypmax_expressions_2536,26033
+	| T_list_of_mintypmax_expressions_3T_list_of_mintypmax_expressions_3537,26115
+	| T_list_of_mintypmax_expressions_6T_list_of_mintypmax_expressions_6538,26218
+	| T_list_of_mintypmax_expressions_12T_list_of_mintypmax_expressions_12539,26384
+and	edge_sensitive_path_declarationedge_sensitive_path_declaration540,26677
+	T_edge_sensitive_path_declaration_parallelT_edge_sensitive_path_declaration_parallel541,26715
+	| T_edge_sensitive_path_declaration_fullT_edge_sensitive_path_declaration_full542,26834
+and	parallel_edge_sensitive_path_descriptionparallel_edge_sensitive_path_description543,26947
+	T_parallel_edge_sensitive_path_descriptionT_parallel_edge_sensitive_path_description544,26994
+and	full_edge_sensitive_path_descriptionfull_edge_sensitive_path_description545,27155
+	T_full_edge_sensitive_path_descriptionT_full_edge_sensitive_path_description546,27198
+and	state_dependent_path_declarationstate_dependent_path_declaration547,27369
+	T_state_dependent_path_declaration_simpleT_state_dependent_path_declaration_simple548,27408
+	| T_state_dependent_path_declaration_edgeT_state_dependent_path_declaration_edge549,27501
+	| T_state_dependent_path_declaration_ifnoneT_state_dependent_path_declaration_ifnone550,27602
+and	concatenationconcatenation552,27692
+	T_concatenationT_concatenation553,27712
+and	module_path_multiple_concatenationmodule_path_multiple_concatenation554,27748
+	T_module_path_multiple_concatenationT_module_path_multiple_concatenation555,27789
+and module_path_concatenationmodule_path_concatenation556,27867
+	T_module_path_concatenationT_module_path_concatenation557,27899
+and	multiple_concatenationmultiple_concatenation558,27959
+	T_multiple_concatenationT_multiple_concatenation559,27988
+and	function_callfunction_call560,28042
+	T_function_callT_function_call561,28062
+and	system_function_callsystem_function_call562,28150
+	T_system_function_callT_system_function_call563,28177
+and	conditional_expressionconditional_expression564,28249
+	T_conditional_expressionT_conditional_expression565,28278
+and	msb_expressionmsb_expression566,28366
+and	lsb_expressionlsb_expression568,28399
+and width_expressionwidth_expression570,28432
+and	expressionexpression572,28467
+	T_expression_NOSPECT_expression_NOSPEC573,28484
+	| T_expression_primT_expression_prim574,28505
+	| T_expression_op1T_expression_op1575,28537
+	| T_expression_op2T_expression_op2576,28609
+	|	T_expression_conditionT_expression_condition577,28696
+and	mintypmax_expressionmintypmax_expression578,28748
+	T_mintypmax_expression_NOSPECT_mintypmax_expression_NOSPEC579,28775
+	| T_mintypmax_expression_1T_mintypmax_expression_1580,28806
+	| T_mintypmax_expression_3T_mintypmax_expression_3581,28848
+and	module_path_conditional_expressionmodule_path_conditional_expression582,28912
+	T_module_path_conditional_expressionT_module_path_conditional_expression583,28953
+and	module_path_expressionmodule_path_expression584,29089
+	T_module_path_expression_primT_module_path_expression_prim585,29118
+	| T_module_path_expression_op1T_module_path_expression_op1586,29172
+	|	T_module_path_expression_op2T_module_path_expression_op2587,29268
+	|	T_module_path_expression_selT_module_path_expression_sel588,29403
+and	module_path_mintypmax_expressionmodule_path_mintypmax_expression589,29473
+	T_module_path_mintypmax_expression_1T_module_path_mintypmax_expression_1590,29512
+	| T_module_path_mintypmax_expression_3T_module_path_mintypmax_expression_3591,29576
+and	range_expressionrange_expression592,29688
+	T_range_expression_NOSPECT_range_expression_NOSPEC593,29711
+	| T_range_expression_1T_range_expression_1594,29738
+	| T_range_expression_2T_range_expression_2595,29776
+	|	T_range_expression_addrangeT_range_expression_addrange596,29833
+	| T_range_expression_subrangeT_range_expression_subrange597,29900
+and	base_expressionbase_expression598,29967
+and	module_path_primarymodule_path_primary599,30000
+	T_module_path_primary_numT_module_path_primary_num600,30026
+	| T_module_path_primary_idT_module_path_primary_id601,30063
+	| T_module_path_primary_concatT_module_path_primary_concat602,30105
+	| T_module_path_primary_mul_concatT_module_path_primary_mul_concat603,30166
+	| T_module_path_primary_funcT_module_path_primary_func604,30240
+	| T_module_path_primary_sysfuncT_module_path_primary_sysfunc605,30287
+	| T_module_path_primary_mintypmaxT_module_path_primary_mintypmax606,30344
+and	primaryprimary607,30415
+	T_primary_numT_primary_num608,30429
+	| T_primary_idT_primary_id609,30454
+	| T_primary_idexpT_primary_idexp610,30497
+	| T_primary_concatT_primary_concat611,30578
+	| T_primary_mulconT_primary_mulcon612,30615
+	| T_primary_funcT_primary_func613,30661
+	| T_primary_sysfuncT_primary_sysfunc614,30696
+	| T_primary_mintypmaxT_primary_mintypmax615,30741
+	| T_primary_stringT_primary_string616,30788
+and	net_lvaluenet_lvalue617,30818
+	T_net_lvalue_idT_net_lvalue_id618,30835
+	| T_net_lvalue_idexpT_net_lvalue_idexp619,30879
+	| T_net_lvalue_lvlistT_net_lvalue_lvlist620,30963
+and variable_lvaluevariable_lvalue621,31007
+	T_variable_lvalue_idT_variable_lvalue_id622,31029
+	| T_variable_lvalue_idexpT_variable_lvalue_idexp623,31078
+	| T_variable_lvalue_vlvlistT_variable_lvalue_vlvlist624,31167
+and	delay_valuedelay_value625,31220
+	T_delay_value_UNSIGNED_NUMBERT_delay_value_UNSIGNED_NUMBER626,31238
+	| T_delay_value_REAL_NUMBERT_delay_value_REAL_NUMBER627,31308
+	| T_delay_value_idT_delay_value_id628,31380
+and	attribute_instanceattribute_instance629,31414
+	T_attribute_instanceT_attribute_instance630,31439
+and	attr_specattr_spec631,31481
+	T_attr_specT_attr_spec632,31497
+and	hierarchical_identifierhierarchical_identifier633,31535
+	T_hierarchical_identifierT_hierarchical_identifier634,31565
+and	identifier_lsq_expression_rsqidentifier_lsq_expression_rsq635,31643
+	T_identifier_lsq_expression_rsqT_identifier_lsq_expression_rsq636,31679
+and polarity_operatorpolarity_operator637,31737
+	T_polarity_operator_NOSPECT_polarity_operator_NOSPEC638,31761
+	| T_polarity_operator_ADDT_polarity_operator_ADD639,31789
+	| T_polarity_operator_SUBT_polarity_operator_SUB640,31816
+and edge_identifieredge_identifier641,31843
+	T_edge_identifier_NOSPECT_edge_identifier_NOSPEC642,31865
+	| T_edge_identifier_POST_edge_identifier_POS643,31891
+	| T_edge_identifier_NEGT_edge_identifier_NEG644,31916
+and unary_operatorunary_operator645,31941
+	 T_unary_operator_LOGIC_NEGT_unary_operator_LOGIC_NEG646,31962
+	| T_unary_operator_BITWISE_NEGT_unary_operator_BITWISE_NEG647,31991
+	| T_unary_operator_REDUCE_NORT_unary_operator_REDUCE_NOR648,32023
+	| T_unary_operator_REDUCE_NANDT_unary_operator_REDUCE_NAND649,32054
+	| T_unary_operator_ADDT_unary_operator_ADD650,32086
+	| T_unary_operator_SUBT_unary_operator_SUB651,32110
+	| T_unary_operator_REDUCE_ANDT_unary_operator_REDUCE_AND652,32134
+	| T_unary_operator_REDUCE_ORT_unary_operator_REDUCE_OR653,32165
+	| T_unary_operator_REDUCE_XORT_unary_operator_REDUCE_XOR654,32195
+	| T_unary_operator_REDUCE_XNORT_unary_operator_REDUCE_XNOR655,32226
+and binary_operatorbinary_operator656,32258
+|	T_binary_operator_MULT_binary_operator_MUL657,32280
+|	T_binary_operator_DIVT_binary_operator_DIV658,32304
+|	T_binary_operator_MODT_binary_operator_MOD659,32328
+|	T_binary_operator_EQU2T_binary_operator_EQU2660,32352
+|	T_binary_operator_NEQ2T_binary_operator_NEQ2661,32377
+|	T_binary_operator_EQU3T_binary_operator_EQU3662,32402
+|	T_binary_operator_NEQ3T_binary_operator_NEQ3663,32427
+|	T_binary_operator_POWERT_binary_operator_POWER664,32452
+|	T_binary_operator_LTT_binary_operator_LT665,32478
+|	T_binary_operator_LET_binary_operator_LE666,32501
+|	T_binary_operator_GTT_binary_operator_GT667,32524
+|	T_binary_operator_GET_binary_operator_GE668,32547
+|	T_binary_operator_LOGICAL_RIGHTSHIFTT_binary_operator_LOGICAL_RIGHTSHIFT669,32570
+|	T_binary_operator_LOGICAL_LEFTSHIFTT_binary_operator_LOGICAL_LEFTSHIFT670,32609
+|	T_binary_operator_ARITHMETIC_RIGHTSHIFTT_binary_operator_ARITHMETIC_RIGHTSHIFT671,32647
+|	T_binary_operator_ARITHMETIC_LEFTSHIFTT_binary_operator_ARITHMETIC_LEFTSHIFT672,32689
+|	T_binary_operator_ADDT_binary_operator_ADD673,32730
+|	T_binary_operator_SUBT_binary_operator_SUB674,32754
+|	T_binary_operator_ANDT_binary_operator_AND675,32778
+|	T_binary_operator_ORT_binary_operator_OR676,32802
+|	T_binary_operator_AND2T_binary_operator_AND2677,32825
+|	T_binary_operator_OR2T_binary_operator_OR2678,32850
+|	T_binary_operator_XORT_binary_operator_XOR679,32874
+|	T_binary_operator_XNORT_binary_operator_XNOR680,32898
+and unary_module_path_operatorunary_module_path_operator681,32923
+	T_unary_module_path_operator_GANTANHAOT_unary_module_path_operator_GANTANHAO682,32956
+	| T_unary_module_path_operator_BOLANGHAOT_unary_module_path_operator_BOLANGHAO683,32996
+	| T_unary_module_path_operator_ANDT_unary_module_path_operator_AND684,33038
+	| T_unary_module_path_operator_NANDT_unary_module_path_operator_NAND685,33074
+	| T_unary_module_path_operator_ORT_unary_module_path_operator_OR686,33111
+	| T_unary_module_path_operator_NORT_unary_module_path_operator_NOR687,33146
+	| T_unary_module_path_operator_XORT_unary_module_path_operator_XOR688,33182
+	| T_unary_module_path_operator_XNORT_unary_module_path_operator_XNOR689,33218
+and binary_module_path_operatorbinary_module_path_operator690,33255
+	T_binary_module_path_operator_EQU2T_binary_module_path_operator_EQU2691,33289
+	| T_binary_module_path_operator_NEQ2T_binary_module_path_operator_NEQ2692,33325
+  | T_binary_module_path_operator_AND2T_binary_module_path_operator_AND2693,33363
+  | T_binary_module_path_operator_OR2T_binary_module_path_operator_OR2694,33402
+  | T_binary_module_path_operator_AND1T_binary_module_path_operator_AND1695,33440
+  | T_binary_module_path_operator_OR1T_binary_module_path_operator_OR1696,33479
+  | T_binary_module_path_operator_XORT_binary_module_path_operator_XOR697,33517
+  | T_binary_module_path_operator_XNORT_binary_module_path_operator_XNOR698,33555
+and level_symbollevel_symbol699,33594
+	T_level_symbol_UNSIGNED_NUMBERT_level_symbol_UNSIGNED_NUMBER700,33613
+	| T_level_symbol_SIMIDT_level_symbol_SIMID701,33684
+	| T_level_symbol_QUESTIONT_level_symbol_QUESTION702,33751
+and output_symboloutput_symbol703,33813
+	T_output_symbol_UNSIGNED_NUMBERT_output_symbol_UNSIGNED_NUMBER704,33833
+	| T_output_symbol_SIMIDT_output_symbol_SIMID705,33905
+and numbernumber706,33972
+	T_number_UNSIGNED_NUMBERT_number_UNSIGNED_NUMBER707,33985
+	| T_number_UNSIGNED_NUMBER_sizeT_number_UNSIGNED_NUMBER_size708,34050
+	| T_number_OCTAL_NUMBERT_number_OCTAL_NUMBER709,34128
+	| T_number_BINARY_NUMBERT_number_BINARY_NUMBER710,34201
+	| T_number_HEX_NUMBERT_number_HEX_NUMBER711,34275
+	| T_number_REAL_NUMBERT_number_REAL_NUMBER712,34346
+and current_statecurrent_state713,34412
+	T_current_state_UNSIGNED_NUMBERT_current_state_UNSIGNED_NUMBER714,34432
+	| T_current_state_SIMIDT_current_state_SIMID715,34504
+	| T_current_state_OP2_QUESTIONT_current_state_OP2_QUESTION716,34571
+and next_statenext_state717,34638
+	T_next_state_UNSIGNED_NUMBERT_next_state_UNSIGNED_NUMBER718,34655
+	| T_next_state_SIMIDT_next_state_SIMID719,34724
+	| T_next_state_SUBT_next_state_SUB720,34789
+and edge_symboledge_symbol721,34845
+	T_edge_symbol_SIMIDT_edge_symbol_SIMID722,34863
+	| T_edge_symbol_MULT_edge_symbol_MUL723,34926
+and identifieridentifier724,34982
+	T_identifier_NOSPECT_identifier_NOSPEC725,34999
+	| T_identifierT_identifier726,35020
+and	stringstring727,35078
+	T_stringT_string728,35091
+and	system_function_identifiersystem_function_identifier729,35143
+	T_system_function_identifierT_system_function_identifier730,35176
 
 very.ml,950
 Very1,0
 let __ocaml_lex_tables__ocaml_lex_tables92,1575
 let rec veriloglexveriloglex803,50306
 and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec811,50788
-and endoflineendofline1429,79182
-and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1431,79246
-and stringssystringssy1460,79922
-and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1462,79986
-and commentcomment1498,80859
-and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1500,80943
-and line_skip_blankline_skip_blank1538,81793
-and __ocaml_lex_line_skip_blank_rec__ocaml_lex_line_skip_blank_rec1540,81869
-and line_numberline_number1563,82474
-and __ocaml_lex_line_number_rec__ocaml_lex_line_number_rec1565,82542
-and line_skip_blank2line_skip_blank21601,83538
-and __ocaml_lex_line_skip_blank2_rec__ocaml_lex_line_skip_blank2_rec1603,83622
-and line_filenameline_filename1624,84188
-and __ocaml_lex_line_filename_rec__ocaml_lex_line_filename_rec1626,84266
+and endoflineendofline1429,79180
+and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1431,79244
+and stringssystringssy1460,79920
+and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1462,79984
+and commentcomment1498,80857
+and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1500,80941
+and line_skip_blankline_skip_blank1538,81791
+and __ocaml_lex_line_skip_blank_rec__ocaml_lex_line_skip_blank_rec1540,81867
+and line_numberline_number1563,82472
+and __ocaml_lex_line_number_rec__ocaml_lex_line_number_rec1565,82540
+and line_skip_blank2line_skip_blank21601,83536
+and __ocaml_lex_line_skip_blank2_rec__ocaml_lex_line_skip_blank2_rec1603,83620
+and line_filenameline_filename1624,84186
+and __ocaml_lex_line_filename_rec__ocaml_lex_line_filename_rec1626,84264
 
 very.mll,358
 let stringssy_stringstringssy_string8,54

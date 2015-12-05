@@ -11,7 +11,7 @@ and port =
 and port_expression =
 	T_port_expression of (port_reference list)
 and	port_reference =
-	T_port_reference of identifier*constant_range_expression
+	T_port_reference of identifier*range_expression
 and port_declaration =
 	T_port_declaration__inout_declaration of (attribute_instance list)*inout_declaration
 	| T_port_declaration__input_declaration of (attribute_instance list)*input_declaration
@@ -81,8 +81,8 @@ and input_declaration =
 	T_input_declaration of net_type*signed*range*(identifier list)
 and output_declaration =
 	T_output_declaration_net of net_type*signed*range*(identifier list)
-	|T_output_declaration_reg of signed*range*(port_identifier_equ1_constant_expression_opt list)
-	|T_output_declaration_var of output_variable_type*(port_identifier_equ1_constant_expression_opt list)
+	|T_output_declaration_reg of signed*range*(port_identifier_equ1_expression_opt list)
+	|T_output_declaration_var of output_variable_type*(port_identifier_equ1_expression_opt list)
 and	output_variable_type =
 	T_output_variable_type_INTEGER
 	| T_output_variable_type_TIME
@@ -126,10 +126,10 @@ and net_type =
 	| T_net_type__KEY_WOR
 and real_type =
 	T_real_type_noass of identifier*(dimension list)
-	| T_real_type_ass of identifier*constant_expression
+	| T_real_type_ass of identifier*expression
 and	variable_type =
 	T_variable_type_noass of identifier*(dimension list)
-	| T_variable_type_ass of identifier*constant_expression
+	| T_variable_type_ass of identifier*expression
 and strength =
 	KEY_HIGHZ0
 	| KEY_HIGHZ1
@@ -164,23 +164,23 @@ and event_identifier_dimension_list =
 	T_event_identifier_dimension_list of identifier*(dimension list)
 and net_identifier_dimension_list =
 	T_net_identifier_dimension_list of identifier*(dimension list)
-and port_identifier_equ1_constant_expression_opt =
-	T_port_identifier_equ1_constant_expression_opt of identifier*constant_expression
+and port_identifier_equ1_expression_opt =
+	T_port_identifier_equ1_expression_opt of identifier*expression
 and defparam_assignment =
-	T_defparam_assignment of hierarchical_identifier*constant_mintypmax_expression
+	T_defparam_assignment of hierarchical_identifier*mintypmax_expression
 and net_decl_assignment =
 	T_net_decl_assignment of identifier*expression
 and param_assignment =
-	T_param_assignment of identifier*constant_mintypmax_expression
+	T_param_assignment of identifier*mintypmax_expression
 and specparam_assignment =
-	T_specparam_assignment of identifier*constant_mintypmax_expression
-	| T_specparam_assignment_pulse1 of constant_mintypmax_expression*constant_mintypmax_expression
-	| T_specparam_assignment_pulse2 of specify_input_terminal_descriptor*specify_output_terminal_descriptor*constant_mintypmax_expression*constant_mintypmax_expression
+	T_specparam_assignment of identifier*mintypmax_expression
+	| T_specparam_assignment_pulse1 of mintypmax_expression*mintypmax_expression
+	| T_specparam_assignment_pulse2 of specify_input_terminal_descriptor*specify_output_terminal_descriptor*mintypmax_expression*mintypmax_expression
 and  dimension =
-	T_dimension of constant_expression*constant_expression
+	T_dimension of expression*expression
 and range =
 	T_range_NOSPEC
-	| T_range of constant_expression*constant_expression
+	| T_range of expression*expression
 and automatic =
 	T_automatic_false
 	| T_automatic_true
@@ -338,7 +338,7 @@ and genvar_declaration =
 and loop_generate_construct =
 	T_loop_generate_construct of genvar_initialization*genvar_expression*genvar_iteration*generate_block
 and	genvar_initialization =
-	T_genvar_initialization of identifier*constant_expression
+	T_genvar_initialization of identifier*expression
 and genvar_expression =
 	T_genvar_expression_primary of genvar_primary
 	| T_genvar_expression_1op of unary_operator*(attribute_instance list)*genvar_primary
@@ -347,18 +347,18 @@ and genvar_expression =
 and	genvar_iteration =
 	T_genvar_iteration of identifier*genvar_expression
 and	genvar_primary =
-	T_genvar_primary_const of constant_primary
+	T_genvar_primary_const of primary
 	| T_genvar_primary_id of identifier
 and conditional_generate_construct =
 	T_conditional_generate_construct_if of if_generate_construct
 	| T_conditional_generate_construct_case of case_generate_construct
 and case_generate_construct =
-	T_case_generate_construct of constant_expression*(case_generate_item list)
+	T_case_generate_construct of expression*(case_generate_item list)
 and	case_generate_item =
-	T_case_generate_item_case of (constant_expression list)*generate_block
+	T_case_generate_item_case of (expression list)*generate_block
 	| T_case_generate_item_default of generate_block
 and	if_generate_construct =
-	T_if_generate_construct of constant_expression*generate_block*generate_block
+	T_if_generate_construct of expression*generate_block*generate_block
 and	generate_block =
 	T_generate_block_NOSPEC
 	| T_generate_block_mgi of module_item 
@@ -376,7 +376,7 @@ and	udp_port_declaration =
 	| T_udp_port_declaration_reg of udp_reg_declaration
 and	udp_output_declaration =
 	T_udp_output_declaration_output of (attribute_instance list)*identifier
-	| T_udp_output_declaration_reg of (attribute_instance list)*identifier*constant_expression
+	| T_udp_output_declaration_reg of (attribute_instance list)*identifier*expression
 and	udp_input_declaration =
 	T_udp_input_declaration of (attribute_instance list)*(identifier list)
 and	udp_reg_declaration =
@@ -528,15 +528,15 @@ and	parallel_path_description =
 and	full_path_description =
 	T_full_path_description of (specify_input_terminal_descriptor list)*polarity_operator*(specify_output_terminal_descriptor list)
 and	specify_input_terminal_descriptor =
-	T_specify_input_terminal_descriptor of identifier*constant_range_expression
+	T_specify_input_terminal_descriptor of identifier*range_expression
 and	specify_output_terminal_descriptor =
-	T_specify_output_terminal_descriptor of identifier*constant_range_expression
+	T_specify_output_terminal_descriptor of identifier*range_expression
 and	list_of_path_delay_expressions =
-	T_list_of_constant_mintypmax_expressions_1 of constant_mintypmax_expression
-	| T_list_of_constant_mintypmax_expressions_2 of constant_mintypmax_expression*constant_mintypmax_expression
-	| T_list_of_constant_mintypmax_expressions_3 of constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression
-	| T_list_of_constant_mintypmax_expressions_6 of constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression
-	| T_list_of_constant_mintypmax_expressions_12 of constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression*constant_mintypmax_expression
+	T_list_of_mintypmax_expressions_1 of mintypmax_expression
+	| T_list_of_mintypmax_expressions_2 of mintypmax_expression*mintypmax_expression
+	| T_list_of_mintypmax_expressions_3 of mintypmax_expression*mintypmax_expression*mintypmax_expression
+	| T_list_of_mintypmax_expressions_6 of mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression
+	| T_list_of_mintypmax_expressions_12 of mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression*mintypmax_expression
 and	edge_sensitive_path_declaration =
 	T_edge_sensitive_path_declaration_parallel of parallel_edge_sensitive_path_description*list_of_path_delay_expressions
 	| T_edge_sensitive_path_declaration_full of full_edge_sensitive_path_description*list_of_path_delay_expressions
@@ -551,50 +551,24 @@ and	state_dependent_path_declaration =
 (*stop on A.7.5*)
 and	concatenation =
 	T_concatenation of expression list
-and	constant_concatenation =
-	T_constant_concatenation of constant_expression list
-and	constant_multiple_concatenation =
-	T_constant_multiple_concatenation of constant_expression*constant_concatenation
 and	module_path_multiple_concatenation =
-	T_module_path_multiple_concatenation of constant_expression*module_path_concatenation
+	T_module_path_multiple_concatenation of expression*module_path_concatenation
 and module_path_concatenation =
 	T_module_path_concatenation of module_path_expression list
 and	multiple_concatenation =
-	T_multiple_concatenation of constant_expression*concatenation
-and	constant_function_call =
-	T_constant_function_call of identifier*(attribute_instance list)*(constant_expression list)
-and	constant_system_function_call =
-	T_constant_system_function_call of system_function_identifier*(constant_expression list)
+	T_multiple_concatenation of expression*concatenation
 and	function_call =
 	T_function_call of hierarchical_identifier*(attribute_instance list)*(expression list)
 and	system_function_call =
 	T_system_function_call of system_function_identifier*(expression list)
 and	conditional_expression =
 	T_conditional_expression of expression*(attribute_instance list)*expression*expression
-and	constant_expression =
-	T_constant_expression_NOSPEC
-	| T_constant_expression_prim of constant_primary
-	| T_constant_expression_op1 of unary_operator*(attribute_instance list)*constant_primary
-	|	T_constant_expression_op2 of constant_expression*binary_operator*(attribute_instance list)*constant_expression
-	|	T_constant_expression_sel of constant_expression*(attribute_instance list)*constant_expression*constant_expression
-and constant_mintypmax_expression =
-	T_constant_mintypmax_expression_NOSPEC
-	| T_constant_mintypmax_expression_1 of constant_expression
-	|	T_constant_mintypmax_expression_3 of constant_expression*constant_expression*constant_expression
-and constant_range_expression =
-	T_constant_range_expression_NOSPEC
-	| T_constant_range_expression_1 of constant_expression
-	| T_constant_range_expression_2 of msb_constant_expression*lsb_constant_expression
-	|	T_constant_range_expression_addrange of constant_base_expression*width_constant_expression
-	| T_constant_range_expression_subrange of constant_base_expression*width_constant_expression
-and	msb_constant_expression =
-	constant_expression
-and	lsb_constant_expression =
-	constant_expression
-and	constant_base_expression =
-	constant_expression
-and width_constant_expression =
-	constant_expression
+and	msb_expression =
+	expression
+and	lsb_expression =
+	expression
+and width_expression =
+	expression
 and	expression =
 	T_expression_NOSPEC
 	| T_expression_prim of primary
@@ -609,7 +583,7 @@ and	module_path_conditional_expression =
 	T_module_path_conditional_expression of module_path_expression*(attribute_instance list)*module_path_expression*module_path_expression
 and	module_path_expression =
 	T_module_path_expression_prim of module_path_primary
-	| T_module_path_expression_op1 of unary_module_path_operator*(attribute_instance list)*module_path_primary
+	| T_module_path_expression_op1 of unary_operator*(attribute_instance list)*module_path_primary
 	|	T_module_path_expression_op2 of module_path_expression*binary_module_path_operator*(attribute_instance list)*module_path_expression
 	|	T_module_path_expression_sel of module_path_conditional_expression
 and	module_path_mintypmax_expression =
@@ -618,20 +592,10 @@ and	module_path_mintypmax_expression =
 and	range_expression =
 	T_range_expression_NOSPEC
 	| T_range_expression_1 of expression
-	| T_range_expression_2 of msb_constant_expression*lsb_constant_expression
-	|	T_range_expression_addrange of base_expression*width_constant_expression
-	| T_range_expression_subrange of base_expression*width_constant_expression
+	| T_range_expression_2 of msb_expression*lsb_expression
+	|	T_range_expression_addrange of base_expression*width_expression
+	| T_range_expression_subrange of base_expression*width_expression
 and	base_expression = expression
-and	constant_primary =
-	T_constant_primary_num of number
-	| T_constant_primary_param of identifier*constant_range_expression
-	|	T_constant_primary_specparam of identifier*constant_range_expression
-	|	T_constant_primary_concat of constant_concatenation
-	| T_constant_primary_mul_concat of constant_multiple_concatenation
-	| T_constant_primary_func of constant_function_call
-	| T_constant_primary_sysfunc of constant_system_function_call
-	| T_constant_primary_mintypmax of constant_mintypmax_expression
-	| T_constant_primary_string of string
 and	module_path_primary =
 	T_module_path_primary_num of number
 	| T_module_path_primary_id of identifier
@@ -652,7 +616,7 @@ and	primary =
 	| T_primary_string of string
 and	net_lvalue =
 	T_net_lvalue_id of hierarchical_identifier
-	| T_net_lvalue_idexp of hierarchical_identifier*(constant_expression list)*constant_range_expression
+	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
 	| T_net_lvalue_lvlist of (net_lvalue list)
 and variable_lvalue =
 	T_variable_lvalue_id of hierarchical_identifier
@@ -665,7 +629,7 @@ and	delay_value =
 and	attribute_instance =
 	T_attribute_instance of (attr_spec list)
 and	attr_spec =
-	T_attr_spec of identifier*constant_expression
+	T_attr_spec of identifier*expression
 and	hierarchical_identifier =
 	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)*identifier
 and	identifier_lsq_expression_rsq =
@@ -679,19 +643,17 @@ and edge_identifier =
 	| T_edge_identifier_POS
 	| T_edge_identifier_NEG
 and unary_operator =
-	T_unary_operator_ADD
-	| T_unary_operator_SUB
-	| T_unary_operator_GANTANHAO
-	| T_unary_operator_BOLANGHAO
-	| T_unary_operator_REDUCE_AND
-	| T_unary_operator_REDUCE_NAND
-	| T_unary_operator_REDUCE_OR
+	 T_unary_operator_LOGIC_NEG
+	| T_unary_operator_BITWISE_NEG
 	| T_unary_operator_REDUCE_NOR
+	| T_unary_operator_REDUCE_NAND
+	| T_unary_operator_ADD
+	| T_unary_operator_SUB
+	| T_unary_operator_REDUCE_AND
+	| T_unary_operator_REDUCE_OR
 	| T_unary_operator_REDUCE_XOR
 	| T_unary_operator_REDUCE_XNOR
 and binary_operator =
-	T_binary_operator_ADD
-|	T_binary_operator_SUB
 |	T_binary_operator_MUL
 |	T_binary_operator_DIV
 |	T_binary_operator_MOD
@@ -699,21 +661,23 @@ and binary_operator =
 |	T_binary_operator_NEQ2
 |	T_binary_operator_EQU3
 |	T_binary_operator_NEQ3
-|	T_binary_operator_AND2
-|	T_binary_operator_OR2
 |	T_binary_operator_POWER
 |	T_binary_operator_LT
 |	T_binary_operator_LE
 |	T_binary_operator_GT
 |	T_binary_operator_GE
-|	T_binary_operator_AND1
-|	T_binary_operator_OR1
-|	T_binary_operator_XOR
-|	T_binary_operator_XNOR
 |	T_binary_operator_LOGICAL_RIGHTSHIFT
 |	T_binary_operator_LOGICAL_LEFTSHIFT
 |	T_binary_operator_ARITHMETIC_RIGHTSHIFT
 |	T_binary_operator_ARITHMETIC_LEFTSHIFT
+|	T_binary_operator_ADD
+|	T_binary_operator_SUB
+|	T_binary_operator_AND
+|	T_binary_operator_OR
+|	T_binary_operator_AND2
+|	T_binary_operator_OR2
+|	T_binary_operator_XOR
+|	T_binary_operator_XNOR
 and unary_module_path_operator =
 	T_unary_module_path_operator_GANTANHAO
 	| T_unary_module_path_operator_BOLANGHAO

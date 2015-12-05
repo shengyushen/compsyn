@@ -178,16 +178,16 @@ let get_string_ssy t = get3 t
 
 /*A.8.6 Operators*/
 /*op for both unary and binary*/
-%token <Lexing.position*Lexing.position*string> OP12_ADD
-%token <Lexing.position*Lexing.position*string> OP12_SUB
-%token <Lexing.position*Lexing.position*string> OP12_AND
-%token <Lexing.position*Lexing.position*string> OP12_OR
-%token <Lexing.position*Lexing.position*string> OP12_XOR
-%token <Lexing.position*Lexing.position*string> OP12_XNOR
+%token <Lexing.position*Lexing.position*string> OP2_ADD
+%token <Lexing.position*Lexing.position*string> OP2_SUB
+%token <Lexing.position*Lexing.position*string> OP2_AND
+%token <Lexing.position*Lexing.position*string> OP2_OR
+%token <Lexing.position*Lexing.position*string> OP2_XOR
+%token <Lexing.position*Lexing.position*string> OP2_XNOR
 
 /*ops for unary*/
-%token <Lexing.position*Lexing.position*string> OP1_GANTANHAO
-%token <Lexing.position*Lexing.position*string> OP1_BOLANGHAO
+%token <Lexing.position*Lexing.position*string> OP1_LOGIC_NEG
+%token <Lexing.position*Lexing.position*string> OP1_BITWISE_NEG
 %token <Lexing.position*Lexing.position*string> OP1_REDUCE_NAND
 %token <Lexing.position*Lexing.position*string> OP1_REDUCE_NOR
 
@@ -199,8 +199,8 @@ let get_string_ssy t = get3 t
 %token <Lexing.position*Lexing.position*string> OP2_NEQ2
 %token <Lexing.position*Lexing.position*string> OP2_EQU3
 %token <Lexing.position*Lexing.position*string> OP2_NEQ3
-%token <Lexing.position*Lexing.position*string> OP2_AND
-%token <Lexing.position*Lexing.position*string> OP2_OR
+%token <Lexing.position*Lexing.position*string> OP2_AND2
+%token <Lexing.position*Lexing.position*string> OP2_OR2
 %token <Lexing.position*Lexing.position*string> OP2_POWER
 %token <Lexing.position*Lexing.position*string> OP2_LT
 %token <Lexing.position*Lexing.position*string> OP2_LE
@@ -258,6 +258,29 @@ let get_string_ssy t = get3 t
 %token <Lexing.position*Lexing.position*string> ESCAPED_IDENTIFIER
 %token <Lexing.position*Lexing.position*string> SIMPLE_IDENTIFIER
 %token  <Lexing.position*Lexing.position*string> SYSTEM_TASK_FUNCTION_IDENTIFIER
+
+
+%right OP2_QUESTION
+%left  OP2_OR2
+%left  OP2_AND2
+%left  OP2_OR
+%left  OP2_XOR OP2_XNOR
+%left  OP2_AND
+%left  OP2_EQU2 OP2_NEQ2 OP2_EQU3 OP2_NEQ3
+%left  OP2_LT OP2_LE OP2_GT OP2_GE
+%left  OP2_LOGICAL_LEFTSHIFT OP2_LOGICAL_RIGHTSHIFT OP2_ARITHMETIC_LEFTSHIFT OP2_ARITHMETIC_RIGHTSHIFT
+%left  OP2_ADD OP2_SUB
+%left  OP2_MULTIPLE OP2_DIV OP2_MOD
+%left  OP2_POWER
+/*unary only operator*/
+%left  OP1_LOGIC_NEG  OP1_BITWISE_NEG OP1_REDUCE_NAND OP1_REDUCE_NOR
+/*unary operator symbol that maybe used as binary operator*/
+%nonassoc   OP1_ADD OP1_SUB OP1_AND OP1_OR OP1_XOR OP1_XNOR
+
+
+
+
+
 
 
 %start source_text
@@ -391,18 +414,18 @@ comma_port_reference_list :
 ;
 
 port_reference :
-	port_identifier lsquare_constant_range_expression_rsquare_opt
+	port_identifier lsquare_range_expression_rsquare_opt
 		{T_port_reference($1,$2)}
 ;
 
-lsquare_constant_range_expression_rsquare_opt :
-	{T_constant_range_expression_NOSPEC}
-	| lsquare_constant_range_expression_rsquare {$1}
+lsquare_range_expression_rsquare_opt :
+	{T_range_expression_NOSPEC}
+	| lsquare_range_expression_rsquare {$1}
 ;
 
-lsquare_constant_range_expression_rsquare :
+lsquare_range_expression_rsquare :
 	LSQUARE
-		constant_range_expression
+		range_expression
 	RSQUARE
 		{$2}
 ;
@@ -733,7 +756,7 @@ output_variable_type :
 real_type :
 	real_identifier dimension_list
 		{T_real_type_noass($1,$2)}
-	| real_identifier EQU1 constant_expression
+	| real_identifier EQU1 expression
 		{T_real_type_ass($1,$3)}
 ;
 
@@ -746,7 +769,7 @@ dimension_list :
 variable_type :
 	variable_identifier dimension_list
 		{T_variable_type_noass($1,$2)}
-	| variable_identifier EQU1 constant_expression
+	| variable_identifier EQU1 expression
 		{T_variable_type_ass($1,$3)}
 ;
 
@@ -938,24 +961,24 @@ comma_variable_type_list :
 ;
 
 list_of_variable_port_identifiers :
-	port_identifier_equ1_constant_expression_opt
-	comma_port_identifier_equ1_constant_expression_opt_list
+	port_identifier_equ1_expression_opt
+	comma_port_identifier_equ1_expression_opt_list
 		{$1::$2}
 ;
 
-port_identifier_equ1_constant_expression_opt :
-	port_identifier equ1_constant_expression_opt
-		{T_port_identifier_equ1_constant_expression_opt($1,$2)}
+port_identifier_equ1_expression_opt :
+	port_identifier equ1_expression_opt
+		{T_port_identifier_equ1_expression_opt($1,$2)}
 ;
 
-equ1_constant_expression_opt :
-	{T_constant_expression_NOSPEC}
-	| EQU1 constant_expression {$2}
+equ1_expression_opt :
+	{T_expression_NOSPEC}
+	| EQU1 expression {$2}
 ;
 
-comma_port_identifier_equ1_constant_expression_opt_list :
+comma_port_identifier_equ1_expression_opt_list :
 	{[]}
-	| COMMA port_identifier_equ1_constant_expression_opt comma_port_identifier_equ1_constant_expression_opt_list
+	| COMMA port_identifier_equ1_expression_opt comma_port_identifier_equ1_expression_opt_list
 		{$2::$3}
 ;
 
@@ -963,7 +986,7 @@ comma_port_identifier_equ1_constant_expression_opt_list :
 
 /*A.2.4 Declaration assignments*/
 defparam_assignment :
-	hierarchical_parameter_identifier EQU1 constant_mintypmax_expression
+	hierarchical_parameter_identifier EQU1 mintypmax_expression
 		{T_defparam_assignment($1,$3)}
 ;
 
@@ -973,12 +996,12 @@ net_decl_assignment :
 ;
 
 param_assignment :
-	parameter_identifier EQU1 constant_mintypmax_expression
+	parameter_identifier EQU1 mintypmax_expression
 		{T_param_assignment($1,$3)}
 ;
 
 specparam_assignment :
-	specparam_identifier EQU1 constant_mintypmax_expression
+	specparam_identifier EQU1 mintypmax_expression
 		{T_specparam_assignment($1,$3)}
 	| pulse_control_specparam
 		{$1}
@@ -993,7 +1016,7 @@ pulse_control_specparam :
 ;
 
 comma_error_limit_value_opt :
-	{T_constant_mintypmax_expression_NOSPEC}
+	{T_mintypmax_expression_NOSPEC}
 	| COMMA error_limit_value {$2}
 ;	
 
@@ -1008,19 +1031,19 @@ reject_limit_value :
 ;
 
 limit_value : 
-	constant_mintypmax_expression
+	mintypmax_expression
 		{$1}
 ;
 
 
 /*A.2.5 Declaration ranges*/
 dimension :
-	LSQUARE	dimension_constant_expression COLON dimension_constant_expression RSQUARE
+	LSQUARE	dimension_expression COLON dimension_expression RSQUARE
 		{T_dimension($2,$4)}
 ;
 
 range :
-	LSQUARE msb_constant_expression COLON lsb_constant_expression RSQUARE
+	LSQUARE msb_expression COLON lsb_expression RSQUARE
 		{T_range($2,$4)}
 ;
 
@@ -1314,7 +1337,9 @@ comma_n_input_gate_instance_list :
 
 delay2_opt :
 	{T_delay2_NOSPEC}
-	
+	| delay2 {$1}
+;
+
 pulldown_strength_opt :
 	{T_pulldown_strength_NOSPEC}
 	| pulldown_strength {$1}
@@ -1602,17 +1627,47 @@ loop_generate_construct :
 ;
 
 genvar_initialization :
-	genvar_identifier EQU1 constant_expression
+	genvar_identifier EQU1 expression
 		{T_genvar_initialization($1,$3)}
 ;
 
 genvar_expression :
 	genvar_primary
 		{T_genvar_expression_primary($1)}
-	| unary_operator attribute_instance_list genvar_primary
-		{T_genvar_expression_1op($1,$2,$3)}
-	| genvar_expression binary_operator attribute_instance_list  genvar_expression
-		{T_genvar_expression_2op($1,$2,$3,$4)}
+	| OP2_ADD  attribute_instance_list genvar_primary %prec OP1_ADD {T_genvar_expression_1op(T_unary_operator_ADD,$2,$3)}
+	| OP2_SUB  attribute_instance_list genvar_primary %prec OP1_SUB {T_genvar_expression_1op(T_unary_operator_SUB,$2,$3)}
+	| OP2_AND  attribute_instance_list genvar_primary %prec OP1_AND {T_genvar_expression_1op(T_unary_operator_REDUCE_AND,$2,$3)}
+	| OP2_OR   attribute_instance_list genvar_primary %prec OP1_OR  {T_genvar_expression_1op(T_unary_operator_REDUCE_OR,$2,$3)}
+	| OP2_XOR  attribute_instance_list genvar_primary %prec OP1_XOR {T_genvar_expression_1op(T_unary_operator_REDUCE_XOR,$2,$3)}
+	| OP2_XNOR attribute_instance_list genvar_primary %prec OP1_XNOR{T_genvar_expression_1op(T_unary_operator_REDUCE_XNOR,$2,$3)}
+	| OP1_LOGIC_NEG   attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_LOGIC_NEG  ,$2,$3)}
+	| OP1_BITWISE_NEG attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_BITWISE_NEG,$2,$3)}
+	| OP1_REDUCE_NAND attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NAND,$2,$3)}
+	| OP1_REDUCE_NOR  attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NOR ,$2,$3)}
+	| genvar_expression OP2_MULTIPLE              attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MUL                  ,$3,$4)}
+	| genvar_expression OP2_DIV                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_DIV                  ,$3,$4)}
+	| genvar_expression OP2_MOD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MOD                  ,$3,$4)}
+	| genvar_expression OP2_EQU2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU2                 ,$3,$4)}
+	| genvar_expression OP2_NEQ2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ2                 ,$3,$4)}
+	| genvar_expression OP2_EQU3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU3                 ,$3,$4)}
+	| genvar_expression OP2_NEQ3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ3                 ,$3,$4)}
+	| genvar_expression OP2_POWER                 attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_POWER                ,$3,$4)}
+	| genvar_expression OP2_LT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LT                   ,$3,$4)}
+	| genvar_expression OP2_LE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LE                   ,$3,$4)}
+	| genvar_expression OP2_GT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GT                   ,$3,$4)}
+	| genvar_expression OP2_GE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GE                   ,$3,$4)}
+	| genvar_expression OP2_LOGICAL_RIGHTSHIFT    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_RIGHTSHIFT   ,$3,$4)}
+	| genvar_expression OP2_LOGICAL_LEFTSHIFT     attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_LEFTSHIFT    ,$3,$4)}
+	| genvar_expression OP2_ARITHMETIC_RIGHTSHIFT attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_RIGHTSHIFT,$3,$4)}
+	| genvar_expression OP2_ARITHMETIC_LEFTSHIFT  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_LEFTSHIFT ,$3,$4)}
+	| genvar_expression OP2_ADD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ADD                  ,$3,$4)}
+	| genvar_expression OP2_SUB                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_SUB                  ,$3,$4)}
+	| genvar_expression OP2_AND                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND                  ,$3,$4)}
+	| genvar_expression OP2_OR                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR                   ,$3,$4)}
+	| genvar_expression OP2_AND2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND2                 ,$3,$4)}
+	| genvar_expression OP2_OR2                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR2                  ,$3,$4)}
+	| genvar_expression OP2_XOR                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XOR                  ,$3,$4)}
+	| genvar_expression OP2_XNOR                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XNOR                 ,$3,$4)}
 	| genvar_expression OP2_QUESTION attribute_instance_list genvar_expression COLON genvar_expression
 		{T_genvar_expression_sel($1,$3,$4,$6)}
 ;
@@ -1623,7 +1678,7 @@ genvar_iteration :
 ;
 
 genvar_primary :
-	constant_primary
+	primary
 		{T_genvar_primary_const($1)}
 	| genvar_identifier
 		{T_genvar_primary_id($1)}
@@ -1641,7 +1696,7 @@ conditional_generate_construct :
 
 
 if_generate_construct :
-	KEY_IF LPARENT constant_expression RPARENT generate_block_or_null
+	KEY_IF LPARENT expression RPARENT generate_block_or_null
 	else_generate_block_or_null_opt
 		{T_if_generate_construct($3,$5,$6)}
 ;
@@ -1654,7 +1709,7 @@ else_generate_block_or_null_opt :
 
 
 case_generate_construct :
-	KEY_CASE LPARENT constant_expression RPARENT
+	KEY_CASE LPARENT expression RPARENT
 	case_generate_item case_generate_item_list KEY_ENDCASE
 		{T_case_generate_construct($3,$5::$6)}
 ;
@@ -1666,16 +1721,10 @@ case_generate_item_list :
 ;
 
 case_generate_item :
-	constant_expression comma_constant_expression_list COLON generate_block_or_null
+	expression comma_expression_list COLON generate_block_or_null
 		{T_case_generate_item_case($1::$2,$4)}
 	| KEY_DEFAULT colon_opt  generate_block_or_null
 		{T_case_generate_item_default($3)}
-;
-
-comma_constant_expression_list :
-	{[]}
-	| COMMA constant_expression comma_constant_expression_list
-		{$2::$3}
 ;
 
 colon_opt :
@@ -1763,14 +1812,8 @@ udp_port_declaration :
 udp_output_declaration :
 	attribute_instance_list KEY_OUTPUT port_identifier
 		{T_udp_output_declaration_output($1,$3)}
-	| attribute_instance_list KEY_OUTPUT KEY_REG port_identifier equ1_constant_expression_opt
+	| attribute_instance_list KEY_OUTPUT KEY_REG port_identifier equ1_expression_opt
 		{T_udp_output_declaration_reg($1,$4,$5)}
-;
-
-equ1_constant_expression_opt :
-	{T_constant_expression_NOSPEC}
-	| EQU1 constant_expression
-		{$2}
 ;
 
 udp_input_declaration : 
@@ -1908,7 +1951,7 @@ next_state :
 	UNSIGNED_NUMBER 
 	 {T_next_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
 	| SIMPLE_IDENTIFIER  {T_next_state_SIMID(get1 $1, get2 $1, get3 $1)}
-	| OP12_SUB  {T_next_state_SUB(get1 $1, get2 $1)}
+	| OP2_SUB  {T_next_state_SUB(get1 $1, get2 $1)}
 ;
 
 current_state :
@@ -2411,18 +2454,18 @@ comma_specify_output_terminal_descriptor_list :
 
 /*A.7.3 Specify block terminals*/
 specify_input_terminal_descriptor :
-	input_identifier rsq_constant_range_expression_rsq_opt
+	input_identifier rsq_range_expression_rsq_opt
 		{T_specify_input_terminal_descriptor($1,$2)}
 ;
 
-rsq_constant_range_expression_rsq_opt	:
-	{T_constant_range_expression_NOSPEC}
-	| LSQUARE constant_range_expression RSQUARE
+rsq_range_expression_rsq_opt	:
+	{T_range_expression_NOSPEC}
+	| LSQUARE range_expression RSQUARE
 		{$2}
 ;
 
 specify_output_terminal_descriptor :
-	output_identifier rsq_constant_range_expression_rsq_opt
+	output_identifier rsq_range_expression_rsq_opt
 		{T_specify_output_terminal_descriptor($1,$2)}
 ;
 
@@ -2448,16 +2491,16 @@ path_delay_value :
 
 
 list_of_path_delay_expressions :
-	constant_mintypmax_expression
-		{T_list_of_constant_mintypmax_expressions_1($1)}
-	| constant_mintypmax_expression COMMA constant_mintypmax_expression
-		{T_list_of_constant_mintypmax_expressions_2($1,$3)}
-	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
-		{T_list_of_constant_mintypmax_expressions_3($1,$3,$5)}
-	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
-		{T_list_of_constant_mintypmax_expressions_6($1,$3,$5,$7,$9,$11)}
-	| constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA 	constant_mintypmax_expression COMMA constant_mintypmax_expression COMMA constant_mintypmax_expression
-		{T_list_of_constant_mintypmax_expressions_12($1,$3,$5,$7,$9,$11,$13,$15,$17,$19,$21,$23)}
+	mintypmax_expression
+		{T_list_of_mintypmax_expressions_1($1)}
+	| mintypmax_expression COMMA mintypmax_expression
+		{T_list_of_mintypmax_expressions_2($1,$3)}
+	| mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression
+		{T_list_of_mintypmax_expressions_3($1,$3,$5)}
+	| mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA	mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression
+		{T_list_of_mintypmax_expressions_6($1,$3,$5,$7,$9,$11)}
+	| mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA	mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression COMMA 	mintypmax_expression COMMA mintypmax_expression COMMA mintypmax_expression
+		{T_list_of_mintypmax_expressions_12($1,$3,$5,$7,$9,$11,$13,$15,$17,$19,$21,$23)}
 ;
 
 edge_sensitive_path_declaration :
@@ -2508,8 +2551,8 @@ state_dependent_path_declaration :
 
 
 polarity_operator :
-	OP12_ADD  {T_polarity_operator_ADD}
-	| OP12_SUB {T_polarity_operator_SUB}
+	OP2_ADD  {T_polarity_operator_ADD}
+	| OP2_SUB {T_polarity_operator_SUB}
 ;
 
 
@@ -2570,18 +2613,18 @@ controlled_reference_event ::= controlled_timing_check_event
 data_event ::= timing_check_event
 delayed_data ::=
 terminal_identifier
-| terminal_identifier [ constant_mintypmax_expression ]
+| terminal_identifier [ mintypmax_expression ]
 delayed_reference ::=
 terminal_identifier
-| terminal_identifier [ constant_mintypmax_expression ]
+| terminal_identifier [ mintypmax_expression ]
 end_edge_offset ::= mintypmax_expression
-event_based_flag ::= constant_expression
+event_based_flag ::= expression
 notifier ::= variable_identifier
 reference_event ::= timing_check_event
-remain_active_flag ::= constant_expression
+remain_active_flag ::= expression
 stamptime_condition ::= mintypmax_expression
 start_edge_offset ::= mintypmax_expression
-threshold ::= constant_expression
+threshold ::= expression
 timing_check_limit ::= expression
 A.7.5.3 System timing check event definitions
 timing_check_event ::=
@@ -2628,17 +2671,6 @@ concatenation :
 		{T_concatenation($2::$3)}
 ;
 
-constant_concatenation :
-	LHUA constant_expression comma_constant_expression_list RHUA
-		{T_constant_concatenation($2::$3)}
-;
-
-constant_multiple_concatenation :
-	LHUA constant_expression constant_concatenation RHUA
-		{T_constant_multiple_concatenation($2,$3)}
-;
-
-
 module_path_concatenation : 
 	LHUA module_path_expression comma_module_path_expression_list RHUA
 		{T_module_path_concatenation($2::$3)}
@@ -2652,30 +2684,17 @@ comma_module_path_expression_list :
 
 
 module_path_multiple_concatenation :
-	LHUA constant_expression module_path_concatenation RHUA
+	LHUA expression module_path_concatenation RHUA
 		{T_module_path_multiple_concatenation($2,$3)}
 ;
 
 multiple_concatenation :
-	LHUA  constant_expression concatenation RHUA
+	LHUA  expression concatenation RHUA
 		{T_multiple_concatenation($2,$3)}
 ;
 
 
 /*A.8.2 Function calls*/
-
-constant_function_call :
-	function_identifier attribute_instance_list
-LPARENT constant_expression comma_constant_expression_list RPARENT
-		{T_constant_function_call($1,$2,$4::$5)}
-;
-
-constant_system_function_call :
-	system_function_identifier
-LPARENT constant_expression comma_constant_expression_list RPARENT
-		{T_constant_system_function_call($1,$3::$4)}
-;
-
 
 function_call :
 	hierarchical_function_identifier attribute_instance_list
@@ -2707,52 +2726,48 @@ conditional_expression :
 		{T_conditional_expression($1,$3,$4,$6)}
 ;
 
-constant_base_expression :
-	constant_expression
-		{$1}
-;
-
-constant_expression :
-	constant_primary
-		{T_constant_expression_prim($1)}
-	| unary_operator  attribute_instance_list constant_primary
-		{T_constant_expression_op1($1,$2,$3)}
-	| constant_expression binary_operator attribute_instance_list constant_expression
-		{T_constant_expression_op2($1,$2,$3,$4)}
-	| constant_expression OP2_QUESTION attribute_instance_list constant_expression COLON constant_expression
-		{T_constant_expression_sel($1,$3,$4,$6)}
-;
-
-constant_mintypmax_expression :
-	constant_expression
-		{T_constant_mintypmax_expression_1($1)}
-	| constant_expression COLON constant_expression COLON constant_expression
-		{T_constant_mintypmax_expression_3($1,$3,$5)}
-;
-
-constant_range_expression :
-	constant_expression
-		{T_constant_range_expression_1($1)}
-	| msb_constant_expression COLON lsb_constant_expression
-		{T_constant_range_expression_2($1,$3)}
-	| constant_base_expression ADDRANGE width_constant_expression
-		{T_constant_range_expression_addrange($1,$3)}
-	| constant_base_expression SUBRANGE width_constant_expression
-		{T_constant_range_expression_subrange($1,$3)}
-;
-
-dimension_constant_expression :
-	constant_expression
+dimension_expression :
+	expression
 		{$1}
 ;
 
 expression :
 	primary
 		{T_expression_prim($1)}
-	| unary_operator attribute_instance_list primary
-		{T_expression_op1($1,$2,$3)}
-	| expression binary_operator attribute_instance_list expression
-		{T_expression_op2($1,$2,$3,$4)}
+	| OP2_ADD  attribute_instance_list primary %prec OP1_ADD  {T_expression_op1(T_unary_operator_ADD,$2,$3)}
+	| OP2_SUB  attribute_instance_list primary %prec OP1_SUB  {T_expression_op1(T_unary_operator_SUB,$2,$3)}
+	| OP2_AND  attribute_instance_list primary %prec OP1_AND  {T_expression_op1(T_unary_operator_REDUCE_AND ,$2,$3)}
+	| OP2_OR   attribute_instance_list primary %prec OP1_OR   {T_expression_op1(T_unary_operator_REDUCE_OR  ,$2,$3)}
+	| OP2_XOR  attribute_instance_list primary %prec OP1_XOR  {T_expression_op1(T_unary_operator_REDUCE_XOR ,$2,$3)}
+	| OP2_XNOR attribute_instance_list primary %prec OP1_XNOR {T_expression_op1(T_unary_operator_REDUCE_XNOR,$2,$3)}
+	| OP1_LOGIC_NEG   attribute_instance_list primary {T_expression_op1(T_unary_operator_LOGIC_NEG  ,$2,$3)}
+	| OP1_BITWISE_NEG attribute_instance_list primary {T_expression_op1(T_unary_operator_BITWISE_NEG,$2,$3)}
+	| OP1_REDUCE_NAND attribute_instance_list primary {T_expression_op1(T_unary_operator_REDUCE_NAND,$2,$3)}
+	| OP1_REDUCE_NOR  attribute_instance_list primary {T_expression_op1(T_unary_operator_REDUCE_NOR ,$2,$3)}
+	| expression OP2_MULTIPLE              attribute_instance_list expression {T_expression_op2($1,T_binary_operator_MUL                  ,$3,$4)}
+	| expression OP2_DIV                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_DIV                  ,$3,$4)}
+	| expression OP2_MOD                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_MOD                  ,$3,$4)}
+	| expression OP2_EQU2                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_EQU2                 ,$3,$4)}
+	| expression OP2_NEQ2                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_NEQ2                 ,$3,$4)}
+	| expression OP2_EQU3                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_EQU3                 ,$3,$4)}
+	| expression OP2_NEQ3                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_NEQ3                 ,$3,$4)}
+	| expression OP2_POWER                 attribute_instance_list expression {T_expression_op2($1,T_binary_operator_POWER                ,$3,$4)}
+	| expression OP2_LT                    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_LT                   ,$3,$4)}
+	| expression OP2_LE                    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_LE                   ,$3,$4)}
+	| expression OP2_GT                    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_GT                   ,$3,$4)}
+	| expression OP2_GE                    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_GE                   ,$3,$4)}
+	| expression OP2_LOGICAL_RIGHTSHIFT    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_LOGICAL_RIGHTSHIFT   ,$3,$4)}
+	| expression OP2_LOGICAL_LEFTSHIFT     attribute_instance_list expression {T_expression_op2($1,T_binary_operator_LOGICAL_LEFTSHIFT    ,$3,$4)}
+	| expression OP2_ARITHMETIC_RIGHTSHIFT attribute_instance_list expression {T_expression_op2($1,T_binary_operator_ARITHMETIC_RIGHTSHIFT,$3,$4)}
+	| expression OP2_ARITHMETIC_LEFTSHIFT  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_ARITHMETIC_LEFTSHIFT ,$3,$4)}
+	| expression OP2_ADD                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_ADD                  ,$3,$4)}
+	| expression OP2_SUB                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_SUB                  ,$3,$4)}
+	| expression OP2_AND                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_AND                  ,$3,$4)}
+	| expression OP2_OR                    attribute_instance_list expression {T_expression_op2($1,T_binary_operator_OR                   ,$3,$4)}
+	| expression OP2_AND2                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_AND2                 ,$3,$4)}
+	| expression OP2_OR2                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_OR2                  ,$3,$4)}
+	| expression OP2_XOR                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_XOR                  ,$3,$4)}
+	| expression OP2_XNOR                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_XNOR                 ,$3,$4)}
 	| conditional_expression
 		{T_expression_condition($1)}
 ;
@@ -2761,8 +2776,8 @@ expression1 : expression {$1};
 expression2 : expression {$1};
 expression3 : expression {$1};
 
-lsb_constant_expression :
-	constant_expression
+lsb_expression :
+	expression
 		{$1}
 ;
 
@@ -2783,10 +2798,22 @@ module_path_conditional_expression :
 module_path_expression :
 	module_path_primary
 		{T_module_path_expression_prim($1)}
-	| unary_module_path_operator attribute_instance_list module_path_primary
-		{T_module_path_expression_op1($1,$2,$3)}
-	| module_path_expression binary_module_path_operator attribute_instance_list module_path_expression
-		{T_module_path_expression_op2($1,$2,$3,$4)}
+	| OP2_AND  attribute_instance_list module_path_primary %prec OP1_AND {T_module_path_expression_op1(T_unary_operator_REDUCE_AND ,$2,$3)}
+	| OP2_OR   attribute_instance_list module_path_primary %prec OP1_OR  {T_module_path_expression_op1(T_unary_operator_REDUCE_OR  ,$2,$3)}
+	| OP2_XOR  attribute_instance_list module_path_primary %prec OP1_XOR {T_module_path_expression_op1(T_unary_operator_REDUCE_XOR ,$2,$3)}
+	| OP2_XNOR attribute_instance_list module_path_primary %prec OP1_XNOR{T_module_path_expression_op1(T_unary_operator_REDUCE_XNOR,$2,$3)}
+	| OP1_LOGIC_NEG   attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_LOGIC_NEG  ,$2,$3)}
+	| OP1_BITWISE_NEG attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_BITWISE_NEG,$2,$3)}
+	| OP1_REDUCE_NAND attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NAND       ,$2,$3)}
+	| OP1_REDUCE_NOR  attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NOR        ,$2,$3)}
+	| module_path_expression OP2_EQU2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_EQU2,$3,$4)}
+	| module_path_expression OP2_NEQ2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_NEQ2,$3,$4)}
+	| module_path_expression OP2_AND2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND2,$3,$4)}
+	| module_path_expression OP2_OR2  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR2 ,$3,$4)}
+	| module_path_expression OP2_AND  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND1,$3,$4)}
+	| module_path_expression OP2_OR   attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR1 ,$3,$4)}
+	| module_path_expression OP2_XOR  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XOR ,$3,$4)}
+	| module_path_expression OP2_XNOR attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XNOR,$3,$4)}
 	| module_path_conditional_expression
 		{T_module_path_expression_sel($1)}
 ;
@@ -2799,8 +2826,8 @@ module_path_mintypmax_expression :
 		{T_module_path_mintypmax_expression_3($1,$3,$5)}
 ;
 
-msb_constant_expression :
-	constant_expression
+msb_expression :
+	expression
 		{$1}
 ;
 
@@ -2808,42 +2835,21 @@ msb_constant_expression :
 range_expression :
 	expression
 		{T_range_expression_1($1)}
-	| msb_constant_expression COLON lsb_constant_expression
+	| msb_expression COLON lsb_expression
 		{T_range_expression_2($1,$3)}
-	| base_expression ADDRANGE width_constant_expression
+	| base_expression ADDRANGE width_expression
 		{T_range_expression_addrange($1,$3)}
-	| base_expression SUBRANGE width_constant_expression
+	| base_expression SUBRANGE width_expression
 		{T_range_expression_subrange($1,$3)}
 ;
 
 
-width_constant_expression :
-	constant_expression
+width_expression :
+	expression
 		{$1}
 ;
 
 /*A.8.4 Primaries*/
-constant_primary :
-	number
-		{T_constant_primary_num($1)}
-	| parameter_identifier lsquare_constant_range_expression_rsquare_opt 
-		{T_constant_primary_param($1,$2)}
-	| specparam_identifier lsquare_constant_range_expression_rsquare_opt
-		{T_constant_primary_specparam($1,$2)}
-	| constant_concatenation
-		{T_constant_primary_concat($1)}
-	| constant_multiple_concatenation
-		{T_constant_primary_mul_concat($1)}
-	| constant_function_call
-		{T_constant_primary_func($1)}
-	| constant_system_function_call
-		{T_constant_primary_sysfunc($1)}
-	| LPARENT constant_mintypmax_expression RPARENT
-		{T_constant_primary_mintypmax($2)}
-	| string
-		{T_constant_primary_string($1)}
-;
-
 
 
 module_path_primary :
@@ -2896,15 +2902,15 @@ lsq_expression_rsq_list :
 net_lvalue :
 	hierarchical_net_identifier
 		{T_net_lvalue_id($1)}
-	| hierarchical_net_identifier lsq_constant_expression_rsq_list LSQUARE constant_range_expression RSQUARE
+	| hierarchical_net_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
 		{T_net_lvalue_idexp($1,$2,$4)}
 	| LHUA net_lvalue comma_net_lvalue_list RHUA
 		{T_net_lvalue_lvlist($2::$3)}
 ;
 
-lsq_constant_expression_rsq_list :
+lsq_expression_rsq_list :
 	{[]}
-	| LSQUARE constant_expression RSQUARE lsq_constant_expression_rsq_list
+	| LSQUARE expression RSQUARE lsq_expression_rsq_list
 		{$2::$4}
 ;
 
@@ -2932,70 +2938,6 @@ comma_variable_lvalue_list :
 
 
 /*A.8.6 Operators*/
-
-
-unary_operator :
-	OP12_ADD {T_unary_operator_ADD}
-	| OP12_SUB  {T_unary_operator_SUB}
-	| OP1_GANTANHAO  {T_unary_operator_GANTANHAO}
-	| OP1_BOLANGHAO  {T_unary_operator_BOLANGHAO}
-	| OP12_AND  {T_unary_operator_REDUCE_AND}
-	| OP1_REDUCE_NAND  {T_unary_operator_REDUCE_NAND}
-	| OP12_OR  {T_unary_operator_REDUCE_OR}
-	| OP1_REDUCE_NOR  {T_unary_operator_REDUCE_NOR}
-	| OP12_XOR  {T_unary_operator_REDUCE_XOR}
-	| OP12_XNOR {T_unary_operator_REDUCE_XNOR}
-;
-binary_operator :
-	OP12_ADD  {T_binary_operator_ADD}
-	| OP12_SUB  {T_binary_operator_SUB}
-	| OP2_MULTIPLE  {T_binary_operator_MUL}
-	| OP2_DIV  {T_binary_operator_DIV}
-	| OP2_MOD  {T_binary_operator_MOD}
-	| OP2_EQU2  {T_binary_operator_EQU2}
-	| OP2_NEQ2  {T_binary_operator_NEQ2}
-	| OP2_EQU3  {T_binary_operator_EQU3}
-	| OP2_NEQ3  {T_binary_operator_NEQ3}
-	| OP2_AND  {T_binary_operator_AND2}
-	| OP2_OR  {T_binary_operator_OR2}
-	| OP2_POWER {T_binary_operator_POWER}
-	| OP2_LT  {T_binary_operator_LT}
-	| OP2_LE  {T_binary_operator_LE}
-	| OP2_GT  {T_binary_operator_GT}
-	| OP2_GE  {T_binary_operator_GE}
-	| OP12_AND  {T_binary_operator_AND1}
-	| OP12_OR  {T_binary_operator_OR1}
-	| OP12_XOR  {T_binary_operator_XOR}
-	| OP12_XNOR  {T_binary_operator_XNOR}
-	| OP2_LOGICAL_RIGHTSHIFT  {T_binary_operator_LOGICAL_RIGHTSHIFT}
-	| OP2_LOGICAL_LEFTSHIFT  {T_binary_operator_LOGICAL_LEFTSHIFT}
-	| OP2_ARITHMETIC_RIGHTSHIFT  {T_binary_operator_ARITHMETIC_RIGHTSHIFT}
-	| OP2_ARITHMETIC_LEFTSHIFT {T_binary_operator_ARITHMETIC_LEFTSHIFT}
-;
-
-
-unary_module_path_operator :
-	OP1_GANTANHAO  {T_unary_module_path_operator_GANTANHAO}
-	| OP1_BOLANGHAO  {T_unary_module_path_operator_BOLANGHAO}
-	| OP12_AND  {T_unary_module_path_operator_AND}
-	| OP1_REDUCE_NAND  {T_unary_module_path_operator_NAND}
-	| OP12_OR  {T_unary_module_path_operator_OR}
-	| OP1_REDUCE_NOR  {T_unary_module_path_operator_NOR}
-	| OP12_XOR  {T_unary_module_path_operator_XOR}
-	| OP12_XNOR {T_unary_module_path_operator_XNOR}
-;
-
-
-binary_module_path_operator :
-	OP2_EQU2  {T_binary_module_path_operator_EQU2}
-	| OP2_NEQ2  {T_binary_module_path_operator_NEQ2}
-	| OP2_AND  {T_binary_module_path_operator_AND2}
-	| OP2_OR  {T_binary_module_path_operator_OR2}
-	| OP12_AND  {T_binary_module_path_operator_AND1}
-	| OP12_OR  {T_binary_module_path_operator_OR1}
-	| OP12_XOR  {T_binary_module_path_operator_XOR}
-	| OP12_XNOR {T_binary_module_path_operator_XNOR}
-;
 
 
 /*A.8.7 Numbers*/
@@ -3026,8 +2968,8 @@ comma_attr_spec_list :
 
 attr_spec :
 	attr_name 
-		{T_attr_spec($1,T_constant_expression_NOSPEC)}
-	| attr_name  EQU1 constant_expression 
+		{T_attr_spec($1,T_expression_NOSPEC)}
+	| attr_name  EQU1 expression 
 		{T_attr_spec($1,$3)}
 ;
 
