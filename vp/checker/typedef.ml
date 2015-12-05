@@ -3,15 +3,15 @@ type description =
 	| T_description__udp_declaration of udp_declaration
 	| T_description__config_declaration of config_declaration
 and module_declaration =
-	T_module_declaration__1 of (attribute_instance list)*string*(parameter_declaration list)*(port list)*(module_item list)
-	| T_module_declaration__2 of(attribute_instance list)*string*(parameter_declaration list)*(port_declaration list)*(module_item list)
+	T_module_declaration__1 of (attribute_instance list)*identifier*(parameter_declaration list)*(port list)*(module_item list)
+	| T_module_declaration__2 of(attribute_instance list)*identifier*(parameter_declaration list)*(port_declaration list)*(module_item list)
 and port =
 	T_port_position of port_expression
-	| T_port_exp of string*port_expression
+	| T_port_exp of identifier*port_expression
 and port_expression =
 	T_port_expression of (port_reference list)
 and	port_reference =
-	T_port_reference of string*constant_range_expression
+	T_port_reference of identifier*constant_range_expression
 and port_declaration =
 	T_port_declaration__inout_declaration of (attribute_instance list)*inout_declaration
 	| T_port_declaration__input_declaration of (attribute_instance list)*input_declaration
@@ -47,12 +47,12 @@ and config_declaration =
 and design_statement =
 	T_design_statement of (library_identifier_period_opt_cell_identifier list)
 and library_identifier_period_opt_cell_identifier =
-	T_lib_cell_identifier of string*string
+	T_lib_cell_identifier of identifier*identifier
 and config_rule_statement =
-	T_config_rule_statement__default of (string list) 
-	| T_config_rule_statement__inst_lib of (string list)*(string list)
-	| T_config_rule_statement__inst_use of (string list)*use_clause
-	| T_config_rule_statement__cell_lib of library_identifier_period_opt_cell_identifier*(string list)
+	T_config_rule_statement__default of (identifier list) 
+	| T_config_rule_statement__inst_lib of (identifier list)*(identifier list)
+	| T_config_rule_statement__inst_use of (identifier list)*use_clause
+	| T_config_rule_statement__cell_lib of library_identifier_period_opt_cell_identifier*(identifier list)
 	| T_config_rule_statement__cell_use of library_identifier_period_opt_cell_identifier*use_clause
 and use_clause =
 	T_use_clause of library_identifier_period_opt_cell_identifier*colon_config_opt
@@ -76,11 +76,11 @@ and parameter_type =
 	| T_parameter_type__REALTIME
 	| T_parameter_type__TIME
 and inout_declaration =
-	T_inout_declaration of net_type*signed*range*(string list)
+	T_inout_declaration of net_type*signed*range*(identifier list)
 and input_declaration =
-	T_input_declaration of net_type*signed*range*(string list)
+	T_input_declaration of net_type*signed*range*(identifier list)
 and output_declaration =
-	T_output_declaration_net of net_type*signed*range*(string list)
+	T_output_declaration_net of net_type*signed*range*(identifier list)
 	|T_output_declaration_reg of signed*range*(port_identifier_equ1_constant_expression_opt list)
 	|T_output_declaration_var of output_variable_type*(port_identifier_equ1_constant_expression_opt list)
 and	output_variable_type =
@@ -125,11 +125,11 @@ and net_type =
 	| T_net_type__KEY_WAND
 	| T_net_type__KEY_WOR
 and real_type =
-	T_real_type_noass of string*(dimension list)
-	| T_real_type_ass of string*constant_expression
+	T_real_type_noass of identifier*(dimension list)
+	| T_real_type_ass of identifier*constant_expression
 and	variable_type =
-	T_variable_type_noass of string*(dimension list)
-	| T_variable_type_ass of string*constant_expression
+	T_variable_type_noass of identifier*(dimension list)
+	| T_variable_type_ass of identifier*constant_expression
 and strength =
 	KEY_HIGHZ0
 	| KEY_HIGHZ1
@@ -161,19 +161,19 @@ and delay2 =
 	| T_delay2_minmax1 of mintypmax_expression
 	| T_delay2_minmax2 of mintypmax_expression*mintypmax_expression
 and event_identifier_dimension_list =
-	T_event_identifier_dimension_list of string*(dimension list)
+	T_event_identifier_dimension_list of identifier*(dimension list)
 and net_identifier_dimension_list =
-	T_net_identifier_dimension_list of string*(dimension list)
+	T_net_identifier_dimension_list of identifier*(dimension list)
 and port_identifier_equ1_constant_expression_opt =
-	T_port_identifier_equ1_constant_expression_opt of string*constant_expression
+	T_port_identifier_equ1_constant_expression_opt of identifier*constant_expression
 and defparam_assignment =
 	T_defparam_assignment of hierarchical_identifier*constant_mintypmax_expression
 and net_decl_assignment =
-	T_net_decl_assignment of string*expression
+	T_net_decl_assignment of identifier*expression
 and param_assignment =
-	T_param_assignment of string*constant_mintypmax_expression
+	T_param_assignment of identifier*constant_mintypmax_expression
 and specparam_assignment =
-	T_specparam_assignment of string*constant_mintypmax_expression
+	T_specparam_assignment of identifier*constant_mintypmax_expression
 	| T_specparam_assignment_pulse1 of constant_mintypmax_expression*constant_mintypmax_expression
 	| T_specparam_assignment_pulse2 of specify_input_terminal_descriptor*specify_output_terminal_descriptor*constant_mintypmax_expression*constant_mintypmax_expression
 and  dimension =
@@ -185,8 +185,8 @@ and automatic =
 	T_automatic_false
 	| T_automatic_true
 and function_declaration =
-	T_function_declaration_1 of automatic*function_range_or_type*string*(function_item_declaration list)*statement
-	| T_function_declaration_2 of automatic*function_range_or_type*string*(attribute_instance_list_tf_input_declaration list)*(block_item_declaration list)*statement
+	T_function_declaration_1 of automatic*function_range_or_type*identifier*(function_item_declaration list)*statement
+	| T_function_declaration_2 of automatic*function_range_or_type*identifier*(attribute_instance_list_tf_input_declaration list)*(block_item_declaration list)*statement
 and function_item_declaration =
 	T_function_item_declaration_block of block_item_declaration
 	| T_function_item_declaration_input of (attribute_instance list)*tf_input_declaration
@@ -200,8 +200,8 @@ and function_range_or_type =
 	| T_function_range_or_type_REALTIME
 	| T_function_range_or_type_TIME
 and task_declaration =
-	T_task_declaration1 of automatic*string*(task_item_declaration list)*statement
-	| T_task_declaration2 of automatic*string*(task_port_item list)*(block_item_declaration list)*statement
+	T_task_declaration1 of automatic*identifier*(task_item_declaration list)*statement
+	| T_task_declaration2 of automatic*identifier*(task_port_item list)*(block_item_declaration list)*statement
 and task_item_declaration =
 	T_task_item_declaration_block of block_item_declaration
 	| T_task_item_declaration_input of tf_input_declaration
@@ -215,14 +215,14 @@ and reg =
 	T_reg_false
 	| T_reg_true
 and tf_input_declaration =
-	T_tf_input_declaration_reg of reg*signed*range*(string list)
-	| T_tf_input_declaration_type of task_port_type*(string list)
+	T_tf_input_declaration_reg of reg*signed*range*(identifier list)
+	| T_tf_input_declaration_type of task_port_type*(identifier list)
 and tf_output_declaration =
-	T_tf_output_declaration_reg of reg*signed*range*(string list)
-	| T_tf_output_declaration_type of task_port_type*(string list)
+	T_tf_output_declaration_reg of reg*signed*range*(identifier list)
+	| T_tf_output_declaration_type of task_port_type*(identifier list)
 and tf_inout_declaration =
-	T_tf_inout_declaration_reg of reg*signed*range*(string list)
-	| T_tf_inout_declaration_type of task_port_type*(string list)
+	T_tf_inout_declaration_reg of reg*signed*range*(identifier list)
+	| T_tf_inout_declaration_type of task_port_type*(identifier list)
 and task_port_type =
 	T_task_port_type_integer
 	| T_task_port_type_real
@@ -238,9 +238,9 @@ and block_item_declaration =
 	| T_block_item_declaration_local_param of (attribute_instance list)*local_parameter_declaration
 	| T_block_item_declaration_param of (attribute_instance list)*parameter_declaration
 and block_variable_type =
-	T_block_variable_type of string*(dimension list)
+	T_block_variable_type of identifier*(dimension list)
 and block_real_type =
-	T_block_real_type of string*(dimension list)
+	T_block_real_type of identifier*(dimension list)
 and gate_instantiation =
 	T_gate_instantiation_cmos of cmos_switchtype*delay3*(cmos_switch_instance list)
 	| T_gate_instantiation_enable of enable_gatetype*drive_strength*delay3*(enable_gate_instance list)
@@ -269,7 +269,7 @@ and pull_gate_instance =
 	T_pull_gate_instance of name_of_gate_instance*net_lvalue
 and name_of_gate_instance =
 	T_name_of_gate_instance_NOSPEC
-	| T_name_of_gate_instance of string*range
+	| T_name_of_gate_instance of identifier*range
 and pulldown_strength =
 	T_pulldown_strength_NOSPEC
 	| T_pulldown_strength01 of strength*strength
@@ -312,17 +312,17 @@ and pass_switchtype =
 	  T_pass_switchtype_TRAN  
 	| T_pass_switchtype_RTRAN 
 and module_instantiation =
-	T_module_instantiation of string*parameter_value_assignment*(module_instance list)
+	T_module_instantiation of identifier*parameter_value_assignment*(module_instance list)
 and	module_instance =
 	T_module_instance of name_of_module_instance*list_of_port_connections
 and name_of_module_instance =
-	T_name_of_module_instance of string*range
+	T_name_of_module_instance of identifier*range
 and parameter_value_assignment =
 	T_parameter_value_assignment_NOSPEC
 	| T_parameter_value_assignment_order of (expression list)
 	| T_parameter_value_assignment_named of (named_parameter_assignment list)
 and named_parameter_assignment =
-	T_named_parameter_assignment of string*mintypmax_expression
+	T_named_parameter_assignment of identifier*mintypmax_expression
 and list_of_port_connections =
 	T_list_of_port_connections_NOSPEC
 	| T_list_of_port_connections_ordered of (ordered_port_connection list)
@@ -330,25 +330,25 @@ and list_of_port_connections =
 and ordered_port_connection =
 	T_ordered_port_connection of (attribute_instance list)*expression
 and named_port_connection =
-	T_named_port_connection of (attribute_instance list)*string*expression
+	T_named_port_connection of (attribute_instance list)*identifier*expression
 and generate_region =
 	T_generate_region of (module_item list)
 and genvar_declaration =
-	T_genvar_declaration of (string list)
+	T_genvar_declaration of (identifier list)
 and loop_generate_construct =
 	T_loop_generate_construct of genvar_initialization*genvar_expression*genvar_iteration*generate_block
 and	genvar_initialization =
-	T_genvar_initialization of string*constant_expression
+	T_genvar_initialization of identifier*constant_expression
 and genvar_expression =
 	T_genvar_expression_primary of genvar_primary
 	| T_genvar_expression_1op of unary_operator*(attribute_instance list)*genvar_primary
 	| T_genvar_expression_2op of genvar_expression*binary_operator*(attribute_instance list)*genvar_expression
 	| T_genvar_expression_sel of genvar_expression*(attribute_instance list)*genvar_expression*genvar_expression
 and	genvar_iteration =
-	T_genvar_iteration of string*genvar_expression
+	T_genvar_iteration of identifier*genvar_expression
 and	genvar_primary =
 	T_genvar_primary_const of constant_primary
-	| T_genvar_primary_id of string
+	| T_genvar_primary_id of identifier
 and conditional_generate_construct =
 	T_conditional_generate_construct_if of if_generate_construct
 	| T_conditional_generate_construct_case of case_generate_construct
@@ -362,12 +362,12 @@ and	if_generate_construct =
 and	generate_block =
 	T_generate_block_NOSPEC
 	| T_generate_block_mgi of module_item 
-	| T_generate_block_begin of string*(module_item list)
+	| T_generate_block_begin of identifier*(module_item list)
 and	udp_declaration =
 	T_udp_declaration_1 of (attribute_instance list)*identifier*udp_port_list*(udp_port_declaration list)*udp_body
 	| T_udp_declaration_2 of (attribute_instance list)*identifier*udp_declaration_port_list*udp_body
 and	udp_port_list =
-	T_udp_port_list of string*(string list)
+	T_udp_port_list of identifier*(identifier list)
 and	udp_declaration_port_list =
 	T_udp_declaration_port_list of udp_output_declaration*(udp_input_declaration list)
 and	udp_port_declaration =
@@ -375,12 +375,12 @@ and	udp_port_declaration =
 	| T_udp_port_declaration_input of udp_input_declaration
 	| T_udp_port_declaration_reg of udp_reg_declaration
 and	udp_output_declaration =
-	T_udp_output_declaration_output of (attribute_instance list)*string
-	| T_udp_output_declaration_reg of (attribute_instance list)*string*constant_expression
+	T_udp_output_declaration_output of (attribute_instance list)*identifier
+	| T_udp_output_declaration_reg of (attribute_instance list)*identifier*constant_expression
 and	udp_input_declaration =
-	T_udp_input_declaration of (attribute_instance list)*(string list)
+	T_udp_input_declaration of (attribute_instance list)*(identifier list)
 and	udp_reg_declaration =
-	T_udp_reg_declaration of (attribute_instance list)*string
+	T_udp_reg_declaration of (attribute_instance list)*identifier
 and	udp_body =
 	T_udp_body_comb of (combinational_entry list)
 	| T_udp_body_seq of sequential_body
@@ -390,7 +390,7 @@ and sequential_body =
 	T_sequential_body of udp_initial_statement*(sequential_entry list)
 and	udp_initial_statement =
 	T_udp_initial_statement_NOSPEC
-	| T_udp_initial_statement of string*init_val
+	| T_udp_initial_statement of identifier*init_val
 and init_val =
 	T_init_val_bin of Lexing.position*Lexing.position*(int*string)
 	| T_init_val_unsigned of Lexing.position*Lexing.position*int
@@ -410,7 +410,7 @@ and udp_instance =
 	T_udp_instance of name_of_udp_instance*net_lvalue*(expression list)
 and	name_of_udp_instance =
 	T_name_of_udp_instance_NOSPEC
-	| T_name_of_udp_instance of string*range
+	| T_name_of_udp_instance of identifier*range
 and continuous_assign =
 	T_continuous_assign of drive_strength*delay3*(net_assignment list)
 and	net_assignment =
@@ -499,7 +499,7 @@ and	loop_statement =
 	| T_loop_statement_while of expression*statement
 	| T_loop_statement_for of variable_assignment*expression*variable_assignment*statement
 and	system_task_enable =
-	T_system_task_enable of string*(expression list)
+	T_system_task_enable of  system_function_identifier*(expression list)
 and	task_enable =
 	T_task_enable of hierarchical_identifier*(expression list)
 and specify_block =
@@ -562,13 +562,13 @@ and module_path_concatenation =
 and	multiple_concatenation =
 	T_multiple_concatenation of constant_expression*concatenation
 and	constant_function_call =
-	T_constant_function_call of string*(attribute_instance list)*(constant_expression list)
+	T_constant_function_call of identifier*(attribute_instance list)*(constant_expression list)
 and	constant_system_function_call =
-	T_constant_system_function_call of string*(constant_expression list)
+	T_constant_system_function_call of system_function_identifier*(constant_expression list)
 and	function_call =
-	T_function_call of (string list)*(attribute_instance list)*(expression list)
+	T_function_call of hierarchical_identifier*(attribute_instance list)*(expression list)
 and	system_function_call =
-	T_system_function_call of string*(expression list)
+	T_system_function_call of system_function_identifier*(expression list)
 and	conditional_expression =
 	T_conditional_expression of expression*(attribute_instance list)*expression*expression
 and	constant_expression =
@@ -624,8 +624,8 @@ and	range_expression =
 and	base_expression = expression
 and	constant_primary =
 	T_constant_primary_num of number
-	| T_constant_primary_param of string*constant_range_expression
-	|	T_constant_primary_specparam of string*constant_range_expression
+	| T_constant_primary_param of identifier*constant_range_expression
+	|	T_constant_primary_specparam of identifier*constant_range_expression
 	|	T_constant_primary_concat of constant_concatenation
 	| T_constant_primary_mul_concat of constant_multiple_concatenation
 	| T_constant_primary_func of constant_function_call
@@ -642,8 +642,8 @@ and	module_path_primary =
 	| T_module_path_primary_mintypmax of module_path_mintypmax_expression
 and	primary =
 	T_primary_num of number
-	| T_primary_id of (string list)
-	| T_primary_idexp of (string list)*(expression list)*range_expression
+	| T_primary_id of hierarchical_identifier
+	| T_primary_idexp of hierarchical_identifier*(expression list)*range_expression
 	| T_primary_concat of concatenation
 	| T_primary_mulcon of multiple_concatenation
 	| T_primary_func of function_call
@@ -651,12 +651,12 @@ and	primary =
 	| T_primary_mintypmax of mintypmax_expression
 	| T_primary_string of string
 and	net_lvalue =
-	T_net_lvalue_id of (string list)
-	| T_net_lvalue_idexp of (string list)*(constant_expression list)*constant_range_expression
+	T_net_lvalue_id of hierarchical_identifier
+	| T_net_lvalue_idexp of hierarchical_identifier*(constant_expression list)*constant_range_expression
 	| T_net_lvalue_lvlist of (net_lvalue list)
 and variable_lvalue =
-	T_variable_lvalue_id of string list
-	| T_variable_lvalue_idexp of (string list)*(expression list)*range_expression
+	T_variable_lvalue_id of hierarchical_identifier
+	| T_variable_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
 	| T_variable_lvalue_vlvlist of variable_lvalue list
 and	delay_value =
 	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
@@ -665,11 +665,11 @@ and	delay_value =
 and	attribute_instance =
 	T_attribute_instance of (attr_spec list)
 and	attr_spec =
-	T_attr_spec of string*constant_expression
+	T_attr_spec of identifier*constant_expression
 and	hierarchical_identifier =
-	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)*string
+	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)*identifier
 and	identifier_lsq_expression_rsq =
-	T_identifier_lsq_expression_rsq of string*expression
+	T_identifier_lsq_expression_rsq of identifier*expression
 and polarity_operator =
 	T_polarity_operator_NOSPEC
 	| T_polarity_operator_ADD
@@ -758,4 +758,9 @@ and edge_symbol =
 	T_edge_symbol_SIMID of Lexing.position*Lexing.position*string
 	| T_edge_symbol_MUL of Lexing.position*Lexing.position
 and identifier =
-	T_identifier of Lexing.position*Lexing.position*string
+	T_identifier_NOSPEC
+	| T_identifier of Lexing.position*Lexing.position*string
+and	string =
+	T_string of Lexing.position*Lexing.position*string
+and	system_function_identifier =
+	T_system_function_identifier of  Lexing.position*Lexing.position*string

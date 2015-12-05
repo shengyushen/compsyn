@@ -11,20 +11,24 @@ let stringssy_string = ref "";;
 let append_stringssy str =  begin
 	stringssy_string := String.concat "" [!stringssy_string;str]
 end
-and clear_stringssy () = begin
+;;
+let clear_stringssy () = begin
 	stringssy_string := ""
 end
-and print_pos pos = begin
+;;
+let print_pos pos = begin
 	Printf.printf "%s " pos.Lexing.pos_fname;
 	Printf.printf "Line %d " pos.Lexing.pos_lnum;
 	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
 end
-and isNotEof_included t = begin
+;;
+let isNotEof_included t = begin
 	match t with
 	EOF_INCLUDED(_,_,_) -> false
 	| _ -> true
 end
-and char2int c = begin
+;;
+let char2int c = begin
 	match c with
 		'0' -> 0
 	|	'1' -> 1
@@ -38,7 +42,8 @@ and char2int c = begin
 	|	'9' -> 9
 	| _ -> assert false
 end
-and string_no_ str = begin
+;;
+let string_no_ str = begin
 	let rec internal str1 = begin
 		match str1 with
 		"" -> str1
@@ -54,7 +59,8 @@ and string_no_ str = begin
 	end
 	in internal str
 end
-and unsigned_numberStr2int str = begin
+;;
+let unsigned_numberStr2int str = begin
 	let rec internal str1 tmp = begin
 		match str1 with
 		"" -> tmp
@@ -70,13 +76,16 @@ and unsigned_numberStr2int str = begin
 	end
 	in internal str 0
 end
-and get_size sz = begin
+;;
+let get_size sz = begin
 	let sz_no_  = unsigned_numberStr2int sz
 	in begin
 		if (sz_no_ == 0 ) then 32
 		else sz_no_
 	end
 end
+;;
+
 }
 
 
@@ -281,11 +290,11 @@ rule veriloglex  = parse
 			|"noshowcancelled" -> KEY_NOSHOWCANCELLED(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|_										-> SIMPLE_IDENTIFIER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
-	|"PATHPULSE$"					-> KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-	|"$"									-> DOLLOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-	|"->"									-> IMPLY(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-	|"=>"									-> IMPLY2(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-	|"*>"									-> IMPLYSTART(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
+	|"PATHPULSE$"					 {KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"$"									 {DOLLOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"->"									 {IMPLY(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"=>"									 { IMPLY2(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
+	|"*>"									 { IMPLYSTART(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
 	| unsigned_number as lxm {
 			let lxm_no_ =  unsigned_numberStr2int lxm
 			in
@@ -307,19 +316,19 @@ rule veriloglex  = parse
 			let lxm_no_ =  string_no_ lxm
 			and sz_no_  = get_size sz
 			in 
-			OCTAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
+			OCTAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf ,(sz_no_,lxm_no_))
 		}
 	| (size? as sz) binary_base [' ']* (binary_value as lxm) {
 			let lxm_no_ =  string_no_ lxm
 			and sz_no_  = get_size sz
 			in
-			BINARY_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
+			BINARY_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf ,(sz_no_,lxm_no_))
 		}
 	| (size? as sz) hex_base [' ']* (hex_value as lxm ) {
 			let lxm_no_ =  string_no_ lxm
 			and sz_no_  = get_size sz
 			in
-			HEX_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p,(sz_no_,lxm_no_))
+			HEX_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf ,(sz_no_,lxm_no_))
 		}
 	| real_number {
 			REAL_NUMBER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
@@ -401,6 +410,7 @@ rule veriloglex  = parse
 	| useless_directives			{  
 			printf "//WARNING : Ignoring %s at " (Lexing.lexeme lexbuf);
 			print_pos (Lexing.lexeme_start_p lexbuf);
+			flush stdout;
 			endofline lexbuf;
 			veriloglex  lexbuf
 		}

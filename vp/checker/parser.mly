@@ -517,7 +517,7 @@ library_identifier_period_opt_cell_identifier :
 ;
 
 library_identifier_period_opt :
-	{""}
+	{T_identifier_NOSPEC}
 	| library_identifier PERIOD {$1}
 ;
 
@@ -1691,7 +1691,7 @@ generate_block :
 ;
 
 colon_generate_block_identifier_opt :
-	{""}
+	{T_identifier_NOSPEC}
 	| COLON generate_block_identifier
 		{$2}
 ;
@@ -3008,7 +3008,7 @@ number :
 	| REAL_NUMBER {T_number_REAL_NUMBER(get1 $1, get2 $1, get3 $1)}
 
 /*A.8.8 Strings*/
-string : STRING {$1};
+string : STRING {T_string(get1 $1, get2 $1, get3 $1)};
 
 
 /*A.9 General
@@ -3079,8 +3079,8 @@ hierarchical_variable_identifier : hierarchical_identifier {$1};
 hierarchical_task_identifier : hierarchical_identifier {$1};
 
 identifier :
-	SIMPLE_IDENTIFIER {T_identifier($1)}
-	| ESCAPED_IDENTIFIER {T_identifier($1)}
+	SIMPLE_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
+	| ESCAPED_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
 ;
 
 inout_port_identifier : identifier {$1};
@@ -3098,7 +3098,7 @@ specparam_identifier : identifier {$1};
 
 
 system_function_identifier :
-	SYSTEM_TASK_FUNCTION_IDENTIFIER {$1}
+	SYSTEM_TASK_FUNCTION_IDENTIFIER {T_system_function_identifier(get1 $1 , get2 $1 , get3 $1)}
 ;
 
 
