@@ -2857,11 +2857,6 @@ net_lvalue :
 		{T_net_lvalue_lvlist($2::$3)}
 ;
 
-lsq_expression_rsq_list :
-	{[]}
-	| LSQUARE expression RSQUARE lsq_expression_rsq_list
-		{$2::$4}
-;
 
 comma_net_lvalue_list :
 	{[]}
@@ -2974,7 +2969,7 @@ identifier :
 	| ESCAPED_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
 ;
 
-inout_port_identifier : identifier {$1};
+/*inout_port_identifier : identifier {$1};*/
 input_port_identifier : identifier {$1};
 instance_identifier : identifier {$1};
 library_identifier : identifier {$1};
@@ -2985,7 +2980,7 @@ output_port_identifier : identifier {$1};
 parameter_identifier : identifier {$1};
 port_identifier : identifier {$1};
 real_identifier : identifier {$1};
-specparam_identifier : identifier {$1};
+/*specparam_identifier : identifier {$1};*/
 
 
 system_function_identifier :
@@ -2994,8 +2989,8 @@ system_function_identifier :
 
 
 task_identifier : identifier {$1};
-terminal_identifier : identifier {$1};
-text_macro_identifier : identifier {$1};
+/*terminal_identifier : identifier {$1};*/
+/*text_macro_identifier : identifier {$1};*/
 topmodule_identifier : identifier {$1};
 udp_identifier : identifier {$1};
 udp_instance_identifier : identifier {$1};
