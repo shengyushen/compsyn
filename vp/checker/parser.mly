@@ -945,8 +945,8 @@ equ1_expression_opt :
 
 comma_port_identifier_equ1_expression_opt_list :
 	{[]}
-	| COMMA port_identifier_equ1_expression_opt comma_port_identifier_equ1_expression_opt_list
-		{$2::$3}
+	| comma_port_identifier_equ1_expression_opt_list COMMA port_identifier_equ1_expression_opt 
+		{$1@[$3]}
 ;
 
 	
