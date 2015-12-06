@@ -329,7 +329,7 @@ module_declaration :
 
 attribute_instance_list :
 		{[]}
-	|  attribute_instance_list attribute_instance {$1@[$2]}
+	| attribute_instance attribute_instance_list {$1::$2}
 ;
 
 module_item_list :
@@ -364,15 +364,15 @@ comma_parameter_declaration_list :
 
 list_of_ports : 
 	LPARENT 
-		port_comma_port_list
+		port comma_port_list
 	RPARENT
-		{$2}
+		{$2::$3}
 ;
 
-port_comma_port_list :
-	port {[$1]}
-	| port_comma_port_list COMMA port
-	{$1@[$3]}
+comma_port_list :
+	{[]}
+	| COMMA port comma_port_list
+	{$2::$3}
 ;
 
 list_of_port_declarations :
@@ -450,12 +450,12 @@ non_port_module_item :
 	module_or_generate_item {$1}
 	| generate_region {
 		T_module_item__generate_region($1)}
-	| specify_block {
-		T_module_item__specify_block($1)}
+/*	| specify_block {
+		T_module_item__specify_block($1)}*/
 	| attribute_instance_list parameter_declaration SEMICOLON {
 		T_module_item__parameter_declaration($1,$2)}
-	| attribute_instance_list specparam_declaration {
-		T_module_item__specparam_declaration($1,$2)}
+/*	| attribute_instance_list specparam_declaration {
+		T_module_item__specparam_declaration($1,$2)}*/
 ;
 
 module_or_generate_item :
@@ -487,8 +487,8 @@ module_or_generate_item :
 		T_module_item__continuous_assign($1,$2)}
 | attribute_instance_list gate_instantiation {
 		T_module_item__gate_instantiation($1,$2)}
-/*| attribute_instance_list udp_instantiation {
-		T_module_item__udp_instantiation($1,$2)}*/
+| attribute_instance_list udp_instantiation {
+		T_module_item__udp_instantiation($1,$2)}
 | attribute_instance_list module_instantiation {
 		T_module_item__module_instantiation($1,$2)}
 | attribute_instance_list initial_construct {
@@ -524,17 +524,25 @@ config_rule_statement_list :
 
 design_statement : 
 	KEY_DESIGN 
-		identifier_period_list identifier
+		library_identifier_period_opt_cell_identifier_list
 	SEMICOLON
-		{T_design_statement($2@[$3])}
+		{T_design_statement($2)}
 ;
 
-identifier_period_list :
+library_identifier_period_opt_cell_identifier_list :
 	{[]}
-	| identifier_period_list identifier PERIOD 
-		{$1@[$2]}
+	| library_identifier_period_opt_cell_identifier library_identifier_period_opt_cell_identifier_list {$1::$2}
 ;
 
+library_identifier_period_opt_cell_identifier :
+	library_identifier_period_opt cell_identifier
+	{T_lib_cell_identifier($1,$2)}
+;
+
+library_identifier_period_opt :
+	{T_identifier_NOSPEC}
+	| library_identifier PERIOD {$1}
+;
 
 config_rule_statement :
 	KEY_DEFAULT liblist_clause SEMICOLON {
@@ -565,7 +573,7 @@ comma_instance_identifier_list :
 ;
 
 cell_clause :
-	KEY_CELL identifier_period_list {$2}
+	KEY_CELL library_identifier_period_opt_cell_identifier {$2}
 ;
 
 liblist_clause :
@@ -578,7 +586,7 @@ library_identifier_list :
 ;
 
 use_clause :
-	KEY_USE identifier_period_list colon_config_opt
+	KEY_USE library_identifier_period_opt_cell_identifier colon_config_opt
 		{T_use_clause($2,$3)}
 ;
 
@@ -615,11 +623,11 @@ parameter_declaration :
 		{T_parameter_declaration_2($2,$3)}
 ;
 
-specparam_declaration :
+/*specparam_declaration :
 	KEY_SPECPARAM range_opt list_of_specparam_assignments SEMICOLON
 		{T_specparam_declaration($2,$3)}
 ;
-
+*/
 parameter_type :
 	KEY_INTEGER {T_parameter_type__INTEGER}
 	| KEY_REAL 	{T_parameter_type__REAL}
@@ -665,14 +673,27 @@ integer_declaration :
 ;
 
 net_declaration :
-	  net_type charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
-		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6,$7)}
-	| net_type charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+	net_type signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_net_type1($1,$2,$3,$4)}
+	| net_type drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_net_type2($1,$2,$3,$4,$5)}
+	| net_type vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
+	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
-	| KEY_TRIREG charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
+	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_trireg_1($2,$3,$4,$5)}
+	| KEY_TRIREG drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+		{T_net_declaration_trireg_2($2,$3,$4,$5)}
+	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
-	| KEY_TRIREG charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}
+;
+
+charge_strength_opt :
+	{T_charge_strength_NOSPEC}
+	| charge_strength {$1}
 ;
 
 delay3_opt :
@@ -686,6 +707,10 @@ vectored_scalared_opt :
 	| KEY_SCALARED {T_vectored_scalared_scalared}
 ;
 
+drive_strength_opt :
+	{T_drive_strength_NOSPEC}
+	| drive_strength {$1}
+;
 
 real_declaration :
 	KEY_REAL list_of_real_identifiers SEMICOLON
@@ -750,19 +775,19 @@ variable_type :
 
 /*A.2.2.2 Strengths*/
 
-charge_drive_pull_strength :
-	{T_strength_NOSPEC}
-	| LPARENT KEY_SMALL RPARENT {T_charge_strength__small}
-	| LPARENT KEY_MEDIUM RPARENT {T_charge_strength__medium}
-	| LPARENT KEY_LARGE RPARENT {T_charge_strength__large}
-	|	LPARENT strength0 COMMA strength1 RPARENT {T_drive_strength($2,$4)}
-	| LPARENT strength1 COMMA strength0 RPARENT {T_drive_strength($2,$4)}
-	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT {T_drive_strength($2,KEY_HIGHZ1)}
-	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT {T_drive_strength($2,KEY_HIGHZ0)}
-	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT {T_drive_strength(KEY_HIGHZ0,$4)}
-	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT {T_drive_strength(KEY_HIGHZ1,$4)}
-	| LPARENT strength0 RPARENT {T_pulldown_strength0($2)}
-	| LPARENT strength1 RPARENT {T_pullup_strength1($2)}
+drive_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_drive_strength($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_drive_strength($2,$4)}
+	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT
+		{T_drive_strength($2,KEY_HIGHZ1)}
+	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT
+		{T_drive_strength($2,KEY_HIGHZ0)}
+	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT
+		{T_drive_strength(KEY_HIGHZ0,$4)}
+	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT
+		{T_drive_strength(KEY_HIGHZ1,$4)}
 ;
 
 
@@ -780,6 +805,14 @@ strength1 :
 	| KEY_WEAK1 {KEY_WEAK1}
 ;
 
+charge_strength : 
+	LPARENT KEY_SMALL RPARENT 
+		{T_charge_strength__small}
+	| LPARENT KEY_MEDIUM RPARENT 
+		{T_charge_strength__medium}
+	| LPARENT KEY_LARGE RPARENT
+		{T_charge_strength__large}
+;
 
 /*A.2.2.3 Delays*/
 
@@ -879,8 +912,8 @@ list_of_param_assignments :
 
 comma_param_assignment_list :
 	{[]}
-	|  comma_param_assignment_list COMMA param_assignment
-		{$1@[$3]}
+	| COMMA param_assignment comma_param_assignment_list
+		{$2::$3}
 ;
 
 list_of_port_identifiers :
@@ -890,8 +923,8 @@ list_of_port_identifiers :
 
 comma_port_identifier_list :
 	{[]}
-	| comma_port_identifier_list COMMA port_identifier 
-		{$1@[$3]}
+	| COMMA port_identifier comma_port_identifier_list
+		{$2::$3}
 ;
 
 list_of_real_identifiers :
@@ -905,7 +938,7 @@ comma_real_type_list :
 		{$2::$3}
 ;
 
-list_of_specparam_assignments :
+/*list_of_specparam_assignments :
 	specparam_assignment comma_specparam_assignment_list
 		{$1::$2}
 ;
@@ -915,7 +948,7 @@ comma_specparam_assignment_list :
 	| COMMA specparam_assignment comma_specparam_assignment_list
 		{$2::$3}
 ;
-
+*/
 list_of_variable_identifiers :
 	variable_type comma_variable_type_list
 		{$1::$2}
@@ -945,15 +978,15 @@ equ1_expression_opt :
 
 comma_port_identifier_equ1_expression_opt_list :
 	{[]}
-	| comma_port_identifier_equ1_expression_opt_list COMMA port_identifier_equ1_expression_opt 
-		{$1@[$3]}
+	| COMMA port_identifier_equ1_expression_opt comma_port_identifier_equ1_expression_opt_list
+		{$2::$3}
 ;
 
 	
 
 /*A.2.4 Declaration assignments*/
 defparam_assignment :
-	hierarchical_identifier EQU1 mintypmax_expression
+	hierarchical_parameter_identifier EQU1 mintypmax_expression
 		{T_defparam_assignment($1,$3)}
 ;
 
@@ -967,7 +1000,7 @@ param_assignment :
 		{T_param_assignment($1,$3)}
 ;
 
-specparam_assignment :
+/*specparam_assignment :
 	specparam_identifier EQU1 mintypmax_expression
 		{T_specparam_assignment($1,$3)}
 	| pulse_control_specparam
@@ -981,7 +1014,6 @@ pulse_control_specparam :
 	| KEY_PATHPULSE specify_input_terminal_descriptor DOLLOR specify_output_terminal_descriptor EQU1 LPARENT reject_limit_value comma_error_limit_value_opt RPARENT
 		{T_specparam_assignment_pulse2($2,$4,$7,$8)}
 ;
-
 comma_error_limit_value_opt :
 	{T_mintypmax_expression_NOSPEC}
 	| COMMA error_limit_value {$2}
@@ -1002,6 +1034,7 @@ limit_value :
 		{$1}
 ;
 
+*/
 
 /*A.2.5 Declaration ranges*/
 dimension :
@@ -1017,12 +1050,12 @@ range :
 
 /*A.2.6 Function declarations*/
 function_declaration :
-	KEY_FUNCTION automatic_opt function_range_or_type function_identifier SEMICOLON
+	KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier SEMICOLON
 	function_item_declaration function_item_declaration_list
 	function_statement
 	KEY_ENDFUNCTION
 		{T_function_declaration_1($2,$3,$4,$6::$7,$8)}	
-| KEY_FUNCTION automatic_opt function_range_or_type function_identifier LPARENT function_port_list RPARENT SEMICOLON
+| KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier LPARENT function_port_list RPARENT SEMICOLON
 	 block_item_declaration_list
 	function_statement
 	KEY_ENDFUNCTION
@@ -1032,13 +1065,18 @@ function_declaration :
 
 function_item_declaration_list :
 	{[]}
-	| function_item_declaration_list function_item_declaration
-		{$1@[$2]}
+	| function_item_declaration function_item_declaration_list
+		{$1::$2}
 ;
 
 automatic_opt :
 	{T_automatic_false}
 	| KEY_AUTOMATIC {T_automatic_true}
+;
+
+function_range_or_type_opt :
+	{T_function_range_or_type_NOSPEC}
+	| function_range_or_type {$1}
 ;
 
 function_item_declaration :
@@ -1095,13 +1133,13 @@ task_declaration :
 
 task_item_declaration_list :
 	{[]}
-	| task_item_declaration_list task_item_declaration  {$1@[$2]}
+	| task_item_declaration task_item_declaration_list {$1::$2}
 ;
 
 block_item_declaration_list :
 	{[]}
-	|  block_item_declaration_list block_item_declaration
-		{$1@[$2]}
+	| block_item_declaration block_item_declaration_list
+		{$1::$2}
 ;
 
 task_item_declaration :
@@ -1230,21 +1268,21 @@ A.3.1 Primitive instantiation and instances*/
 gate_instantiation :
 	cmos_switchtype delay3_opt cmos_switch_instance comma_cmos_switch_instance_list SEMICOLON
 		{T_gate_instantiation_cmos($1,$2,$3::$4)}
-	| enable_gatetype charge_drive_pull_strength delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
+	| enable_gatetype drive_strength_opt delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
 		{T_gate_instantiation_enable($1,$2,$3,$4::$5)}
 	| mos_switchtype delay3_opt mos_switch_instance comma_mos_switch_instance_list SEMICOLON
 		{T_gate_instantiation_mos($1,$2,$3::$4)}
-	| n_input_gatetype charge_drive_pull_strength delay2_opt n_input_gate_instance comma_n_input_gate_instance_list SEMICOLON
+	| n_input_gatetype drive_strength_opt delay2_opt n_input_gate_instance comma_n_input_gate_instance_list SEMICOLON
 		{T_gate_instantiation_input($1,$2,$3,$4::$5)}
-	| n_output_gatetype charge_drive_pull_strength delay2_opt n_output_gate_instance comma_n_output_gate_instance_list SEMICOLON
+	| n_output_gatetype drive_strength_opt delay2_opt n_output_gate_instance comma_n_output_gate_instance_list SEMICOLON
 		{T_gate_instantiation_output($1,$2,$3,$4::$5)}
 	| pass_en_switchtype delay2_opt pass_enable_switch_instance comma_pass_enable_switch_instance_list SEMICOLON
 		{T_gate_instantiation_pass_en($1,$2,$3::$4)}
 	| pass_switchtype pass_switch_instance comma_pass_switch_instance_list SEMICOLON
 		{T_gate_instantiation_pass($1,$2::$3)}
-	| KEY_PULLDOWN charge_drive_pull_strength pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+	| KEY_PULLDOWN pulldown_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
 		{T_gate_instantiation_pulldown($2,$3::$4)}
-	| KEY_PULLUP charge_drive_pull_strength pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+	| KEY_PULLUP pullup_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
 		{T_gate_instantiation_pullup($2,$3::$4)}
 ;
 
@@ -1302,6 +1340,16 @@ delay2_opt :
 	| delay2 {$1}
 ;
 
+pulldown_strength_opt :
+	{T_pulldown_strength_NOSPEC}
+	| pulldown_strength {$1}
+;
+
+pullup_strength_opt :
+	{T_pullup_strength_NOSPEC}
+	| pullup_strength {$1}
+;
+
 cmos_switch_instance :
 	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA ncontrol_terminal COMMA pcontrol_terminal RPARENT
 		{T_cmos_switch_instance($1,$3,$5,$7,$9)}
@@ -1329,8 +1377,14 @@ n_input_gate_instance :
 ;
 
 n_output_gate_instance :
-	name_of_gate_instance_opt LPARENT expression comma_expression_list RPARENT
-		{T_n_output_gate_instance($1,$3::$4)}
+	name_of_gate_instance_opt LPARENT output_terminal comma_output_terminal_list COMMA input_terminal RPARENT
+		{T_n_output_gate_instance($1,$3,$4,$6)}
+;
+
+comma_output_terminal_list :
+	{[]}
+	| COMMA output_terminal comma_output_terminal_list
+		{$2::$3}
 ;
 
 pass_switch_instance :
@@ -1356,18 +1410,34 @@ name_of_gate_instance :
 
 /*A.3.2 Primitive strengths*/
 
+pulldown_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_pulldown_strength01($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_pulldown_strength10($2,$4)}
+	| LPARENT strength0 RPARENT
+		{T_pulldown_strength0($2)}
+;
+
+pullup_strength :
+	LPARENT strength0 COMMA strength1 RPARENT
+		{T_pullup_strength01($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT
+		{T_pullup_strength10($2,$4)}
+	| LPARENT strength1 RPARENT
+		{T_pullup_strength1($2)}
+;
+
 
 /*A.3.3 Primitive terminals*/
 enable_terminal : expression {$1} ;
+inout_terminal : net_lvalue {$1} ;
 input_terminal : expression {$1} ;
 ncontrol_terminal : expression {$1} ;
+output_terminal : net_lvalue {$1} ;
 pcontrol_terminal : expression {$1};
 
-/*inout_terminal : net_lvalue {$1} ;
-output_terminal : net_lvalue {$1} ;*/
 
-inout_terminal : expression {$1} ;
-output_terminal : expression {$1} ;
 
 /*A.3.4 Primitive gate and switch types*/
 
@@ -1421,8 +1491,8 @@ pass_switchtype :
 A.4.1 Module instantiation*/
 
 module_instantiation :
-	identifier charge_drive_pull_strength delay2_opt parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
-		{T_module_instantiation($1,$2,$3,$4,$5::$6)}
+	module_identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
+		{T_module_instantiation($1,$2,$3::$4)}
 ;
 
 comma_module_instance_list :
@@ -1475,13 +1545,13 @@ mintypmax_expression_opt :
 ;
 
 module_instance :
-	name_of_module_instance_opt LPARENT list_of_port_connections RPARENT
+	name_of_module_instance LPARENT list_of_port_connections_opt RPARENT
 		{T_module_instance($1,$3)}
 ;
 
-name_of_module_instance_opt  :
-	{T_name_of_module_instance_NOSPEC}
-	| name_of_module_instance {$1}
+list_of_port_connections_opt :
+	{T_list_of_port_connections_NOSPEC}
+	| list_of_port_connections {$1}
 ;
 
 name_of_module_instance :
@@ -1552,7 +1622,7 @@ comma_genvar_identifier_list :
 ;
 
 loop_generate_construct :
-	KEY_FOR LPARENT genvar_initialization SEMICOLON expression SEMICOLON genvar_iteration RPARENT generate_block
+	KEY_FOR LPARENT genvar_initialization SEMICOLON genvar_expression SEMICOLON genvar_iteration RPARENT generate_block
 		{T_loop_generate_construct($3,$5,$7,$9)}
 ;
 
@@ -1561,10 +1631,61 @@ genvar_initialization :
 		{T_genvar_initialization($1,$3)}
 ;
 
+genvar_expression :
+	genvar_primary
+		{T_genvar_expression_primary($1)}
+	| OP2_ADD  attribute_instance_list genvar_primary %prec OP1_ADD {T_genvar_expression_1op(T_unary_operator_ADD,$2,$3)}
+	| OP2_SUB  attribute_instance_list genvar_primary %prec OP1_SUB {T_genvar_expression_1op(T_unary_operator_SUB,$2,$3)}
+	| OP2_AND  attribute_instance_list genvar_primary %prec OP1_AND {T_genvar_expression_1op(T_unary_operator_REDUCE_AND,$2,$3)}
+	| OP2_OR   attribute_instance_list genvar_primary %prec OP1_OR  {T_genvar_expression_1op(T_unary_operator_REDUCE_OR,$2,$3)}
+	| OP2_XOR  attribute_instance_list genvar_primary %prec OP1_XOR {T_genvar_expression_1op(T_unary_operator_REDUCE_XOR,$2,$3)}
+	| OP2_XNOR attribute_instance_list genvar_primary %prec OP1_XNOR{T_genvar_expression_1op(T_unary_operator_REDUCE_XNOR,$2,$3)}
+	| OP1_LOGIC_NEG   attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_LOGIC_NEG  ,$2,$3)}
+	| OP1_BITWISE_NEG attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_BITWISE_NEG,$2,$3)}
+	| OP1_REDUCE_NAND attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NAND,$2,$3)}
+	| OP1_REDUCE_NOR  attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NOR ,$2,$3)}
+	| genvar_expression OP2_MULTIPLE              attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MUL                  ,$3,$4)}
+	| genvar_expression OP2_DIV                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_DIV                  ,$3,$4)}
+	| genvar_expression OP2_MOD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MOD                  ,$3,$4)}
+	| genvar_expression OP2_EQU2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU2                 ,$3,$4)}
+	| genvar_expression OP2_NEQ2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ2                 ,$3,$4)}
+	| genvar_expression OP2_EQU3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU3                 ,$3,$4)}
+	| genvar_expression OP2_NEQ3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ3                 ,$3,$4)}
+	| genvar_expression OP2_POWER                 attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_POWER                ,$3,$4)}
+	| genvar_expression OP2_LT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LT                   ,$3,$4)}
+	| genvar_expression OP2_LE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LE                   ,$3,$4)}
+	| genvar_expression OP2_GT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GT                   ,$3,$4)}
+	| genvar_expression OP2_GE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GE                   ,$3,$4)}
+	| genvar_expression OP2_LOGICAL_RIGHTSHIFT    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_RIGHTSHIFT   ,$3,$4)}
+	| genvar_expression OP2_LOGICAL_LEFTSHIFT     attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_LEFTSHIFT    ,$3,$4)}
+	| genvar_expression OP2_ARITHMETIC_RIGHTSHIFT attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_RIGHTSHIFT,$3,$4)}
+	| genvar_expression OP2_ARITHMETIC_LEFTSHIFT  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_LEFTSHIFT ,$3,$4)}
+	| genvar_expression OP2_ADD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ADD                  ,$3,$4)}
+	| genvar_expression OP2_SUB                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_SUB                  ,$3,$4)}
+	| genvar_expression OP2_AND                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND                  ,$3,$4)}
+	| genvar_expression OP2_OR                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR                   ,$3,$4)}
+	| genvar_expression OP2_AND2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND2                 ,$3,$4)}
+	| genvar_expression OP2_OR2                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR2                  ,$3,$4)}
+	| genvar_expression OP2_XOR                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XOR                  ,$3,$4)}
+	| genvar_expression OP2_XNOR                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XNOR                 ,$3,$4)}
+	| genvar_expression OP2_QUESTION attribute_instance_list genvar_expression COLON genvar_expression
+		{T_genvar_expression_sel($1,$3,$4,$6)}
+;
+
 genvar_iteration :
-	genvar_identifier EQU1 expression
+	genvar_identifier EQU1 genvar_expression
 		{T_genvar_iteration($1,$3)}
 ;
+
+genvar_primary :
+	primary
+		{T_genvar_primary_const($1)}
+	| genvar_identifier
+		{T_genvar_primary_id($1)}
+;
+
+
+
 
 conditional_generate_construct :
 	if_generate_construct
@@ -1708,27 +1829,32 @@ udp_reg_declaration :
 /*A.5.3 UDP body*/
 
 udp_body : 
-	udp_initial_statement_opt KEY_TABLE udp_entry udp_entry_list KEY_ENDTABLE
-		{T_udp_body($1,$3::$4)}
+	combinational_body 
+		{T_udp_body_comb($1)}
+	| sequential_body
+		{T_udp_body_seq($1)}
 ;
 
-udp_entry_list :
+
+combinational_body :
+	KEY_TABLE combinational_entry combinational_entry_list KEY_ENDTABLE
+		{$2::$3}
+;
+
+combinational_entry_list :
 	{[]}
-	|  udp_entry_list udp_entry
-		{$1@[$2]}
+	| combinational_entry combinational_entry_list
+		{$1::$2}
 ;
 
-udp_entry :
-	level_input_list colon_output_symbol_next_state_current_state_list SEMICOLON
-		{T_udp_entry_comb($1,$2)}
-	| edge_input_list colon_output_symbol_next_state_current_state_list SEMICOLON
-		{T_udp_entry_seq($1,$2)}
+combinational_entry :
+	level_input_list COLON output_symbol SEMICOLON
+		{T_combinational_entry($1,$3)}
 ;
 
-colon_output_symbol_next_state_current_state_list :
-	{[]}
-	| colon_output_symbol_next_state_current_state_list COLON output_symbol_next_state_current_state 
-		{$1@[$3]}
+sequential_body :
+	udp_initial_statement_opt KEY_TABLE sequential_entry sequential_entry_list KEY_ENDTABLE
+		{T_sequential_body($1,$3::$4)}
 ;
 
 udp_initial_statement_opt :
@@ -1737,6 +1863,12 @@ udp_initial_statement_opt :
 		{$1}
 ;
 
+
+sequential_entry_list :
+	{[]}
+	| sequential_entry sequential_entry_list
+		{$1::$2}
+;
 
 udp_initial_statement :
 	KEY_INITIAL output_port_identifier EQU1 init_val SEMICOLON
@@ -1754,6 +1886,16 @@ init_val :
 		{T_init_val_unsigned(get1 $1, get2 $1, get3 $1)}
 ;
 
+sequential_entry :
+	seq_input_list COLON current_state COLON next_state SEMICOLON
+		{T_sequential_entry($1,$3,$5)}
+;
+
+seq_input_list :
+	level_input_list 
+		{T_seq_input_list_level($1)}
+	| edge_input_list
+		{T_seq_input_list_edge($1)}
 ;
 
 level_input_list :
@@ -1799,22 +1941,39 @@ level_symbol :
 	| OP2_QUESTION {T_level_symbol_QUESTION(get1 $1, get2 $1)}
 ;
 
-output_symbol_next_state_current_state :
-	UNSIGNED_NUMBER {T_output_symbol_next_state_current_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
-	| SIMPLE_IDENTIFIER	{T_output_symbol_next_state_current_state_SIMPLE_IDENTIFIER(get1 $1, get2 $1, get3 $1)}
-	| OP2_SUB					{T_output_symbol_next_state_current_state_OP2_SUB(get1 $1, get2 $1, get3 $1)}
-	| OP2_QUESTION		{T_output_symbol_next_state_current_state_OP2_QUESTION(get1 $1, get2 $1, get3 $1)}
+output_symbol :
+	UNSIGNED_NUMBER 
+	 {T_output_symbol_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  {T_output_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
 ;
+
+next_state :
+	UNSIGNED_NUMBER 
+	 {T_next_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  {T_next_state_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP2_SUB  {T_next_state_SUB(get1 $1, get2 $1)}
+;
+
+current_state :
+	UNSIGNED_NUMBER 
+	 {T_current_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER  
+		{T_current_state_SIMID(get1 $1, get2 $1, get3 $1)}
+	| OP2_QUESTION 
+		{T_current_state_OP2_QUESTION(get1 $1, get2 $1)}
+;
+	
+
+
 
 
 /*A.5.4 UDP instantiation*/
-/*conflict with module_instantiation
-merged to it*/
-/*udp_instantiation :
+udp_instantiation :
 	udp_identifier drive_strength_opt delay2_opt
 		udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
+
 comma_udp_instance_list :
 	{[]}
 	| COMMA udp_instance comma_udp_instance_list
@@ -1832,46 +1991,43 @@ name_of_udp_instance_opt :
 			{$1}
 ;
 
-name_of_udp_instance :
-	udp_instance_identifier range_opt
-		{T_name_of_udp_instance($1,$2)}
-;
-*/
-
 comma_input_terminal_list :
 	{[]}
 	| COMMA input_terminal comma_input_terminal_list
 		{$2::$3}
 ;
 
+name_of_udp_instance :
+	udp_instance_identifier range_opt
+		{T_name_of_udp_instance($1,$2)}
+;
 
 /*A.6 Behavioral statements
 A.6.1 Continuous assignment statements*/
 
 
 continuous_assign :
-	KEY_ASSIGN charge_drive_pull_strength delay3_opt list_of_variable_assignments SEMICOLON
+	KEY_ASSIGN drive_strength_opt delay3_opt list_of_net_assignments SEMICOLON
 		{T_continuous_assign($2,$3,$4)}
 ;
 
-list_of_variable_assignments :
-	variable_assignment comma_variable_assignment_list
+list_of_net_assignments :
+	net_assignment comma_net_assignment_list
 		{$1::$2}
 ;
 
-comma_variable_assignment_list :
+comma_net_assignment_list :
 	{[]}
-	| COMMA variable_assignment comma_variable_assignment_list
+	| COMMA net_assignment comma_net_assignment_list
 		{$2::$3}
 ;
 
-/*merged with variable_assignment*/
 
-/*net_assignment :
+net_assignment :
 	net_lvalue EQU1 expression
 		{T_net_assignment($1,$3)}
 ;
-*/
+
 /*A.6.2 Procedural blocks and assignments*/
 
 initial_construct :
@@ -1907,8 +2063,12 @@ procedural_continuous_assignments :
 		{T_procedural_continuous_assignments_deassign($2)}
 	| KEY_FORCE variable_assignment
 		{T_procedural_continuous_assignments_force1($2)}
+	| KEY_FORCE net_assignment
+		{T_procedural_continuous_assignments_force2($2)}
 	| KEY_RELEASE variable_lvalue
 		{T_procedural_continuous_assignments_release1($2)}
+	| KEY_RELEASE net_lvalue
+		{T_procedural_continuous_assignments_release2($2)}
 ;
 
 variable_assignment :
@@ -1920,26 +2080,26 @@ variable_assignment :
 /*A.6.3 Parallel and sequential blocks*/
 
 par_block :
-	KEY_FORK colon_block_identifier_block_item_declaration_list_opt
+	KEY_FORK comma_block_identifier_block_item_declaration_list_opt
 	statement_list
 	KEY_JOIN
 		{T_par_block($3)}
 ;
 
-colon_block_identifier_block_item_declaration_list_opt :
+comma_block_identifier_block_item_declaration_list_opt :
 	{0}
-	| COLON block_identifier block_item_declaration_list
+	| COMMA block_identifier block_item_declaration_list
 		{0}
 ;
 
 statement_list :
 	{[]}
-	| statement_list statement 
-		{$1@[$2]}
+	| statement statement_list
+		{$1::$2}
 ;
 
 seq_block :
-	KEY_BEGIN colon_block_identifier_block_item_declaration_list_opt 
+	KEY_BEGIN comma_block_identifier_block_item_declaration_list_opt 
 	statement_list
 	KEY_END
 		{T_seq_block($3)}
@@ -2011,13 +2171,15 @@ delay_or_event_control :
 
 
 disable_statement :
-	KEY_DISABLE hierarchical_identifier SEMICOLON
-		{T_disable_statement($2)}
+	KEY_DISABLE hierarchical_task_identifier SEMICOLON
+		{T_disable_statement_task($2)}
+	| KEY_DISABLE hierarchical_block_identifier SEMICOLON
+		{T_disable_statement_block($2)}
 ;
 
 
 event_control :
-	AT hierarchical_identifier
+	AT hierarchical_event_identifier
 		{T_event_control_eventid($2)}
 	| AT LPARENT event_expression RPARENT
 		{T_event_control_event_exp($3)}
@@ -2028,8 +2190,19 @@ event_control :
 ;
 
 event_trigger :
-	IMPLY hierarchical_identifier  SEMICOLON
-		{T_event_trigger($2)}
+	IMPLY hierarchical_event_identifier square_expression_square_list SEMICOLON
+		{T_event_trigger($2,$3)}
+;
+
+square_expression_square_list :
+	{[]}
+	| square_expression_square square_expression_square_list
+		{$1::$2}
+;
+
+square_expression_square :
+	LSQUARE expression RSQUARE
+		{$2}
 ;
 
 event_expression :
@@ -2069,10 +2242,10 @@ conditional_statement :
 	KEY_IF LPARENT expression RPARENT
 	statement_or_null else_statement_or_null_opt
 		{T_conditional_statement_ifelse($3,$5,$6)}
-/*	| KEY_IF LPARENT expression RPARENT statement_or_null
+	| KEY_IF LPARENT expression RPARENT statement_or_null
 		else_if_lp_expression_rp_statement_or_null_list
 		else_statement_or_null_opt
-		{T_conditional_statement_ifelseif($3,$5,$6,$7)}*/
+		{T_conditional_statement_ifelseif($3,$5,$6,$7)}
 ;
 
 else_statement_or_null_opt :
@@ -2082,7 +2255,7 @@ else_statement_or_null_opt :
 ;
 
 
-/*else_if_lp_expression_rp_statement_or_null_list :
+else_if_lp_expression_rp_statement_or_null_list :
 	{[]}
 	| else_if_lp_expression_rp_statement_or_null else_if_lp_expression_rp_statement_or_null_list
 		{$1::$2}
@@ -2093,7 +2266,7 @@ else_if_lp_expression_rp_statement_or_null :
 	KEY_ELSE KEY_IF LPARENT expression RPARENT statement_or_null
 		{T_elseif($4,$6)}
 ;
-*/
+
 
 
 
@@ -2129,8 +2302,8 @@ case_item :
 
 comma_expression_list :
 	{[]}
-	| comma_expression_list COMMA expression 
-			{$1@[$3]}
+	| COMMA expression comma_expression_list
+			{$2::$3}
 ;
 
 /*A.6.8 Looping statements*/
@@ -2167,7 +2340,7 @@ lp_expression_opt_comma_expression_list_rp :
 
 
 task_enable :
-	hierarchical_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
+	hierarchical_task_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
 		{T_task_enable($1,$2)}
 ;
 
@@ -2175,7 +2348,7 @@ task_enable :
 
 /*A.7 Specify section
 A.7.1 Specify block declaration*/
-specify_block :
+/*specify_block :
 	KEY_SPECIFY specify_item_list KEY_ENDSPECIFY
 		{T_specify_block($2)}
 ;
@@ -2196,8 +2369,8 @@ specify_item :
 		{T_specify_item_showcancelled($1)}
 	| path_declaration
 		{T_specify_item_path($1)}
-/*	| system_timing_check
-		{T_specify_item_system($1)}*/
+	| system_timing_check
+		{T_specify_item_system($1)}
 ;
 
 
@@ -2218,9 +2391,9 @@ showcancelled_declaration :
 ;
 
 
-
+*/
 /*A.7.2 Specify path declarations*/
-path_declaration :
+/*path_declaration :
 	simple_path_declaration SEMICOLON
 		{T_path_declaration_simple($1)}
 	| edge_sensitive_path_declaration SEMICOLON
@@ -2278,9 +2451,9 @@ comma_specify_output_terminal_descriptor_list :
 		{$2::$3}
 ;
 
-
+*/
 /*A.7.3 Specify block terminals*/
-specify_input_terminal_descriptor :
+/*specify_input_terminal_descriptor :
 	input_identifier rsq_range_expression_rsq_opt
 		{T_specify_input_terminal_descriptor($1,$2)}
 ;
@@ -2306,9 +2479,9 @@ output_identifier :
 	identifier {$1}
 ;
 
-
+*/
 /*A.7.4 Specify path delays*/
-path_delay_value :
+/*path_delay_value :
 	list_of_path_delay_expressions
 		{$1}
 	| LPARENT list_of_path_delay_expressions RPARENT
@@ -2368,9 +2541,9 @@ edge_identifier :
 
 
 state_dependent_path_declaration :
-	KEY_IF LPARENT expression RPARENT simple_path_declaration
+	KEY_IF LPARENT module_path_expression RPARENT simple_path_declaration
 		{T_state_dependent_path_declaration_simple($3,$5)}
-	| KEY_IF LPARENT expression RPARENT edge_sensitive_path_declaration
+	| KEY_IF LPARENT module_path_expression RPARENT edge_sensitive_path_declaration
 		{T_state_dependent_path_declaration_edge($3,$5)}
 	| KEY_IFNONE simple_path_declaration
 		{T_state_dependent_path_declaration_ifnone($2)}
@@ -2382,7 +2555,7 @@ polarity_operator :
 	| OP2_SUB {T_polarity_operator_SUB}
 ;
 
-
+*/
 /*A.7.5 System timing checks
 A.7.5.1 System timing check commands*/
 /* no time to do*/
@@ -2498,6 +2671,22 @@ concatenation :
 		{T_concatenation($2::$3)}
 ;
 
+module_path_concatenation : 
+	LHUA module_path_expression comma_module_path_expression_list RHUA
+		{T_module_path_concatenation($2::$3)}
+;
+
+comma_module_path_expression_list :
+	{[]}
+	| COMMA module_path_expression comma_module_path_expression_list
+		{$2::$3}
+;
+
+
+module_path_multiple_concatenation :
+	LHUA expression module_path_concatenation RHUA
+		{T_module_path_multiple_concatenation($2,$3)}
+;
 
 multiple_concatenation :
 	LHUA  expression concatenation RHUA
@@ -2508,7 +2697,7 @@ multiple_concatenation :
 /*A.8.2 Function calls*/
 
 function_call :
-	hierarchical_identifier attribute_instance_list
+	hierarchical_function_identifier attribute_instance_list
 LPARENT expression comma_expression_list RPARENT
 		{T_function_call($1,$2,$4::$5)}
 ;
@@ -2530,6 +2719,11 @@ lp_expression_comma_expression_list_rp_op :
 /*A.8.3 Expressions*/
 base_expression :
 	expression {$1}
+;
+
+conditional_expression :
+	expression1 OP2_QUESTION attribute_instance_list expression2 COLON expression3
+		{T_conditional_expression($1,$3,$4,$6)}
 ;
 
 dimension_expression :
@@ -2574,9 +2768,13 @@ expression :
 	| expression OP2_OR2                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_OR2                  ,$3,$4)}
 	| expression OP2_XOR                   attribute_instance_list expression {T_expression_op2($1,T_binary_operator_XOR                  ,$3,$4)}
 	| expression OP2_XNOR                  attribute_instance_list expression {T_expression_op2($1,T_binary_operator_XNOR                 ,$3,$4)}
-	| expression OP2_QUESTION attribute_instance_list expression COLON expression
-		{T_expression_condition($1,$3,$4,$6)}
+	| conditional_expression
+		{T_expression_condition($1)}
 ;
+
+expression1 : expression {$1};
+expression2 : expression {$1};
+expression3 : expression {$1};
 
 lsb_expression :
 	expression
@@ -2590,7 +2788,43 @@ mintypmax_expression :
 		{T_mintypmax_expression_3($1,$3,$5)}
 ;
 
+module_path_conditional_expression :
+	module_path_expression OP2_QUESTION attribute_instance_list
+	module_path_expression COLON module_path_expression
+		{T_module_path_conditional_expression($1,$3,$4,$6)}
+;
 
+
+module_path_expression :
+	module_path_primary
+		{T_module_path_expression_prim($1)}
+	| OP2_AND  attribute_instance_list module_path_primary %prec OP1_AND {T_module_path_expression_op1(T_unary_operator_REDUCE_AND ,$2,$3)}
+	| OP2_OR   attribute_instance_list module_path_primary %prec OP1_OR  {T_module_path_expression_op1(T_unary_operator_REDUCE_OR  ,$2,$3)}
+	| OP2_XOR  attribute_instance_list module_path_primary %prec OP1_XOR {T_module_path_expression_op1(T_unary_operator_REDUCE_XOR ,$2,$3)}
+	| OP2_XNOR attribute_instance_list module_path_primary %prec OP1_XNOR{T_module_path_expression_op1(T_unary_operator_REDUCE_XNOR,$2,$3)}
+	| OP1_LOGIC_NEG   attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_LOGIC_NEG  ,$2,$3)}
+	| OP1_BITWISE_NEG attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_BITWISE_NEG,$2,$3)}
+	| OP1_REDUCE_NAND attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NAND       ,$2,$3)}
+	| OP1_REDUCE_NOR  attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NOR        ,$2,$3)}
+	| module_path_expression OP2_EQU2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_EQU2,$3,$4)}
+	| module_path_expression OP2_NEQ2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_NEQ2,$3,$4)}
+	| module_path_expression OP2_AND2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND2,$3,$4)}
+	| module_path_expression OP2_OR2  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR2 ,$3,$4)}
+	| module_path_expression OP2_AND  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND1,$3,$4)}
+	| module_path_expression OP2_OR   attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR1 ,$3,$4)}
+	| module_path_expression OP2_XOR  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XOR ,$3,$4)}
+	| module_path_expression OP2_XNOR attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XNOR,$3,$4)}
+	| module_path_conditional_expression
+		{T_module_path_expression_sel($1)}
+;
+
+
+module_path_mintypmax_expression :
+	module_path_expression
+		{T_module_path_mintypmax_expression_1($1)}
+	| module_path_expression COLON module_path_expression COLON module_path_expression
+		{T_module_path_mintypmax_expression_3($1,$3,$5)}
+;
 
 msb_expression :
 	expression
@@ -2618,11 +2852,30 @@ width_expression :
 /*A.8.4 Primaries*/
 
 
+module_path_primary :
+	number
+		{T_module_path_primary_num($1)}
+	| identifier
+		{T_module_path_primary_id($1)}
+	| module_path_concatenation
+		{T_module_path_primary_concat($1)}
+	| module_path_multiple_concatenation
+		{T_module_path_primary_mul_concat($1)}
+	| function_call
+		{T_module_path_primary_func($1)}
+	| system_function_call
+		{T_module_path_primary_sysfunc($1)}
+	| LPARENT module_path_mintypmax_expression RPARENT
+		{T_module_path_primary_mintypmax($2)}
+;
+
 primary :
 	number
 		{T_primary_num($1)}
-	| hierarchical_identifier   
-		{T_primary_idexp($1)}
+	| hierarchical_identifier 
+		{T_primary_id($1)}
+	| hierarchical_identifier  lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+		{T_primary_idexp($1,$2,$4)}
 	| concatenation
 		{T_primary_concat($1)}
 	| multiple_concatenation
@@ -2640,20 +2893,25 @@ primary :
 
 lsq_expression_rsq_list :
 	{[]}
-	| lsq_expression_rsq_list LSQUARE expression RSQUARE 
-		{$1@[$3]}
+	| LSQUARE expression RSQUARE lsq_expression_rsq_list
+		{$2::$4}
 ;
 
 
 /*A.8.5 Expression left-side values*/
-/*merged with variable_lvalue*/
-/*net_lvalue :
-	hierarchical_identifier
+net_lvalue :
+	hierarchical_net_identifier
 		{T_net_lvalue_id($1)}
-	| hierarchical_identifier lsq_expression_rsq_list 
-		{T_net_lvalue_idexp($1,$2)}
+	| hierarchical_net_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+		{T_net_lvalue_idexp($1,$2,$4)}
 	| LHUA net_lvalue comma_net_lvalue_list RHUA
 		{T_net_lvalue_lvlist($2::$3)}
+;
+
+lsq_expression_rsq_list :
+	{[]}
+	| LSQUARE expression RSQUARE lsq_expression_rsq_list
+		{$2::$4}
 ;
 
 comma_net_lvalue_list :
@@ -2661,10 +2919,12 @@ comma_net_lvalue_list :
 	| COMMA net_lvalue comma_net_lvalue_list
 		{$2::$3}
 ;
-*/
+
 variable_lvalue :
-	hierarchical_identifier 
-		{T_variable_lvalue_idexp($1)}
+	hierarchical_variable_identifier 
+		{T_variable_lvalue_id($1)}
+	| hierarchical_variable_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+		{T_variable_lvalue_idexp($1,$2,$4)}
 	| LHUA variable_lvalue comma_variable_lvalue_list  RHUA
 		{T_variable_lvalue_vlvlist($2::$3)}
 ;		
@@ -2720,40 +2980,52 @@ attr_name :
 
 
 /*A.9.2 Comments*/
+comment :
+	COMMENT {$1}
+;
 
 /*A.9.3 Identifiers*/
 block_identifier : identifier {$1};
-/*cell_identifier : identifier {$1};*/
+cell_identifier : identifier {$1};
 config_identifier : identifier {$1};
 event_identifier : identifier {$1};
 function_identifier : identifier {$1};
 gate_instance_identifier : identifier {$1};
 generate_block_identifier : identifier {$1};
 genvar_identifier : identifier {$1};
+hierarchical_block_identifier : hierarchical_identifier {$1};
+hierarchical_event_identifier : hierarchical_identifier {$1};
+hierarchical_function_identifier : hierarchical_identifier {$1};
 
 
-hierarchical_identifier :
-	identifier_lsq_expression_rsq_list {T_hierarchical_identifier([$1])}
-	|  hierarchical_identifier PERIOD identifier_lsq_expression_rsq_list
-		{
-			match $1 with
-			T_hierarchical_identifier(lst) -> 
-				T_hierarchical_identifier(lst @ [$3])
-		}
+hierarchical_identifier : 
+	identifier_lsq_expression_rsq_opt_list  identifier
+		{T_hierarchical_identifier($1,$2)}
+;
+identifier_lsq_expression_rsq_opt_list :
+	{[]}
+	| identifier_lsq_expression_rsq_opt identifier_lsq_expression_rsq_opt_list
+		{$1::$2}
 ;
 
-identifier_lsq_expression_rsq_list :
-	identifier lsq_expression_rsq_list 
-		{T_identifier_lsq_expression_rsq($1,$2)}
+identifier_lsq_expression_rsq_opt :
+	identifier PERIOD
+		{T_identifier_lsq_expression_rsq($1,T_expression_NOSPEC)}
+	| identifier LSQUARE expression RSQUARE PERIOD
+		{T_identifier_lsq_expression_rsq($1,$3)}
 ;
 
+hierarchical_net_identifier : hierarchical_identifier {$1};
+hierarchical_parameter_identifier : hierarchical_identifier {$1};
+hierarchical_variable_identifier : hierarchical_identifier {$1};
+hierarchical_task_identifier : hierarchical_identifier {$1};
 
 identifier :
 	SIMPLE_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
 	| ESCAPED_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
 ;
 
-/*inout_port_identifier : identifier {$1};*/
+inout_port_identifier : identifier {$1};
 input_port_identifier : identifier {$1};
 instance_identifier : identifier {$1};
 library_identifier : identifier {$1};
@@ -2773,8 +3045,8 @@ system_function_identifier :
 
 
 task_identifier : identifier {$1};
-/*terminal_identifier : identifier {$1};
-text_macro_identifier : identifier {$1};*/
+terminal_identifier : identifier {$1};
+text_macro_identifier : identifier {$1};
 topmodule_identifier : identifier {$1};
 udp_identifier : identifier {$1};
 udp_instance_identifier : identifier {$1};
