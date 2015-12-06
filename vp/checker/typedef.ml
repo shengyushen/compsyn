@@ -294,12 +294,12 @@ and pass_switchtype =
 	  T_pass_switchtype_TRAN  
 	| T_pass_switchtype_RTRAN 
 and module_instantiation =
-	T_module_instantiation of identifier*parameter_value_assignment*(module_instance list)
-	| T_udp_instantiation of identifier*charge_drive_pull_strength*delay2*(udp_instance list)
+	T_module_instantiation of identifier*charge_drive_pull_strength*delay2*parameter_value_assignment*(module_instance list)
 and	module_instance =
 	T_module_instance of name_of_module_instance*list_of_port_connections
 and name_of_module_instance =
-	T_name_of_module_instance of identifier*range
+	T_name_of_module_instance_NOSPEC
+	| T_name_of_module_instance of identifier*range
 and parameter_value_assignment =
 	T_parameter_value_assignment_NOSPEC
 	| T_parameter_value_assignment_order of (expression list)

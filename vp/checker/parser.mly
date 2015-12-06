@@ -1421,10 +1421,8 @@ pass_switchtype :
 A.4.1 Module instantiation*/
 
 module_instantiation :
-	identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
-		{T_module_instantiation($1,$2,$3::$4)}
-	| identifier charge_drive_pull_strength delay2_opt udp_instance comma_udp_instance_list  ;
-		{T_udp_instantiation($1,$2,$3,$4::$5)}
+	identifier charge_drive_pull_strength delay2_opt parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
+		{T_module_instantiation($1,$2,$3,$4,$5::$6)}
 ;
 
 comma_module_instance_list :
@@ -1477,8 +1475,13 @@ mintypmax_expression_opt :
 ;
 
 module_instance :
-	name_of_module_instance LPARENT list_of_port_connections RPARENT
+	name_of_module_instance_opt LPARENT list_of_port_connections RPARENT
 		{T_module_instance($1,$3)}
+;
+
+name_of_module_instance_opt  :
+	{T_name_of_module_instance_NOSPEC}
+	| name_of_module_instance {$1}
 ;
 
 name_of_module_instance :
@@ -1812,7 +1815,6 @@ merged to it*/
 		udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
-*/
 comma_udp_instance_list :
 	{[]}
 	| COMMA udp_instance comma_udp_instance_list
@@ -1830,16 +1832,18 @@ name_of_udp_instance_opt :
 			{$1}
 ;
 
+name_of_udp_instance :
+	udp_instance_identifier range_opt
+		{T_name_of_udp_instance($1,$2)}
+;
+*/
+
 comma_input_terminal_list :
 	{[]}
 	| COMMA input_terminal comma_input_terminal_list
 		{$2::$3}
 ;
 
-name_of_udp_instance :
-	udp_instance_identifier range_opt
-		{T_name_of_udp_instance($1,$2)}
-;
 
 /*A.6 Behavioral statements
 A.6.1 Continuous assignment statements*/
