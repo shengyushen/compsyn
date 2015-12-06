@@ -674,13 +674,9 @@ integer_declaration :
 ;
 
 net_declaration :
-	net_type signed_opt delay3_opt list_of_net_identifiers SEMICOLON
-		{T_net_declaration_net_type1($1,$2,$3,$4)}
-	| net_type drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
-		{T_net_declaration_net_type2($1,$2,$3,$4,$5)}
-	| net_type vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
+	net_type vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
-	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+	| net_type drive_strength_opt vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
 /*	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_1($2,$3,$4,$5)}
