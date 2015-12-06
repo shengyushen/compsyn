@@ -829,7 +829,7 @@ delay3 :
 ;
 
 
-delay2 :
+/*delay2 :
 	JING delay_value
 		{T_delay2_1($2)}
 	| JING LPARENT mintypmax_expression RPARENT
@@ -838,7 +838,7 @@ delay2 :
 		{T_delay2_minmax2($3,$5)}
 ;
 
-
+*/
 delay_value :
 	UNSIGNED_NUMBER
 		{T_delay_value_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
@@ -2921,11 +2921,11 @@ attr_name :
 */
 /*A.9.3 Identifiers*/
 block_identifier : identifier {$1};
-cell_identifier : identifier {$1};
-config_identifier : identifier {$1};
+/*cell_identifier : identifier {$1};
+config_identifier : identifier {$1};*/
 event_identifier : identifier {$1};
 function_identifier : identifier {$1};
-gate_instance_identifier : identifier {$1};
+/*gate_instance_identifier : identifier {$1};*/
 generate_block_identifier : identifier {$1};
 genvar_identifier : identifier {$1};
 hierarchical_block_identifier : hierarchical_identifier {$1};
@@ -2960,14 +2960,14 @@ identifier :
 	| ESCAPED_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}
 ;
 
-/*inout_port_identifier : identifier {$1};*/
+/*inout_port_identifier : identifier {$1};
 input_port_identifier : identifier {$1};
 instance_identifier : identifier {$1};
-library_identifier : identifier {$1};
+library_identifier : identifier {$1};*/
 module_identifier : identifier {$1};
 module_instance_identifier : identifier {$1};
 net_identifier : identifier {$1};
-output_port_identifier : identifier {$1};
+/*output_port_identifier : identifier {$1};*/
 parameter_identifier : identifier {$1};
 port_identifier : identifier {$1};
 real_identifier : identifier {$1};
@@ -2980,11 +2980,11 @@ system_function_identifier :
 
 
 task_identifier : identifier {$1};
-/*terminal_identifier : identifier {$1};*/
-/*text_macro_identifier : identifier {$1};*/
+/*terminal_identifier : identifier {$1};
+text_macro_identifier : identifier {$1};
 topmodule_identifier : identifier {$1};
 udp_identifier : identifier {$1};
-udp_instance_identifier : identifier {$1};
+udp_instance_identifier : identifier {$1};*/
 variable_identifier : identifier {$1};
 
 
