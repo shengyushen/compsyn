@@ -531,7 +531,8 @@ design_statement :
 
 library_identifier_period_opt_cell_identifier_list :
 	{[]}
-	| library_identifier_period_opt_cell_identifier library_identifier_period_opt_cell_identifier_list {$1::$2}
+	| library_identifier_period_opt_cell_identifier_list library_identifier_period_opt_cell_identifier  
+		{$1@[$2]}
 ;
 
 library_identifier_period_opt_cell_identifier :
