@@ -300,8 +300,8 @@ description_list :
 
 description :
 	module_declaration	{T_description__module_declaration($1)}
-	| udp_declaration		{T_description__udp_declaration($1)}
-	| config_declaration	{T_description__config_declaration($1)}
+/*	| udp_declaration		{T_description__udp_declaration($1)}
+	| config_declaration	{T_description__config_declaration($1)}*/
 ;
 
 module_declaration :
@@ -485,10 +485,10 @@ module_or_generate_item :
 		T_module_item__parameter_override($1,$2)}
 | attribute_instance_list continuous_assign {
 		T_module_item__continuous_assign($1,$2)}
-| attribute_instance_list gate_instantiation {
+/*| attribute_instance_list gate_instantiation {
 		T_module_item__gate_instantiation($1,$2)}
 | attribute_instance_list udp_instantiation {
-		T_module_item__udp_instantiation($1,$2)}
+		T_module_item__udp_instantiation($1,$2)}*/
 | attribute_instance_list module_instantiation {
 		T_module_item__module_instantiation($1,$2)}
 | attribute_instance_list initial_construct {
@@ -507,7 +507,7 @@ parameter_override :
 ;
 
 /*A.1.5 Configuration source text*/
-config_declaration :
+/*config_declaration :
 	KEY_CONFIG config_identifier SEMICOLON
 	design_statement
 	config_rule_statement_list
@@ -595,7 +595,7 @@ colon_config_opt :
 	{T_colon_config_opt_FALSE}
 	| COLON KEY_CONFIG  {T_colon_config_opt_TRUE}
 ;
-
+*/
 /*A.2 Declarations
 A.2.1 Declaration types
 A.2.1.1 Module parameter declarations*/
@@ -1266,7 +1266,7 @@ block_real_type :
 /*A.3 Primitive instances
 A.3.1 Primitive instantiation and instances*/
 
-gate_instantiation :
+/*gate_instantiation :
 	cmos_switchtype delay3_opt cmos_switch_instance comma_cmos_switch_instance_list SEMICOLON
 		{T_gate_instantiation_cmos($1,$2,$3::$4)}
 	| enable_gatetype drive_strength_opt delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
@@ -1408,10 +1408,10 @@ name_of_gate_instance :
 	gate_instance_identifier LSQUARE range RSQUARE
 		{T_name_of_gate_instance($1,$3)}
 ;
-
+*/
 /*A.3.2 Primitive strengths*/
 
-pulldown_strength :
+/*pulldown_strength :
 	LPARENT strength0 COMMA strength1 RPARENT
 		{T_pulldown_strength01($2,$4)}
 	| LPARENT strength1 COMMA strength0 RPARENT
@@ -1429,20 +1429,20 @@ pullup_strength :
 		{T_pullup_strength1($2)}
 ;
 
-
+*/
 /*A.3.3 Primitive terminals*/
-enable_terminal : expression {$1} ;
+/*enable_terminal : expression {$1} ;
 inout_terminal : net_lvalue {$1} ;
 input_terminal : expression {$1} ;
 ncontrol_terminal : expression {$1} ;
 output_terminal : net_lvalue {$1} ;
 pcontrol_terminal : expression {$1};
 
-
+*/
 
 /*A.3.4 Primitive gate and switch types*/
 
-cmos_switchtype :
+/*cmos_switchtype :
 	KEY_CMOS   {T_cmos_switchtype_CMOS}
 	| KEY_RCMOS {T_cmos_switchtype_RCMOS}
 ;
@@ -1485,7 +1485,7 @@ pass_switchtype :
 	  KEY_TRAN  {T_pass_switchtype_TRAN } 
 	| KEY_RTRAN {T_pass_switchtype_RTRAN} 
 ;
-
+*/
 
 
 /*A.4 Module instantiation and generate construct
@@ -1709,7 +1709,7 @@ generate_block_or_null :
 /*A.5 UDP declaration and instantiation
 A.5.1 UDP declaration*/
 
-udp_declaration :
+/*udp_declaration :
 	attribute_instance_list KEY_PRIMITIVE udp_identifier LPARENT udp_port_list RPARENT SEMICOLON
 	udp_port_declaration udp_port_declaration_list
 	udp_body
@@ -1727,9 +1727,9 @@ udp_port_declaration_list :
 	| udp_port_declaration udp_port_declaration_list
 		{$1::$2}
 ;
-
+*/
 /*A.5.2 UDP ports*/
-
+/*
 udp_port_list :
 	output_port_identifier COMMA input_port_identifier comma_input_port_identifier_list
 		{T_udp_port_list($1,$3::$4)}
@@ -1778,9 +1778,9 @@ udp_reg_declaration :
 	attribute_instance_list  KEY_REG variable_identifier
 		{T_udp_reg_declaration($1,$3)}
 ;
-
+*/
 /*A.5.3 UDP body*/
-
+/*
 udp_body : 
 	combinational_body 
 		{T_udp_body_comb($1)}
@@ -1828,11 +1828,11 @@ udp_initial_statement :
 		{T_udp_initial_statement($2,$4)}
 ;
 
-
+*/
 
 /*init_val ::= 1'b0 | 1'b1 | 1'bx | 1'bX | 1'B0 | 1'B1 | 1'Bx | 1'BX | 1 | 0*/
 /*actually lex only return number*/
-init_val :
+/*init_val :
 	BINARY_NUMBER  
 		{T_init_val_bin(get1 $1, get2 $1, get3 $1)}
 	| UNSIGNED_NUMBER
@@ -1873,7 +1873,7 @@ edge_indicator :
 	| edge_symbol
 		{T_edge_indicator_edge($1)}
 ;
-
+*/
 /*current_state : level_symbol
 next_state ::= output_symbol | -
 output_symbol ::= 0 | 1 | x | X
@@ -1882,7 +1882,7 @@ edge_symbol ::= r | R | f | F | p | P | n | N | *
 */
 /*lexer only return UNSIGNED_NUMBER, SIMPLE_IDENTIFIER and * and -*/
 
-edge_symbol :
+/*edge_symbol :
 	SIMPLE_IDENTIFIER	{T_edge_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
 	| OP2_MULTIPLE	{T_edge_symbol_MUL(get1 $1, get2 $1)}
 ;
@@ -1916,12 +1916,12 @@ current_state :
 		{T_current_state_OP2_QUESTION(get1 $1, get2 $1)}
 ;
 	
-
+*/
 
 
 
 /*A.5.4 UDP instantiation*/
-udp_instantiation :
+/*udp_instantiation :
 	udp_identifier drive_strength_opt delay2_opt
 		udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
@@ -1954,7 +1954,7 @@ name_of_udp_instance :
 	udp_instance_identifier range_opt
 		{T_name_of_udp_instance($1,$2)}
 ;
-
+*/
 /*A.6 Behavioral statements
 A.6.1 Continuous assignment statements*/
 
@@ -2207,7 +2207,7 @@ else_statement_or_null_opt :
 		{$2}
 ;
 
-
+/*
 else_if_lp_expression_rp_statement_or_null_list :
 	{[]}
 	| else_if_lp_expression_rp_statement_or_null else_if_lp_expression_rp_statement_or_null_list
@@ -2219,7 +2219,7 @@ else_if_lp_expression_rp_statement_or_null :
 	KEY_ELSE KEY_IF LPARENT expression RPARENT statement_or_null
 		{T_elseif($4,$6)}
 ;
-
+*/
 
 
 
@@ -2915,10 +2915,10 @@ attr_name :
 
 
 /*A.9.2 Comments*/
-comment :
+/*comment :
 	COMMENT {$1}
 ;
-
+*/
 /*A.9.3 Identifiers*/
 block_identifier : identifier {$1};
 cell_identifier : identifier {$1};
