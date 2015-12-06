@@ -2419,9 +2419,9 @@ edge_identifier :
 
 
 state_dependent_path_declaration :
-	KEY_IF LPARENT module_path_expression RPARENT simple_path_declaration
+	KEY_IF LPARENT expression RPARENT simple_path_declaration
 		{T_state_dependent_path_declaration_simple($3,$5)}
-	| KEY_IF LPARENT module_path_expression RPARENT edge_sensitive_path_declaration
+	| KEY_IF LPARENT expression RPARENT edge_sensitive_path_declaration
 		{T_state_dependent_path_declaration_edge($3,$5)}
 	| KEY_IFNONE simple_path_declaration
 		{T_state_dependent_path_declaration_ifnone($2)}
@@ -2549,22 +2549,6 @@ concatenation :
 		{T_concatenation($2::$3)}
 ;
 
-module_path_concatenation : 
-	LHUA module_path_expression comma_module_path_expression_list RHUA
-		{T_module_path_concatenation($2::$3)}
-;
-
-comma_module_path_expression_list :
-	{[]}
-	| COMMA module_path_expression comma_module_path_expression_list
-		{$2::$3}
-;
-
-
-module_path_multiple_concatenation :
-	LHUA expression module_path_concatenation RHUA
-		{T_module_path_multiple_concatenation($2,$3)}
-;
 
 multiple_concatenation :
 	LHUA  expression concatenation RHUA
@@ -2657,43 +2641,7 @@ mintypmax_expression :
 		{T_mintypmax_expression_3($1,$3,$5)}
 ;
 
-module_path_conditional_expression :
-	module_path_expression OP2_QUESTION attribute_instance_list
-	module_path_expression COLON module_path_expression
-		{T_module_path_conditional_expression($1,$3,$4,$6)}
-;
 
-
-module_path_expression :
-	module_path_primary
-		{T_module_path_expression_prim($1)}
-	| OP2_AND  attribute_instance_list module_path_primary %prec OP1_AND {T_module_path_expression_op1(T_unary_operator_REDUCE_AND ,$2,$3)}
-	| OP2_OR   attribute_instance_list module_path_primary %prec OP1_OR  {T_module_path_expression_op1(T_unary_operator_REDUCE_OR  ,$2,$3)}
-	| OP2_XOR  attribute_instance_list module_path_primary %prec OP1_XOR {T_module_path_expression_op1(T_unary_operator_REDUCE_XOR ,$2,$3)}
-	| OP2_XNOR attribute_instance_list module_path_primary %prec OP1_XNOR{T_module_path_expression_op1(T_unary_operator_REDUCE_XNOR,$2,$3)}
-	| OP1_LOGIC_NEG   attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_LOGIC_NEG  ,$2,$3)}
-	| OP1_BITWISE_NEG attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_BITWISE_NEG,$2,$3)}
-	| OP1_REDUCE_NAND attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NAND       ,$2,$3)}
-	| OP1_REDUCE_NOR  attribute_instance_list module_path_primary {T_module_path_expression_op1(T_unary_operator_REDUCE_NOR        ,$2,$3)}
-	| module_path_expression OP2_EQU2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_EQU2,$3,$4)}
-	| module_path_expression OP2_NEQ2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_NEQ2,$3,$4)}
-	| module_path_expression OP2_AND2 attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND2,$3,$4)}
-	| module_path_expression OP2_OR2  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR2 ,$3,$4)}
-	| module_path_expression OP2_AND  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_AND1,$3,$4)}
-	| module_path_expression OP2_OR   attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_OR1 ,$3,$4)}
-	| module_path_expression OP2_XOR  attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XOR ,$3,$4)}
-	| module_path_expression OP2_XNOR attribute_instance_list module_path_expression {T_module_path_expression_op2($1,T_binary_module_path_operator_XNOR,$3,$4)}
-	| module_path_conditional_expression
-		{T_module_path_expression_sel($1)}
-;
-
-
-module_path_mintypmax_expression :
-	module_path_expression
-		{T_module_path_mintypmax_expression_1($1)}
-	| module_path_expression COLON module_path_expression COLON module_path_expression
-		{T_module_path_mintypmax_expression_3($1,$3,$5)}
-;
 
 msb_expression :
 	expression
@@ -2720,23 +2668,6 @@ width_expression :
 
 /*A.8.4 Primaries*/
 
-
-module_path_primary :
-	number
-		{T_module_path_primary_num($1)}
-	| identifier
-		{T_module_path_primary_id($1)}
-	| module_path_concatenation
-		{T_module_path_primary_concat($1)}
-	| module_path_multiple_concatenation
-		{T_module_path_primary_mul_concat($1)}
-	| function_call
-		{T_module_path_primary_func($1)}
-	| system_function_call
-		{T_module_path_primary_sysfunc($1)}
-	| LPARENT module_path_mintypmax_expression RPARENT
-		{T_module_path_primary_mintypmax($2)}
-;
 
 primary :
 	number

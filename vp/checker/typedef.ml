@@ -529,16 +529,12 @@ and	parallel_edge_sensitive_path_description =
 and	full_edge_sensitive_path_description =
 	T_full_edge_sensitive_path_description of edge_identifier*(specify_input_terminal_descriptor list)*(specify_output_terminal_descriptor list)*polarity_operator*expression
 and	state_dependent_path_declaration =
-	T_state_dependent_path_declaration_simple of module_path_expression*simple_path_declaration
-	| T_state_dependent_path_declaration_edge of module_path_expression*edge_sensitive_path_declaration
+	T_state_dependent_path_declaration_simple of expression*simple_path_declaration
+	| T_state_dependent_path_declaration_edge of expression*edge_sensitive_path_declaration
 	| T_state_dependent_path_declaration_ifnone of simple_path_declaration
 (*stop on A.7.5*)
 and	concatenation =
 	T_concatenation of expression list
-and	module_path_multiple_concatenation =
-	T_module_path_multiple_concatenation of expression*module_path_concatenation
-and module_path_concatenation =
-	T_module_path_concatenation of module_path_expression list
 and	multiple_concatenation =
 	T_multiple_concatenation of expression*concatenation
 and	function_call =
@@ -561,16 +557,6 @@ and	mintypmax_expression =
 	T_mintypmax_expression_NOSPEC
 	| T_mintypmax_expression_1 of expression
 	| T_mintypmax_expression_3 of expression*expression*expression
-and	module_path_conditional_expression =
-	T_module_path_conditional_expression of module_path_expression*(attribute_instance list)*module_path_expression*module_path_expression
-and	module_path_expression =
-	T_module_path_expression_prim of module_path_primary
-	| T_module_path_expression_op1 of unary_operator*(attribute_instance list)*module_path_primary
-	|	T_module_path_expression_op2 of module_path_expression*binary_module_path_operator*(attribute_instance list)*module_path_expression
-	|	T_module_path_expression_sel of module_path_conditional_expression
-and	module_path_mintypmax_expression =
-	T_module_path_mintypmax_expression_1 of module_path_expression
-	| T_module_path_mintypmax_expression_3 of module_path_expression*module_path_expression*module_path_expression
 and	range_expression =
 	T_range_expression_NOSPEC
 	| T_range_expression_1 of expression
@@ -578,14 +564,6 @@ and	range_expression =
 	|	T_range_expression_addrange of base_expression*width_expression
 	| T_range_expression_subrange of base_expression*width_expression
 and	base_expression = expression
-and	module_path_primary =
-	T_module_path_primary_num of number
-	| T_module_path_primary_id of identifier
-	| T_module_path_primary_concat of module_path_concatenation
-	| T_module_path_primary_mul_concat of module_path_multiple_concatenation
-	| T_module_path_primary_func of function_call
-	| T_module_path_primary_sysfunc of system_function_call
-	| T_module_path_primary_mintypmax of module_path_mintypmax_expression
 and	primary =
 	T_primary_num of number
 	| T_primary_idexp of hierarchical_identifier
@@ -658,24 +636,6 @@ and binary_operator =
 |	T_binary_operator_OR2
 |	T_binary_operator_XOR
 |	T_binary_operator_XNOR
-and unary_module_path_operator =
-	T_unary_module_path_operator_GANTANHAO
-	| T_unary_module_path_operator_BOLANGHAO
-	| T_unary_module_path_operator_AND
-	| T_unary_module_path_operator_NAND
-	| T_unary_module_path_operator_OR
-	| T_unary_module_path_operator_NOR
-	| T_unary_module_path_operator_XOR
-	| T_unary_module_path_operator_XNOR
-and binary_module_path_operator =
-	T_binary_module_path_operator_EQU2
-	| T_binary_module_path_operator_NEQ2
-  | T_binary_module_path_operator_AND2
-  | T_binary_module_path_operator_OR2
-  | T_binary_module_path_operator_AND1
-  | T_binary_module_path_operator_OR1
-  | T_binary_module_path_operator_XOR
-  | T_binary_module_path_operator_XNOR
 and level_symbol =
 	T_level_symbol_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_level_symbol_SIMID of Lexing.position*Lexing.position*string 
