@@ -45,17 +45,17 @@ and module_item =
 and config_declaration =
 	T_config_declaration of identifier*design_statement*(config_rule_statement list)
 and design_statement =
-	T_design_statement of (library_identifier_period_opt_cell_identifier list)
+	T_design_statement of (identifier list)
 and library_identifier_period_opt_cell_identifier =
 	T_lib_cell_identifier of identifier*identifier
 and config_rule_statement =
 	T_config_rule_statement__default of (identifier list) 
 	| T_config_rule_statement__inst_lib of (identifier list)*(identifier list)
 	| T_config_rule_statement__inst_use of (identifier list)*use_clause
-	| T_config_rule_statement__cell_lib of library_identifier_period_opt_cell_identifier*(identifier list)
-	| T_config_rule_statement__cell_use of library_identifier_period_opt_cell_identifier*use_clause
+	| T_config_rule_statement__cell_lib of (identifier list)*(identifier list)
+	| T_config_rule_statement__cell_use of (identifier list)*use_clause
 and use_clause =
-	T_use_clause of library_identifier_period_opt_cell_identifier*colon_config_opt
+	T_use_clause of (identifier list)*colon_config_opt
 and colon_config_opt =
 	T_colon_config_opt_FALSE
 	| T_colon_config_opt_TRUE
@@ -252,21 +252,21 @@ and gate_instantiation =
 	| T_gate_instantiation_pulldown of pulldown_strength*(pull_gate_instance list)
 	| T_gate_instantiation_pullup of pullup_strength*(pull_gate_instance list)
 and cmos_switch_instance =
-	T_cmos_switch_instance of name_of_gate_instance*net_lvalue*expression*expression*expression
+	T_cmos_switch_instance of name_of_gate_instance*expression*expression*expression*expression
 and enable_gate_instance =
-	T_enable_gate_instance of name_of_gate_instance*net_lvalue*expression*expression
+	T_enable_gate_instance of name_of_gate_instance*expression*expression*expression
 and mos_switch_instance =
-	T_mos_switch_instance of name_of_gate_instance*net_lvalue*expression*expression
+	T_mos_switch_instance of name_of_gate_instance*expression*expression*expression
 and n_input_gate_instance =
-	T_n_input_gate_instance of name_of_gate_instance*net_lvalue*expression*(expression list)
+	T_n_input_gate_instance of name_of_gate_instance*expression*expression*(expression list)
 and n_output_gate_instance =
-	T_n_output_gate_instance of name_of_gate_instance*net_lvalue*(net_lvalue list)*expression
+	T_n_output_gate_instance of name_of_gate_instance*(expression list)
 and pass_switch_instance =
-	T_pass_switch_instance of name_of_gate_instance*net_lvalue*net_lvalue
+	T_pass_switch_instance of name_of_gate_instance*expression*expression
 and pass_enable_switch_instance =
-	T_pass_enable_switch_instance of name_of_gate_instance*net_lvalue*net_lvalue*expression
+	T_pass_enable_switch_instance of name_of_gate_instance*expression*expression*expression
 and pull_gate_instance =
-	T_pull_gate_instance of name_of_gate_instance*net_lvalue
+	T_pull_gate_instance of name_of_gate_instance*expression
 and name_of_gate_instance =
 	T_name_of_gate_instance_NOSPEC
 	| T_name_of_gate_instance of identifier*range
@@ -407,31 +407,31 @@ and	edge_indicator =
 and	udp_instantiation =
 	T_udp_instantiation of identifier*drive_strength*delay2*(udp_instance list)
 and udp_instance =
-	T_udp_instance of name_of_udp_instance*net_lvalue*(expression list)
+	T_udp_instance of name_of_udp_instance*expression*(expression list)
 and	name_of_udp_instance =
 	T_name_of_udp_instance_NOSPEC
 	| T_name_of_udp_instance of identifier*range
 and continuous_assign =
 	T_continuous_assign of drive_strength*delay3*(net_assignment list)
 and	net_assignment =
-	T_net_assignment of net_lvalue*expression
+	T_net_assignment of expression*expression
 and	initial_construct =
 	T_initial_construct of statement
 and	always_construct =
 	T_always_construct of statement
 and blocking_assignment =
-	T_blocking_assignment of variable_lvalue*delay_or_event_control*expression
+	T_blocking_assignment of expression*delay_or_event_control*expression
 and	nonblocking_assignment =
-	T_nonblocking_assignment of variable_lvalue*delay_or_event_control*expression
+	T_nonblocking_assignment of expression*delay_or_event_control*expression
 and	procedural_continuous_assignments =
 	T_procedural_continuous_assignments_assign of variable_assignment
-	| T_procedural_continuous_assignments_deassign of variable_lvalue
+	| T_procedural_continuous_assignments_deassign of expression
 	| T_procedural_continuous_assignments_force1 of variable_assignment
 	| T_procedural_continuous_assignments_force2 of net_assignment
-	| T_procedural_continuous_assignments_release1 of variable_lvalue
-	| T_procedural_continuous_assignments_release2 of net_lvalue
+	| T_procedural_continuous_assignments_release1 of expression
+	| T_procedural_continuous_assignments_release2 of expression
 and	variable_assignment =
-	T_variable_assignment of variable_lvalue*expression
+	T_variable_assignment of expression*expression
 and	par_block =
 	T_par_block of (statement list)
 and	seq_block =
@@ -461,8 +461,7 @@ and	delay_or_event_control =
 	| T_delay_or_event_control_event_control of event_control
 	| T_delay_or_event_control_3 of expression*event_control
 and disable_statement =
-	T_disable_statement_task of hierarchical_identifier
-	| T_disable_statement_block of hierarchical_identifier
+	T_disable_statement of hierarchical_identifier
 and	event_control =
 	T_event_control_eventid of hierarchical_identifier
 	| T_event_control_event_exp of event_expression
@@ -606,22 +605,21 @@ and	module_path_primary =
 	| T_module_path_primary_mintypmax of module_path_mintypmax_expression
 and	primary =
 	T_primary_num of number
-	| T_primary_id of hierarchical_identifier
-	| T_primary_idexp of hierarchical_identifier*(expression list)*range_expression
+	| T_primary_idexp of hierarchical_identifier*(expression list)
 	| T_primary_concat of concatenation
 	| T_primary_mulcon of multiple_concatenation
 	| T_primary_func of function_call
 	| T_primary_sysfunc of system_function_call
 	| T_primary_mintypmax of mintypmax_expression
 	| T_primary_string of string
-and	net_lvalue =
+(*and	net_lvalue =
 	T_net_lvalue_id of hierarchical_identifier
-	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
+	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)
 	| T_net_lvalue_lvlist of (net_lvalue list)
 and variable_lvalue =
 	T_variable_lvalue_id of hierarchical_identifier
-	| T_variable_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
-	| T_variable_lvalue_vlvlist of variable_lvalue list
+	| T_variable_lvalue_idexp of hierarchical_identifier*(expression list)
+	| T_variable_lvalue_vlvlist of variable_lvalue list*)
 and	delay_value =
 	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_delay_value_REAL_NUMBER of  Lexing.position*Lexing.position*string
