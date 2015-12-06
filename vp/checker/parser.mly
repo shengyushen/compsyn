@@ -2952,8 +2952,8 @@ hierarchical_identifier :
 ;
 identifier_lsq_expression_rsq_opt_list :
 	{[]}
-	| identifier_lsq_expression_rsq_opt identifier_lsq_expression_rsq_opt_list
-		{$1::$2}
+	| identifier_lsq_expression_rsq_opt_list identifier_lsq_expression_rsq_opt 
+		{$1@[$2]}
 ;
 
 identifier_lsq_expression_rsq_opt :
