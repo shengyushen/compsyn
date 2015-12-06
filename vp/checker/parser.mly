@@ -2623,7 +2623,7 @@ concatenation :
 		{T_concatenation($2::$3)}
 ;
 
-module_path_concatenation : 
+/*module_path_concatenation : 
 	LHUA module_path_expression comma_module_path_expression_list RHUA
 		{T_module_path_concatenation($2::$3)}
 ;
@@ -2639,7 +2639,7 @@ module_path_multiple_concatenation :
 	LHUA expression module_path_concatenation RHUA
 		{T_module_path_multiple_concatenation($2,$3)}
 ;
-
+*/
 multiple_concatenation :
 	LHUA  expression concatenation RHUA
 		{T_multiple_concatenation($2,$3)}
@@ -2740,7 +2740,7 @@ mintypmax_expression :
 		{T_mintypmax_expression_3($1,$3,$5)}
 ;
 
-module_path_conditional_expression :
+/*module_path_conditional_expression :
 	module_path_expression OP2_QUESTION attribute_instance_list
 	module_path_expression COLON module_path_expression
 		{T_module_path_conditional_expression($1,$3,$4,$6)}
@@ -2777,7 +2777,7 @@ module_path_mintypmax_expression :
 	| module_path_expression COLON module_path_expression COLON module_path_expression
 		{T_module_path_mintypmax_expression_3($1,$3,$5)}
 ;
-
+*/
 msb_expression :
 	expression
 		{$1}
@@ -2803,7 +2803,7 @@ width_expression :
 
 /*A.8.4 Primaries*/
 
-
+/*
 module_path_primary :
 	number
 		{T_module_path_primary_num($1)}
@@ -2820,7 +2820,7 @@ module_path_primary :
 	| LPARENT module_path_mintypmax_expression RPARENT
 		{T_module_path_primary_mintypmax($2)}
 ;
-
+*/
 primary :
 	number
 		{T_primary_num($1)}
