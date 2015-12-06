@@ -2674,7 +2674,7 @@ base_expression :
 ;
 
 conditional_expression :
-	expression1 OP2_QUESTION attribute_instance_list expression2 COLON expression3
+	expression OP2_QUESTION attribute_instance_list expression COLON expression
 		{T_conditional_expression($1,$3,$4,$6)}
 ;
 
@@ -2723,10 +2723,6 @@ expression :
 	| conditional_expression
 		{T_expression_condition($1)}
 ;
-
-expression1 : expression {$1};
-expression2 : expression {$1};
-expression3 : expression {$1};
 
 lsb_expression :
 	expression
