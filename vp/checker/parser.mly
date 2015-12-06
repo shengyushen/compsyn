@@ -2137,14 +2137,8 @@ event_control :
 ;
 
 event_trigger :
-	IMPLY hierarchical_event_identifier square_expression_square_list SEMICOLON
+	IMPLY hierarchical_event_identifier lsq_expression_rsq_list SEMICOLON
 		{T_event_trigger($2,$3)}
-;
-
-square_expression_square_list :
-	{[]}
-	| square_expression_square_list square_expression_square 
-		{$1@[$2]}
 ;
 
 square_expression_square :
