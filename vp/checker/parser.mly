@@ -1622,7 +1622,7 @@ comma_genvar_identifier_list :
 ;
 
 loop_generate_construct :
-	KEY_FOR LPARENT genvar_initialization SEMICOLON genvar_expression SEMICOLON genvar_iteration RPARENT generate_block
+	KEY_FOR LPARENT genvar_initialization SEMICOLON expression SEMICOLON genvar_iteration RPARENT generate_block
 		{T_loop_generate_construct($3,$5,$7,$9)}
 ;
 
@@ -1631,59 +1631,11 @@ genvar_initialization :
 		{T_genvar_initialization($1,$3)}
 ;
 
-genvar_expression :
-	genvar_primary
-		{T_genvar_expression_primary($1)}
-	| OP2_ADD  attribute_instance_list genvar_primary %prec OP1_ADD {T_genvar_expression_1op(T_unary_operator_ADD,$2,$3)}
-	| OP2_SUB  attribute_instance_list genvar_primary %prec OP1_SUB {T_genvar_expression_1op(T_unary_operator_SUB,$2,$3)}
-	| OP2_AND  attribute_instance_list genvar_primary %prec OP1_AND {T_genvar_expression_1op(T_unary_operator_REDUCE_AND,$2,$3)}
-	| OP2_OR   attribute_instance_list genvar_primary %prec OP1_OR  {T_genvar_expression_1op(T_unary_operator_REDUCE_OR,$2,$3)}
-	| OP2_XOR  attribute_instance_list genvar_primary %prec OP1_XOR {T_genvar_expression_1op(T_unary_operator_REDUCE_XOR,$2,$3)}
-	| OP2_XNOR attribute_instance_list genvar_primary %prec OP1_XNOR{T_genvar_expression_1op(T_unary_operator_REDUCE_XNOR,$2,$3)}
-	| OP1_LOGIC_NEG   attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_LOGIC_NEG  ,$2,$3)}
-	| OP1_BITWISE_NEG attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_BITWISE_NEG,$2,$3)}
-	| OP1_REDUCE_NAND attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NAND,$2,$3)}
-	| OP1_REDUCE_NOR  attribute_instance_list genvar_primary {T_genvar_expression_1op(T_unary_operator_REDUCE_NOR ,$2,$3)}
-	| genvar_expression OP2_MULTIPLE              attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MUL                  ,$3,$4)}
-	| genvar_expression OP2_DIV                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_DIV                  ,$3,$4)}
-	| genvar_expression OP2_MOD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_MOD                  ,$3,$4)}
-	| genvar_expression OP2_EQU2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU2                 ,$3,$4)}
-	| genvar_expression OP2_NEQ2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ2                 ,$3,$4)}
-	| genvar_expression OP2_EQU3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_EQU3                 ,$3,$4)}
-	| genvar_expression OP2_NEQ3                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_NEQ3                 ,$3,$4)}
-	| genvar_expression OP2_POWER                 attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_POWER                ,$3,$4)}
-	| genvar_expression OP2_LT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LT                   ,$3,$4)}
-	| genvar_expression OP2_LE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LE                   ,$3,$4)}
-	| genvar_expression OP2_GT                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GT                   ,$3,$4)}
-	| genvar_expression OP2_GE                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_GE                   ,$3,$4)}
-	| genvar_expression OP2_LOGICAL_RIGHTSHIFT    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_RIGHTSHIFT   ,$3,$4)}
-	| genvar_expression OP2_LOGICAL_LEFTSHIFT     attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_LOGICAL_LEFTSHIFT    ,$3,$4)}
-	| genvar_expression OP2_ARITHMETIC_RIGHTSHIFT attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_RIGHTSHIFT,$3,$4)}
-	| genvar_expression OP2_ARITHMETIC_LEFTSHIFT  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ARITHMETIC_LEFTSHIFT ,$3,$4)}
-	| genvar_expression OP2_ADD                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_ADD                  ,$3,$4)}
-	| genvar_expression OP2_SUB                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_SUB                  ,$3,$4)}
-	| genvar_expression OP2_AND                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND                  ,$3,$4)}
-	| genvar_expression OP2_OR                    attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR                   ,$3,$4)}
-	| genvar_expression OP2_AND2                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_AND2                 ,$3,$4)}
-	| genvar_expression OP2_OR2                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_OR2                  ,$3,$4)}
-	| genvar_expression OP2_XOR                   attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XOR                  ,$3,$4)}
-	| genvar_expression OP2_XNOR                  attribute_instance_list  genvar_expression {T_genvar_expression_2op($1,T_binary_operator_XNOR                 ,$3,$4)}
-	| genvar_expression OP2_QUESTION attribute_instance_list genvar_expression COLON genvar_expression
-		{T_genvar_expression_sel($1,$3,$4,$6)}
-;
 
 genvar_iteration :
-	genvar_identifier EQU1 genvar_expression
+	genvar_identifier EQU1 expression
 		{T_genvar_iteration($1,$3)}
 ;
-
-genvar_primary :
-	primary
-		{T_genvar_primary_const($1)}
-	| genvar_identifier
-		{T_genvar_primary_id($1)}
-;
-
 
 
 

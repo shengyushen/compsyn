@@ -336,19 +336,11 @@ and generate_region =
 and genvar_declaration =
 	T_genvar_declaration of (identifier list)
 and loop_generate_construct =
-	T_loop_generate_construct of genvar_initialization*genvar_expression*genvar_iteration*generate_block
+	T_loop_generate_construct of genvar_initialization*expression*genvar_iteration*generate_block
 and	genvar_initialization =
 	T_genvar_initialization of identifier*expression
-and genvar_expression =
-	T_genvar_expression_primary of genvar_primary
-	| T_genvar_expression_1op of unary_operator*(attribute_instance list)*genvar_primary
-	| T_genvar_expression_2op of genvar_expression*binary_operator*(attribute_instance list)*genvar_expression
-	| T_genvar_expression_sel of genvar_expression*(attribute_instance list)*genvar_expression*genvar_expression
 and	genvar_iteration =
-	T_genvar_iteration of identifier*genvar_expression
-and	genvar_primary =
-	T_genvar_primary_const of primary
-	| T_genvar_primary_id of identifier
+	T_genvar_iteration of identifier*expression
 and conditional_generate_construct =
 	T_conditional_generate_construct_if of if_generate_construct
 	| T_conditional_generate_construct_case of case_generate_construct
