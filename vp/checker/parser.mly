@@ -487,8 +487,8 @@ module_or_generate_item :
 		T_module_item__continuous_assign($1,$2)}
 | attribute_instance_list gate_instantiation {
 		T_module_item__gate_instantiation($1,$2)}
-| attribute_instance_list udp_instantiation {
-		T_module_item__udp_instantiation($1,$2)}
+/*| attribute_instance_list udp_instantiation {
+		T_module_item__udp_instantiation($1,$2)}*/
 | attribute_instance_list module_instantiation {
 		T_module_item__module_instantiation($1,$2)}
 | attribute_instance_list initial_construct {
@@ -673,13 +673,13 @@ net_declaration :
 		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
 	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
-	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+/*	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_1($2,$3,$4,$5)}
 	| KEY_TRIREG drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
-		{T_net_declaration_trireg_2($2,$3,$4,$5)}
-	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_trireg_2($2,$3,$4,$5)}*/
+	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
-	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}
 ;
 
@@ -904,8 +904,8 @@ list_of_param_assignments :
 
 comma_param_assignment_list :
 	{[]}
-	| COMMA param_assignment comma_param_assignment_list
-		{$2::$3}
+	|  comma_param_assignment_list COMMA param_assignment
+		{$1@[$3]}
 ;
 
 list_of_port_identifiers :
@@ -1476,6 +1476,10 @@ A.4.1 Module instantiation*/
 module_instantiation :
 	module_identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
 		{T_module_instantiation($1,$2,$3::$4)}
+	| udp_identifier drive_strength delay2_opt udp_instance comma_udp_instance_list  ;
+		{T_udp_instantiation($1,$2,$3,$4::$5)}
+	| udp_identifier drive_strength_opt delay2 udp_instance comma_udp_instance_list  ;
+		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
 
 comma_module_instance_list :
@@ -1807,32 +1811,27 @@ udp_reg_declaration :
 /*A.5.3 UDP body*/
 
 udp_body : 
-	combinational_body 
-		{T_udp_body_comb($1)}
-	| sequential_body
-		{T_udp_body_seq($1)}
+	udp_initial_statement_opt KEY_TABLE udp_entry udp_entry_list KEY_ENDTABLE
+		{T_udp_body($1,$3::$4)}
 ;
 
-
-combinational_body :
-	KEY_TABLE combinational_entry combinational_entry_list KEY_ENDTABLE
-		{$2::$3}
-;
-
-combinational_entry_list :
+udp_entry_list :
 	{[]}
-	| combinational_entry combinational_entry_list
-		{$1::$2}
+	|  udp_entry_list udp_entry
+		{$1@[$2]}
 ;
 
-combinational_entry :
-	level_input_list COLON output_symbol SEMICOLON
-		{T_combinational_entry($1,$3)}
+udp_entry :
+	level_input_list colon_output_symbol_next_state_current_state_list SEMICOLON
+		{T_udp_entry_comb($1,$2)}
+	| edge_input_list colon_output_symbol_next_state_current_state_list SEMICOLON
+		{T_udp_entry_seq($1,$2)}
 ;
 
-sequential_body :
-	udp_initial_statement_opt KEY_TABLE sequential_entry sequential_entry_list KEY_ENDTABLE
-		{T_sequential_body($1,$3::$4)}
+colon_output_symbol_next_state_current_state_list :
+	{[]}
+	| colon_output_symbol_next_state_current_state_list COLON output_symbol_next_state_current_state 
+		{$1@[$3]}
 ;
 
 udp_initial_statement_opt :
@@ -1841,12 +1840,6 @@ udp_initial_statement_opt :
 		{$1}
 ;
 
-
-sequential_entry_list :
-	{[]}
-	| sequential_entry sequential_entry_list
-		{$1::$2}
-;
 
 udp_initial_statement :
 	KEY_INITIAL output_port_identifier EQU1 init_val SEMICOLON
@@ -1864,16 +1857,6 @@ init_val :
 		{T_init_val_unsigned(get1 $1, get2 $1, get3 $1)}
 ;
 
-sequential_entry :
-	seq_input_list COLON current_state COLON next_state SEMICOLON
-		{T_sequential_entry($1,$3,$5)}
-;
-
-seq_input_list :
-	level_input_list 
-		{T_seq_input_list_level($1)}
-	| edge_input_list
-		{T_seq_input_list_edge($1)}
 ;
 
 level_input_list :
@@ -1919,39 +1902,23 @@ level_symbol :
 	| OP2_QUESTION {T_level_symbol_QUESTION(get1 $1, get2 $1)}
 ;
 
-output_symbol :
-	UNSIGNED_NUMBER 
-	 {T_output_symbol_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
-	| SIMPLE_IDENTIFIER  {T_output_symbol_SIMID(get1 $1, get2 $1, get3 $1)}
+output_symbol_next_state_current_state :
+	UNSIGNED_NUMBER {T_output_symbol_next_state_current_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
+	| SIMPLE_IDENTIFIER	{T_output_symbol_next_state_current_state_SIMPLE_IDENTIFIER(get1 $1, get2 $1, get3 $1)}
+	| OP2_SUB					{T_output_symbol_next_state_current_state_OP2_SUB(get1 $1, get2 $1, get3 $1)}
+	| OP2_QUESTION		{T_output_symbol_next_state_current_state_OP2_QUESTION(get1 $1, get2 $1, get3 $1)}
 ;
-
-next_state :
-	UNSIGNED_NUMBER 
-	 {T_next_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
-	| SIMPLE_IDENTIFIER  {T_next_state_SIMID(get1 $1, get2 $1, get3 $1)}
-	| OP2_SUB  {T_next_state_SUB(get1 $1, get2 $1)}
-;
-
-current_state :
-	UNSIGNED_NUMBER 
-	 {T_current_state_UNSIGNED_NUMBER(get1 $1, get2 $1, get3 $1)}
-	| SIMPLE_IDENTIFIER  
-		{T_current_state_SIMID(get1 $1, get2 $1, get3 $1)}
-	| OP2_QUESTION 
-		{T_current_state_OP2_QUESTION(get1 $1, get2 $1)}
-;
-	
-
-
 
 
 /*A.5.4 UDP instantiation*/
-udp_instantiation :
+/*conflict with module_instantiation
+merged to it*/
+/*udp_instantiation :
 	udp_identifier drive_strength_opt delay2_opt
 		udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
-
+*/
 comma_udp_instance_list :
 	{[]}
 	| COMMA udp_instance comma_udp_instance_list
@@ -2684,7 +2651,7 @@ base_expression :
 ;
 
 conditional_expression :
-	expression1 OP2_QUESTION attribute_instance_list expression2 COLON expression3
+	expression OP2_QUESTION attribute_instance_list expression COLON expression
 		{T_conditional_expression($1,$3,$4,$6)}
 ;
 
@@ -2733,10 +2700,6 @@ expression :
 	| conditional_expression
 		{T_expression_condition($1)}
 ;
-
-expression1 : expression {$1};
-expression2 : expression {$1};
-expression3 : expression {$1};
 
 lsb_expression :
 	expression

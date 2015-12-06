@@ -36,7 +36,7 @@ and module_item =
 	| T_module_item__parameter_override of (attribute_instance list)*(defparam_assignment list)
 	| T_module_item__continuous_assign of (attribute_instance list)*continuous_assign
 	| T_module_item__gate_instantiation of (attribute_instance list)*gate_instantiation
-	| T_module_item__udp_instantiation of (attribute_instance list)*udp_instantiation
+(*	| T_module_item__udp_instantiation of (attribute_instance list)*udp_instantiation*)
 	| T_module_item__module_instantiation of (attribute_instance list)*module_instantiation
 	| T_module_item__initial_construct of (attribute_instance list)*initial_construct
 	| T_module_item__always_construct of (attribute_instance list)*always_construct
@@ -313,6 +313,7 @@ and pass_switchtype =
 	| T_pass_switchtype_RTRAN 
 and module_instantiation =
 	T_module_instantiation of identifier*parameter_value_assignment*(module_instance list)
+	| T_udp_instantiation of identifier*drive_strength*delay2*(udp_instance list)
 and	module_instance =
 	T_module_instance of name_of_module_instance*list_of_port_connections
 and name_of_module_instance =
@@ -382,30 +383,21 @@ and	udp_input_declaration =
 and	udp_reg_declaration =
 	T_udp_reg_declaration of (attribute_instance list)*identifier
 and	udp_body =
-	T_udp_body_comb of (combinational_entry list)
-	| T_udp_body_seq of sequential_body
-and	combinational_entry =
-	T_combinational_entry of (level_symbol list)*output_symbol
-and sequential_body =
-	T_sequential_body of udp_initial_statement*(sequential_entry list)
+	T_udp_body of udp_initial_statement*(udp_entry list)
+and udp_entry =
+	T_udp_entry_comb of (level_symbol list)*(output_symbol_next_state_current_state list)
+	| T_udp_entry_seq of edge_input_list*(output_symbol_next_state_current_state list)
 and	udp_initial_statement =
 	T_udp_initial_statement_NOSPEC
 	| T_udp_initial_statement of identifier*init_val
 and init_val =
 	T_init_val_bin of Lexing.position*Lexing.position*(int*string)
 	| T_init_val_unsigned of Lexing.position*Lexing.position*int
-and	sequential_entry =
-	T_sequential_entry of seq_input_list*current_state*next_state
-and	seq_input_list =
-	T_seq_input_list_level of level_symbol list
-	| T_seq_input_list_edge of edge_input_list
 and	edge_input_list =
 	T_edge_input_list of (level_symbol list)*edge_indicator*(level_symbol list)
 and	edge_indicator =
 	T_edge_indicator_level of level_symbol*level_symbol
 	| T_edge_indicator_edge of edge_symbol
-and	udp_instantiation =
-	T_udp_instantiation of identifier*drive_strength*delay2*(udp_instance list)
 and udp_instance =
 	T_udp_instance of name_of_udp_instance*expression*(expression list)
 and	name_of_udp_instance =
@@ -695,9 +687,6 @@ and level_symbol =
 	T_level_symbol_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_level_symbol_SIMID of Lexing.position*Lexing.position*string 
 	| T_level_symbol_QUESTION of Lexing.position*Lexing.position
-and output_symbol =
-	T_output_symbol_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
-	| T_output_symbol_SIMID of Lexing.position*Lexing.position*string
 and number =
 	T_number_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_number_UNSIGNED_NUMBER_size of Lexing.position*Lexing.position*(int*int)
@@ -705,14 +694,11 @@ and number =
 	| T_number_BINARY_NUMBER of Lexing.position*Lexing.position*(int*string)
 	| T_number_HEX_NUMBER of Lexing.position*Lexing.position*(int*string)
 	| T_number_REAL_NUMBER of Lexing.position*Lexing.position*string
-and current_state =
-	T_current_state_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
-	| T_current_state_SIMID of Lexing.position*Lexing.position*string
-	| T_current_state_OP2_QUESTION of Lexing.position*Lexing.position
-and next_state =
-	T_next_state_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
-	| T_next_state_SIMID of  Lexing.position*Lexing.position*string
-	| T_next_state_SUB of  Lexing.position*Lexing.position
+and output_symbol_next_state_current_state =
+	T_output_symbol_next_state_current_state_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
+	| T_output_symbol_next_state_current_state_SIMPLE_IDENTIFIER of Lexing.position*Lexing.position*string
+	| T_output_symbol_next_state_current_state_OP2_SUB of Lexing.position*Lexing.position*string
+	| T_output_symbol_next_state_current_state_OP2_QUESTION of Lexing.position*Lexing.position*string
 and edge_symbol =
 	T_edge_symbol_SIMID of Lexing.position*Lexing.position*string
 	| T_edge_symbol_MUL of Lexing.position*Lexing.position
