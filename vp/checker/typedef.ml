@@ -93,7 +93,7 @@ and integer_declaration =
 and net_declaration =
 	T_net_declaration_net_type1 of net_type*signed*delay3*(net_identifier_dimension_list list)
 	| T_net_declaration_net_type2 of net_type*drive_strength*signed*delay3*(net_decl_assignment list)
-	| T_net_declaration_net_type3 of net_type*vectored_scalared*signed*range*delay3*(net_identifier_dimension_list list)
+	| T_net_declaration_net_type3 of net_type*drive_strength*vectored_scalared*signed*range*delay3*(net_identifier_dimension_list list)
 	| T_net_declaration_net_type4 of net_type*drive_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
 	| T_net_declaration_trireg_1 of charge_strength*signed*delay3*(net_identifier_dimension_list list)
 	| T_net_declaration_trireg_2 of drive_strength*signed*delay3*(net_decl_assignment list)
