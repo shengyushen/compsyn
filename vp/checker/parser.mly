@@ -2069,10 +2069,10 @@ conditional_statement :
 	KEY_IF LPARENT expression RPARENT
 	statement_or_null else_statement_or_null_opt
 		{T_conditional_statement_ifelse($3,$5,$6)}
-	| KEY_IF LPARENT expression RPARENT statement_or_null
+/*	| KEY_IF LPARENT expression RPARENT statement_or_null
 		else_if_lp_expression_rp_statement_or_null_list
 		else_statement_or_null_opt
-		{T_conditional_statement_ifelseif($3,$5,$6,$7)}
+		{T_conditional_statement_ifelseif($3,$5,$6,$7)}*/
 ;
 
 else_statement_or_null_opt :
@@ -2082,7 +2082,7 @@ else_statement_or_null_opt :
 ;
 
 
-else_if_lp_expression_rp_statement_or_null_list :
+/*else_if_lp_expression_rp_statement_or_null_list :
 	{[]}
 	| else_if_lp_expression_rp_statement_or_null else_if_lp_expression_rp_statement_or_null_list
 		{$1::$2}
@@ -2093,7 +2093,7 @@ else_if_lp_expression_rp_statement_or_null :
 	KEY_ELSE KEY_IF LPARENT expression RPARENT statement_or_null
 		{T_elseif($4,$6)}
 ;
-
+*/
 
 
 
