@@ -450,12 +450,12 @@ non_port_module_item :
 	module_or_generate_item {$1}
 	| generate_region {
 		T_module_item__generate_region($1)}
-/*	| specify_block {
-		T_module_item__specify_block($1)}*/
+	| specify_block {
+		T_module_item__specify_block($1)}
 	| attribute_instance_list parameter_declaration SEMICOLON {
 		T_module_item__parameter_declaration($1,$2)}
-/*	| attribute_instance_list specparam_declaration {
-		T_module_item__specparam_declaration($1,$2)}*/
+	| attribute_instance_list specparam_declaration {
+		T_module_item__specparam_declaration($1,$2)}
 ;
 
 module_or_generate_item :
@@ -615,9 +615,9 @@ parameter_declaration :
 		{T_parameter_declaration_2($2,$3)}
 ;
 
-/*specparam_declaration :
+specparam_declaration :
 	KEY_SPECPARAM range_opt list_of_specparam_assignments SEMICOLON
-		{T_specparam_declaration($2,$3)}*/
+		{T_specparam_declaration($2,$3)}
 ;
 
 parameter_type :
@@ -905,7 +905,7 @@ comma_real_type_list :
 		{$2::$3}
 ;
 
-/*list_of_specparam_assignments :
+list_of_specparam_assignments :
 	specparam_assignment comma_specparam_assignment_list
 		{$1::$2}
 ;
@@ -915,7 +915,7 @@ comma_specparam_assignment_list :
 	| COMMA specparam_assignment comma_specparam_assignment_list
 		{$2::$3}
 ;
-*/
+
 list_of_variable_identifiers :
 	variable_type comma_variable_type_list
 		{$1::$2}
@@ -967,7 +967,7 @@ param_assignment :
 		{T_param_assignment($1,$3)}
 ;
 
-/*specparam_assignment :
+specparam_assignment :
 	specparam_identifier EQU1 mintypmax_expression
 		{T_specparam_assignment($1,$3)}
 	| pulse_control_specparam
@@ -981,7 +981,7 @@ pulse_control_specparam :
 	| KEY_PATHPULSE specify_input_terminal_descriptor DOLLOR specify_output_terminal_descriptor EQU1 LPARENT reject_limit_value comma_error_limit_value_opt RPARENT
 		{T_specparam_assignment_pulse2($2,$4,$7,$8)}
 ;
-*/
+
 comma_error_limit_value_opt :
 	{T_mintypmax_expression_NOSPEC}
 	| COMMA error_limit_value {$2}
@@ -2175,7 +2175,7 @@ task_enable :
 
 /*A.7 Specify section
 A.7.1 Specify block declaration*/
-/*specify_block :
+specify_block :
 	KEY_SPECIFY specify_item_list KEY_ENDSPECIFY
 		{T_specify_block($2)}
 ;
@@ -2196,8 +2196,8 @@ specify_item :
 		{T_specify_item_showcancelled($1)}
 	| path_declaration
 		{T_specify_item_path($1)}
-	| system_timing_check
-		{T_specify_item_system($1)}
+/*	| system_timing_check
+		{T_specify_item_system($1)}*/
 ;
 
 
@@ -2218,9 +2218,9 @@ showcancelled_declaration :
 ;
 
 
-*/
+
 /*A.7.2 Specify path declarations*/
-/*path_declaration :
+path_declaration :
 	simple_path_declaration SEMICOLON
 		{T_path_declaration_simple($1)}
 	| edge_sensitive_path_declaration SEMICOLON
@@ -2278,9 +2278,9 @@ comma_specify_output_terminal_descriptor_list :
 		{$2::$3}
 ;
 
-*/
+
 /*A.7.3 Specify block terminals*/
-/*specify_input_terminal_descriptor :
+specify_input_terminal_descriptor :
 	input_identifier rsq_range_expression_rsq_opt
 		{T_specify_input_terminal_descriptor($1,$2)}
 ;
@@ -2306,9 +2306,9 @@ output_identifier :
 	identifier {$1}
 ;
 
-*/
+
 /*A.7.4 Specify path delays*/
-/*path_delay_value :
+path_delay_value :
 	list_of_path_delay_expressions
 		{$1}
 	| LPARENT list_of_path_delay_expressions RPARENT
@@ -2382,7 +2382,7 @@ polarity_operator :
 	| OP2_SUB {T_polarity_operator_SUB}
 ;
 
-*/
+
 /*A.7.5 System timing checks
 A.7.5.1 System timing check commands*/
 /* no time to do*/
