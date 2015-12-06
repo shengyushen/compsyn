@@ -1425,8 +1425,6 @@ module_instantiation :
 		{T_module_instantiation($1,$2,$3::$4)}
 	| udp_identifier charge_drive_pull_strength delay2_opt udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
-	| udp_identifier charge_drive_pull_strength delay2 udp_instance comma_udp_instance_list  ;
-		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
 
 comma_module_instance_list :
