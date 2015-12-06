@@ -92,13 +92,13 @@ and integer_declaration =
 	T_integer_declaration of (variable_type list)
 and net_declaration =
 	T_net_declaration_net_type1 of net_type*signed*delay3*(net_identifier_dimension_list list)
-	| T_net_declaration_net_type2 of net_type*drive_strength*signed*delay3*(net_decl_assignment list)
+	| T_net_declaration_net_type2 of net_type*charge_drive_pull_strength*signed*delay3*(net_decl_assignment list)
 	| T_net_declaration_net_type3 of net_type*vectored_scalared*signed*range*delay3*(net_identifier_dimension_list list)
-	| T_net_declaration_net_type4 of net_type*drive_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
-	| T_net_declaration_trireg_1 of charge_strength*signed*delay3*(net_identifier_dimension_list list)
-	| T_net_declaration_trireg_2 of drive_strength*signed*delay3*(net_decl_assignment list)
-	| T_net_declaration_trireg_3 of charge_strength*vectored_scalared*signed*range*delay3
-	| T_net_declaration_trireg_4 of drive_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
+	| T_net_declaration_net_type4 of net_type*charge_drive_pull_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
+	| T_net_declaration_trireg_1 of charge_drive_pull_strength*signed*delay3*(net_identifier_dimension_list list)
+	| T_net_declaration_trireg_2 of charge_drive_pull_strength*signed*delay3*(net_decl_assignment list)
+	| T_net_declaration_trireg_3 of charge_drive_pull_strength*vectored_scalared*signed*range*delay3
+	| T_net_declaration_trireg_4 of charge_drive_pull_strength*vectored_scalared*signed*range*delay3*(net_decl_assignment list)
 and vectored_scalared =
 	T_vectored_scalared_NOSPEC
 	|T_vectored_scalared_vectored
@@ -141,14 +141,6 @@ and strength =
 	| KEY_STRONG1	
 	| KEY_PULL1		
 	| KEY_WEAK1 
-and drive_strength =
-	T_drive_strength_NOSPEC
-	| T_drive_strength of strength*strength
-and charge_strength =
-	T_charge_strength_NOSPEC
-	| T_charge_strength__small
-	| T_charge_strength__medium
-	| T_charge_strength__large
 and delay3 =
 	T_delay3_NOSPEC
 	| T_delay3_1 of delay_value
@@ -243,14 +235,14 @@ and block_real_type =
 	T_block_real_type of identifier*(dimension list)
 and gate_instantiation =
 	T_gate_instantiation_cmos of cmos_switchtype*delay3*(cmos_switch_instance list)
-	| T_gate_instantiation_enable of enable_gatetype*drive_strength*delay3*(enable_gate_instance list)
+	| T_gate_instantiation_enable of enable_gatetype*charge_drive_pull_strength*delay3*(enable_gate_instance list)
 	| T_gate_instantiation_mos of mos_switchtype*delay3*(mos_switch_instance list)
-	| T_gate_instantiation_input of n_input_gatetype*drive_strength*delay2*(n_input_gate_instance list)
-	| T_gate_instantiation_output of n_output_gatetype*drive_strength*delay2*(n_output_gate_instance list)
+	| T_gate_instantiation_input of n_input_gatetype*charge_drive_pull_strength*delay2*(n_input_gate_instance list)
+	| T_gate_instantiation_output of n_output_gatetype*charge_drive_pull_strength*delay2*(n_output_gate_instance list)
 	| T_gate_instantiation_pass_en of pass_en_switchtype*delay2*(pass_enable_switch_instance list)
 	| T_gate_instantiation_pass of pass_switchtype*(pass_switch_instance list)
-	| T_gate_instantiation_pulldown of pulldown_strength*(pull_gate_instance list)
-	| T_gate_instantiation_pullup of pullup_strength*(pull_gate_instance list)
+	| T_gate_instantiation_pulldown of charge_drive_pull_strength*(pull_gate_instance list)
+	| T_gate_instantiation_pullup of charge_drive_pull_strength*(pull_gate_instance list)
 and cmos_switch_instance =
 	T_cmos_switch_instance of name_of_gate_instance*expression*expression*expression*expression
 and enable_gate_instance =
@@ -270,16 +262,6 @@ and pull_gate_instance =
 and name_of_gate_instance =
 	T_name_of_gate_instance_NOSPEC
 	| T_name_of_gate_instance of identifier*range
-and pulldown_strength =
-	T_pulldown_strength_NOSPEC
-	| T_pulldown_strength01 of strength*strength
-	| T_pulldown_strength10 of strength*strength
-	| T_pulldown_strength0 of strength
-and pullup_strength =
-	T_pullup_strength_NOSPEC
-	| T_pullup_strength01 of strength*strength
-	| T_pullup_strength10 of strength*strength
-	| T_pullup_strength1 of strength
 and cmos_switchtype =
 	T_cmos_switchtype_CMOS
 	| T_cmos_switchtype_RCMOS
@@ -313,7 +295,7 @@ and pass_switchtype =
 	| T_pass_switchtype_RTRAN 
 and module_instantiation =
 	T_module_instantiation of identifier*parameter_value_assignment*(module_instance list)
-	| T_udp_instantiation of identifier*drive_strength*delay2*(udp_instance list)
+	| T_udp_instantiation of identifier*charge_drive_pull_strength*delay2*(udp_instance list)
 and	module_instance =
 	T_module_instance of name_of_module_instance*list_of_port_connections
 and name_of_module_instance =
@@ -399,7 +381,7 @@ and	name_of_udp_instance =
 	T_name_of_udp_instance_NOSPEC
 	| T_name_of_udp_instance of identifier*range
 and continuous_assign =
-	T_continuous_assign of drive_strength*delay3*(variable_assignment list)
+	T_continuous_assign of charge_drive_pull_strength*delay3*(variable_assignment list)
 (*and	net_assignment =
 	T_net_assignment of expression*expression*)
 and	initial_construct =
@@ -662,3 +644,12 @@ and	string =
 	T_string of Lexing.position*Lexing.position*string
 and	system_function_identifier =
 	T_system_function_identifier of  Lexing.position*Lexing.position*string
+and charge_drive_pull_strength =
+	T_strength_NOSPEC
+	| T_charge_strength__small
+	| T_charge_strength__medium
+	| T_charge_strength__large
+	| T_drive_strength of strength*strength
+	| T_pulldown_strength0 of strength
+	| T_pullup_strength1 of strength
+

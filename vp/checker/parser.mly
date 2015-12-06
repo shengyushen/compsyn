@@ -667,25 +667,20 @@ integer_declaration :
 net_declaration :
 	net_type signed_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_net_type1($1,$2,$3,$4)}
-	| net_type drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+	| net_type charge_drive_pull_strength signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type2($1,$2,$3,$4,$5)}
 	| net_type vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
-	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
+	| net_type charge_drive_pull_strength vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
-/*	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+/*	| KEY_TRIREG charge_drive_pull_strength signed_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_1($2,$3,$4,$5)}
-	| KEY_TRIREG drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+	| KEY_TRIREG charge_drive_pull_strength signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_trireg_2($2,$3,$4,$5)}*/
-	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
+	| KEY_TRIREG charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
-	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
+	| KEY_TRIREG charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}
-;
-
-charge_strength_opt :
-	{T_charge_strength_NOSPEC}
-	| charge_strength {$1}
 ;
 
 delay3_opt :
@@ -699,10 +694,6 @@ vectored_scalared_opt :
 	| KEY_SCALARED {T_vectored_scalared_scalared}
 ;
 
-drive_strength_opt :
-	{T_drive_strength_NOSPEC}
-	| drive_strength {$1}
-;
 
 real_declaration :
 	KEY_REAL list_of_real_identifiers SEMICOLON
@@ -767,19 +758,19 @@ variable_type :
 
 /*A.2.2.2 Strengths*/
 
-drive_strength :
-	LPARENT strength0 COMMA strength1 RPARENT
-		{T_drive_strength($2,$4)}
-	| LPARENT strength1 COMMA strength0 RPARENT
-		{T_drive_strength($2,$4)}
-	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT
-		{T_drive_strength($2,KEY_HIGHZ1)}
-	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT
-		{T_drive_strength($2,KEY_HIGHZ0)}
-	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT
-		{T_drive_strength(KEY_HIGHZ0,$4)}
-	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT
-		{T_drive_strength(KEY_HIGHZ1,$4)}
+charge_drive_pull_strength :
+	{T_strength_NOSPEC}
+	| LPARENT KEY_SMALL RPARENT {T_charge_strength__small}
+	| LPARENT KEY_MEDIUM RPARENT {T_charge_strength__medium}
+	| LPARENT KEY_LARGE RPARENT {T_charge_strength__large}
+	|	LPARENT strength0 COMMA strength1 RPARENT {T_drive_strength($2,$4)}
+	| LPARENT strength1 COMMA strength0 RPARENT {T_drive_strength($2,$4)}
+	| LPARENT strength0 COMMA KEY_HIGHZ1 RPARENT {T_drive_strength($2,KEY_HIGHZ1)}
+	| LPARENT strength1 COMMA KEY_HIGHZ0 RPARENT {T_drive_strength($2,KEY_HIGHZ0)}
+	| LPARENT KEY_HIGHZ0 COMMA strength1 RPARENT {T_drive_strength(KEY_HIGHZ0,$4)}
+	| LPARENT KEY_HIGHZ1 COMMA strength0 RPARENT {T_drive_strength(KEY_HIGHZ1,$4)}
+	| LPARENT strength0 RPARENT {T_pulldown_strength0($2)}
+	| LPARENT strength1 RPARENT {T_pullup_strength1($2)}
 ;
 
 
@@ -797,14 +788,6 @@ strength1 :
 	| KEY_WEAK1 {KEY_WEAK1}
 ;
 
-charge_strength : 
-	LPARENT KEY_SMALL RPARENT 
-		{T_charge_strength__small}
-	| LPARENT KEY_MEDIUM RPARENT 
-		{T_charge_strength__medium}
-	| LPARENT KEY_LARGE RPARENT
-		{T_charge_strength__large}
-;
 
 /*A.2.2.3 Delays*/
 
@@ -1255,21 +1238,21 @@ A.3.1 Primitive instantiation and instances*/
 gate_instantiation :
 	cmos_switchtype delay3_opt cmos_switch_instance comma_cmos_switch_instance_list SEMICOLON
 		{T_gate_instantiation_cmos($1,$2,$3::$4)}
-	| enable_gatetype drive_strength_opt delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
+	| enable_gatetype charge_drive_pull_strength delay3_opt enable_gate_instance comma_enable_gate_instance_list SEMICOLON
 		{T_gate_instantiation_enable($1,$2,$3,$4::$5)}
 	| mos_switchtype delay3_opt mos_switch_instance comma_mos_switch_instance_list SEMICOLON
 		{T_gate_instantiation_mos($1,$2,$3::$4)}
-	| n_input_gatetype drive_strength_opt delay2_opt n_input_gate_instance comma_n_input_gate_instance_list SEMICOLON
+	| n_input_gatetype charge_drive_pull_strength delay2_opt n_input_gate_instance comma_n_input_gate_instance_list SEMICOLON
 		{T_gate_instantiation_input($1,$2,$3,$4::$5)}
-	| n_output_gatetype drive_strength_opt delay2_opt n_output_gate_instance comma_n_output_gate_instance_list SEMICOLON
+	| n_output_gatetype charge_drive_pull_strength delay2_opt n_output_gate_instance comma_n_output_gate_instance_list SEMICOLON
 		{T_gate_instantiation_output($1,$2,$3,$4::$5)}
 	| pass_en_switchtype delay2_opt pass_enable_switch_instance comma_pass_enable_switch_instance_list SEMICOLON
 		{T_gate_instantiation_pass_en($1,$2,$3::$4)}
 	| pass_switchtype pass_switch_instance comma_pass_switch_instance_list SEMICOLON
 		{T_gate_instantiation_pass($1,$2::$3)}
-	| KEY_PULLDOWN pulldown_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+	| KEY_PULLDOWN charge_drive_pull_strength pull_gate_instance comma_pull_gate_instance_list SEMICOLON
 		{T_gate_instantiation_pulldown($2,$3::$4)}
-	| KEY_PULLUP pullup_strength_opt pull_gate_instance comma_pull_gate_instance_list SEMICOLON
+	| KEY_PULLUP charge_drive_pull_strength pull_gate_instance comma_pull_gate_instance_list SEMICOLON
 		{T_gate_instantiation_pullup($2,$3::$4)}
 ;
 
@@ -1327,16 +1310,6 @@ delay2_opt :
 	| delay2 {$1}
 ;
 
-pulldown_strength_opt :
-	{T_pulldown_strength_NOSPEC}
-	| pulldown_strength {$1}
-;
-
-pullup_strength_opt :
-	{T_pullup_strength_NOSPEC}
-	| pullup_strength {$1}
-;
-
 cmos_switch_instance :
 	name_of_gate_instance_opt LPARENT output_terminal COMMA input_terminal COMMA ncontrol_terminal COMMA pcontrol_terminal RPARENT
 		{T_cmos_switch_instance($1,$3,$5,$7,$9)}
@@ -1390,24 +1363,6 @@ name_of_gate_instance :
 ;
 
 /*A.3.2 Primitive strengths*/
-
-pulldown_strength :
-	LPARENT strength0 COMMA strength1 RPARENT
-		{T_pulldown_strength01($2,$4)}
-	| LPARENT strength1 COMMA strength0 RPARENT
-		{T_pulldown_strength10($2,$4)}
-	| LPARENT strength0 RPARENT
-		{T_pulldown_strength0($2)}
-;
-
-pullup_strength :
-	LPARENT strength0 COMMA strength1 RPARENT
-		{T_pullup_strength01($2,$4)}
-	| LPARENT strength1 COMMA strength0 RPARENT
-		{T_pullup_strength10($2,$4)}
-	| LPARENT strength1 RPARENT
-		{T_pullup_strength1($2)}
-;
 
 
 /*A.3.3 Primitive terminals*/
@@ -1476,9 +1431,9 @@ A.4.1 Module instantiation*/
 module_instantiation :
 	module_identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
 		{T_module_instantiation($1,$2,$3::$4)}
-	| udp_identifier drive_strength delay2_opt udp_instance comma_udp_instance_list  ;
+	| udp_identifier charge_drive_pull_strength delay2_opt udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
-	| udp_identifier drive_strength_opt delay2 udp_instance comma_udp_instance_list  ;
+	| udp_identifier charge_drive_pull_strength delay2 udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
 
@@ -1901,7 +1856,7 @@ A.6.1 Continuous assignment statements*/
 
 
 continuous_assign :
-	KEY_ASSIGN drive_strength_opt delay3_opt list_of_variable_assignments SEMICOLON
+	KEY_ASSIGN charge_drive_pull_strength delay3_opt list_of_variable_assignments SEMICOLON
 		{T_continuous_assign($2,$3,$4)}
 ;
 
