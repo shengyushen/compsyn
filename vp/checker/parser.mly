@@ -1044,7 +1044,7 @@ dimension :
 ;
 
 range :
-	LSQUARE msb_expression COLON lsb_expression RSQUARE
+	LSQUARE expression COLON expression RSQUARE
 		{T_range($2,$4)}
 ;
 
@@ -2149,8 +2149,8 @@ event_trigger :
 
 square_expression_square_list :
 	{[]}
-	| square_expression_square square_expression_square_list
-		{$1::$2}
+	| square_expression_square_list square_expression_square 
+		{$1@[$2]}
 ;
 
 square_expression_square :
@@ -2725,10 +2725,6 @@ expression :
 		{T_expression_condition($1)}
 ;
 
-lsb_expression :
-	expression
-		{$1}
-;
 
 mintypmax_expression :
 	expression
@@ -2775,16 +2771,11 @@ module_path_mintypmax_expression :
 		{T_module_path_mintypmax_expression_3($1,$3,$5)}
 ;
 */
-msb_expression :
-	expression
-		{$1}
-;
-
 
 range_expression :
 	expression
 		{T_range_expression_1($1)}
-	| msb_expression COLON lsb_expression
+	| expression COLON expression
 		{T_range_expression_2($1,$3)}
 	| base_expression ADDRANGE width_expression
 		{T_range_expression_addrange($1,$3)}
@@ -2842,8 +2833,8 @@ primary :
 
 lsq_expression_rsq_list :
 	{[]}
-	| LSQUARE expression RSQUARE lsq_expression_rsq_list
-		{$2::$4}
+	| lsq_expression_rsq_list square_expression_square
+		{$1@[$2]}
 ;
 
 
