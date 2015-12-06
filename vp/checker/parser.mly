@@ -1920,15 +1920,15 @@ variable_assignment :
 /*A.6.3 Parallel and sequential blocks*/
 
 par_block :
-	KEY_FORK comma_block_identifier_block_item_declaration_list_opt
+	KEY_FORK colon_block_identifier_block_item_declaration_list_opt
 	statement_list
 	KEY_JOIN
 		{T_par_block($3)}
 ;
 
-comma_block_identifier_block_item_declaration_list_opt :
+colon_block_identifier_block_item_declaration_list_opt :
 	{0}
-	| COMMA block_identifier block_item_declaration_list
+	| COLON block_identifier block_item_declaration_list
 		{0}
 ;
 
@@ -1939,7 +1939,7 @@ statement_list :
 ;
 
 seq_block :
-	KEY_BEGIN comma_block_identifier_block_item_declaration_list_opt 
+	KEY_BEGIN colon_block_identifier_block_item_declaration_list_opt 
 	statement_list
 	KEY_END
 		{T_seq_block($3)}
