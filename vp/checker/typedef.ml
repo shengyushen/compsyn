@@ -337,16 +337,11 @@ and generate_region =
 and genvar_declaration =
 	T_genvar_declaration of (identifier list)
 and loop_generate_construct =
-	T_loop_generate_construct of genvar_initialization*genvar_expression*genvar_iteration*generate_block
+	T_loop_generate_construct of genvar_initialization*expression*genvar_iteration*generate_block
 and	genvar_initialization =
 	T_genvar_initialization of identifier*expression
-and genvar_expression =
-	T_genvar_expression_primary of genvar_primary
-	| T_genvar_expression_1op of unary_operator*(attribute_instance list)*genvar_primary
-	| T_genvar_expression_2op of genvar_expression*binary_operator*(attribute_instance list)*genvar_expression
-	| T_genvar_expression_sel of genvar_expression*(attribute_instance list)*genvar_expression*genvar_expression
 and	genvar_iteration =
-	T_genvar_iteration of identifier*genvar_expression
+	T_genvar_iteration of identifier*expression
 and	genvar_primary =
 	T_genvar_primary_const of primary
 	| T_genvar_primary_id of identifier
@@ -550,8 +545,6 @@ and	function_call =
 	T_function_call of hierarchical_identifier*(attribute_instance list)*(expression list)
 and	system_function_call =
 	T_system_function_call of system_function_identifier*(expression list)
-and	conditional_expression =
-	T_conditional_expression of expression*(attribute_instance list)*expression*expression
 and	msb_expression =
 	expression
 and	lsb_expression =
@@ -563,7 +556,7 @@ and	expression =
 	| T_expression_prim of primary
 	| T_expression_op1 of unary_operator*(attribute_instance list)*primary
 	| T_expression_op2 of expression*binary_operator*(attribute_instance list)*expression
-	|	T_expression_condition of conditional_expression
+	|	T_expression_condition of expression*(attribute_instance list)*expression*expression
 and	mintypmax_expression =
 	T_mintypmax_expression_NOSPEC
 	| T_mintypmax_expression_1 of expression
