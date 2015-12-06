@@ -1032,8 +1032,8 @@ function_declaration :
 
 function_item_declaration_list :
 	{[]}
-	| function_item_declaration function_item_declaration_list
-		{$1::$2}
+	| function_item_declaration_list function_item_declaration
+		{$1@[$2]}
 ;
 
 automatic_opt :
