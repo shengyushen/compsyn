@@ -412,26 +412,24 @@ and	name_of_udp_instance =
 	T_name_of_udp_instance_NOSPEC
 	| T_name_of_udp_instance of identifier*range
 and continuous_assign =
-	T_continuous_assign of drive_strength*delay3*(net_assignment list)
-and	net_assignment =
-	T_net_assignment of expression*expression
+	T_continuous_assign of drive_strength*delay3*(variable_assignment list)
+(*and	net_assignment =
+	T_net_assignment of expression*expression*)
 and	initial_construct =
 	T_initial_construct of statement
 and	always_construct =
 	T_always_construct of statement
 and blocking_assignment =
-	T_blocking_assignment of expression*delay_or_event_control*expression
+	T_blocking_assignment of variable_lvalue*delay_or_event_control*expression
 and	nonblocking_assignment =
-	T_nonblocking_assignment of expression*delay_or_event_control*expression
+	T_nonblocking_assignment of variable_lvalue*delay_or_event_control*expression
 and	procedural_continuous_assignments =
 	T_procedural_continuous_assignments_assign of variable_assignment
-	| T_procedural_continuous_assignments_deassign of expression
+	| T_procedural_continuous_assignments_deassign of variable_lvalue
 	| T_procedural_continuous_assignments_force1 of variable_assignment
-	| T_procedural_continuous_assignments_force2 of net_assignment
-	| T_procedural_continuous_assignments_release1 of expression
-	| T_procedural_continuous_assignments_release2 of expression
+	| T_procedural_continuous_assignments_release1 of variable_lvalue 
 and	variable_assignment =
-	T_variable_assignment of expression*expression
+	T_variable_assignment of variable_lvalue*expression
 and	par_block =
 	T_par_block of (statement list)
 and	seq_block =
@@ -612,14 +610,13 @@ and	primary =
 	| T_primary_sysfunc of system_function_call
 	| T_primary_mintypmax of mintypmax_expression
 	| T_primary_string of string
-(*and	net_lvalue =
+and	net_lvalue =
 	T_net_lvalue_id of hierarchical_identifier
 	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)
 	| T_net_lvalue_lvlist of (net_lvalue list)
 and variable_lvalue =
-	T_variable_lvalue_id of hierarchical_identifier
-	| T_variable_lvalue_idexp of hierarchical_identifier*(expression list)
-	| T_variable_lvalue_vlvlist of variable_lvalue list*)
+	T_variable_lvalue_idexp of hierarchical_identifier*(expression list)
+	| T_variable_lvalue_vlvlist of variable_lvalue list
 and	delay_value =
 	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_delay_value_REAL_NUMBER of  Lexing.position*Lexing.position*string
