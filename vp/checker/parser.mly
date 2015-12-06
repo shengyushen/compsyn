@@ -665,8 +665,8 @@ integer_declaration :
 ;
 
 net_declaration :
-	net_type vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
-		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
+	  net_type charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
+		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6,$7)}
 	| net_type charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
 	| KEY_TRIREG charge_drive_pull_strength vectored_scalared_opt signed_opt range_opt delay3_opt list_of_net_identifiers SEMICOLON
@@ -1421,9 +1421,9 @@ pass_switchtype :
 A.4.1 Module instantiation*/
 
 module_instantiation :
-	module_identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
+	identifier parameter_value_assignment_opt module_instance comma_module_instance_list SEMICOLON
 		{T_module_instantiation($1,$2,$3::$4)}
-	| udp_identifier charge_drive_pull_strength delay2_opt udp_instance comma_udp_instance_list  ;
+	| identifier charge_drive_pull_strength delay2_opt udp_instance comma_udp_instance_list  ;
 		{T_udp_instantiation($1,$2,$3,$4::$5)}
 ;
 
