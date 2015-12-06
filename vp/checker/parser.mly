@@ -682,21 +682,21 @@ net_declaration :
 		{T_net_declaration_net_type3($1,$2,$3,$4,$5,$6)}
 	| net_type drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_net_type4($1,$2,$3,$4,$5,$6,$7)}
-	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
+/*	| KEY_TRIREG charge_strength_opt signed_opt delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_1($2,$3,$4,$5)}
 	| KEY_TRIREG drive_strength_opt signed_opt delay3_opt list_of_net_decl_assignments SEMICOLON
 		{T_net_declaration_trireg_2($2,$3,$4,$5)}
 	| KEY_TRIREG charge_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_identifiers SEMICOLON
 		{T_net_declaration_trireg_3($2,$3,$4,$5,$6)}
 	| KEY_TRIREG drive_strength_opt vectored_scalared_opt signed_opt range delay3_opt list_of_net_decl_assignments SEMICOLON
-		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}
+		{T_net_declaration_trireg_4($2,$3,$4,$5,$6,$7)}*/
 ;
 
-charge_strength_opt :
+/*charge_strength_opt :
 	{T_charge_strength_NOSPEC}
 	| charge_strength {$1}
 ;
-
+*/
 delay3_opt :
 	{T_delay3_NOSPEC}
 	| delay3 {$1}
@@ -806,7 +806,7 @@ strength1 :
 	| KEY_WEAK1 {KEY_WEAK1}
 ;
 
-charge_strength : 
+/*charge_strength : 
 	LPARENT KEY_SMALL RPARENT 
 		{T_charge_strength__small}
 	| LPARENT KEY_MEDIUM RPARENT 
@@ -814,7 +814,7 @@ charge_strength :
 	| LPARENT KEY_LARGE RPARENT
 		{T_charge_strength__large}
 ;
-
+*/
 /*A.2.2.3 Delays*/
 
 delay3 :
