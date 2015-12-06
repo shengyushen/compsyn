@@ -2163,16 +2163,9 @@ event_control :
 ;
 
 event_trigger :
-	IMPLY hierarchical_identifier square_expression_square_list SEMICOLON
-		{T_event_trigger($2,$3)}
+	IMPLY hierarchical_identifier  SEMICOLON
+		{T_event_trigger($2)}
 ;
-
-square_expression_square_list :
-	{[]}
-	|  square_expression_square_list LSQUARE expression RSQUARE
-		{$1@[$3]}
-;
-
 
 event_expression :
 	expression
@@ -2841,8 +2834,8 @@ module_path_primary :
 primary :
 	number
 		{T_primary_num($1)}
-	| hierarchical_identifier  lsq_expression_rsq_list 
-		{T_primary_idexp($1,$2)}
+	| hierarchical_identifier   
+		{T_primary_idexp($1)}
 	| concatenation
 		{T_primary_concat($1)}
 	| multiple_concatenation
@@ -2883,8 +2876,8 @@ comma_net_lvalue_list :
 ;
 */
 variable_lvalue :
-	hierarchical_identifier lsq_expression_rsq_list
-		{T_variable_lvalue_idexp($1,$2)}
+	hierarchical_identifier 
+		{T_variable_lvalue_idexp($1)}
 	| LHUA variable_lvalue comma_variable_lvalue_list  RHUA
 		{T_variable_lvalue_vlvlist($2::$3)}
 ;		
@@ -2952,21 +2945,19 @@ generate_block_identifier : identifier {$1};
 genvar_identifier : identifier {$1};
 
 
-hierarchical_identifier : 
-	identifier_lsq_expression_rsq_opt_list  identifier
-		{T_hierarchical_identifier($1,$2)}
-;
-identifier_lsq_expression_rsq_opt_list :
-	{[]}
-	|  identifier_lsq_expression_rsq_opt_list identifier_lsq_expression_rsq_opt
-		{$1 @ [$2]}
+hierarchical_identifier :
+	identifier_lsq_expression_rsq_list {T_hierarchical_identifier([$1])}
+	|  hierarchical_identifier PERIOD identifier_lsq_expression_rsq_list
+		{
+			match $1 with
+			T_hierarchical_identifier(lst) -> 
+				T_hierarchical_identifier(lst @ [$3])
+		}
 ;
 
-identifier_lsq_expression_rsq_opt :
-	identifier PERIOD
-		{T_identifier_lsq_expression_rsq($1,T_expression_NOSPEC)}
-	| identifier LSQUARE expression RSQUARE PERIOD
-		{T_identifier_lsq_expression_rsq($1,$3)}
+identifier_lsq_expression_rsq_list :
+	identifier lsq_expression_rsq_list 
+		{T_identifier_lsq_expression_rsq($1,$2)}
 ;
 
 

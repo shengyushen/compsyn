@@ -465,7 +465,7 @@ and	event_control =
 	| T_event_control_event_exp of event_expression
 	| T_event_control_start
 and	event_trigger =
-	T_event_trigger of hierarchical_identifier*(expression list)
+	T_event_trigger of hierarchical_identifier
 and	event_expression =
 	T_event_expression_exp of expression
 	| T_event_expression_pos of expression
@@ -603,7 +603,7 @@ and	module_path_primary =
 	| T_module_path_primary_mintypmax of module_path_mintypmax_expression
 and	primary =
 	T_primary_num of number
-	| T_primary_idexp of hierarchical_identifier*(expression list)
+	| T_primary_idexp of hierarchical_identifier
 	| T_primary_concat of concatenation
 	| T_primary_mulcon of multiple_concatenation
 	| T_primary_func of function_call
@@ -615,7 +615,7 @@ and	net_lvalue =
 	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)
 	| T_net_lvalue_lvlist of (net_lvalue list)
 and variable_lvalue =
-	T_variable_lvalue_idexp of hierarchical_identifier*(expression list)
+	T_variable_lvalue_idexp of hierarchical_identifier
 	| T_variable_lvalue_vlvlist of variable_lvalue list
 and	delay_value =
 	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
@@ -626,9 +626,9 @@ and	attribute_instance =
 and	attr_spec =
 	T_attr_spec of identifier*expression
 and	hierarchical_identifier =
-	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)*identifier
+	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)
 and	identifier_lsq_expression_rsq =
-	T_identifier_lsq_expression_rsq of identifier*expression
+	T_identifier_lsq_expression_rsq of identifier*(expression list)
 and polarity_operator =
 	T_polarity_operator_NOSPEC
 	| T_polarity_operator_ADD
