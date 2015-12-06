@@ -1990,7 +1990,7 @@ always_construct :
 ;
 
 blocking_assignment :
-	variable_lvalue EQU1 delay_or_event_control_opt expression
+	net_lvalue EQU1 delay_or_event_control_opt expression
 		{T_blocking_assignment($1,$3,$4)}
 ;
 
@@ -2001,27 +2001,25 @@ delay_or_event_control_opt :
 ;
 
 nonblocking_assignment :
-	variable_lvalue OP2_LE delay_or_event_control_opt expression
+	net_lvalue OP2_LE delay_or_event_control_opt expression
 		{T_nonblocking_assignment($1,$3,$4)}
 ;
 
 procedural_continuous_assignments :
 	KEY_ASSIGN variable_assignment
 		{T_procedural_continuous_assignments_assign($2)}
-	| KEY_DEASSIGN variable_lvalue
+	| KEY_DEASSIGN net_lvalue
 		{T_procedural_continuous_assignments_deassign($2)}
 	| KEY_FORCE variable_assignment
 		{T_procedural_continuous_assignments_force1($2)}
 	| KEY_FORCE net_assignment
 		{T_procedural_continuous_assignments_force2($2)}
-	| KEY_RELEASE variable_lvalue
-		{T_procedural_continuous_assignments_release1($2)}
 	| KEY_RELEASE net_lvalue
-		{T_procedural_continuous_assignments_release2($2)}
+		{T_procedural_continuous_assignments_release1($2)}
 ;
 
 variable_assignment :
-	variable_lvalue EQU1 expression
+	net_lvalue EQU1 expression
 		{T_variable_assignment($1,$3)}
 ;
 
@@ -2851,7 +2849,7 @@ comma_net_lvalue_list :
 		{$2::$3}
 ;
 
-variable_lvalue :
+/*variable_lvalue :
 	hierarchical_variable_identifier 
 		{T_variable_lvalue_id($1)}
 	| hierarchical_variable_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
@@ -2866,7 +2864,7 @@ comma_variable_lvalue_list :
 		{$2::$3}
 ;
 
-
+*/
 
 /*A.8.6 Operators*/
 
@@ -2948,7 +2946,7 @@ identifier_lsq_expression_rsq_opt :
 
 hierarchical_net_identifier : hierarchical_identifier {$1};
 hierarchical_parameter_identifier : hierarchical_identifier {$1};
-hierarchical_variable_identifier : hierarchical_identifier {$1};
+/*hierarchical_variable_identifier : hierarchical_identifier {$1};*/
 hierarchical_task_identifier : hierarchical_identifier {$1};
 
 identifier :

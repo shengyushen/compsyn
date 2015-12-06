@@ -412,18 +412,18 @@ and	initial_construct =
 and	always_construct =
 	T_always_construct of statement
 and blocking_assignment =
-	T_blocking_assignment of variable_lvalue*delay_or_event_control*expression
+	T_blocking_assignment of net_lvalue*delay_or_event_control*expression
 and	nonblocking_assignment =
-	T_nonblocking_assignment of variable_lvalue*delay_or_event_control*expression
+	T_nonblocking_assignment of net_lvalue*delay_or_event_control*expression
 and	procedural_continuous_assignments =
 	T_procedural_continuous_assignments_assign of variable_assignment
-	| T_procedural_continuous_assignments_deassign of variable_lvalue
+	| T_procedural_continuous_assignments_deassign of net_lvalue
 	| T_procedural_continuous_assignments_force1 of variable_assignment
 	| T_procedural_continuous_assignments_force2 of net_assignment
-	| T_procedural_continuous_assignments_release1 of variable_lvalue
+	| T_procedural_continuous_assignments_release1 of net_lvalue
 	| T_procedural_continuous_assignments_release2 of net_lvalue
 and	variable_assignment =
-	T_variable_assignment of variable_lvalue*expression
+	T_variable_assignment of net_lvalue*expression
 and	par_block =
 	T_par_block of (statement list)
 and	seq_block =
@@ -610,10 +610,10 @@ and	net_lvalue =
 	T_net_lvalue_id of hierarchical_identifier
 	| T_net_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
 	| T_net_lvalue_lvlist of (net_lvalue list)
-and variable_lvalue =
+(*and variable_lvalue =
 	T_variable_lvalue_id of hierarchical_identifier
 	| T_variable_lvalue_idexp of hierarchical_identifier*(expression list)*range_expression
-	| T_variable_lvalue_vlvlist of variable_lvalue list
+	| T_variable_lvalue_vlvlist of variable_lvalue list*)
 and	delay_value =
 	T_delay_value_UNSIGNED_NUMBER of Lexing.position*Lexing.position*int
 	| T_delay_value_REAL_NUMBER of  Lexing.position*Lexing.position*string
