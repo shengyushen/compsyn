@@ -983,7 +983,7 @@ comma_port_identifier_equ1_expression_opt_list :
 
 /*A.2.4 Declaration assignments*/
 defparam_assignment :
-	hierarchical_parameter_identifier EQU1 mintypmax_expression
+	hierarchical_identifier EQU1 mintypmax_expression
 		{T_defparam_assignment($1,$3)}
 ;
 
@@ -2118,15 +2118,13 @@ delay_or_event_control :
 
 
 disable_statement :
-	KEY_DISABLE hierarchical_task_identifier SEMICOLON
-		{T_disable_statement_task($2)}
-	| KEY_DISABLE hierarchical_block_identifier SEMICOLON
-		{T_disable_statement_block($2)}
+	KEY_DISABLE hierarchical_identifier SEMICOLON
+		{T_disable_statement($2)}
 ;
 
 
 event_control :
-	AT hierarchical_event_identifier
+	AT hierarchical_identifier
 		{T_event_control_eventid($2)}
 	| AT LPARENT event_expression RPARENT
 		{T_event_control_event_exp($3)}
@@ -2137,13 +2135,8 @@ event_control :
 ;
 
 event_trigger :
-	IMPLY hierarchical_event_identifier lsq_expression_rsq_list SEMICOLON
+	IMPLY hierarchical_identifier lsq_expression_rsq_list SEMICOLON
 		{T_event_trigger($2,$3)}
-;
-
-square_expression_square :
-	LSQUARE expression RSQUARE
-		{$2}
 ;
 
 event_expression :
@@ -2281,7 +2274,7 @@ lp_expression_opt_comma_expression_list_rp :
 
 
 task_enable :
-	hierarchical_task_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
+	hierarchical_identifier lp_expression_opt_comma_expression_list_rp_opt SEMICOLON
 		{T_task_enable($1,$2)}
 ;
 
@@ -2395,18 +2388,12 @@ comma_specify_output_terminal_descriptor_list :
 */
 /*A.7.3 Specify block terminals*/
 /*specify_input_terminal_descriptor :
-	input_identifier rsq_range_expression_rsq_opt
+	input_identifier lsquare_range_expression_rsquare_opt
 		{T_specify_input_terminal_descriptor($1,$2)}
 ;
 
-rsq_range_expression_rsq_opt	:
-	{T_range_expression_NOSPEC}
-	| LSQUARE range_expression RSQUARE
-		{$2}
-;
-
 specify_output_terminal_descriptor :
-	output_identifier rsq_range_expression_rsq_opt
+	output_identifier lsquare_range_expression_rsquare_opt
 		{T_specify_output_terminal_descriptor($1,$2)}
 ;
 
@@ -2638,7 +2625,7 @@ multiple_concatenation :
 /*A.8.2 Function calls*/
 
 function_call :
-	hierarchical_function_identifier attribute_instance_list
+	hierarchical_identifier attribute_instance_list
 LPARENT expression comma_expression_list RPARENT
 		{T_function_call($1,$2,$4::$5)}
 ;
@@ -2802,8 +2789,8 @@ primary :
 		{T_primary_num($1)}
 	| hierarchical_identifier 
 		{T_primary_id($1)}
-	| hierarchical_identifier  lsq_expression_rsq_list LSQUARE range_expression RSQUARE
-		{T_primary_idexp($1,$2,$4)}
+	| hierarchical_identifier  lsq_expression_rsq_list lsquare_range_expression_rsquare
+		{T_primary_idexp($1,$2,$3)}
 	| concatenation
 		{T_primary_concat($1)}
 	| multiple_concatenation
@@ -2825,13 +2812,17 @@ lsq_expression_rsq_list :
 		{$1@[$2]}
 ;
 
+square_expression_square :
+	LSQUARE expression RSQUARE
+		{$2}
+;
 
 /*A.8.5 Expression left-side values*/
 net_lvalue :
-	hierarchical_net_identifier
+	hierarchical_identifier
 		{T_net_lvalue_id($1)}
-	| hierarchical_net_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
-		{T_net_lvalue_idexp($1,$2,$4)}
+	| hierarchical_identifier lsq_expression_rsq_list lsquare_range_expression_rsquare
+		{T_net_lvalue_idexp($1,$2,$3)}
 	| LHUA net_lvalue comma_net_lvalue_list RHUA
 		{T_net_lvalue_lvlist($2::$3)}
 ;
@@ -2846,7 +2837,7 @@ comma_net_lvalue_list :
 /*variable_lvalue :
 	hierarchical_variable_identifier 
 		{T_variable_lvalue_id($1)}
-	| hierarchical_variable_identifier lsq_expression_rsq_list LSQUARE range_expression RSQUARE
+	| hierarchical_variable_identifier lsq_expression_rsq_list lsquare_range_expression_rsquare
 		{T_variable_lvalue_idexp($1,$2,$4)}
 	| LHUA variable_lvalue comma_variable_lvalue_list  RHUA
 		{T_variable_lvalue_vlvlist($2::$3)}
@@ -2916,9 +2907,6 @@ function_identifier : identifier {$1};
 /*gate_instance_identifier : identifier {$1};*/
 generate_block_identifier : identifier {$1};
 genvar_identifier : identifier {$1};
-hierarchical_block_identifier : hierarchical_identifier {$1};
-hierarchical_event_identifier : hierarchical_identifier {$1};
-hierarchical_function_identifier : hierarchical_identifier {$1};
 
 
 hierarchical_identifier : 
@@ -2934,14 +2922,11 @@ identifier_lsq_expression_rsq_opt_list :
 identifier_lsq_expression_rsq_opt :
 	identifier PERIOD
 		{T_identifier_lsq_expression_rsq($1,T_expression_NOSPEC)}
-	| identifier LSQUARE expression RSQUARE PERIOD
-		{T_identifier_lsq_expression_rsq($1,$3)}
+	| identifier square_expression_square PERIOD
+		{T_identifier_lsq_expression_rsq($1,$2)}
 ;
 
-hierarchical_net_identifier : hierarchical_identifier {$1};
-hierarchical_parameter_identifier : hierarchical_identifier {$1};
 /*hierarchical_variable_identifier : hierarchical_identifier {$1};*/
-hierarchical_task_identifier : hierarchical_identifier {$1};
 
 identifier :
 	SIMPLE_IDENTIFIER {T_identifier(get1 $1, get2 $1, get3 $1)}

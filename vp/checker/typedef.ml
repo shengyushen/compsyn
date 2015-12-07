@@ -453,8 +453,7 @@ and	delay_or_event_control =
 	| T_delay_or_event_control_event_control of event_control
 	| T_delay_or_event_control_3 of expression*event_control
 and disable_statement =
-	T_disable_statement_task of hierarchical_identifier
-	| T_disable_statement_block of hierarchical_identifier
+	T_disable_statement of hierarchical_identifier
 and	event_control =
 	T_event_control_eventid of hierarchical_identifier
 	| T_event_control_event_exp of event_expression
