@@ -5,7 +5,7 @@
 //Bison declarations
 
 %token KEY_NULL
-%toke:wq
+%token KEY_
 
 
 %%
