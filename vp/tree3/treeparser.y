@@ -5,7 +5,10 @@
 //Bison declarations
 
 %token KEY_NULL
-%token KEY_
+%token KEY_LPARENT
+%token KEY_RPARENT
+
+%token NUMBER
 
 
 %%
