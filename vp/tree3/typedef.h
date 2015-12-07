@@ -1,6 +1,3 @@
-#include <iostream> 
-using namespace std;  
-
 /*
 A ternary tree is an extension of a binary tree, where instead of a left
 and a right sub-tree pointer and a data value with value between the left
@@ -69,14 +66,3 @@ value_t *flatten(TreeNode *n, size_t *num_elements);
  * used to test your implementation.
  */
 
-
-
-value_t *flatten(TreeNode *n, size_t *num_elements) {
-}
-
-
-
-int main (){
-	cout<<("shengyu shen\n")<<endl;
-	return 0;
-}

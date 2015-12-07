@@ -5,36 +5,31 @@
 # search files in these dirs
 #VPATH = ../share/:$(MINISATDIR)
 
-OBJS	= lex.yy.o tritree.o treeparser.o treelex.o
-GPP_OPT = -O3   -Wno-unused-result
+OBJS	= parse.o lex.o  tritree.o 
+GPP_OPT = -O3 -g
 GPP = g++
+GCC_OPT = -O3 -g
 GCC = gcc
 
 all : tritree.exe
 
 tritree.exe :  $(OBJS) 
-	$(GPP)     \
-		$(GPP_OPT) \
+	$(GCC)     \
+		$(GCC_OPT) \
 		-o $@ \
 		$(OBJS) 
 
 
-%.o: %.cpp
-	$(GPP) $(GPP_OPT) -c $< 
+%.o: %.c
+	$(GCC) $(GCC_OPT) -c $< 
 
-treelex.c : treelex.lex 
+lex.c : lex.lex parse.h
 	flex -o $@ $<
 
-treelex.o : treelex.c
-	$(GCC) $< -c -o $@
-
-treeparser.c : treeparser.y
-	bison -o $@ $<
-
-treeparser.o : treeparser.c
-	$(GCC) $< -c -o $@
+parse.c : parse.y
+	bison --defines=parse.h -o $@ $<
 
 .PHONY : clean
 
 clean : 
-	rm -f *.o *.exe lex.yy.*
+	rm -f *.o *.exe lex.yy.* lex.c parse.c parse.h
