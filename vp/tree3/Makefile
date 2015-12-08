@@ -10,6 +10,8 @@ GPP_OPT = -O3 -g
 GPP = g++
 GCC_OPT = -O3 -g
 GCC = gcc
+FLEX = flex
+BISON = bison
 
 all : t3.exe
 
@@ -24,10 +26,10 @@ t3.exe :  $(OBJS)
 	$(GCC) $(GCC_OPT) -c $< 
 
 lex.c : lex.l parse.h
-	flex -o $@ $<
+	$(FLEX) -o $@ $<
 
 parse.c : parse.y
-	bison --defines=parse.h -o $@ $<
+	$(BISON) --defines=parse.h -o $@ $<
 
 .PHONY : clean
 
