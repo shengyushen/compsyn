@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "typedef.h"
+#include "vlist.h"
 #include "parse.h"
 
 void usage() {
@@ -12,17 +13,17 @@ void usage() {
 	return;
 }
 
-void flatten_print( TreeNode * tn ) {
+void flatten_print( TreeNode * tnp ) {
 	//flatten
 	size_t  NumElement;
-	value_t * flatArray = flatten(tn,&NumElement);
+	value_t * flatArray = flatten(tnp,&NumElement);
 	assert (NumElement >=0);
 
 	// print out the result
 	printf ("flatten result with size %zu is :\n",NumElement);
 	int i;
 	for(i=0;i<NumElement;i++) {
-		printf( " %d " ,flatArray[i]);
+		printf( "%d " ,flatArray[i]);
 	}
 	printf("\n");
 
@@ -40,35 +41,139 @@ void parse_flat (char * namein) {
 	printf ( "Flattening file %s\n" , namein ) ;
 
 	//calling the parser
-	TreeNode * tn ;
-	int res=yyparse(&tn);
+	TreeNode * tnp ;
+	int res=yyparse(&tnp);
 	assert (res==0);
-	assert (tn!=(TreeNode *)NULL);
+	assert (tnp!=(TreeNode *)NULL);
 
 	//test 
-	flatten_print ( tn ) ;
+	flatten_print ( tnp ) ;
 	
-	//free the alloced tn
-	freeTreeNode ( tn );
+	//free the alloced tnp
+	freeTreeNode ( tnp );
 
 	fclose(yyin);
 	return;
 }
 
-TreeNode * generate_node () {
+TreeNode * generate_node (unsigned int depth) {
+	if(depth!=0) {
+		//construct current tree node
+		TreeNode * current_tree_node = malloc (sizeof(TreeNode));
+
+		//allocing sub trees
+		current_tree_node->left_tree  = generate_node (depth -1);
+		current_tree_node->mid_tree   = generate_node (depth -1);
+		current_tree_node->right_tree = generate_node (depth -1);
+		current_tree_node->left_data  = malloc (sizeof(DataNode));
+		current_tree_node->right_data = malloc (sizeof(DataNode));
+	
+	
+		return current_tree_node;
+	} else {
+		return (TreeNode *)NULL;
+	}
 }
 
+unsigned int random50 ()  {
+	long l = random()%2;
+	return l;
+}
+
+void fillin (TreeNode * tnp) ;
+void randomize_treenode (TreeNode ** tnpp) {
+	if(random50()) {
+		fillin(*tnpp);
+	} else {
+		freeTreeNode(*tnpp);
+		*tnpp = (TreeNode *)NULL;
+	}
+	return ;
+}
+
+
+
+struct vlist vl;
+
+void randomize_datanode (DataNode ** dnpp) {
+	if((*dnpp)) {
+		if(random50()) {
+			value_t v = (value_t)random();
+			vlist_insert(&vl,v);
+			(*dnpp)->value = v;
+		} else {
+			freeDataNode(*dnpp);
+			*dnpp = (DataNode *)NULL;
+		}
+	} else {
+	}
+	return;
+}
+
+void fillin (TreeNode * tnp) {
+	if(tnp) {
+		randomize_treenode(&(tnp->left_tree));
+		randomize_datanode(&(tnp->left_data));
+		randomize_treenode(&(tnp->mid_tree));
+		randomize_datanode(&(tnp->right_data));
+		randomize_treenode(&(tnp->right_tree));
+	}
+
+	return;
+}
+
+void flatten_compare( TreeNode * tnp ) {
+	//flatten
+	size_t  NumElement;
+	value_t * flatArray = flatten(tnp,&NumElement);
+	assert (NumElement >=0);
+
+	// print out the result
+
+	unsigned issame=vlist_compare_array(&vl,flatArray,NumElement);
+	if(issame==0) {
+		printf("fillin data are not the same as flatten result\n");
+		printf("fillin data are\n");
+		vlist_print(&vl);
+		printf ("flatten result with size %zu is :\n",NumElement);
+		int i;
+		for(i=0;i<NumElement;i++) {
+			printf( "%d " ,flatArray[i]);
+		}
+		printf("\n");
+		exit(1);
+	} else {
+		printf("filled data are the same as flatten result with %zu data\n",NumElement);
+	}
+
+	free ( flatArray ) ;
+	return;
+}
+
+#define STEPSIZE 100
+#define TOTALTEST 10000
 void generate_and_test_loop () {
 	printf ( "Generaring and testing loop \n" ) ;
-
-	TreeNode * tn =  generate_node ();
-	assert (tn!=(TreeNode *)NULL);
-
-	//test 
-	flatten_print ( tn ) ;
 	
-	//free the alloced tn
-	freeTreeNode ( tn );
+	vlist_init(&vl);
+	unsigned int depth;
+	for(depth =STEPSIZE;depth <=TOTALTEST;depth++) {
+		//generate a complete tree unintialized
+		printf("tree depth is %d\n",depth/STEPSIZE);
+		TreeNode * tnp =  generate_node (depth/STEPSIZE);
+		assert (tnp!=(TreeNode *)NULL);
+	
+		//filling in values
+		vlist_free(&vl);
+		fillin(tnp);
+
+		//test 
+		flatten_compare ( tnp ) ;
+		
+		//free the alloced tnp
+		freeTreeNode ( tnp );
+	}
+	vlist_free(&vl);
 
 	return ;
 }
