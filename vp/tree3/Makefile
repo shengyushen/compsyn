@@ -5,7 +5,7 @@
 # search files in these dirs
 #VPATH = ../share/:$(MINISATDIR)
 
-OBJS	= parse.o lex.o  t3.o 
+OBJS	= parse.o lex.o  t3.o  main.o
 GPP_OPT = -O3 -g
 GPP = g++
 GCC_OPT = -O3 -g
