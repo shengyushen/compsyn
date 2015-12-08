@@ -5,6 +5,27 @@
 #include "typedef.h"
 #include "parse.h"
 
+
+void freeDataNode ( DataNode * dn) {
+	if ( dn != ( DataNode *) NULL ) {
+		free( ( void * ) dn);
+	}
+	return;
+}
+
+void freeTreeNode ( TreeNode * tn ) {
+	if(tn!=(TreeNode *)NULL) {
+		freeTreeNode ( tn -> left_tree );
+		freeTreeNode ( tn -> mid_tree );
+		freeTreeNode ( tn -> right_tree );
+		freeDataNode ( tn -> left_data);
+		freeDataNode ( tn -> right_data);
+
+		free( ( void *) tn );
+	}
+	return ;
+}
+
 void copyData (value_t *src, value_t *dst, size_t num) {
 	assert (num>=0);
 	int i;
