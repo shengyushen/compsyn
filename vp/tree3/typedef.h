@@ -48,7 +48,7 @@ typedef struct TreeNode {
 
 /* The interface to the function flatten() that you're required to
  * implement is as follows: */
-value_t *flatten(TreeNode *n, size_t *num_elements);
+value_t * flatten (TreeNode * n, size_t * num_elements) ;
 
 /*
  * In this function:
@@ -65,4 +65,5 @@ value_t *flatten(TreeNode *n, size_t *num_elements);
  * Please describe any assumptions you've made, and the approach you've
  * used to test your implementation.
  */
+
 

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <assert.h>
 #include "typedef.h"
-#include "parse.h"
 
 //free DataNode and TreeNode
 void freeDataNode ( DataNode * dn) {
