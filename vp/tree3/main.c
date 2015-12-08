@@ -56,70 +56,53 @@ void parse_flat (char * namein) {
 	return;
 }
 
+
+unsigned int random50 ()  {
+	long l = random()%10;
+	if(l>1) return 1;
+	else return 0;
+}
+
+struct vlist vl;
+TreeNode * generate_node (unsigned int depth) ;
+void randomize_treenode (TreeNode ** tnpp , unsigned int depth) {
+	if(random50()) {
+		*tnpp=generate_node (depth);
+	} else {
+		*tnpp=(TreeNode *)NULL;
+	}
+	return ;
+}
+
+void randomize_datanode (DataNode ** dnpp) {
+	if(random50()) {
+		value_t v = (value_t)random();
+		vlist_insert(&vl,v);
+		DataNode * newdnp =malloc(sizeof(DataNode));
+		newdnp->value = v;
+		(*dnpp) = newdnp;
+	} else {
+		*dnpp = (DataNode *)NULL;
+	}
+	return;
+}
+
 TreeNode * generate_node (unsigned int depth) {
 	if(depth!=0) {
 		//construct current tree node
 		TreeNode * current_tree_node = malloc (sizeof(TreeNode));
 
 		//allocing sub trees
-		current_tree_node->left_tree  = generate_node (depth -1);
-		current_tree_node->mid_tree   = generate_node (depth -1);
-		current_tree_node->right_tree = generate_node (depth -1);
-		current_tree_node->left_data  = malloc (sizeof(DataNode));
-		current_tree_node->right_data = malloc (sizeof(DataNode));
-	
+		randomize_treenode(&(current_tree_node->left_tree),depth -1);
+		randomize_datanode(&(current_tree_node->left_data));
+		randomize_treenode(&(current_tree_node->mid_tree) ,depth -1);
+		randomize_datanode(&(current_tree_node->right_data));
+		randomize_treenode(&(current_tree_node->right_tree),depth -1);
 	
 		return current_tree_node;
 	} else {
 		return (TreeNode *)NULL;
 	}
-}
-
-unsigned int random50 ()  {
-	long l = random()%2;
-	return l;
-}
-
-void fillin (TreeNode * tnp) ;
-void randomize_treenode (TreeNode ** tnpp) {
-	if(random50()) {
-		fillin(*tnpp);
-	} else {
-		freeTreeNode(*tnpp);
-		*tnpp = (TreeNode *)NULL;
-	}
-	return ;
-}
-
-
-
-struct vlist vl;
-
-void randomize_datanode (DataNode ** dnpp) {
-	if((*dnpp)) {
-		if(random50()) {
-			value_t v = (value_t)random();
-			vlist_insert(&vl,v);
-			(*dnpp)->value = v;
-		} else {
-			freeDataNode(*dnpp);
-			*dnpp = (DataNode *)NULL;
-		}
-	} else {
-	}
-	return;
-}
-
-void fillin (TreeNode * tnp) {
-	if(tnp) {
-		randomize_treenode(&(tnp->left_tree));
-		randomize_datanode(&(tnp->left_data));
-		randomize_treenode(&(tnp->mid_tree));
-		randomize_datanode(&(tnp->right_data));
-		randomize_treenode(&(tnp->right_tree));
-	}
-
-	return;
 }
 
 void flatten_compare( TreeNode * tnp ) {
@@ -158,15 +141,12 @@ void generate_and_test_loop () {
 	vlist_init(&vl);
 	unsigned int depth;
 	for(depth =STEPSIZE;depth <=TOTALTEST;depth++) {
+		vlist_free(&vl);
 		//generate a complete tree unintialized
 		printf("tree depth is %d\n",depth/STEPSIZE);
 		TreeNode * tnp =  generate_node (depth/STEPSIZE);
 		assert (tnp!=(TreeNode *)NULL);
 	
-		//filling in values
-		vlist_free(&vl);
-		fillin(tnp);
-
 		//test 
 		flatten_compare ( tnp ) ;
 		
