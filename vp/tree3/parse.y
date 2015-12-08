@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "typedef.h"
+#include "t3.h"
 
 void yyerror (TreeNode ** tnpp,char const *s)
 {
@@ -43,7 +44,7 @@ tree :
 		{
 			DataNode * d1= $3;
 			DataNode * d2 = $5;
-			TreeNode * ssy = (TreeNode *) malloc(sizeof(TreeNode));
+			TreeNode * ssy = allocTreeNode();
 			assert(ssy!=(TreeNode *)NULL);
 			ssy-> left_tree = $2;
 			ssy-> left_data = $3;
@@ -59,7 +60,7 @@ data :
 			$$ = (DataNode *) NULL;
 		}
 	| NUMBER {
-			DataNode * ssy = (DataNode *) malloc (sizeof(DataNode));
+			DataNode * ssy = allocDataNode();
 			ssy-> value = yylval.num;
 			$$ = ssy;
 		}

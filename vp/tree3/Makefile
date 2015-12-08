@@ -6,9 +6,9 @@
 #VPATH = ../share/:$(MINISATDIR)
 
 OBJS	= parse.o lex.o vlist.o  t3.o  main.o
-GPP_OPT = -O3 -g
+GPP_OPT = -O3 
 GPP = g++
-GCC_OPT = -O3 -g
+GCC_OPT = -O3
 GCC = gcc
 FLEX = flex
 BISON = bison
@@ -26,7 +26,7 @@ t3.exe :  $(OBJS)
 	$(GCC) $(GCC_OPT) -c $< 
 
 lex.c : lex.l parse.h
-	$(FLEX) -o $@ $<
+	$(FLEX) -CF -o $@ $<
 
 parse.c : parse.y
 	$(BISON) --defines=parse.h -o $@ $<
@@ -34,4 +34,4 @@ parse.c : parse.y
 .PHONY : clean
 
 clean : 
-	rm -f *.o *.exe lex.yy.* lex.c parse.c parse.h
+	rm -f *.o *.exe lex.yy.* lex.c parse.c parse.h gmon.out

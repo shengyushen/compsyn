@@ -4,31 +4,26 @@
 %}
 
 digit         [0-9]
-letter        [a-zA-Z]
 
 %option noyywrap 
-
+%option align
+%option fast
 %%
 "("				{
-//	printf("(\n");
 	return KEY_LPARENT;
 }
 
 ")"				{
-//	printf(")\n");
 	return KEY_RPARENT;
 }
 
 "NULL"		{
-//	printf("NULL");
 	return KEY_NULL;
 }
 
 {digit}+  { 
 	int x = atoi(yytext);
-//	printf("%d\n",x);
 	yylval.num = x;
-//	fflush(stdout);
 	return NUMBER;     
 }
 

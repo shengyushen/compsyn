@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "typedef.h"
+#include "t3.h"
 #include "vlist.h"
 #include "parse.h"
 
@@ -10,23 +11,32 @@ void usage() {
 	printf("Usage : \n");
 	printf("t3 <tree file name>  : to flatten the tree specified in <tree file name>\n");
 	printf("t3 -l                : to run a generate and test loop \n");
+	printf("t3 -gen <depth> <density>: to generate a tree description file at stdout with depth <depth> and density <density> \n");
 	return;
 }
 
 void flatten_print( TreeNode * tnp ) {
+	time_t start_time= time(NULL); 
+	printf("begin flatten\n");
+	fflush(stdout);
 	//flatten
 	size_t  NumElement;
 	value_t * flatArray = flatten(tnp,&NumElement);
 	assert (NumElement >=0);
+	
+	time_t end_time= time(NULL);
+
+	printf("run time %lu\n",end_time - start_time);
+	fflush(stdout);
 
 	// print out the result
-	printf ("flatten result with size %zu is :\n",NumElement);
+/*	printf ("flatten result with size %zu is :\n",NumElement);
 	int i;
 	for(i=0;i<NumElement;i++) {
 		printf( "%d " ,flatArray[i]);
 	}
 	printf("\n");
-
+*/
 	free ( flatArray ) ;
 	return;
 }
@@ -57,17 +67,19 @@ void parse_flat (char * namein) {
 }
 
 
+unsigned int density;
 unsigned int random50 ()  {
-	long l = random()%10;
-	if(l>1) return 1;
+	assert(density <100);
+	long l = random()%100;
+	if(l<density) return 1;
 	else return 0;
 }
 
 struct vlist vl;
-TreeNode * generate_node (unsigned int depth) ;
+TreeNode * generate_treenode (unsigned int depth) ;
 void randomize_treenode (TreeNode ** tnpp , unsigned int depth) {
 	if(random50()) {
-		*tnpp=generate_node (depth);
+		*tnpp=generate_treenode (depth);
 	} else {
 		*tnpp=(TreeNode *)NULL;
 	}
@@ -78,7 +90,7 @@ void randomize_datanode (DataNode ** dnpp) {
 	if(random50()) {
 		value_t v = (value_t)random();
 		vlist_insert(&vl,v);
-		DataNode * newdnp =malloc(sizeof(DataNode));
+		DataNode * newdnp =allocDataNode();
 		newdnp->value = v;
 		(*dnpp) = newdnp;
 	} else {
@@ -87,10 +99,10 @@ void randomize_datanode (DataNode ** dnpp) {
 	return;
 }
 
-TreeNode * generate_node (unsigned int depth) {
+TreeNode * generate_treenode (unsigned int depth) {
 	if(depth!=0) {
 		//construct current tree node
-		TreeNode * current_tree_node = malloc (sizeof(TreeNode));
+		TreeNode * current_tree_node = allocTreeNode();
 
 		//allocing sub trees
 		randomize_treenode(&(current_tree_node->left_tree),depth -1);
@@ -144,7 +156,8 @@ void generate_and_test_loop () {
 		vlist_free(&vl);
 		//generate a complete tree unintialized
 		printf("tree depth is %d\n",depth/STEPSIZE);
-		TreeNode * tnp =  generate_node (depth/STEPSIZE);
+		density = random()%100;
+		TreeNode * tnp =  generate_treenode (depth/STEPSIZE);
 		assert (tnp!=(TreeNode *)NULL);
 	
 		//test 
@@ -158,6 +171,7 @@ void generate_and_test_loop () {
 	return ;
 }
 
+
 int main(int argc, char *argv[]){ 
 	if  (argc == 2) {
 		char namein[512];
@@ -169,6 +183,16 @@ int main(int argc, char *argv[]){
 		} else {
 			//flatening specified file
 			parse_flat( namein );
+		}
+	} else if (argc ==4) {
+		if( ( strcmp("-gen",argv[1]) ) == 0) {
+			//run generating and testing loop
+			unsigned int depth=atoi(argv[2]);
+			density=atoi(argv[3]);
+			TreeNode * tnp = generate_treenode(depth);
+			printTreeNode(tnp);
+		} else {
+		usage();
 		}
 	} else {
 		usage();

@@ -5,7 +5,7 @@
 #include "typedef.h"
 #include "parse.h"
 
-
+//free DataNode and TreeNode
 void freeDataNode ( DataNode * dn) {
 	if ( dn != ( DataNode *) NULL ) {
 		free( ( void * ) dn);
@@ -24,6 +24,40 @@ void freeTreeNode ( TreeNode * tn ) {
 		free( ( void *) tn );
 	}
 	return ;
+}
+
+//print DataNode and TreeNode
+void printDataNode(DataNode * dnp) {
+	if(dnp) {
+		printf("%d\n",dnp->value);
+	} else {
+		printf("NULL\n");
+	}
+}
+
+
+void printTreeNode(TreeNode * tnp ) {
+	if(tnp) {
+		printf("(\n");
+		printTreeNode(tnp->left_tree);
+		printDataNode(tnp->left_data);
+		printTreeNode(tnp->mid_tree);
+		printDataNode(tnp->right_data);
+		printTreeNode(tnp->right_tree);
+		printf(")\n");
+	} else {
+		printf("()\n");
+	}
+}
+
+
+//allocing DataNode and TreeNode
+DataNode * allocDataNode() {
+	return (DataNode *)malloc(sizeof(DataNode));
+}
+
+TreeNode * allocTreeNode() {
+	return (TreeNode *)malloc(sizeof(TreeNode));
 }
 
 void copyData (value_t *src, value_t *dst, size_t num) {
@@ -49,17 +83,17 @@ value_t *flatten(TreeNode *n, size_t *num_elements)
 		value_t * rightTreeArray = flatten(n->right_tree,&rightSize);
 
 		size_t leftDataSize;
-		if((n->left_data)==(DataNode *)NULL) {
-			leftDataSize = 0;
-		} else {
+		if(n->left_data) {
 			leftDataSize = 1;
+		} else {
+			leftDataSize = 0;
 		}
 
 		size_t rightDataSize;
-		if((n->right_data)==(DataNode *) NULL) {
-			rightDataSize = 0;
-		} else {
+		if(n->right_data) {
 			rightDataSize = 1;
+		} else {
+			rightDataSize = 0;
 		}
 
 		//the total size of new array
@@ -90,7 +124,7 @@ value_t *flatten(TreeNode *n, size_t *num_elements)
 		//copying the right tree
 		copyData(rightTreeArray,newArray+newindex,rightSize);
 		
-		//free all mem alloced in sub
+		//free all mem alloced in flattening sub tree
 		free(leftTreeArray);
 		free(midTreeArray);
 		free(rightTreeArray);
