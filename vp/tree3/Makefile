@@ -5,15 +5,15 @@
 # search files in these dirs
 #VPATH = ../share/:$(MINISATDIR)
 
-OBJS	= parse.o lex.o  tritree.o 
+OBJS	= parse.o lex.o  t3.o 
 GPP_OPT = -O3 -g
 GPP = g++
 GCC_OPT = -O3 -g
 GCC = gcc
 
-all : tritree.exe
+all : t3.exe
 
-tritree.exe :  $(OBJS) 
+t3.exe :  $(OBJS) 
 	$(GCC)     \
 		$(GCC_OPT) \
 		-o $@ \
@@ -23,7 +23,7 @@ tritree.exe :  $(OBJS)
 %.o: %.c
 	$(GCC) $(GCC_OPT) -c $< 
 
-lex.c : lex.lex parse.h
+lex.c : lex.l parse.h
 	flex -o $@ $<
 
 parse.c : parse.y
