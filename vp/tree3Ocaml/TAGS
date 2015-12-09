@@ -1,0 +1,47 @@
+
+main.ml,148
+Main1,0
+let inputFileNameinputFileName6,62
+let inputFileChannleinputFileChannle7,98
+let lexbuflexbuf8,145
+let very_structvery_struct9,197
+
+parser.ml,670
+Parser1,0
+type tokentoken1,0
+  | LPARENTLPARENT2,13
+  | RPARENTRPARENT3,37
+  | NULLNULL4,61
+  | UNSIGNED_NUMBERUNSIGNED_NUMBER5,82
+let yytransl_constyytransl_const12,196
+let yytransl_blockyytransl_block15,229
+let yylhsyylhs22,351
+let yylenyylen25,417
+let yydefredyydefred28,483
+let yydgotoyydgoto32,618
+let yysindexyysindex35,662
+let yyrindexyyrindex39,797
+let yygindexyygindex43,932
+let yytablesizeyytablesize46,977
+let yytableyytable47,998
+let yycheckyycheck51,1116
+let yynames_constyynames_const55,1234
+let yynames_blockyynames_block58,1262
+let yyactyyact65,1355
+let yytablesyytables105,2801
+let treeNodetreeNode122,3322
+
+typedef.ml,204
+Typedef1,0
+type treeNodetreeNode1,0
+	T_treeNodeT_treeNode2,16
+	| T_treeNode_NULLT_treeNode_NULL3,76
+and dataNodedataNode4,95
+	T_dataNodeT_dataNode5,110
+	|T_dataNode_NULLT_dataNode_NULL6,129
+
+very.ml,163
+Very1,0
+let __ocaml_lex_tables__ocaml_lex_tables7,56
+let rec veriloglexveriloglex101,5361
+and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec103,5429
