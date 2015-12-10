@@ -1049,12 +1049,12 @@ range :
 
 /*A.2.6 Function declarations*/
 function_declaration :
-	KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier SEMICOLON
+	KEY_FUNCTION automatic_opt function_range_or_type function_identifier SEMICOLON
 	function_item_declaration function_item_declaration_list
 	function_statement
 	KEY_ENDFUNCTION
 		{T_function_declaration_1($2,$3,$4,$6::$7,$8)}	
-| KEY_FUNCTION automatic_opt function_range_or_type_opt function_identifier LPARENT function_port_list RPARENT SEMICOLON
+| KEY_FUNCTION automatic_opt function_range_or_type function_identifier LPARENT function_port_list RPARENT SEMICOLON
 	 block_item_declaration_list
 	function_statement
 	KEY_ENDFUNCTION
@@ -1071,11 +1071,6 @@ function_item_declaration_list :
 automatic_opt :
 	{T_automatic_false}
 	| KEY_AUTOMATIC {T_automatic_true}
-;
-
-function_range_or_type_opt :
-	{T_function_range_or_type_NOSPEC}
-	| function_range_or_type {$1}
 ;
 
 function_item_declaration :
