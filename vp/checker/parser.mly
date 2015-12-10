@@ -425,12 +425,13 @@ lsquare_range_expression_rsquare_opt :
 	| lsquare_range_expression_rsquare {$1}
 ;
 
+/*
 lsquare_range_expression_rsquare :
 	LSQUARE
 		range_expression
 	RSQUARE
 		{$2}
-;
+;*/
 
 port_declaration :
 	attribute_instance_list inout_declaration 
@@ -2749,15 +2750,16 @@ module_path_mintypmax_expression :
 ;
 */
 
-range_expression :
-	expression
-		{T_range_expression_1($1)}
-	| expression COLON expression
-		{T_range_expression_2($1,$3)}
-	| base_expression ADDRANGE width_expression
-		{T_range_expression_addrange($1,$3)}
-	| base_expression SUBRANGE width_expression
-		{T_range_expression_subrange($1,$3)}
+/*range_expression :*/
+lsquare_range_expression_rsquare :
+	LSQUARE expression RSQUARE
+		{T_range_expression_1($2)}
+	| LSQUARE expression COLON expression RSQUARE
+		{T_range_expression_2($2,$4)}
+	| LSQUARE base_expression ADDRANGE width_expression RSQUARE
+		{T_range_expression_addrange($2,$4)}
+	| LSQUARE base_expression SUBRANGE width_expression RSQUARE
+		{T_range_expression_subrange($2,$4)}
 ;
 
 
