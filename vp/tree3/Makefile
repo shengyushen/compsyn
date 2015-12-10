@@ -34,6 +34,8 @@ lex.c : lex.l parse.h
 parse.c : parse.y
 	$(BISON) --defines=parse.h -o $@ $<
 
+parse.h : parse.c
+
 depend:    
 	gcc -E -MM *.c > .depend
 

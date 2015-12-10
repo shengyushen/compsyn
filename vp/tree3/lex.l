@@ -12,15 +12,21 @@ digit         [0-9]
 "("				{
 	return KEY_LPARENT;
 }
-
 ")"				{
 	return KEY_RPARENT;
 }
-
-"NULL"		{
-	return KEY_NULL;
+"D0"		{
+	return KEY_D0;
 }
-
+"DN"		{
+	return KEY_DN;
+}
+"T0"		{
+	return KEY_T0;
+}
+"TN"		{
+	return KEY_TN;
+}
 {digit}+  { 
 	int x = atoi(yytext);
 	yylval.num = x;

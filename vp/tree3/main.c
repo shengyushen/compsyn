@@ -30,13 +30,13 @@ void flatten_print( TreeNode * tnp ) {
 	fflush(stdout);
 
 	// print out the result
-/*	printf ("flatten result with size %zu is :\n",NumElement);
+	printf ("flatten result with size %zu is :\n",NumElement);
 	int i;
 	for(i=0;i<NumElement;i++) {
 		printf( "%d " ,flatArray[i]);
 	}
 	printf("\n");
-*/
+
 	free ( flatArray ) ;
 	return;
 }
@@ -53,7 +53,7 @@ void parse_flat (char * namein) {
 	//calling the parser
 	TreeNode * tnp ;
 	int res=yyparse(&tnp);
-	assert (res==0);
+	//assert (res==0);
 	assert (tnp!=(TreeNode *)NULL);
 
 	//test 
