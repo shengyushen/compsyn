@@ -260,7 +260,7 @@ let get_string_ssy t = get3 t
 %token  <Lexing.position*Lexing.position*string> SYSTEM_TASK_FUNCTION_IDENTIFIER
 
 
-%right OP2_QUESTION
+%right OP2_QUESTION COLON
 %left  OP2_OR2
 %left  OP2_AND2
 %left  OP2_OR
