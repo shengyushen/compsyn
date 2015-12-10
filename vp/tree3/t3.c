@@ -28,16 +28,16 @@ void freeTreeNode ( TreeNode * tn ) {
 //print DataNode and TreeNode
 void printDataNode(DataNode * dnp) {
 	if(dnp) {
-		printf("%d\n",dnp->value);
+		printf("(DN %d)\n",dnp->value);
 	} else {
-		printf("NULL\n");
+		printf("D0\n");
 	}
 }
 
 
 void printTreeNode(TreeNode * tnp ) {
 	if(tnp) {
-		printf("(\n");
+		printf("(TN\n");
 		printTreeNode(tnp->left_tree);
 		printDataNode(tnp->left_data);
 		printTreeNode(tnp->mid_tree);
@@ -45,7 +45,7 @@ void printTreeNode(TreeNode * tnp ) {
 		printTreeNode(tnp->right_tree);
 		printf(")\n");
 	} else {
-		printf("()\n");
+		printf("T0\n");
 	}
 }
 
