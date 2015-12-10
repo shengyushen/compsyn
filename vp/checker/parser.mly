@@ -321,7 +321,8 @@ module_declaration :
 		module_parameter_port_list
 		list_of_port_declarations
 		SEMICOLON 
-		non_port_module_item_list
+		/*non_port_module_item_list*/
+		module_item_list
 		KEY_ENDMODULE
 		{	T_module_declaration__2(
 				$1,$3,$4,$5,$7)}
@@ -341,12 +342,12 @@ module_keyword :
 		KEY_MODULE			{$1}
 	|	KEY_MACROMODULE	{$1}
 ;
-non_port_module_item_list :
+/*non_port_module_item_list :
 	{[]}
 	| non_port_module_item non_port_module_item_list
 		{$1::$2}
 ;
-
+*/
 /*A.1.3 Module parameters and ports*/
 module_parameter_port_list :
 	JING 
@@ -380,8 +381,9 @@ list_of_port_declarations :
 		port_declaration comma_port_declaration_list
 	RPARENT
 		{$2::$3}
-	| LPARENT RPARENT
-		{[]}
+/*can not be empty, orelse will conflict with empty list_of_ports*/
+/*	| LPARENT RPARENT
+		{[]}*/
 ;
 
 
