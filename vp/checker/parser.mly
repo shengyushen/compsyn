@@ -961,8 +961,7 @@ comma_variable_type_list :
 ;
 
 list_of_variable_port_identifiers :
-	port_identifier_equ1_expression_opt
-	comma_port_identifier_equ1_expression_opt_list
+	port_identifier_equ1_expression_opt comma_port_identifier_equ1_expression_opt_list
 		{$1::$2}
 ;
 
@@ -978,8 +977,8 @@ equ1_expression_opt :
 
 comma_port_identifier_equ1_expression_opt_list :
 	{[]}
-	| COMMA port_identifier_equ1_expression_opt comma_port_identifier_equ1_expression_opt_list
-		{$2::$3}
+	| comma_port_identifier_equ1_expression_opt_list COMMA port_identifier_equ1_expression_opt 
+		{$1@[$3]}
 ;
 
 	
