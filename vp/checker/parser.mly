@@ -912,8 +912,8 @@ list_of_param_assignments :
 
 comma_param_assignment_list :
 	{[]}
-	| COMMA param_assignment comma_param_assignment_list
-		{$2::$3}
+	| comma_param_assignment_list COMMA param_assignment 
+		{$1@[$3]}
 ;
 
 list_of_port_identifiers :
