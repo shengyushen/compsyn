@@ -1065,8 +1065,8 @@ function_declaration :
 
 function_item_declaration_list :
 	{[]}
-	| function_item_declaration function_item_declaration_list
-		{$1::$2}
+	|  function_item_declaration_list function_item_declaration
+		{$1@[$2]}
 ;
 
 automatic_opt :
@@ -2027,13 +2027,13 @@ par_block :
 	KEY_FORK comma_block_identifier_block_item_declaration_list_opt
 	statement_list
 	KEY_JOIN
-		{T_par_block($3)}
+		{T_par_block($2,$3)}
 ;
 
 comma_block_identifier_block_item_declaration_list_opt :
-	{0}
+	{T_comma_block_identifier_block_item_declaration_list_opt_NOSPEC}
 	| COMMA block_identifier block_item_declaration_list
-		{0}
+		{T_comma_block_identifier_block_item_declaration_list_opt ($2,$3)}
 ;
 
 statement_list :
@@ -2046,7 +2046,7 @@ seq_block :
 	KEY_BEGIN comma_block_identifier_block_item_declaration_list_opt 
 	statement_list
 	KEY_END
-		{T_seq_block($3)}
+		{T_seq_block($2,$3)}
 ;
 
 /*A.6.4 Statements*/

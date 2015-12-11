@@ -425,9 +425,12 @@ and	procedural_continuous_assignments =
 and	variable_assignment =
 	T_variable_assignment of net_lvalue*expression
 and	par_block =
-	T_par_block of (statement list)
+	T_par_block of comma_block_identifier_block_item_declaration_list_opt*(statement list)
+and comma_block_identifier_block_item_declaration_list_opt =
+	T_comma_block_identifier_block_item_declaration_list_opt_NOSPEC
+	| T_comma_block_identifier_block_item_declaration_list_opt of identifier*(block_item_declaration list)
 and	seq_block =
-	T_seq_block of (statement list)
+	T_seq_block of comma_block_identifier_block_item_declaration_list_opt*(statement list)
 and statement =
 	T_statement_NOSPEC
 	| T_statement_blocking_assignment of (attribute_instance list)*blocking_assignment
