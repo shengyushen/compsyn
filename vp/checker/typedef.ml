@@ -416,14 +416,12 @@ and blocking_assignment =
 and	nonblocking_assignment =
 	T_nonblocking_assignment of net_lvalue*delay_or_event_control*expression
 and	procedural_continuous_assignments =
-	T_procedural_continuous_assignments_assign of variable_assignment
+	T_procedural_continuous_assignments_assign of net_assignment
 	| T_procedural_continuous_assignments_deassign of net_lvalue
-	| T_procedural_continuous_assignments_force1 of variable_assignment
+	| T_procedural_continuous_assignments_force1 of net_assignment
 	| T_procedural_continuous_assignments_force2 of net_assignment
 	| T_procedural_continuous_assignments_release1 of net_lvalue
 	| T_procedural_continuous_assignments_release2 of net_lvalue
-and	variable_assignment =
-	T_variable_assignment of net_lvalue*expression
 and	par_block =
 	T_par_block of comma_block_identifier_block_item_declaration_list_opt*(statement list)
 and comma_block_identifier_block_item_declaration_list_opt =
@@ -491,7 +489,7 @@ and	loop_statement =
 	T_loop_statement_forever of statement
 	| T_loop_statement_repeat of expression*statement
 	| T_loop_statement_while of expression*statement
-	| T_loop_statement_for of variable_assignment*expression*variable_assignment*statement
+	| T_loop_statement_for of net_assignment*expression*net_assignment*statement
 and	system_task_enable =
 	T_system_task_enable of  system_function_identifier*(expression list)
 and	task_enable =

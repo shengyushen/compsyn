@@ -2003,21 +2003,14 @@ nonblocking_assignment :
 ;
 
 procedural_continuous_assignments :
-	KEY_ASSIGN variable_assignment
+	KEY_ASSIGN net_assignment
 		{T_procedural_continuous_assignments_assign($2)}
 	| KEY_DEASSIGN net_lvalue
 		{T_procedural_continuous_assignments_deassign($2)}
-	| KEY_FORCE variable_assignment
-		{T_procedural_continuous_assignments_force1($2)}
 	| KEY_FORCE net_assignment
-		{T_procedural_continuous_assignments_force2($2)}
+		{T_procedural_continuous_assignments_force1($2)}
 	| KEY_RELEASE net_lvalue
 		{T_procedural_continuous_assignments_release1($2)}
-;
-
-variable_assignment :
-	net_lvalue EQU1 expression
-		{T_variable_assignment($1,$3)}
 ;
 
 
@@ -2250,7 +2243,7 @@ loop_statement :
 		{T_loop_statement_repeat($3,$5)}
 	| KEY_WHILE LPARENT expression RPARENT statement
 		{T_loop_statement_while($3,$5)}
-	| KEY_FOR LPARENT variable_assignment SEMICOLON expression SEMICOLON variable_assignment RPARENT statement
+	| KEY_FOR LPARENT net_assignment SEMICOLON expression SEMICOLON net_assignment RPARENT statement
 		{T_loop_statement_for($3,$5,$7,$9)}
 ;
 
