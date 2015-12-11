@@ -2123,7 +2123,7 @@ disable_statement :
 event_control :
 	AT hierarchical_identifier
 		{T_event_control_eventid($2)}
-	| AT LPARENT event_expression RPARENT
+	| AT LPARENT event_expression_orcomma_list RPARENT
 		{T_event_control_event_exp($3)}
 	| AT OP2_MULTIPLE
 		{T_event_control_start}
@@ -2143,13 +2143,18 @@ event_expression :
 		{T_event_expression_pos($2)}
 	| KEY_NEGEDGE expression
 		{T_event_expression_neg($2)}
-	| event_expression KEY_OR event_expression
-		{T_event_expression_or($1,$3)}
-	| event_expression COMMA event_expression
-		{T_event_expression_or($1,$3)}
+
+
+event_expression_orcomma_list :
+	event_expression {[$1]}
+	| event_expression_orcomma_list or_comma event_expression
+		{$1@[$3]}
 ;
 
-
+or_comma :
+	KEY_OR	{0}
+	| COMMA {0}
+;
 procedural_timing_control :
 	delay_control
 		{T_procedural_timing_control_delay($1)}

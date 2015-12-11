@@ -459,7 +459,7 @@ and disable_statement =
 	T_disable_statement of hierarchical_identifier
 and	event_control =
 	T_event_control_eventid of hierarchical_identifier
-	| T_event_control_event_exp of event_expression
+	| T_event_control_event_exp of (event_expression list)
 	| T_event_control_start
 and	event_trigger =
 	T_event_trigger of hierarchical_identifier*(expression list)
