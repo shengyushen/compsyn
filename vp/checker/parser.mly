@@ -1135,8 +1135,8 @@ task_item_declaration_list :
 
 block_item_declaration_list :
 	{[]}
-	| block_item_declaration block_item_declaration_list
-		{$1::$2}
+	| block_item_declaration_list block_item_declaration 
+		{$1@[$2]}
 ;
 
 task_item_declaration :
