@@ -186,7 +186,7 @@ and automatic =
 	| T_automatic_true
 and function_declaration =
 	T_function_declaration_1 of automatic*function_range_or_type*identifier*(function_item_declaration list)*statement
-	| T_function_declaration_2 of automatic*function_range_or_type*identifier*(attribute_instance_list_tf_input_declaration list)*(block_item_declaration list)*statement
+	| T_function_declaration_2 of automatic*function_range_or_type*identifier*(attribute_instance_list_tf_input_declaration list)*(function_item_declaration list)*statement
 and function_item_declaration =
 	T_function_item_declaration_block of block_item_declaration
 	| T_function_item_declaration_input of (attribute_instance list)*tf_input_declaration
@@ -201,7 +201,7 @@ and function_range_or_type =
 	| T_function_range_or_type_TIME
 and task_declaration =
 	T_task_declaration1 of automatic*identifier*(task_item_declaration list)*statement
-	| T_task_declaration2 of automatic*identifier*(task_port_item list)*(block_item_declaration list)*statement
+	| T_task_declaration2 of automatic*identifier*(task_port_item list)*(task_item_declaration list)*statement
 and task_item_declaration =
 	T_task_item_declaration_block of block_item_declaration
 	| T_task_item_declaration_input of tf_input_declaration

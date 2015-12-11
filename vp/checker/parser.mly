@@ -1055,7 +1055,8 @@ function_declaration :
 	KEY_ENDFUNCTION
 		{T_function_declaration_1($2,$3,$4,$6::$7,$8)}	
 | KEY_FUNCTION automatic_opt function_range_or_type function_identifier LPARENT function_port_list RPARENT SEMICOLON
-	 block_item_declaration_list
+	 /*block_item_declaration_list*/ /*replaced with function_item_declaration_list*/
+	 function_item_declaration_list
 	function_statement
 	KEY_ENDFUNCTION
 		{T_function_declaration_2($2,$3,$4,$6,$9,$10)}
@@ -1119,7 +1120,8 @@ task_declaration :
 		KEY_ENDTASK
 		{T_task_declaration1($2,$3,$5,$6)}
 	| KEY_TASK automatic_opt task_identifier LPARENT task_port_list  RPARENT SEMICOLON
-		block_item_declaration_list
+		/*block_item_declaration_list*/ /*replaced with task_item_declaration_list*/
+		task_item_declaration_list
 		statement_or_null
 		KEY_ENDTASK
 		{T_task_declaration2($2,$3,$5,$8,$9)}
@@ -1127,7 +1129,8 @@ task_declaration :
 
 task_item_declaration_list :
 	{[]}
-	| task_item_declaration task_item_declaration_list {$1::$2}
+	| task_item_declaration_list task_item_declaration 
+		{$1@[$2]}
 ;
 
 block_item_declaration_list :
