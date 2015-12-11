@@ -923,8 +923,8 @@ list_of_port_identifiers :
 
 comma_port_identifier_list :
 	{[]}
-	| COMMA port_identifier comma_port_identifier_list
-		{$2::$3}
+	| comma_port_identifier_list COMMA port_identifier 
+		{$1@[$3]}
 ;
 
 list_of_real_identifiers :
