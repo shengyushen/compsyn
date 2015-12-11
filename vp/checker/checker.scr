@@ -2,9 +2,9 @@
 
 ulimit -s unlimited
 
-../../step1_noinc/vp_step1.exe  -S ../../../../1202prj/branches/1202prj/nr_source/top/nr_all_manifest.v -I ../../../../1202prj/branches/1202prj/common/hss_share/aec_revise/AEC.defines.v >  noinclude.v
+../../step1_noinc/vp_step1.exe  -S ../../../../1202prj/branches/1202prj/nr_source/top/nr_all_manifest.v -I ../../../../1202prj/branches/1202prj/common/hss_share/aec_revise >  noinclude.v
 dos2unix noinclude.v
 ../../step2_nodef/vp_step2.exe  noinclude.v > nodef.v
 dos2unix nodef.v
-OCAMLRUNPARAM=b ../checker.exe nodef.v > dd
+OCAMLRUNPARAM=bp ../checker.exe nodef.v > dd
 
