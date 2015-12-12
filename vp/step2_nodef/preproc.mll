@@ -44,12 +44,12 @@ rule preproc = parse
 		}
 	| "`ifdef"				{ 
 			proc_ifdef lexbuf; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{ 
 			proc_ifndef lexbuf; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifndef 
 		}
 	| "`else"|"elsif"|"`endif" as impdef{
@@ -313,13 +313,13 @@ and do_then  = parse
 		}
 	| "`ifdef"				{
 			proc_ifdef lexbuf; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{
 			proc_ifndef lexbuf; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifndef 
 		}
@@ -490,6 +490,7 @@ and do_else  = parse
 			Other
 		}
 	| "`else"				{
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
@@ -526,13 +527,13 @@ and do_else_in  = parse
 		}
 	| "`ifdef"				{
 			proc_ifdef lexbuf ; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
 	| "`ifndef"				{
 			proc_ifndef lexbuf ; 
-			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
