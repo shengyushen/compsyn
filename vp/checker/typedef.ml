@@ -716,7 +716,7 @@ and edge_symbol =
 and identifier =
 	T_identifier_NOSPEC
 	| T_identifier of Lexing.position*Lexing.position*string
-and	string =
+and	string_typedef =
 	T_string of Lexing.position*Lexing.position*string
 and	system_function_identifier =
 	T_system_function_identifier of  Lexing.position*Lexing.position*string

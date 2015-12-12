@@ -1,4 +1,4 @@
-# $^ all depende files
+# $^ all depend files
 # #< first depend file
 # $@ tarhet file
 
@@ -34,6 +34,11 @@ very.ml : very.mll typedef.cmx parser.cmx
 
 %.cmx: %.ml
 	$(OCAMLC) $(OCAMLC_OPT) -c $<  
+
+depend : 
+	ocamldep *.ml > .depend
+
+sinclude .depend
 
 .PHONY : clean
 

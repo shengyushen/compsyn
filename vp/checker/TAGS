@@ -149,7 +149,7 @@ let inputFileChannleinputFileChannle18,341
 let lexbuflexbuf20,389
 let very_structvery_struct24,533
 
-parser.ml,7169
+parser.ml,7179
 Parser1,0
 type tokentoken1,0
   | KEY_ALWAYSKEY_ALWAYS2,13
@@ -317,61 +317,65 @@ type tokentoken1,0
   | COLONCOLON164,9598
   | LSQUARELSQUARE165,9652
   | RSQUARERSQUARE166,9708
-  | LHUALHUA167,9764
-  | RHUARHUA168,9817
-  | PERIODPERIOD169,9870
-  | ATAT170,9925
-  | JINGJING171,9976
-  | EQU1EQU1172,10029
-  | DOLLORDOLLOR173,10082
-  | IMPLYIMPLY174,10137
-  | IMPLY2IMPLY2175,10191
-  | IMPLYSTARTIMPLYSTART176,10246
-  | ADDRANGEADDRANGE177,10305
-  | SUBRANGESUBRANGE178,10362
-  | LPARENTSTARTLPARENTSTART179,10419
-  | RPARENTSTARTRPARENTSTART180,10480
-  | UNSIGNED_NUMBERUNSIGNED_NUMBER181,10541
-  | UNSIGNED_NUMBER_sizeUNSIGNED_NUMBER_size182,10602
-  | OCTAL_NUMBEROCTAL_NUMBER183,10675
-  | BINARY_NUMBERBINARY_NUMBER184,10743
-  | HEX_NUMBERHEX_NUMBER185,10812
-  | REAL_NUMBERREAL_NUMBER186,10878
-  | STRINGSTRING187,10938
-  | ESCAPED_IDENTIFIERESCAPED_IDENTIFIER188,10993
-  | SIMPLE_IDENTIFIERSIMPLE_IDENTIFIER189,11060
-  | SYSTEM_TASK_FUNCTION_IDENTIFIERSYSTEM_TASK_FUNCTION_IDENTIFIER190,11126
-let yytransl_constyytransl_const244,12056
-let yytransl_blockyytransl_block247,12089
-let yylhsyylhs439,16678
-let yylenyylen501,20646
-let yydefredyydefred563,24614
-let yydgotoyydgoto686,32611
-let yysindexyysindex716,34485
-let yyrindexyyrindex839,42482
-let yygindexyygindex962,50479
-let yytablesizeyytablesize992,52354
-let yytableyytable993,52377
-let yycheckyycheck1703,99083
-let yynames_constyynames_const2413,145789
-let yynames_blockyynames_block2416,145817
-let yyactyyact2608,149267
-let yytablesyytables6638,319594
-let source_textsource_text6655,320115
+  | LBRACELBRACE167,9764
+  | RBRACERBRACE168,9819
+  | PERIODPERIOD169,9874
+  | ATAT170,9929
+  | JINGJING171,9980
+  | EQU1EQU1172,10033
+  | DOLLORDOLLOR173,10086
+  | IMPLYIMPLY174,10141
+  | IMPLY2IMPLY2175,10195
+  | IMPLYSTARTIMPLYSTART176,10250
+  | ADDRANGEADDRANGE177,10309
+  | SUBRANGESUBRANGE178,10366
+  | LPARENTSTARTLPARENTSTART179,10423
+  | RPARENTSTARTRPARENTSTART180,10484
+  | UNSIGNED_NUMBERUNSIGNED_NUMBER181,10545
+  | UNSIGNED_NUMBER_sizeUNSIGNED_NUMBER_size182,10606
+  | OCTAL_NUMBEROCTAL_NUMBER183,10679
+  | BINARY_NUMBERBINARY_NUMBER184,10747
+  | HEX_NUMBERHEX_NUMBER185,10816
+  | REAL_NUMBERREAL_NUMBER186,10882
+  | STRINGSTRING187,10942
+  | ESCAPED_IDENTIFIERESCAPED_IDENTIFIER188,10997
+  | SIMPLE_IDENTIFIERSIMPLE_IDENTIFIER189,11064
+  | SYSTEM_TASK_FUNCTION_IDENTIFIERSYSTEM_TASK_FUNCTION_IDENTIFIER190,11130
+let yytransl_constyytransl_const265,12584
+let yytransl_blockyytransl_block268,12617
+let yylhsyylhs460,17210
+let yylenyylen522,21162
+let yydefredyydefred584,25114
+let yydgotoyydgoto703,32855
+let yysindexyysindex733,34721
+let yyrindexyyrindex852,42462
+let yygindexyygindex971,50203
+let yytablesizeyytablesize1001,52070
+let yytableyytable1002,52093
+let yycheckyycheck1614,92371
+let yynames_constyynames_const2226,132649
+let yynames_blockyynames_block2229,132677
+let yyactyyact2421,136131
+let yytablesyytables6460,309381
+let source_textsource_text6477,309902
 
-parser.mly,319
-let get1get18,40
-let get_begin_posget_begin_pos13,94
-let get2get215,127
-let get_finish_posget_finish_pos20,181
-let print_posprint_pos22,215
-let print_both_posprint_both_pos28,409
-let get3get335,567
-let get_string_ssyget_string_ssy40,625
-let prt_flushprt_flush42,658
-let parse_errorparse_error47,725
+parser.mly,433
+let get1get19,52
+let get_begin_posget_begin_pos14,106
+let get2get216,139
+let get_finish_posget_finish_pos21,193
+let print_posprint_pos23,227
+let print_both_posprint_both_pos29,421
+let get3get336,579
+let get_string_ssyget_string_ssy41,637
+let pos_fnpos_fn45,732
+let pos_lnpos_ln46,754
+let pos_cnpos_cn47,775
+let str_contentstr_content48,796
+let record_posrecord_pos50,824
+let parse_errorparse_error61,1082
 
-typedef.ml,43196
+typedef.ml,43212
 Typedef1,0
 type descriptiondescription1,0
 	T_description__module_declarationT_description__module_declaration2,19
@@ -1082,30 +1086,30 @@ and edge_symboledge_symbol713,34551
 and identifieridentifier716,34688
 	T_identifier_NOSPECT_identifier_NOSPEC717,34705
 	| T_identifierT_identifier718,34726
-and	stringstring719,34784
-	T_stringT_string720,34797
-and	system_function_identifiersystem_function_identifier721,34849
-	T_system_function_identifierT_system_function_identifier722,34882
+and	string_typedefstring_typedef719,34784
+	T_stringT_string720,34805
+and	system_function_identifiersystem_function_identifier721,34857
+	T_system_function_identifierT_system_function_identifier722,34890
 
 very.ml,950
 Very1,0
 let __ocaml_lex_tables__ocaml_lex_tables92,1575
 let rec veriloglexveriloglex803,50306
 and __ocaml_lex_veriloglex_rec__ocaml_lex_veriloglex_rec811,50788
-and endoflineendofline1429,79180
-and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1431,79244
-and stringssystringssy1460,79920
-and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1462,79984
-and commentcomment1498,80857
-and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1500,80941
-and line_skip_blankline_skip_blank1538,81791
-and __ocaml_lex_line_skip_blank_rec__ocaml_lex_line_skip_blank_rec1540,81867
-and line_numberline_number1563,82472
-and __ocaml_lex_line_number_rec__ocaml_lex_line_number_rec1565,82540
-and line_skip_blank2line_skip_blank21601,83536
-and __ocaml_lex_line_skip_blank2_rec__ocaml_lex_line_skip_blank2_rec1603,83620
-and line_filenameline_filename1624,84186
-and __ocaml_lex_line_filename_rec__ocaml_lex_line_filename_rec1626,84264
+and endoflineendofline1429,79184
+and __ocaml_lex_endofline_rec__ocaml_lex_endofline_rec1431,79248
+and stringssystringssy1460,79924
+and __ocaml_lex_stringssy_rec__ocaml_lex_stringssy_rec1462,79988
+and commentcomment1498,80861
+and __ocaml_lex_comment_rec__ocaml_lex_comment_rec1500,80945
+and line_skip_blankline_skip_blank1538,81795
+and __ocaml_lex_line_skip_blank_rec__ocaml_lex_line_skip_blank_rec1540,81871
+and line_numberline_number1563,82476
+and __ocaml_lex_line_number_rec__ocaml_lex_line_number_rec1565,82544
+and line_skip_blank2line_skip_blank21601,83540
+and __ocaml_lex_line_skip_blank2_rec__ocaml_lex_line_skip_blank2_rec1603,83624
+and line_filenameline_filename1624,84190
+and __ocaml_lex_line_filename_rec__ocaml_lex_line_filename_rec1626,84268
 
 very.mll,358
 let stringssy_stringstringssy_string8,54
