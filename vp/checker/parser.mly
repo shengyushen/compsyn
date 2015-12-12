@@ -337,7 +337,7 @@ module_declaration :
 		attribute_instance_list 
 		module_keyword 
 		module_identifier 
-		module_parameter_port_list 
+		module_parameter_port_list_opt 
 		list_of_ports 
 		SEMICOLON 
 		module_item_list
@@ -350,7 +350,7 @@ module_declaration :
 	| attribute_instance_list 
 		module_keyword 
 		module_identifier 
-		module_parameter_port_list
+		module_parameter_port_list_opt
 		list_of_port_declarations
 		SEMICOLON 
 		/*non_port_module_item_list*/
@@ -366,6 +366,11 @@ module_declaration :
 attribute_instance_list :
 		{[]}
 	|  attribute_instance_list attribute_instance {$1@[$2]}
+;
+
+module_parameter_port_list_opt :
+	{[]}
+	| module_parameter_port_list {$1}
 ;
 
 module_item_list :

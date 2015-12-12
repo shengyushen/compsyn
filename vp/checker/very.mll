@@ -153,7 +153,7 @@ let useless_directives =
 
 
 rule veriloglex  = parse
-		[' ' '\t' '\n' ]+	{
+		[' ' '\t' ]+	{
 			veriloglex  lexbuf
 		}
 	| system_task_function_identifier  {SYSTEM_TASK_FUNCTION_IDENTIFIER(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
