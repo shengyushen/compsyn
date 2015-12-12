@@ -37,8 +37,16 @@ rule preproc = parse
 			proc_define lexbuf ;
 			DIRECTIVE_define 
 		}
-	| "`ifdef"				{ proc_ifdef lexbuf; DIRECTIVE_ifdef }
-	| "`ifndef"			{ proc_ifndef lexbuf; DIRECTIVE_ifndef }
+	| "`ifdef"				{ 
+			proc_ifdef lexbuf; 
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			DIRECTIVE_ifdef 
+		}
+	| "`ifndef"			{ 
+			proc_ifndef lexbuf; 
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			DIRECTIVE_ifndef 
+		}
 	| "`else"|"elsif"|"`endif" as impdef{
 			Printf.printf  "\n// FATAL : unmatched %s\n//"  impdef;
 			print_pos (Lexing.lexeme_start_p lexbuf);
@@ -269,7 +277,7 @@ and proc_ifndef  = parse
 				do_else lexbuf
 			end
 			else begin
-				do_then lexbuf
+				do_then lexbuf 
 			end
 			;
 			Other
@@ -352,8 +360,6 @@ and do_then  = parse
 					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
 					print_string defedname;
 					(*this is not same as that of preproc*)
-					do_then lexbuf;
-					()
 				with Not_found -> begin
 					Printf.printf  "\n//FATAL : no such definition %s\n" defname;
 					print_pos (Lexing.lexeme_start_p lexbuf);
@@ -361,6 +367,7 @@ and do_then  = parse
 				end 
 			end
 			;
+			do_then lexbuf;
 			Other
 		}
 	| [^ '`']* as lsm			{
@@ -536,8 +543,6 @@ and do_else_in  = parse
 					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
 					print_string defedname;
 					(*this is not same as that of preproc*)
-					do_else_in lexbuf;
-					()
 				with Not_found -> begin
 					Printf.printf "\n//FATAL : no such definition %s \n\\" defname;
 					print_pos (Lexing.lexeme_start_p lexbuf);
@@ -545,6 +550,7 @@ and do_else_in  = parse
 				end 
 			end
 			;
+			do_else_in lexbuf;
 			Other
 		}
 	| [^ '`']* as lsm			{

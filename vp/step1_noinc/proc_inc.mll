@@ -4,8 +4,7 @@
 
 	exception Ssyeof of string
 	
-	type token = 
-              | DIRECTIVE_include
+	type token =  DIRECTIVE_include
               | Other
               | Eof
               | Eol
