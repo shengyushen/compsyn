@@ -30,7 +30,6 @@ rule preproc = parse
 			Other
 		}
 	| "\n" {
-			Printf.printf  "kaka1";
 			print_endline "";
 			Lexing.new_line lexbuf ;
 			Eol
@@ -44,15 +43,13 @@ rule preproc = parse
 			DIRECTIVE_define 
 		}
 	| "`ifdef"				{ 
-			Printf.printf  "entering ifdef\n";
 			proc_ifdef lexbuf; 
-			Printf.printf  "\n`line  aaaa %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{ 
-			Printf.printf  "entering ifndef\n";
 			proc_ifndef lexbuf; 
-			Printf.printf  "\n`line bbbb %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifndef 
 		}
 	| "`else"|"elsif"|"`endif" as impdef{
@@ -118,7 +115,6 @@ rule preproc = parse
 			print_string ssss; Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka13";
 			print_char lsm; Other
 		}
 and comment depth stpos = parse
@@ -134,13 +130,11 @@ and comment depth stpos = parse
 			comment (depth+1) stpos lexbuf
 		}
 	| '\n' as lsm {
-			Printf.printf  "kaka2";
 			print_char lsm; 
 			Lexing.new_line lexbuf ;
 			comment depth stpos lexbuf
 		}
 	| _ as lsm {
-			Printf.printf  "kaka14";
 			print_char lsm; 
 			comment depth stpos lexbuf
 		}
@@ -155,12 +149,10 @@ and comment_inskip depth stpos = parse
 			comment_inskip (depth+1) stpos lexbuf
 		}
 	| '\n' as lsm {
-			Printf.printf  "kaka3";
 			Lexing.new_line lexbuf ;
 			comment_inskip depth stpos lexbuf
 		}
 	| _ as lsm {
-			Printf.printf  "kaka15";
 			comment_inskip depth stpos lexbuf
 		}
 and preproc_str = parse
@@ -194,7 +186,6 @@ and proc_define = parse
 			proc_defined def lexbuf
 		}
 	| _ as lsm 	{
-			Printf.printf  "kaka16";
 			proc_define lexbuf
 		}
 and proc_defined def = parse 
@@ -230,13 +221,11 @@ and proc_defined def = parse
 			def_list:=(def,defed)::(List.remove_assoc def !def_list);
 		}
 	| '\n' as lsm{
-			Printf.printf  "kaka4";
 			print_char lsm; 
 			Lexing.new_line lexbuf;
 			def_list:=(def,"")::(List.remove_assoc def !def_list)
 		}
 	| _ as lsm							{
-			Printf.printf  "kaka17";
 			print_char lsm; 
 			def_list:=(def,"")::(List.remove_assoc def !def_list)
 		}
@@ -260,18 +249,15 @@ and proc_ifdef  = parse
 			with Not_found -> 0
 			in 
 			if found == 0 then begin
-				Printf.printf  "entering proc_ifdef -> do_else";
 				do_else lexbuf
 			end
 			else begin
-				Printf.printf  "entering proc_ifdef -> do_then";
 				do_then lexbuf
 			end
 			;
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka18";
 			print_char lsm;
 			proc_ifdef lexbuf; 
 			Other 
@@ -299,14 +285,12 @@ and proc_ifndef  = parse
 				do_else lexbuf
 			end
 			else begin
-				Printf.printf  "entering do_then\n";
 				do_then lexbuf 
 			end
 			;
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka19";
 			print_char lsm;
 			proc_ifndef lexbuf; 
 			Other 
@@ -318,7 +302,6 @@ and do_then  = parse
 			do_then lexbuf
 		}
 	| "\n" {
-			Printf.printf  "kaka5";
 			print_endline "";
 			Lexing.new_line lexbuf ;
 			do_then lexbuf
@@ -329,16 +312,14 @@ and do_then  = parse
 			do_then lexbuf
 		}
 	| "`ifdef"				{
-			Printf.printf  "entering do_then -> ifdef\n" ;
 			proc_ifdef lexbuf; 
-			Printf.printf  "\n`line cccc %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{
-			Printf.printf  "entering do_then -> ifndef\n" ;
 			proc_ifndef lexbuf; 
-			Printf.printf  "\n`line dddd %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifndef 
 		}
@@ -408,16 +389,12 @@ and do_then  = parse
 			Other
 		}
 	| [^ '`' '\n']* as lsm			{
-			Printf.printf  "kaka30\n";
 			print_string lsm;
-			Printf.printf  "kaka301\n";
 			do_then lexbuf; 
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka20\n";
 			print_char lsm; 
-			Printf.printf  "kaka201\n";
 			do_then lexbuf; 
 			Other 
 		}
@@ -427,7 +404,6 @@ and skip_else  = parse
 			skip_else lexbuf
 		}
 	| "\n" {
-			Printf.printf  "kaka6";
 			Lexing.new_line lexbuf ;
 			skip_else lexbuf
 		}
@@ -453,7 +429,6 @@ and skip_else  = parse
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka21";
 			skip_else lexbuf;
 			Other 
 		}
@@ -463,7 +438,6 @@ and proc_ifdef_inskip  = parse
 			proc_ifdef_inskip lexbuf
 		}
 	| "\n" {
-			Printf.printf  "kaka7";
 			Lexing.new_line lexbuf ;
 			proc_ifdef_inskip lexbuf
 		}
@@ -489,7 +463,6 @@ and proc_ifdef_inskip  = parse
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka22";
 			proc_ifdef_inskip lexbuf; 
 			Other 
 		}
@@ -499,7 +472,6 @@ and do_else  = parse
 			do_else lexbuf
 		}
 	| "\n" {
-			Printf.printf  "kaka";
 			Lexing.new_line lexbuf ;
 			do_else lexbuf
 		}
@@ -509,7 +481,6 @@ and do_else  = parse
 		}
 	| "`ifdef"				{
 			proc_ifdef_inskip lexbuf ; 
-			Printf.printf  "entering do_else continue\n";
 			do_else lexbuf ;
 			Other
 		}
@@ -519,7 +490,6 @@ and do_else  = parse
 			Other
 		}
 	| "`else"				{
-			Printf.printf  "entering do_else -> do_else_in\n";
 			do_else_in lexbuf ; 
 			Other
 		}
@@ -535,7 +505,6 @@ and do_else  = parse
 			Other
 		}
 	| _ 				{
-			Printf.printf  "kaka12";
 			do_else lexbuf; 
 			Other 
 		}
@@ -546,7 +515,6 @@ and do_else_in  = parse
 			do_else_in lexbuf
 		}
 	| "\n" {
-			Printf.printf  "kaka9";
 			print_endline "";
 			Lexing.new_line lexbuf ;
 			do_else_in lexbuf
@@ -558,18 +526,17 @@ and do_else_in  = parse
 		}
 	| "`ifdef"				{
 			proc_ifdef lexbuf ; 
-			Printf.printf  "\n`line gggg %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
 	| "`ifndef"				{
 			proc_ifndef lexbuf ; 
-			Printf.printf  "\n`line hhhh %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
+			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)+1) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
 	| "`endif"				{
-			Printf.printf  "entering do_else_in finished\n";
 			DIRECTIVE_endif 
 		}
 	| "`define"			{
@@ -632,7 +599,6 @@ and do_else_in  = parse
 			Other
 		}
 	| _ as lsm				{
-			Printf.printf  "kaka23";
 			print_char lsm;
 			do_else_in lexbuf; 
 			Other 
@@ -673,7 +639,6 @@ and proc_undef = parse
 			Other
 		}
 	| _ as lsm 	{
-			Printf.printf  "kaka24";
 			proc_undef lexbuf
 		}
 and line_skip_blank  = parse
@@ -723,8 +688,6 @@ and line_filename  ln = parse
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
 			Printf.printf " %s " realfn;
 			endofline lexbuf;
-			print_pos (Lexing.lexeme_end_p lexbuf);
-			flush stdout;
 			()
 		end
 	}
@@ -736,7 +699,6 @@ and line_filename  ln = parse
 	}
 and endofline = parse
 	'\n' {
-			Printf.printf  "kaka10";
 			print_endline "";
 			let endpos=Lexing.lexeme_end_p lexbuf
 			in begin
@@ -748,7 +710,6 @@ and endofline = parse
 			Eof
 		}
 	| _ as lxm {
-			Printf.printf  "kaka11";
 			print_char lxm;
 			endofline lexbuf
 		}
