@@ -1302,12 +1302,12 @@ task_item_declaration_list :
 		{$1@[$2]}
 ;
 
-block_item_declaration_list :
+/*block_item_declaration_list :
 	{[]}
 	| block_item_declaration_list block_item_declaration 
 		{$1@[$2]}
 ;
-
+*/
 task_item_declaration :
 	block_item_declaration
 		{T_task_item_declaration_block($1)}
@@ -2181,29 +2181,39 @@ procedural_continuous_assignments :
 /*A.6.3 Parallel and sequential blocks*/
 
 par_block :
-	KEY_FORK comma_block_identifier_block_item_declaration_list_opt
-	statement_list
+	KEY_FORK colon_block_identifier_opt
+	statement_or_block_item_list
 	KEY_JOIN
 		{record_pos $4;T_par_block($2,$3)}
 ;
 
-comma_block_identifier_block_item_declaration_list_opt :
-	{T_comma_block_identifier_block_item_declaration_list_opt_NOSPEC}
-	| COMMA block_identifier block_item_declaration_list
-		{record_pos $1;T_comma_block_identifier_block_item_declaration_list_opt ($2,$3)}
+colon_block_identifier_opt :
+	{T_colon_block_identifier_NOSPEC}
+	| COLON block_identifier 
+		{record_pos $1;T_colon_block_identifier($2)}
 ;
 
-statement_list :
+/*statement_list :
 	{[]}
 	| statement_list statement 
 		{$1@[$2]}
 ;
-
+*/
 seq_block :
-	KEY_BEGIN comma_block_identifier_block_item_declaration_list_opt 
-	statement_list
+	KEY_BEGIN colon_block_identifier_opt 
+	statement_or_block_item_list
 	KEY_END
 		{record_pos $4;T_seq_block($2,$3)}
+;
+statement_or_block_item_list :
+	{[]}
+	| statement_or_block_item_list statement_or_block_item 
+		{$1@[$2]}
+;
+
+statement_or_block_item :
+	statement {T_statement_or_block_item_statement($1)}
+	| block_item_declaration {T_statement_or_block_item_block($1)}
 ;
 
 /*A.6.4 Statements*/

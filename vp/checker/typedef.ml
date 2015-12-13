@@ -426,12 +426,12 @@ and	procedural_continuous_assignments =
 	| T_procedural_continuous_assignments_release1 of net_lvalue
 	| T_procedural_continuous_assignments_release2 of net_lvalue
 and	par_block =
-	T_par_block of comma_block_identifier_block_item_declaration_list_opt*(statement list)
-and comma_block_identifier_block_item_declaration_list_opt =
-	T_comma_block_identifier_block_item_declaration_list_opt_NOSPEC
-	| T_comma_block_identifier_block_item_declaration_list_opt of identifier*(block_item_declaration list)
+	T_par_block of colon_block_identifier*(statement_or_block_item list)
+and colon_block_identifier =
+	T_colon_block_identifier_NOSPEC
+	| T_colon_block_identifier of identifier
 and	seq_block =
-	T_seq_block of comma_block_identifier_block_item_declaration_list_opt*(statement list)
+	T_seq_block of colon_block_identifier*(statement_or_block_item list)
 and statement =
 	T_statement_NOSPEC
 	| T_statement_blocking_assignment of (attribute_instance list)*blocking_assignment
@@ -745,3 +745,7 @@ and netreg_type =
 	| T_netreg_type__KEY_REG
 	| T_netreg_type__KEY_INTEGER
 	| T_netreg_type__KEY_TIME
+and	statement_or_block_item =
+	T_statement_or_block_item_statement of statement
+	| T_statement_or_block_item_block of block_item_declaration
+
