@@ -460,7 +460,7 @@ and	event_control =
 	| T_event_control_event_exp of (event_expression list)
 	| T_event_control_start
 and	event_trigger =
-	T_event_trigger of hierarchical_identifier*(expression list)
+	T_event_trigger of hierarchical_identifier
 and	event_expression =
 	T_event_expression_exp of expression
 	| T_event_expression_pos of expression
@@ -623,9 +623,9 @@ and	attribute_instance =
 and	attr_spec =
 	T_attr_spec of identifier*expression
 and	hierarchical_identifier =
-	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)*identifier
+	T_hierarchical_identifier of (identifier_lsq_expression_rsq list)
 and	identifier_lsq_expression_rsq =
-	T_identifier_lsq_expression_rsq of identifier*expression
+	T_identifier_lsq_expression_rsq of identifier*(range_expression list)
 and polarity_operator =
 	T_polarity_operator_NOSPEC
 	| T_polarity_operator_ADD

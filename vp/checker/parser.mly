@@ -2244,8 +2244,8 @@ event_control :
 ;
 
 event_trigger :
-	IMPLY hierarchical_identifier lsq_expression_rsq_list SEMICOLON
-		{record_pos $4;T_event_trigger($2,$3)}
+	IMPLY hierarchical_identifier  SEMICOLON
+		{record_pos $3;T_event_trigger($2)}
 ;
 
 event_expression :
@@ -2904,8 +2904,6 @@ primary :
 		{T_primary_num($1)}
 	| hierarchical_identifier 
 		{T_primary_id($1)}
-	| hierarchical_identifier  lsq_expression_rsq_list lsquare_range_expression_rsquare
-		{T_primary_idexp($1,$2,$3)}
 	| concatenation
 		{T_primary_concat($1)}
 	| multiple_concatenation
@@ -2924,24 +2922,22 @@ primary :
 		}
 ;
 
-
+/*
 lsq_expression_rsq_list :
 	{[]}
 	| lsq_expression_rsq_list square_expression_square
 		{$1@[$2]}
 ;
-
 square_expression_square :
 	LSQUARE expression RSQUARE
 		{record_pos $3;$2}
 ;
+*/
 
 /*A.8.5 Expression left-side values*/
 net_lvalue :
 	hierarchical_identifier
 		{T_net_lvalue_id($1)}
-	| hierarchical_identifier lsq_expression_rsq_list lsquare_range_expression_rsquare
-		{T_net_lvalue_idexp($1,$2,$3)}
 	| LBRACE net_lvalue comma_net_lvalue_list RBRACE
 		{record_pos $4;T_net_lvalue_lvlist($2::$3)}
 ;
@@ -3029,20 +3025,23 @@ genvar_identifier : identifier {$1};
 
 
 hierarchical_identifier : 
-	identifier_lsq_expression_rsq_opt_list  identifier
-		{T_hierarchical_identifier($1,$2)}
+	identifier_lsq_expression_rsq_opt_list  
+		{T_hierarchical_identifier($1)}
 ;
 identifier_lsq_expression_rsq_opt_list :
-	{[]}
-	| identifier_lsq_expression_rsq_opt_list identifier_lsq_expression_rsq_opt 
-		{$1@[$2]}
+	identifier_lsq_expression_rsq_opt {[$1]}
+	| identifier_lsq_expression_rsq_opt_list PERIOD identifier_lsq_expression_rsq_opt 
+		{record_pos $2;$1@[$3]}
 ;
 
 identifier_lsq_expression_rsq_opt :
-	identifier PERIOD
-		{record_pos $2;T_identifier_lsq_expression_rsq($1,T_expression_NOSPEC)}
-	| identifier square_expression_square PERIOD
-		{record_pos $3;T_identifier_lsq_expression_rsq($1,$2)}
+	identifier  lsquare_range_expression_rsquare_list
+		{T_identifier_lsq_expression_rsq($1,$2)}
+;
+lsquare_range_expression_rsquare_list :
+	{[]}
+	| lsquare_range_expression_rsquare_list lsquare_range_expression_rsquare
+		{$1@[$2]}
 ;
 
 /*hierarchical_variable_identifier : hierarchical_identifier {$1};*/

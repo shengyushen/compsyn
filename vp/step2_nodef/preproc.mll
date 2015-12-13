@@ -687,7 +687,7 @@ and line_filename  ln = parse
 		in begin
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
-			Printf.printf " %s " realfn;
+			Printf.printf " \"%s\" " realfn;
 			endofline lexbuf;
 			()
 		end
