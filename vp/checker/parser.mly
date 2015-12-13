@@ -351,7 +351,7 @@ module_declaration :
 		module_keyword 
 		module_identifier 
 		module_parameter_port_list_opt
-		list_of_port_declarations
+		list_of_io_declarations
 		SEMICOLON 
 		/*non_port_module_item_list*/
 		module_item_list
@@ -428,9 +428,9 @@ comma_port_list :
 	}
 ;
 
-list_of_port_declarations :
+list_of_io_declarations :
 	LPARENT 
-		port_declaration comma_port_declaration_list
+		io_declaration comma_io_declaration_list
 	RPARENT
 		{
 			record_pos $4;
@@ -442,9 +442,9 @@ list_of_port_declarations :
 ;
 
 
-comma_port_declaration_list :
+comma_io_declaration_list :
 	{[]}
-	| comma_port_declaration_list COMMA port_declaration 
+	| comma_io_declaration_list COMMA io_declaration 
 		{
 			record_pos $2;
 			$1@[$3]
@@ -811,6 +811,34 @@ output_declaration :
 		{record_pos $1;T_output_declaration_var($2,$3)}
 ;		
 
+
+io_declaration :
+	io_type netreg_type signed_opt range_opt port_identifier_equ1_expression_opt
+		{T_io_declaration_net($1,$2,$3,$4,$5)}
+;
+
+netreg_type :
+	KEY_SUPPLY0 	    {record_pos $1;T_netreg_type__KEY_SUPPLY0}
+	| KEY_SUPPLY1	    {record_pos $1;T_netreg_type__KEY_SUPPLY1}
+	| KEY_TRI			    {record_pos $1;T_netreg_type__KEY_TRI}
+	| KEY_TRIAND 	    {record_pos $1;T_netreg_type__KEY_TRIAND}
+	| KEY_TRIOR 			{record_pos $1;T_netreg_type__KEY_TRIOR}
+	| KEY_TRI0 				{record_pos $1;T_netreg_type__KEY_TRI0}
+	| KEY_TRI1				{record_pos $1;T_netreg_type__KEY_TRI1}
+	| KEY_UWIRE 			{record_pos $1;T_netreg_type__KEY_UWIRE}
+	| KEY_WIRE 				{record_pos $1;T_netreg_type__KEY_WIRE}
+	| KEY_WAND 				{record_pos $1;T_netreg_type__KEY_WAND}
+	| KEY_WOR					{record_pos $1;T_netreg_type__KEY_WOR}
+	| KEY_REG					{record_pos $1;T_netreg_type__KEY_REG}
+	| KEY_INTEGER			{record_pos $1;T_netreg_type__KEY_INTEGER}
+	| KEY_TIME				{record_pos $1;T_netreg_type__KEY_TIME}
+;
+
+io_type :
+	{T_io_type_NOSPEC}
+	| KEY_OUTPUT	{T_io_type_output}
+	| KEY_INPUT		{T_io_type_input}
+	| KEY_INOUT		{T_io_type_inout}
 
 /*A.2.1.3 Type declarations*/
 event_declaration :

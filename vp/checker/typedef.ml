@@ -4,7 +4,7 @@ type description =
 	| T_description__config_declaration of config_declaration
 and module_declaration =
 	T_module_declaration__1 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(port list)*(module_item list)
-	| T_module_declaration__2 of(attribute_instance list)*identifier*(parameter_declaration_gen list)*(port_declaration list)*(module_item list)
+	| T_module_declaration__2 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(io_declaration list)*(module_item list)
 and port =
 	T_port_position of port_expression
 	| T_port_exp of identifier*port_expression
@@ -723,3 +723,25 @@ and	string_typedef =
 	T_string of Lexing.position*Lexing.position*string
 and	system_function_identifier =
 	T_system_function_identifier of  Lexing.position*Lexing.position*string
+and	io_type =
+	T_io_type_NOSPEC
+	| T_io_type_output
+	| T_io_type_input
+	| T_io_type_inout
+and	io_declaration =
+	T_io_declaration_net of io_type*netreg_type*signed*range*port_identifier_equ1_expression_opt
+and netreg_type =
+	T_netreg_type__KEY_SUPPLY0
+	| T_netreg_type__KEY_SUPPLY1
+	| T_netreg_type__KEY_TRI
+	| T_netreg_type__KEY_TRIAND
+	| T_netreg_type__KEY_TRIOR
+	| T_netreg_type__KEY_TRI0
+	| T_netreg_type__KEY_TRI1
+	| T_netreg_type__KEY_UWIRE
+	| T_netreg_type__KEY_WIRE
+	| T_netreg_type__KEY_WAND
+	| T_netreg_type__KEY_WOR
+	| T_netreg_type__KEY_REG
+	| T_netreg_type__KEY_INTEGER
+	| T_netreg_type__KEY_TIME
