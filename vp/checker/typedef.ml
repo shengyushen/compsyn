@@ -3,8 +3,8 @@ type description =
 	| T_description__udp_declaration of udp_declaration
 	| T_description__config_declaration of config_declaration
 and module_declaration =
-	T_module_declaration__1 of (attribute_instance list)*identifier*(parameter_declaration list)*(port list)*(module_item list)
-	| T_module_declaration__2 of(attribute_instance list)*identifier*(parameter_declaration list)*(port_declaration list)*(module_item list)
+	T_module_declaration__1 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(port list)*(module_item list)
+	| T_module_declaration__2 of(attribute_instance list)*identifier*(parameter_declaration_gen list)*(port_declaration list)*(module_item list)
 and port =
 	T_port_position of port_expression
 	| T_port_exp of identifier*port_expression
@@ -65,13 +65,16 @@ and signed =
 and local_parameter_declaration =
 	T_local_parameter_declaration_1 of signed*range*(param_assignment list)
 	| T_local_parameter_declaration_2 of parameter_type*(param_assignment list)
+and parameter_declaration_gen =
+	T_parameter_declaration_gen_1 of parameter_type*signed*range*param_assignment
 and parameter_declaration =
 	T_parameter_declaration_1 of signed*range*(param_assignment list)
 	| T_parameter_declaration_2 of parameter_type*(param_assignment list)
 and specparam_declaration =
 	T_specparam_declaration of range*(specparam_assignment list)
 and parameter_type =
-	T_parameter_type__INTEGER
+	T_parameter_type__NOSPEC
+	| T_parameter_type__INTEGER
 	| T_parameter_type__REAL
 	| T_parameter_type__REALTIME
 	| T_parameter_type__TIME

@@ -392,7 +392,7 @@ module_keyword :
 module_parameter_port_list :
 	JING 
 	LPARENT 
-		parameter_declaration comma_parameter_declaration_list
+		parameter_declaration_gen comma_parameter_declaration_list
 	RPARENT
 	{
 		record_pos $5;
@@ -402,7 +402,7 @@ module_parameter_port_list :
 
 comma_parameter_declaration_list :
 	{[]}
-	| comma_parameter_declaration_list COMMA parameter_declaration 
+	| comma_parameter_declaration_list COMMA parameter_declaration_gen 
 		{
 			record_pos $2;
 			$1@[$3]
@@ -752,6 +752,20 @@ parameter_declaration :
 		}
 ;
 
+
+/*genarized to avoid conflict*/
+parameter_declaration_gen :
+	key_parameter_opt parameter_type_opt signed_opt range_opt param_assignment
+		{
+			T_parameter_declaration_gen_1($2,$3,$4,$5)
+		}
+;
+
+key_parameter_opt :
+	{0}
+	| KEY_PARAMETER {0}
+;
+
 /*specparam_declaration :
 	KEY_SPECPARAM range_opt list_of_specparam_assignments SEMICOLON
 		{
@@ -760,6 +774,11 @@ parameter_declaration :
 		}
 ;
 */
+parameter_type_opt :
+	{T_parameter_type__NOSPEC}
+	| parameter_type {$1}
+;
+
 parameter_type :
 	KEY_INTEGER    {record_pos $1;T_parameter_type__INTEGER}
 	| KEY_REAL 	   {record_pos $1;T_parameter_type__REAL}
