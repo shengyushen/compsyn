@@ -194,7 +194,7 @@ and function_item_declaration =
 	T_function_item_declaration_block of block_item_declaration
 	| T_function_item_declaration_input of (attribute_instance list)*tf_input_declaration
 and attribute_instance_list_tf_input_declaration =
-	T_attribute_instance_list_tf_input_declaration of (attribute_instance list)*tf_input_declaration
+	T_attribute_instance_list_tf_input_declaration of (attribute_instance list)*tf_io_declaration_gen
 and function_range_or_type =
 	T_function_range_or_type_NOSPEC
 	| T_function_range_or_type of signed*range
@@ -211,9 +211,7 @@ and task_item_declaration =
 	| T_task_item_declaration_output of tf_output_declaration
 	| T_task_item_declaration_inout of tf_inout_declaration
 and task_port_item =
-	T_task_port_item_input of tf_input_declaration
-	| T_task_port_item_output of tf_output_declaration
-	| T_task_port_item_inout of tf_inout_declaration
+	T_task_port_item_input of (attribute_instance list)*tf_io_declaration_gen
 and reg =
 	T_reg_false
 	| T_reg_true
@@ -748,4 +746,8 @@ and netreg_type =
 and	statement_or_block_item =
 	T_statement_or_block_item_statement of statement
 	| T_statement_or_block_item_block of block_item_declaration
+and	tf_io_declaration_gen =
+	T_tf_io_declaration_gen1 of io_type*reg*signed*range*identifier
+	| T_tf_io_declaration_gen2 of io_type*task_port_type*identifier
+
 

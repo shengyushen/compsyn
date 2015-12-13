@@ -1257,7 +1257,7 @@ function_port_list :
 ;
 
 attribute_instance_list_tf_input_declaration :
-	attribute_instance_list tf_input_declaration
+	attribute_instance_list tf_io_declaration_gen
 		{T_attribute_instance_list_tf_input_declaration($1,$2)}
 ;
 
@@ -1328,12 +1328,8 @@ comma_task_port_item_list :
 ;
 
 task_port_item :
-		 attribute_instance_list tf_input_declaration
-		 	{T_task_port_item_input($2)}
-	|  attribute_instance_list tf_output_declaration
-		 	{T_task_port_item_output($2)}
-	|  attribute_instance_list tf_inout_declaration
-		 	{T_task_port_item_inout($2)}
+		 attribute_instance_list tf_io_declaration_gen
+		 	{T_task_port_item_input($1,$2)}
 ;
 
 
@@ -1368,6 +1364,13 @@ task_port_type :
 	| KEY_REAL  		{record_pos $1;T_task_port_type_real}
 	| KEY_REALTIME	{record_pos $1;T_task_port_type_realtime}
 	| KEY_TIME			{record_pos $1;T_task_port_type_time}
+;
+
+tf_io_declaration_gen :
+	io_type reg_opt signed_opt range_opt port_identifier
+		{T_tf_io_declaration_gen1($1,$2,$3,$4,$5)}
+	| io_type task_port_type port_identifier
+		{T_tf_io_declaration_gen2($1,$2,$3)}
 ;
 
 
