@@ -1708,9 +1708,7 @@ mintypmax_expression_opt :
 ;
 
 module_instance :
-	name_of_module_instance LPARENT  RPARENT
-		{record_pos $3;T_module_instance($1,T_list_of_port_connections_NOSPEC)}
-	| name_of_module_instance LPARENT list_of_port_connections RPARENT
+	name_of_module_instance LPARENT list_of_port_connections RPARENT
 		{record_pos $4;T_module_instance($1,$3)}
 ;
 
