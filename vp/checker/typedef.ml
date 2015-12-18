@@ -8,6 +8,7 @@ and module_declaration =
 and port =
 	T_port_position of port_expression
 	| T_port_exp of identifier*port_expression
+	| T_port_net of io_type*netreg_type*signed*range*port_expression*expression
 and port_expression =
 	T_port_expression of (port_reference list)
 and	port_reference =
@@ -729,7 +730,8 @@ and	io_type =
 and	io_declaration =
 	T_io_declaration_net of io_type*netreg_type*signed*range*port_identifier_equ1_expression_opt
 and netreg_type =
-	T_netreg_type__KEY_SUPPLY0
+	T_netreg_type__NOSPEC
+	| T_netreg_type__KEY_SUPPLY0
 	| T_netreg_type__KEY_SUPPLY1
 	| T_netreg_type__KEY_TRI
 	| T_netreg_type__KEY_TRIAND

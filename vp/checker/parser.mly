@@ -347,20 +347,19 @@ module_declaration :
 			T_module_declaration__1(
 				$1,$3,$4,$5,$7)
 		}
-	| attribute_instance_list 
+/*	| attribute_instance_list 
 		module_keyword 
 		module_identifier 
 		module_parameter_port_list_opt
 		list_of_io_declarations
 		SEMICOLON 
-		/*non_port_module_item_list*/
 		module_item_list
 		KEY_ENDMODULE
 		{	
 				record_pos $8;
 				T_module_declaration__2(
 				$1,$3,$4,$5,$7)
-		}
+		}*/
 ;
 
 attribute_instance_list :
@@ -428,21 +427,21 @@ comma_port_list :
 	}
 ;
 
-list_of_io_declarations :
+/*list_of_io_declarations :
 	LPARENT 
 		io_declaration comma_io_declaration_list
 	RPARENT
 		{
 			record_pos $4;
 			$2::$3
-		}
+		}*/
 /*can not be empty, orelse will conflict with empty list_of_ports*/
 /*	| LPARENT RPARENT
 		{[]}*/
-;
+/*;*/
 
 
-comma_io_declaration_list :
+/*comma_io_declaration_list :
 	{[]}
 	| comma_io_declaration_list COMMA io_declaration 
 		{
@@ -450,14 +449,16 @@ comma_io_declaration_list :
 			$1@[$3]
 		}
 ;
-
+*/
 port :
-	port_expression_opt {T_port_position($1)}
+	/*port_expression_opt {T_port_position($1)}*/ /*merged ti last case*/
 	| PERIOD  port_identifier LPARENT port_expression_opt RPARENT
 		{
 			record_pos $5;
 			T_port_exp($2,$4)
 		}
+	| io_type netreg_type signed_opt range_opt port_expression_opt equ1_expression_opt
+		{T_port_net($1,$2,$3,$4,$5,$6)}
 ;
 
 port_expression_opt :
@@ -812,13 +813,14 @@ output_declaration :
 ;		
 
 
-io_declaration :
+/*io_declaration :
 	io_type netreg_type signed_opt range_opt port_identifier_equ1_expression_opt
 		{T_io_declaration_net($1,$2,$3,$4,$5)}
-;
+;*/
 
 netreg_type :
-	KEY_SUPPLY0 	    {record_pos $1;T_netreg_type__KEY_SUPPLY0}
+	{T_netreg_type__NOSPEC}
+	| KEY_SUPPLY0 	    {record_pos $1;T_netreg_type__KEY_SUPPLY0}
 	| KEY_SUPPLY1	    {record_pos $1;T_netreg_type__KEY_SUPPLY1}
 	| KEY_TRI			    {record_pos $1;T_netreg_type__KEY_TRI}
 	| KEY_TRIAND 	    {record_pos $1;T_netreg_type__KEY_TRIAND}
@@ -2296,8 +2298,12 @@ event_control :
 	| AT LPARENT event_expression_orcomma_list RPARENT
 		{record_pos $4;T_event_control_event_exp($3)}
 	| AT OP2_MULTIPLE
-		{record_pos $1;T_event_control_start}
+		{record_pos $2;T_event_control_start}
 	| AT LPARENT OP2_MULTIPLE RPARENT
+		{record_pos $4;T_event_control_start}
+	| AT LPARENTSTART RPARENT
+		{record_pos $3;T_event_control_start}
+	| AT LPARENT RPARENTSTART
 		{record_pos $3;T_event_control_start}
 ;
 
