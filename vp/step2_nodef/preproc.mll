@@ -2,7 +2,7 @@
 	(*this is the list of definition*)
 	let def_list = ref [("","")] ;;
 	let print_pos pos = begin
-		Printf.printf "%s " pos.Lexing.pos_fname;
+		Printf.printf "//%s " pos.Lexing.pos_fname;
 		Printf.printf "Line %d " pos.Lexing.pos_lnum;
 		Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
 	end
@@ -19,6 +19,9 @@
 		| Eof
 		| Eol
 
+	let prt_fatal str = begin
+		Printf.printf  "\n// FATAL CHECKER NODEF : %s \n"  str;
+	end
 
 }
 
@@ -53,7 +56,7 @@ rule preproc = parse
 			DIRECTIVE_ifndef 
 		}
 	| "`else"|"elsif"|"`endif" as impdef{
-			Printf.printf  "\n// FATAL : unmatched %s\n//"  impdef;
+			prt_fatal (Printf.sprintf  "unmatched %s"  impdef);
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			(*something on the same line still neeed to be processed*)
 			(*endline lexbuf;*)
@@ -102,7 +105,7 @@ rule preproc = parse
 					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
 						print_string defedname
 					with Not_found -> begin
-						Printf.printf  "\n// FATAL : no such definition %s\n//" defname;
+						prt_fatal (Printf.sprintf  "no such definition %s" defname);
 						print_pos (Lexing.lexeme_start_p lexbuf);
 						()
 					end 
@@ -161,7 +164,7 @@ and preproc_str = parse
 				try 
 					(List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list) ^ (preproc_str lexbuf)
 				with Not_found -> begin
-					Printf.printf "\n//FATAL : no such definition in preproc_str %s \n//" defname;
+					prt_fatal (Printf.sprintf "no such definition in preproc_str %s" defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
 					preproc_str lexbuf
 				end 
@@ -379,7 +382,7 @@ and do_then  = parse
 					print_string defedname;
 					(*this is not same as that of preproc*)
 				with Not_found -> begin
-					Printf.printf  "\n//FATAL : no such definition %s\n" defname;
+					prt_fatal (Printf.sprintf  "no such definition %s" defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
 					()
 				end 
@@ -585,7 +588,7 @@ and do_else_in  = parse
 					print_string defedname;
 					(*this is not same as that of preproc*)
 				with Not_found -> begin
-					Printf.printf "\n//FATAL : no such definition %s \n\\" defname;
+					prt_fatal (Printf.sprintf "no such definition %s " defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
 					()
 				end 
@@ -624,7 +627,7 @@ and proc_undef = parse
 			with Not_found -> 0
 			in 
 			if found == 0 then begin
-				Printf.printf "\n// FATAL : undefined macro name %s is used in `undef\n" def;
+				prt_fatal (Printf.sprintf "undefined macro name %s is used in `undef" def);
 				print_pos (Lexing.lexeme_start_p lexbuf);
 				Other
 			end
@@ -634,7 +637,7 @@ and proc_undef = parse
 			end
 		}
 	| '\n'|eof		{
-			Printf.printf "\n//FATAL : undef dont contains the macro to be undefined\n\\";
+			prt_fatal "undef dont contains the macro to be undefined";
 			Lexing.new_line lexbuf ;
 			print_pos (Lexing.lexeme_start_p lexbuf);
 			Other
@@ -647,7 +650,7 @@ and line_skip_blank  = parse
 		line_number  lexbuf
 	}
 	| _ {
-		Printf.printf "//FATAL : `line must be followed by blanks and line number and  filename\n";
+		prt_fatal "`line must be followed by blanks and line number and  filename";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
 		()
@@ -666,7 +669,7 @@ and line_number  = parse
 		end
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks must be followed by line number and  filename\n";
+		prt_fatal "`line and blanks must be followed by line number and  filename";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
 		()
@@ -676,7 +679,7 @@ and line_skip_blank2  ln = parse
 		line_filename  ln lexbuf
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks and line number must be followed by  blanks\n";
+		prt_fatal "`line and blanks and line number must be followed by  blanks";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
 		()
@@ -693,7 +696,7 @@ and line_filename  ln = parse
 		end
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks and line number and blanks must be followed by filename\n";
+		prt_fatal "`line and blanks and line number and blanks must be followed by filename";
 		print_pos (Lexing.lexeme_start_p lexbuf);
 		endofline lexbuf;
 		()

@@ -8,6 +8,10 @@
               | Other
               | Eof
               | Eol
+
+	let prt_fatal str = begin
+		Printf.printf  "\n// FATAL CHECKER NOINC : %s \n"  str;
+	end
 }
 
 rule proc_inc pathlist = parse
@@ -82,7 +86,7 @@ and proc_include pathlist = parse
 						try 
 							List.find (fun x -> Sys.file_exists x) nl
 						with Not_found -> begin
-							Printf.printf  "\n// FATAL : not found %s \n"  tfn1;
+							prt_fatal (Printf.sprintf  "not found %s "  tfn1);
 							""
 						end
 					end
