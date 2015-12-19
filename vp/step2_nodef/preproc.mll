@@ -46,12 +46,16 @@ rule preproc = parse
 			DIRECTIVE_define 
 		}
 	| "`ifdef"				{ 
+			Printf.printf "//last ifdef is here 1\n";
 			proc_ifdef lexbuf; 
+			Printf.printf "//last ifdef is finished 2\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{ 
+			Printf.printf "//last ifndef is here 3\n";
 			proc_ifndef lexbuf; 
+			Printf.printf "//last ifndef is finished 4\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifndef 
 		}
@@ -114,7 +118,7 @@ rule preproc = parse
 			Other
 		}
 	| eof				{ Eof                      }
-	| [^ '`' '\n']+ as ssss		{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as ssss		{
 			print_string ssss; Other
 		}
 	| _ as lsm				{
@@ -186,6 +190,10 @@ and proc_define = parse
 			proc_define lexbuf
 		}
 	| ['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as def 	{
+			if(List.mem_assoc def !def_list) then begin
+				prt_fatal (Printf.sprintf " already defined macros %s" def)
+			end
+			;
 			proc_defined def lexbuf
 		}
 	| _ as lsm 	{
@@ -285,9 +293,11 @@ and proc_ifndef  = parse
 			with Not_found -> 0
 			in 
 			if found == 1 then begin
+				Printf.printf "\n//going to do_else\n";
 				do_else lexbuf
 			end
 			else begin
+				Printf.printf "\n//going to do_then\n";
 				do_then lexbuf 
 			end
 			;
@@ -315,13 +325,17 @@ and do_then  = parse
 			do_then lexbuf
 		}
 	| "`ifdef"				{
+			Printf.printf "//last ifdef is here 5\n";
 			proc_ifdef lexbuf; 
+			Printf.printf "//last ifdef is finished 6\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{
+			Printf.printf "//last ifndef is here 7\n";
 			proc_ifndef lexbuf; 
+			Printf.printf "//last ifndef is finished 8\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifndef 
@@ -391,7 +405,7 @@ and do_then  = parse
 			do_then lexbuf;
 			Other
 		}
-	| [^ '`' '\n']* as lsm			{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			print_string lsm;
 			do_then lexbuf; 
 			Other
@@ -427,7 +441,7 @@ and skip_else  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [^ '`' '\n']* as lsm			{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			skip_else lexbuf; 
 			Other
 		}
@@ -461,7 +475,7 @@ and proc_ifdef_inskip  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [^ '`' '\n']* as lsm			{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			proc_ifdef_inskip lexbuf; 
 			Other
 		}
@@ -504,7 +518,7 @@ and do_else  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [^ '`' '\n']* as lsm			{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			do_else lexbuf; 
 			Other
 		}
@@ -529,13 +543,17 @@ and do_else_in  = parse
 			do_else_in lexbuf
 		}
 	| "`ifdef"				{
+			Printf.printf "//last ifdef is here 9\n";
 			proc_ifdef lexbuf ; 
+			Printf.printf "//last ifdef is finished 10\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
 		}
 	| "`ifndef"				{
+			Printf.printf "//last ifndef is here 11\n";
 			proc_ifndef lexbuf ; 
+			Printf.printf "//last ifndef is finished 12\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf ; 
 			Other
@@ -597,7 +615,7 @@ and do_else_in  = parse
 			do_else_in lexbuf;
 			Other
 		}
-	| [^ '`' '\n']* as lsm			{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			print_string lsm;
 			do_else_in lexbuf; 
 			Other
