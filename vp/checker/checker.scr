@@ -4,9 +4,15 @@ ulimit -s unlimited
 
 ../../step1_noinc/vp_step1.exe  -S ../../../../1202prj/branches/1202prj/nr_source/top/nr_all_manifest.v -I ../../../../1202prj/branches/1202prj/common/hss_share/aec_revise -I /1202prj/common/pcs25g/std_ovl >  noinclude.v
 dos2unix noinclude.v
-../../step1_5_noprotected/vp_step1_5.exe  noinclude.v > noprotected.v
+
+../../step1_2_nocomment/vp_step1_2.exe  noinclude.v > nocomment.v
+dos2unix nocomment.v 
+
+../../step1_5_noprotected/vp_step1_5.exe  nocomment.v > noprotected.v
 dos2unix noprotected.v
+
 ../../step2_nodef/vp_step2.exe  noprotected.v > nodef.v
 dos2unix nodef.v
+
 OCAMLRUNPARAM=bp ../checker.exe nodef.v > dd
 
