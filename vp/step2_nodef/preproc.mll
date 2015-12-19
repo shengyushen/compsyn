@@ -1,10 +1,11 @@
 {
 	(*this is the list of definition*)
-	let def_list = ref [("","")] ;;
+	let def_list = ref [("",([],""))] ;;
 	let print_pos pos = begin
 		Printf.printf "//%s " pos.Lexing.pos_fname;
 		Printf.printf "Line %d " pos.Lexing.pos_lnum;
 		Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+		flush stdout
 	end
 	;;
 	exception Ssyeof of string
@@ -22,8 +23,77 @@
 	let prt_fatal str = begin
 		Printf.printf  "\n// FATAL CHECKER NODEF : %s \n"  str;
 	end
+	and isempty lst = begin
+		match lst with
+		hd::tl -> false
+		| _ -> true
+	end
+	and isNotEmpty lst = begin
+		match lst with
+		hd::tl -> true
+		| _ -> false
+	end
+	and replaceMacroUsage fml_act_arglst macro_text = begin
+		let identifier_exp = Str.regexp "[a-zA-Z_][a-zA-Z0-9_]*"
+		in
+		let rec replaceMacroUsage_internal fml_act_arglst macro_text = begin
+			match fml_act_arglst with
+			(hd_fm,hd_act)::tl -> begin
+				let res=replaceString hd_fm hd_act macro_text 0
+				in
+				replaceMacroUsage_internal tl res
+			end
+			| _ -> macro_text
+		end
+		and ssy_string_match rexp str pos =begin
+			try 
+				Str.search_forward rexp str pos ;
+				true
+			with Not_found -> false
+		end
+		and replaceString fm act str pos  = begin
+			if(pos>=(String.length str)) then str
+			else begin
+				let haveid= ssy_string_match identifier_exp str pos
+				in 
+				if(haveid)then begin
+					(*there is an identifier*)
+					let iden = Str.matched_string str
+					in 
+					if(iden=fm) then begin
+						let stpos= Str.match_beginning ()
+						and endpos = Str.match_end ()
+						in
+						let strbefore = Str.string_before str stpos
+						and strafter = Str.string_after str endpos
+						in
+						let newstr = String.concat "" [strbefore;act;strafter]
+						and newpos = (String.length strbefore)+(String.length act)
+						in
+						replaceString fm act newstr newpos
+					end
+					else begin
+						(*not the one we want to replace*)
+						let newpos= Str.match_end ()
+						in
+						replaceString fm act str newpos
+					end
+				end
+				else str
+			end
+		end
+		in
+		replaceMacroUsage_internal fml_act_arglst macro_text
+	end
+	;;
+	
 
 }
+
+let escaped_identifier     = '\\' [^ ' ' '\t' '\n' ]+ ' '
+let simple_identifier = ['a'-'z' 'A'-'Z' '_' ] [ 'a'-'z' 'A'-'Z' '0'-'9' '_' '$' ]*
+let identifier = escaped_identifier | simple_identifier
+let blanks = [' ' '\t']*
 
 
 rule preproc = parse
@@ -105,15 +175,67 @@ rule preproc = parse
 				| "`resetall"			-> print_string "`resetall"
 				| "`timescale"			-> print_string "`timescale"
 				| "`unconnected_drive"		-> print_string "`unconnected_drive"
-				| _ ->		try 
-					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
-						print_string defedname
-					with Not_found -> begin
-						prt_fatal (Printf.sprintf  "no such definition %s" defname);
-						print_pos (Lexing.lexeme_start_p lexbuf);
-						()
-					end 
+				| _ ->		 begin
+				try 
+					(*no actual argument, *)
+					let (fml_arglst, macro_text) = 
+						List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+					in begin
+						if (isNotEmpty fml_arglst) then begin
+							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
+							print_pos (Lexing.lexeme_start_p lexbuf);
+							assert false
+						end
+						;
+						print_string macro_text
+					end
+				with Not_found -> begin
+					prt_fatal (Printf.sprintf  "no such definition %s" defname);
+					print_pos (Lexing.lexeme_start_p lexbuf);
+					()
+				end 
+				end
 			end
+			;
+			Other
+		}
+	| ('`' identifier ) as defname blanks '(' blanks (simple_identifier as arg1)  ((blanks ',' blanks simple_identifier)* as act_arglst2) blanks ')' {
+			try 
+				(*have actual argument, *)
+				let act_arglst2_list = Str.split (Str.regexp "[ \t,]+") act_arglst2
+				in
+				let (fml_arglst, macro_text) = 
+					List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+				and act_arglst=arg1::act_arglst2_list
+				in begin
+					if (isNotEmpty fml_arglst) then begin
+						if ((List.length fml_arglst)<>(List.length act_arglst)) then begin
+							(*actual and formal argument list is not the same length*)
+							prt_fatal (Printf.sprintf "actual and formal argument list is not the same length for macro %s" defname);
+							print_pos (lexbuf.Lexing.lex_curr_p);
+							Other
+						end
+						else begin
+							let newstring = replaceMacroUsage (List.combine fml_arglst act_arglst) macro_text
+							in
+							print_string newstring;
+							Other
+						end
+					end
+					else begin
+						(*no formal argument , so the act_arglst should be leave alone*)
+						print_string macro_text;
+						Printf.printf " ( %s " arg1;
+						List.iter (Printf.printf " , %s ") act_arglst2_list;
+						Printf.printf " ) ";
+						Other
+					end
+				end
+			with Not_found -> begin
+				prt_fatal (Printf.sprintf  "no such definition %s" defname);
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				()
+			end 
 			;
 			Other
 		}
@@ -163,16 +285,60 @@ and comment_inskip depth stpos = parse
 			comment_inskip depth stpos lexbuf
 		}
 and preproc_str = parse
-	'`'['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as defname {
+	('`' identifier ) as defname {
 			begin
 				try 
-					(List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list) ^ (preproc_str lexbuf)
+					let (fml_arglst, macro_text) = 
+						List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+					in begin
+						if (isNotEmpty fml_arglst) then begin
+							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
+							print_pos (Lexing.lexeme_start_p lexbuf);
+							assert false
+						end
+						;
+						macro_text^(preproc_str lexbuf)
+					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf "no such definition in preproc_str %s" defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
-					preproc_str lexbuf
+					preproc_str lexbuf;
+					assert false
 				end 
 			end
+		}
+	| ('`' identifier ) as defname blanks '(' blanks (simple_identifier as arg1)  ((blanks ',' blanks simple_identifier)* as act_arglst2) blanks ')' {
+			try 
+				(*have actual argument, *)
+				let act_arglst2_list = Str.split (Str.regexp "[ \t,]+") act_arglst2
+				in
+				let (fml_arglst, macro_text) = 
+					List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+				and act_arglst=arg1::act_arglst2_list
+				in begin
+					if (isNotEmpty fml_arglst) then begin
+						if ((List.length fml_arglst)<>(List.length act_arglst)) then begin
+							(*actual and formal argument list is not the same length*)
+							prt_fatal (Printf.sprintf "actual and formal argument list is not the same length for macro %s" defname);
+							print_pos (lexbuf.Lexing.lex_curr_p);
+							assert false
+						end
+						else begin
+							let newstring = replaceMacroUsage (List.combine fml_arglst act_arglst) macro_text
+							in
+							newstring^(preproc_str lexbuf)
+						end
+					end
+					else begin
+						(*no formal argument , so the act_arglst should be leave alone*)
+						macro_text^"("^arg1^act_arglst2^")"^(preproc_str lexbuf)
+					end
+				end
+			with Not_found -> begin
+				prt_fatal (Printf.sprintf  "no such definition %s" defname);
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				assert false
+			end 
 		}
 	| eof				{ ""                      }
 	| _ as lsm				{
@@ -189,29 +355,39 @@ and proc_define = parse
 	  	comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			proc_define lexbuf
 		}
-	| ['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as def 	{
+	| identifier as def 	{
 			if(List.mem_assoc def !def_list) then begin
 				prt_fatal (Printf.sprintf " already defined macros %s" def)
 			end
 			;
-			proc_defined def lexbuf
+			proc_defined def [] lexbuf
+		}
+	| (identifier as def) blanks '(' blanks (simple_identifier as arg1)  ((blanks ',' blanks simple_identifier)* as act_arglst2) blanks ')' {
+			if(List.mem_assoc def !def_list) then begin
+				prt_fatal (Printf.sprintf " already defined macros %s" def)
+			end
+			;
+
+			let act_arglst2_list = Str.split (Str.regexp "[ \t,]+") act_arglst2
+			in
+			proc_defined def (arg1::act_arglst2_list) lexbuf
 		}
 	| _ as lsm 	{
 			proc_define lexbuf
 		}
-and proc_defined def = parse 
+and proc_defined def fml_arglst = parse 
 	"//" [^ '\n']* '\n' as cmt   {
 			print_string cmt;
 			Lexing.new_line lexbuf ;
-			proc_defined def lexbuf
+			proc_defined def fml_arglst lexbuf
 		}
 	| "/*"              as cmt    { (*multiline comment*)
 			print_string cmt;
 	  	comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
-			proc_defined def lexbuf
+			proc_defined def fml_arglst lexbuf
 		}
-	| [' ' '\t']+ as lsm	{
-			proc_defined def lexbuf
+	| blanks as lsm	{
+			proc_defined def fml_arglst lexbuf
 		}
 	| [^ '\n' ' ' '\t'][^ '\n' ]* as defed1			{
 			(*if defed contain other macros?*)
@@ -229,16 +405,16 @@ and proc_defined def = parse
 				proc_trim_blank defed2
 			end
 			in
-			def_list:=(def,defed)::(List.remove_assoc def !def_list);
+			def_list:=(def,(fml_arglst,defed))::(List.remove_assoc def !def_list);
 		}
 	| '\n' as lsm{
 			print_char lsm; 
 			Lexing.new_line lexbuf;
-			def_list:=(def,"")::(List.remove_assoc def !def_list)
+			def_list:=(def,(fml_arglst,""))::(List.remove_assoc def !def_list)
 		}
 	| _ as lsm							{
 			print_char lsm; 
-			def_list:=(def,"")::(List.remove_assoc def !def_list)
+			def_list:=(def,(fml_arglst,""))::(List.remove_assoc def !def_list)
 		}
 and proc_ifdef  = parse 
 	"//" [^ '\n']* '\n' as cmt   {
@@ -358,49 +534,101 @@ and do_then  = parse
 		}
 	| '`'['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as defname {
 			begin
-			match defname with
-			| "`accelerate"			-> print_string "`accelerate"
-			| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
-			| "`begin_keywords"	-> print_string "`begin_keywords"
-			| "`celldefine"			-> print_string "`celldefine"
-			| "`default_nettype"		-> print_string "`default_nettype"
-			| "`define"			-> print_string "`define"
-			| "`else"			-> print_string "`else"
-			| "`endcelldefine"		-> print_string "`endcelldefine"
-			| "`end_keywords"		-> print_string "`end_keywords"
-			| "`endif"			-> print_string "`endif"
-			| "`endprotect"			-> print_string "`endprotect"
-			| "`endprotected"		-> print_string "`endprotected"
-			| "`expand_vectornets"		-> print_string "`expand_vectornets"
-			| "`ifdef"			-> print_string "`ifdef"
-			| "`include"			-> print_string "`include"
-			| "`line"			-> begin
+				match defname with
+				| "`accelerate"			-> print_string "`accelerate"
+				| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
+				| "`begin_keywords"	-> print_string "`begin_keywords"
+				| "`celldefine"			-> print_string "`celldefine"
+				| "`default_nettype"		-> print_string "`default_nettype"
+				| "`define"			-> print_string "`define"
+				| "`else"			-> print_string "`else"
+				| "`endcelldefine"		-> print_string "`endcelldefine"
+				| "`end_keywords"		-> print_string "`end_keywords"
+				| "`endif"			-> print_string "`endif"
+				| "`endprotect"			-> print_string "`endprotect"
+				| "`endprotected"		-> print_string "`endprotected"
+				| "`expand_vectornets"		-> print_string "`expand_vectornets"
+				| "`ifdef"			-> print_string "`ifdef"
+				| "`include"			-> print_string "`include"
+				| "`line"			-> begin
 						print_string "`line";
 						line_skip_blank  lexbuf
 					end
-			| "`noaccelerate"		-> print_string "`noaccelerate"
-			| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
-			| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
-			| "`noremove_netnames"		-> print_string "`noremove_netnames"
-			| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
-			| "`pragma"			-> print_string "`pragma"
-			| "`protect"			-> print_string "`protect"
-			| "`protected"			-> print_string "`protected"
-			| "`remove_gatenames"		-> print_string "`remove_gatenames"
-			| "`remove_netnames"		-> print_string "`remove_netnames"
-			| "`resetall"			-> print_string "`resetall"
-			| "`timescale"			-> print_string "`timescale"
-			| "`unconnected_drive"		-> print_string "`unconnected_drive"
-			| _ ->		try 
-					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
-					print_string defedname;
-					(*this is not same as that of preproc*)
+				| "`noaccelerate"		-> print_string "`noaccelerate"
+				| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
+				| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
+				| "`noremove_netnames"		-> print_string "`noremove_netnames"
+				| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
+				| "`pragma"			-> print_string "`pragma"
+				| "`protect"			-> print_string "`protect"
+				| "`protected"			-> print_string "`protected"
+				| "`remove_gatenames"		-> print_string "`remove_gatenames"
+				| "`remove_netnames"		-> print_string "`remove_netnames"
+				| "`resetall"			-> print_string "`resetall"
+				| "`timescale"			-> print_string "`timescale"
+				| "`unconnected_drive"		-> print_string "`unconnected_drive"
+				| _ ->		 begin
+				try 
+					(*no actual argument, *)
+					let (fml_arglst, macro_text) = 
+						List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+					in begin
+						if (isNotEmpty fml_arglst) then begin
+							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
+							print_pos (Lexing.lexeme_start_p lexbuf);
+							assert false
+						end
+						;
+						print_string macro_text
+					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf  "no such definition %s" defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
 					()
 				end 
+				end
 			end
+			;
+			do_then lexbuf;
+			Other
+		}
+	| ('`' identifier ) as defname blanks '(' blanks (simple_identifier as arg1)  ((blanks ',' blanks simple_identifier)* as act_arglst2) blanks ')' {
+			try 
+				(*have actual argument, *)
+				let act_arglst2_list = Str.split (Str.regexp "[ \t,]+") act_arglst2
+				in
+				let (fml_arglst, macro_text) = 
+					List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+				and act_arglst=arg1::act_arglst2_list
+				in begin
+					if (isNotEmpty fml_arglst) then begin
+						if ((List.length fml_arglst)<>(List.length act_arglst)) then begin
+							(*actual and formal argument list is not the same length*)
+							prt_fatal (Printf.sprintf "actual and formal argument list is not the same length for macro %s" defname);
+							print_pos (lexbuf.Lexing.lex_curr_p);
+							Other
+						end
+						else begin
+							let newstring = replaceMacroUsage (List.combine fml_arglst act_arglst) macro_text
+							in
+							print_string newstring;
+							Other
+						end
+					end
+					else begin
+						(*no formal argument , so the act_arglst should be leave alone*)
+						print_string macro_text;
+						Printf.printf " ( %s " arg1;
+						List.iter (Printf.printf " , %s ") act_arglst2_list;
+						Printf.printf " ) ";
+						Other
+					end
+				end
+			with Not_found -> begin
+				prt_fatal (Printf.sprintf  "no such definition %s" defname);
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				()
+			end 
 			;
 			do_then lexbuf;
 			Other
@@ -508,7 +736,7 @@ and do_else  = parse
 		}
 	| "`else"				{
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
-			do_else_in lexbuf ; 
+			do_else_in lexbuf; 
 			Other
 		}
 	| "`elsif"				{
@@ -547,7 +775,7 @@ and do_else_in  = parse
 			proc_ifdef lexbuf ; 
 			Printf.printf "//last ifdef is finished 10\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
-			do_else_in lexbuf ; 
+			do_else_in lexbuf; 
 			Other
 		}
 	| "`ifndef"				{
@@ -555,7 +783,7 @@ and do_else_in  = parse
 			proc_ifndef lexbuf ; 
 			Printf.printf "//last ifndef is finished 12\n";
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
-			do_else_in lexbuf ; 
+			do_else_in lexbuf; 
 			Other
 		}
 	| "`endif"				{
@@ -563,61 +791,113 @@ and do_else_in  = parse
 		}
 	| "`define"			{
 			proc_define lexbuf ;
-			do_else_in lexbuf ; 
+			do_else_in lexbuf; 
 			DIRECTIVE_define 
 		}
 	| '`'['A'-'Z' 'a'-'z' '_']['A'-'Z' 'a'-'z' '_' '0'-'9']* as defname {
 			begin
-			match defname with
-			| "`accelerate"			-> print_string "`accelerate"
-			| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
-			| "`begin_keywords"	-> print_string "`begin_keywords"
-			| "`celldefine"			-> print_string "`celldefine"
-			| "`default_nettype"		-> print_string "`default_nettype"
-			| "`define"			-> print_string "`define"
-			| "`else"			-> print_string "`else"
-			| "`endcelldefine"		-> print_string "`endcelldefine"
-			| "`end_keywords"		-> print_string "`end_keywords"
-			| "`endif"			-> print_string "`endif"
-			| "`endprotect"			-> print_string "`endprotect"
-			| "`endprotected"		-> print_string "`endprotected"
-			| "`expand_vectornets"		-> print_string "`expand_vectornets"
-			| "`ifdef"			-> print_string "`ifdef"
-			| "`include"			-> print_string "`include"
-			| "`line"			-> begin
+				match defname with
+				| "`accelerate"			-> print_string "`accelerate"
+				| "`autoexpand_vectornets"	-> print_string "`autoexpand_vectornets"
+				| "`begin_keywords"	-> print_string "`begin_keywords"
+				| "`celldefine"			-> print_string "`celldefine"
+				| "`default_nettype"		-> print_string "`default_nettype"
+				| "`define"			-> print_string "`define"
+				| "`else"			-> print_string "`else"
+				| "`endcelldefine"		-> print_string "`endcelldefine"
+				| "`end_keywords"		-> print_string "`end_keywords"
+				| "`endif"			-> print_string "`endif"
+				| "`endprotect"			-> print_string "`endprotect"
+				| "`endprotected"		-> print_string "`endprotected"
+				| "`expand_vectornets"		-> print_string "`expand_vectornets"
+				| "`ifdef"			-> print_string "`ifdef"
+				| "`include"			-> print_string "`include"
+				| "`line"			-> begin
 						print_string "`line";
 						line_skip_blank  lexbuf
 					end
-			| "`noaccelerate"		-> print_string "`noaccelerate"
-			| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
-			| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
-			| "`noremove_netnames"		-> print_string "`noremove_netnames"
-			| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
-			| "`pragma"			-> print_string "`pragma"
-			| "`protect"			-> print_string "`protect"
-			| "`protected"			-> print_string "`protected"
-			| "`remove_gatenames"		-> print_string "`remove_gatenames"
-			| "`remove_netnames"		-> print_string "`remove_netnames"
-			| "`resetall"			-> print_string "`resetall"
-			| "`timescale"			-> print_string "`timescale"
-			| "`unconnected_drive"		-> print_string "`unconnected_drive"
-			| _ ->		try 
-					let defedname = List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list in
-					print_string defedname;
-					(*this is not same as that of preproc*)
+				| "`noaccelerate"		-> print_string "`noaccelerate"
+				| "`noexpand_vectornets"	-> print_string "`noexpand_vectornets"
+				| "`noremove_gatenames"		-> print_string "`noremove_gatenames"
+				| "`noremove_netnames"		-> print_string "`noremove_netnames"
+				| "`nounconnected_drive"	-> print_string "`nounconnected_drive"
+				| "`pragma"			-> print_string "`pragma"
+				| "`protect"			-> print_string "`protect"
+				| "`protected"			-> print_string "`protected"
+				| "`remove_gatenames"		-> print_string "`remove_gatenames"
+				| "`remove_netnames"		-> print_string "`remove_netnames"
+				| "`resetall"			-> print_string "`resetall"
+				| "`timescale"			-> print_string "`timescale"
+				| "`unconnected_drive"		-> print_string "`unconnected_drive"
+				| _ ->		 begin
+				try 
+					(*no actual argument, *)
+					let (fml_arglst, macro_text) = 
+						List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+					in begin
+						if (isNotEmpty fml_arglst) then begin
+							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
+							print_pos (Lexing.lexeme_start_p lexbuf);
+							assert false
+						end
+						;
+						print_string macro_text
+					end
 				with Not_found -> begin
-					prt_fatal (Printf.sprintf "no such definition %s " defname);
+					prt_fatal (Printf.sprintf  "no such definition %s" defname);
 					print_pos (Lexing.lexeme_start_p lexbuf);
 					()
 				end 
+				end
 			end
+			;
+			do_else_in lexbuf; 
+			Other
+		}
+	| ('`' identifier ) as defname blanks '(' blanks (simple_identifier as arg1)  ((blanks ',' blanks simple_identifier)* as act_arglst2) blanks ')' {
+			try 
+				(*have actual argument, *)
+				let act_arglst2_list = Str.split (Str.regexp "[ \t,]+") act_arglst2
+				in
+				let (fml_arglst, macro_text) = 
+					List.assoc (String.sub defname 1 ((String.length defname)-1)) !def_list 
+				and act_arglst=arg1::act_arglst2_list
+				in begin
+					if (isNotEmpty fml_arglst) then begin
+						if ((List.length fml_arglst)<>(List.length act_arglst)) then begin
+							(*actual and formal argument list is not the same length*)
+							prt_fatal (Printf.sprintf "actual and formal argument list is not the same length for macro %s" defname);
+							print_pos (lexbuf.Lexing.lex_curr_p);
+							Other
+						end
+						else begin
+							let newstring = replaceMacroUsage (List.combine fml_arglst act_arglst) macro_text
+							in
+							print_string newstring;
+							Other
+						end
+					end
+					else begin
+						(*no formal argument , so the act_arglst should be leave alone*)
+						print_string macro_text;
+						Printf.printf " ( %s " arg1;
+						List.iter (Printf.printf " , %s ") act_arglst2_list;
+						Printf.printf " ) ";
+						Other
+					end
+				end
+			with Not_found -> begin
+				prt_fatal (Printf.sprintf  "no such definition %s" defname);
+				print_pos (Lexing.lexeme_start_p lexbuf);
+				()
+			end 
 			;
 			do_else_in lexbuf;
 			Other
 		}
 	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
 			print_string lsm;
-			do_else_in lexbuf; 
+			do_else_in lexbuf;
 			Other
 		}
 	| _ as lsm				{
