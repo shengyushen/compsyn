@@ -14,5 +14,6 @@ dos2unix noprotected.v
 ../../step2_nodef/vp_step2.exe  noprotected.v > nodef.v
 dos2unix nodef.v
 
-OCAMLRUNPARAM=bp ../checker.exe nodef.v > dd
+#OCAMLRUNPARAM=bp ../checker.exe nodef.v > dd
+../checker.exe nodef.v > dd
 
