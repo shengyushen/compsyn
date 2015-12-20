@@ -9,4 +9,6 @@ module i(input a,b,c,output o2,o3);
 assign o2 = `add2 (a,b);
 assign o3 = `add3 (a,b,c);
 
+`x (x1,x2);
+
 endmodule

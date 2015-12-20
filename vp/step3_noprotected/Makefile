@@ -2,9 +2,9 @@ OCAMLC	= ocamlopt
 OBJS	= preproc.cmx  main.cmx
 
 
-all : vp_step1_2.exe
+all : step3_noprotected.exe
 
-vp_step1_2.exe : $(OBJS)
+step3_noprotected.exe : $(OBJS)
 	$(OCAMLC) unix.cmxa $(OBJS) -o $@ 
 
 %.cmx: %.ml
@@ -16,4 +16,4 @@ preproc.ml : preproc.mll
 	$(OCAMLC) -c preproc.ml  
 
 clean : 
-	rm -f *.o *.cmo *.cmx *.cmi preproc.ml a.out preproc preproc.exe vp_step1_2 vp_step1_2.exe *.bak *~
+	rm -f *.o *.cmo *.cmx *.cmi preproc.ml a.out preproc preproc.exe step3_noprotected step3_noprotected.exe *.bak *~
