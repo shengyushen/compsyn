@@ -751,5 +751,11 @@ and	statement_or_block_item =
 and	tf_io_declaration_gen =
 	T_tf_io_declaration_gen1 of io_type*reg*signed*range*identifier
 	| T_tf_io_declaration_gen2 of io_type*task_port_type*identifier
+;;
 
+let get_identifier_string identifier = begin
+	match identifier with
+	T_identifier_NOSPEC -> ""
+	| T_identifier(_,_,str) -> str
+end
 
