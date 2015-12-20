@@ -4,10 +4,10 @@ type description =
 	| T_description__config_declaration of config_declaration
 and module_declaration =
 	T_module_declaration__1 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(port list)*(module_item list)
-	| T_module_declaration__2 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(io_declaration list)*(module_item list)
+	(*| T_module_declaration__2 of (attribute_instance list)*identifier*(parameter_declaration_gen list)*(io_declaration list)*(module_item list)*)
 and port =
-	T_port_position of port_expression
-	| T_port_exp of identifier*port_expression
+	(*T_port_position of port_expression
+	|*) T_port_exp of identifier*port_expression
 	| T_port_net of io_type*netreg_type*signed*range*port_expression*expression
 and port_expression =
 	T_port_expression of (port_reference list)
@@ -601,7 +601,7 @@ and	module_path_primary =
 and	primary =
 	T_primary_num of number
 	| T_primary_id of hierarchical_identifier
-	| T_primary_idexp of hierarchical_identifier*(expression list)*range_expression
+(*	| T_primary_idexp of hierarchical_identifier*(expression list)*range_expression*)
 	| T_primary_concat of concatenation
 	| T_primary_mulcon of multiple_concatenation
 	| T_primary_func of function_call
