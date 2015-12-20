@@ -2,9 +2,10 @@
 	(*this is the list of definition*)
 	let def_list = ref [("","")] ;;
 	let print_pos pos = begin
-		Printf.printf "//%s " pos.Lexing.pos_fname;
-		Printf.printf "Line %d " pos.Lexing.pos_lnum;
-		Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+		Printf.fprintf stderr "//%s " pos.Lexing.pos_fname;
+		Printf.fprintf stderr "Line %d " pos.Lexing.pos_lnum;
+		Printf.fprintf stderr "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+		flush stderr
 	end
 	;;
 	exception Ssyeof of string
@@ -20,7 +21,10 @@
 		| Eol
 
 	let prt_fatal str = begin
-		Printf.printf  "\n// FATAL CHECKER NODEF : %s \n"  str;
+		Printf.fprintf  stderr "\n// FATAL CHECKER NODEF : %s \n"  str;
+	end
+	and prt_warning str = begin
+		Printf.fprintf  stderr "\n// WARNING CHECKER NODEF : %s \n"  str;
 	end
 
 }
@@ -76,7 +80,7 @@ and line_skip_blank  = parse
 	}
 	| _ {
 		prt_fatal "`line must be followed by blanks and line number and  filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		Other
 	}
@@ -85,7 +89,7 @@ and line_number  = parse
 		let ln = int_of_string linenum
 		in begin
 			if(ln<=0) then begin
-				Printf.printf "Warning : line number <=0 may leads to incorrect referring to original files\n";
+				prt_warning "Warning : line number <=0 may leads to incorrect referring to original files\n";
 				print_pos (lexbuf.Lexing.lex_curr_p)
 			end
 			;
@@ -95,7 +99,7 @@ and line_number  = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks must be followed by line number and  filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		Other
 	}
@@ -105,7 +109,7 @@ and line_skip_blank2  ln = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks and line number must be followed by  blanks";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		Other
 	}
@@ -122,7 +126,7 @@ and line_filename  ln = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks and line number and blanks must be followed by filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		Other
 	}

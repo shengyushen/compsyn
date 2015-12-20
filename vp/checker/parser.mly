@@ -21,18 +21,18 @@ end
 let get_finish_pos t = get2 t 
 ;;
 let print_pos pos = begin
-	Printf.printf "%s " pos.Lexing.pos_fname;
-	Printf.printf "Line %d " pos.Lexing.pos_lnum;
-	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+	Printf.fprintf stderr "%s " pos.Lexing.pos_fname;
+	Printf.fprintf stderr "Line %d " pos.Lexing.pos_lnum;
+	Printf.fprintf stderr "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
 end
 ;;
-let print_both_pos t = begin
+(*let print_both_pos t = begin
 	Printf.printf "  Begin at ";
 	print_pos (get_begin_pos t);
 	Printf.printf "  Finish at ";
 	print_pos (get_finish_pos t);
 end
-;;
+;;*)
 let get3 t = begin
 	match t with
 	(_,_,str) -> str
@@ -59,12 +59,12 @@ end
 ;;
 
 let parse_error str = begin
-	printf "parse_error %s\n" str;
-	printf "file : %s\n" !pos_fn;
-	printf "line : %d\n" !pos_ln;
-	printf "column : %d\n" !pos_cn;
-	printf "last terminal : %s\n" !str_content;
-	flush stdout
+	fprintf stderr "parse_error %s\n" str;
+	fprintf stderr "file : %s\n" !pos_fn;
+	fprintf stderr "line : %d\n" !pos_ln;
+	fprintf stderr "column : %d\n" !pos_cn;
+	fprintf stderr "last terminal : %s\n" !str_content;
+	flush stderr
 end
 ;;
 

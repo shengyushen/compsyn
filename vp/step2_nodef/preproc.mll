@@ -2,10 +2,10 @@
 	(*this is the list of definition*)
 	let def_list = ref [("",([],""))] ;;
 	let print_pos pos = begin
-		Printf.printf "//%s " pos.Lexing.pos_fname;
-		Printf.printf "Line %d " pos.Lexing.pos_lnum;
-		Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
-		flush stdout
+		Printf.fprintf stderr "//%s " pos.Lexing.pos_fname;
+		Printf.fprintf stderr "Line %d " pos.Lexing.pos_lnum;
+		Printf.fprintf stderr "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+		flush stderr
 	end
 	;;
 	exception Ssyeof of string
@@ -21,7 +21,12 @@
 		| Eol
 
 	let prt_fatal str = begin
-		Printf.printf  "\n// FATAL CHECKER NODEF : %s \n"  str;
+		Printf.fprintf  stderr "\n// FATAL CHECKER NODEF : %s \n"  str;
+		flush stderr
+	end
+	and prt_warning str = begin
+		Printf.fprintf  stderr "\n// WARNING CHECKER NODEF : %s \n"  str;
+		flush stderr
 	end
 	and isempty lst = begin
 		match lst with
@@ -116,22 +121,22 @@ rule preproc = parse
 			DIRECTIVE_define 
 		}
 	| "`ifdef"				{ 
-			Printf.printf "//last ifdef is here 1\n";
+			(*Printf.printf "//last ifdef is here 1\n";*)
 			proc_ifdef lexbuf; 
-			Printf.printf "//last ifdef is finished 2\n";
+			(*Printf.printf "//last ifdef is finished 2\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{ 
-			Printf.printf "//last ifndef is here 3\n";
+			(*Printf.printf "//last ifndef is here 3\n";*)
 			proc_ifndef lexbuf; 
-			Printf.printf "//last ifndef is finished 4\n";
+			(*Printf.printf "//last ifndef is finished 4\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			DIRECTIVE_ifndef 
 		}
 	| "`else"|"elsif"|"`endif" as impdef{
 			prt_fatal (Printf.sprintf  "unmatched %s"  impdef);
-			print_pos (Lexing.lexeme_start_p lexbuf);
+			print_pos (lexbuf.Lexing.lex_curr_p);
 			(*something on the same line still neeed to be processed*)
 			(*endline lexbuf;*)
 			Other
@@ -183,7 +188,7 @@ rule preproc = parse
 					in begin
 						if (isNotEmpty fml_arglst) then begin
 							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
-							print_pos (Lexing.lexeme_start_p lexbuf);
+							print_pos (lexbuf.Lexing.lex_curr_p);
 							assert false
 						end
 						;
@@ -191,7 +196,7 @@ rule preproc = parse
 					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf  "no such definition %s" defname);
-					print_pos (Lexing.lexeme_start_p lexbuf);
+					print_pos (lexbuf.Lexing.lex_curr_p);
 					()
 				end 
 				end
@@ -233,7 +238,7 @@ rule preproc = parse
 				end
 			with Not_found -> begin
 				prt_fatal (Printf.sprintf  "no such definition %s" defname);
-				print_pos (Lexing.lexeme_start_p lexbuf);
+				print_pos (lexbuf.Lexing.lex_curr_p);
 				()
 			end 
 			;
@@ -293,7 +298,7 @@ and preproc_str = parse
 					in begin
 						if (isNotEmpty fml_arglst) then begin
 							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
-							print_pos (Lexing.lexeme_start_p lexbuf);
+							print_pos (lexbuf.Lexing.lex_curr_p);
 							assert false
 						end
 						;
@@ -301,7 +306,7 @@ and preproc_str = parse
 					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf "no such definition in preproc_str %s" defname);
-					print_pos (Lexing.lexeme_start_p lexbuf);
+					print_pos (lexbuf.Lexing.lex_curr_p);
 					preproc_str lexbuf;
 					assert false
 				end 
@@ -336,7 +341,7 @@ and preproc_str = parse
 				end
 			with Not_found -> begin
 				prt_fatal (Printf.sprintf  "no such definition %s" defname);
-				print_pos (Lexing.lexeme_start_p lexbuf);
+				print_pos (lexbuf.Lexing.lex_curr_p);
 				assert false
 			end 
 		}
@@ -469,11 +474,11 @@ and proc_ifndef  = parse
 			with Not_found -> 0
 			in 
 			if found == 1 then begin
-				Printf.printf "\n//going to do_else\n";
+				(*Printf.printf "\n//going to do_else\n";*)
 				do_else lexbuf
 			end
 			else begin
-				Printf.printf "\n//going to do_then\n";
+				(*Printf.printf "\n//going to do_then\n";*)
 				do_then lexbuf 
 			end
 			;
@@ -501,17 +506,17 @@ and do_then  = parse
 			do_then lexbuf
 		}
 	| "`ifdef"				{
-			Printf.printf "//last ifdef is here 5\n";
+			(*Printf.printf "//last ifdef is here 5\n";*)
 			proc_ifdef lexbuf; 
-			Printf.printf "//last ifdef is finished 6\n";
+			(*Printf.printf "//last ifdef is finished 6\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifdef 
 		}
 	| "`ifndef"			{
-			Printf.printf "//last ifndef is here 7\n";
+			(*Printf.printf "//last ifndef is here 7\n";*)
 			proc_ifndef lexbuf; 
-			Printf.printf "//last ifndef is finished 8\n";
+			(*Printf.printf "//last ifndef is finished 8\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_then lexbuf; 
 			DIRECTIVE_ifndef 
@@ -575,7 +580,7 @@ and do_then  = parse
 					in begin
 						if (isNotEmpty fml_arglst) then begin
 							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
-							print_pos (Lexing.lexeme_start_p lexbuf);
+							print_pos (lexbuf.Lexing.lex_curr_p);
 							assert false
 						end
 						;
@@ -583,7 +588,7 @@ and do_then  = parse
 					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf  "no such definition %s" defname);
-					print_pos (Lexing.lexeme_start_p lexbuf);
+					print_pos (lexbuf.Lexing.lex_curr_p);
 					()
 				end 
 				end
@@ -626,7 +631,7 @@ and do_then  = parse
 				end
 			with Not_found -> begin
 				prt_fatal (Printf.sprintf  "no such definition %s" defname);
-				print_pos (Lexing.lexeme_start_p lexbuf);
+				print_pos (lexbuf.Lexing.lex_curr_p);
 				()
 			end 
 			;
@@ -771,17 +776,17 @@ and do_else_in  = parse
 			do_else_in lexbuf
 		}
 	| "`ifdef"				{
-			Printf.printf "//last ifdef is here 9\n";
+			(*Printf.printf "//last ifdef is here 9\n";*)
 			proc_ifdef lexbuf ; 
-			Printf.printf "//last ifdef is finished 10\n";
+			(*Printf.printf "//last ifdef is finished 10\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf; 
 			Other
 		}
 	| "`ifndef"				{
-			Printf.printf "//last ifndef is here 11\n";
+			(*Printf.printf "//last ifndef is here 11\n";*)
 			proc_ifndef lexbuf ; 
-			Printf.printf "//last ifndef is finished 12\n";
+			(*Printf.printf "//last ifndef is finished 12\n";*)
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			do_else_in lexbuf; 
 			Other
@@ -837,7 +842,7 @@ and do_else_in  = parse
 					in begin
 						if (isNotEmpty fml_arglst) then begin
 							prt_fatal (Printf.sprintf "empty actual argument list for macro %s" defname);
-							print_pos (Lexing.lexeme_start_p lexbuf);
+							print_pos (lexbuf.Lexing.lex_curr_p);
 							assert false
 						end
 						;
@@ -845,7 +850,7 @@ and do_else_in  = parse
 					end
 				with Not_found -> begin
 					prt_fatal (Printf.sprintf  "no such definition %s" defname);
-					print_pos (Lexing.lexeme_start_p lexbuf);
+					print_pos (lexbuf.Lexing.lex_curr_p);
 					()
 				end 
 				end
@@ -888,7 +893,7 @@ and do_else_in  = parse
 				end
 			with Not_found -> begin
 				prt_fatal (Printf.sprintf  "no such definition %s" defname);
-				print_pos (Lexing.lexeme_start_p lexbuf);
+				print_pos (lexbuf.Lexing.lex_curr_p);
 				()
 			end 
 			;
@@ -926,7 +931,7 @@ and proc_undef = parse
 			in 
 			if found == 0 then begin
 				prt_fatal (Printf.sprintf "undefined macro name %s is used in `undef" def);
-				print_pos (Lexing.lexeme_start_p lexbuf);
+				print_pos (lexbuf.Lexing.lex_curr_p);
 				Other
 			end
 			else begin
@@ -936,8 +941,8 @@ and proc_undef = parse
 		}
 	| '\n'|eof		{
 			prt_fatal "undef dont contains the macro to be undefined";
+			print_pos (lexbuf.Lexing.lex_curr_p);
 			Lexing.new_line lexbuf ;
-			print_pos (Lexing.lexeme_start_p lexbuf);
 			Other
 		}
 	| _ as lsm 	{
@@ -949,7 +954,7 @@ and line_skip_blank  = parse
 	}
 	| _ {
 		prt_fatal "`line must be followed by blanks and line number and  filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		()
 	}
@@ -958,7 +963,7 @@ and line_number  = parse
 		let ln = int_of_string linenum
 		in begin
 			if(ln<=0) then begin
-				Printf.printf "Warning : line number <=0 may leads to incorrect referring to original files\n";
+				prt_warning "line number <=0 may leads to incorrect referring to original files\n";
 				print_pos (lexbuf.Lexing.lex_curr_p)
 			end
 			;
@@ -968,7 +973,7 @@ and line_number  = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks must be followed by line number and  filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		()
 	}
@@ -978,7 +983,7 @@ and line_skip_blank2  ln = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks and line number must be followed by  blanks";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		()
 	}
@@ -995,7 +1000,7 @@ and line_filename  ln = parse
 	}
 	| _ {
 		prt_fatal "`line and blanks and line number and blanks must be followed by filename";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		()
 	}

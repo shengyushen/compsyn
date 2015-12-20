@@ -10,7 +10,8 @@
               | Eol
 
 	let prt_fatal str = begin
-		Printf.printf  "\n// FATAL CHECKER NOINC : %s \n"  str;
+		Printf.fprintf stderr  "\n// FATAL CHECKER NOINC : %s \n"  str;
+		flush stderr;
 	end
 }
 

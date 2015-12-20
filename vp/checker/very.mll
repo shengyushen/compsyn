@@ -17,9 +17,20 @@ let clear_stringssy () = begin
 end
 ;;
 let print_pos pos = begin
-	Printf.printf "%s " pos.Lexing.pos_fname;
-	Printf.printf "Line %d " pos.Lexing.pos_lnum;
-	Printf.printf "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+	Printf.fprintf stderr "%s " pos.Lexing.pos_fname;
+	Printf.fprintf stderr "Line %d " pos.Lexing.pos_lnum;
+	Printf.fprintf stderr "Char %d\n" (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+	flush stderr;
+end
+;;
+let prt_fatal str = begin
+	Printf.fprintf  stderr "\n// FATAL CHECKER NODEF : %s \n"  str;
+	flush stderr
+end
+;;
+let prt_warning str = begin
+	Printf.fprintf  stderr "\n// WARNING CHECKER NODEF : %s \n"  str;
+	flush stderr
 end
 ;;
 let isNotEof_included t = begin
@@ -412,15 +423,14 @@ rule veriloglex  = parse
 			stringssy  lexbuf 
 		}
 	| useless_directives			{  
-			printf "//WARNING : Ignoring %s at " (Lexing.lexeme lexbuf);
-			print_pos (Lexing.lexeme_start_p lexbuf);
-			flush stdout;
+			prt_warning (sprintf "Ignoring %s at " (Lexing.lexeme lexbuf));
+			print_pos (lexbuf.Lexing.lex_curr_p);
 			endofline lexbuf;
 			veriloglex  lexbuf
 		}
 	|"`include"           	{  
-			printf "Warning : `include should have been handles by step1 ";
-			print_pos (Lexing.lexeme_start_p lexbuf);
+			prt_warning "`include should have been handles by step1 ";
+			print_pos (lexbuf.Lexing.lex_curr_p);
 			endofline lexbuf;
 			veriloglex  lexbuf
 		}
@@ -451,8 +461,8 @@ and stringssy   = parse
 		STRING(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf,!stringssy_string)
 	} 
 	| '\n' {
-		Printf.printf "//FATAL : incomplete string %s\n" !stringssy_string;
-		print_pos (Lexing.lexeme_end_p lexbuf);
+		prt_fatal (Printf.sprintf "incomplete string %s" !stringssy_string);
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		veriloglex  lexbuf
 	}
 	| _ {
@@ -480,24 +490,24 @@ and comment depth stpos = parse
 	}
 and line_skip_blank  = parse
 	[' ' '\t']+	{
-		printf "//INFO : skip blank\n";
-		flush stdout;
+		(*printf "//INFO : skip blank\n";
+		flush stdout;*)
 		line_number  lexbuf
 	}
 	| _ {
-		Printf.printf "//FATAL : `line must be followed by blanks and line number and  filename\n";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		prt_fatal "`line must be followed by blanks and line number and  filename";
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		0
 	}
 and line_number  = parse
 	['0'-'9']+ as linenum {
-		printf "line_number %s\n" linenum;
-		flush stdout;
+		(*printf "line_number %s\n" linenum;
+		flush stdout;*)
 		let ln = int_of_string linenum
 		in begin
 			if(ln<=0) then begin
-				Printf.printf "Warning : line number <=0 may leads to incorrect referring to original files\n";
+				prt_warning "line number <=0 may leads to incorrect referring to original files\n";
 				print_pos (lexbuf.Lexing.lex_curr_p)
 			end
 			;
@@ -505,8 +515,8 @@ and line_number  = parse
 		end
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks must be followed by line number and  filename\n";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		prt_fatal "`line and blanks must be followed by line number and  filename";
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		0
 	}
@@ -515,8 +525,8 @@ and line_skip_blank2  ln = parse
 		line_filename  ln lexbuf
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks and line number must be followed by  blanks\n";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		prt_fatal "`line and blanks and line number must be followed by  blanks";
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		0
 	}
@@ -527,14 +537,14 @@ and line_filename  ln = parse
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
 			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
 			endofline lexbuf;
-			printf "//INFO : at file name %s\n" realfn;
-			flush stdout;
+			(*printf "//INFO : at file name %s\n" realfn;
+			flush stdout;*)
 			0
 		end
 	}
 	| _ {
-		Printf.printf "//FATAL : `line and blanks and line number and blanks must be followed by filename\n";
-		print_pos (Lexing.lexeme_start_p lexbuf);
+		prt_fatal "`line and blanks and line number and blanks must be followed by filename";
+		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
 		0
 	}

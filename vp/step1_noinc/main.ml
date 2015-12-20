@@ -40,7 +40,7 @@ if (Sys.argv.(1)) = "-S" then
 	Sys.argv.(2)
 else begin
 	Printf.fprintf stderr "%s" Sys.argv.(2);
-	Printf.fprintf stderr "Usage 2 : vp_step1 -S <verilog file> <options> > <dst file>\n";
+	Printf.fprintf stderr "Usage 2 : vp_step1 -S <verilog file> <options> > > <dst file>\n";
 	Printf.fprintf stderr "options : \n";
 	Printf.fprintf stderr "-I <include dir>\n";
 	exit 1
