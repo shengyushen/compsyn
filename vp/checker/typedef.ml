@@ -432,7 +432,7 @@ and colon_block_identifier =
 and	seq_block =
 	T_seq_block of colon_block_identifier*(statement_or_block_item list)
 and statement =
-	T_statement_NOSPEC
+	T_statement_NOSPEC of (attribute_instance list)
 	| T_statement_blocking_assignment of (attribute_instance list)*blocking_assignment
 	| T_statement_case_statement of (attribute_instance list)*case_statement
 	| T_statement_conditional_statement of  (attribute_instance list)*conditional_statement
@@ -486,7 +486,10 @@ and case_statement =
 	| T_case_statement_casex of expression*(case_item list)
 and case_item =
 	T_case_item of (expression list)*statement
-	| T_case_item_default of statement
+	| T_case_item_default of colon_opt*statement
+and colon_opt = 
+	T_colon_opt_false
+	| T_colon_opt_true
 and	loop_statement =
 	T_loop_statement_forever of statement
 	| T_loop_statement_repeat of expression*statement

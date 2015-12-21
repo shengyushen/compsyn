@@ -55,7 +55,7 @@ and print_attr_spec fc attr_spec =begin
 	T_attr_spec ( identifier , expression ) -> begin
 		print_identifier fc identifier;
 		match expression with
-		T_expression_NOSPEC -> fprintf fc " ";
+		T_expression_NOSPEC -> fprintf fc " "
 		| _ -> print_expression fc expression
 	end
 end
@@ -275,28 +275,28 @@ and print_range_expression fc range_expression = begin
 	| T_range_expression_1 ( expression ) -> begin
 		fprintf fc " [ ";
 		print_expression fc expression;
-		fprintf fc " ] ";
+		fprintf fc " ] "
 	end
 	| T_range_expression_2 ( msb_expression , lsb_expression ) -> begin
 		fprintf fc " [ ";
 		print_expression fc msb_expression;
 		fprintf fc " : ";
 		print_expression fc lsb_expression;
-		fprintf fc " ] ";
+		fprintf fc " ] "
 	end
 	|	T_range_expression_addrange ( base_expression , width_expression ) -> begin
 		fprintf fc " [ ";
 		print_expression fc base_expression;
 		fprintf fc " +: ";
 		print_expression fc width_expression;
-		fprintf fc " ] ";
+		fprintf fc " ] "
 	end
 	| T_range_expression_subrange ( base_expression , width_expression ) -> begin
 		fprintf fc " [ ";
 		print_expression fc base_expression;
 		fprintf fc " -: ";
 		print_expression fc width_expression;
-		fprintf fc " ] ";
+		fprintf fc " ] "
 	end
 end
 and print_concatenation fc concatenation = begin
@@ -348,7 +348,7 @@ and print_mintypmax_expression fc mintypmax_expression = begin
 		fprintf fc " : ";
 		print_expression fc exp2;
 		fprintf fc " : ";
-		print_expression fc exp3;
+		print_expression fc exp3
 	end
 end
 and print_system_function_identifier fc system_function_identifier = begin
@@ -375,11 +375,14 @@ and print_port fc port = begin
 	end
 	| T_port_net ( io_type , netreg_type , signed , range , port_expression , expression )  -> begin
 		print_io_type fc io_type;
+		fprintf fc " ";
 		print_netreg_type fc netreg_type;
+		fprintf fc " ";
 		print_range fc range;
+		fprintf fc " ";
 		print_port_expression fc port_expression;
 		match expression with
-		T_expression_NOSPEC -> fprintf fc " ";
+		T_expression_NOSPEC -> fprintf fc " "
 		| _ -> begin
 			fprintf fc " = " ;
 			print_expression fc expression
@@ -397,21 +400,21 @@ and print_port_expression fc port_expression = begin
 end
 and print_netreg_type fc netreg_type = begin
 	match netreg_type with
-	T_netreg_type__NOSPEC      -> fprintf fc "";
-	| T_netreg_type__KEY_SUPPLY0 -> fprintf fc "supply0";	
-	| T_netreg_type__KEY_SUPPLY1 -> fprintf fc "supply1";	
-	| T_netreg_type__KEY_TRI		 -> fprintf fc "tri";	
-	| T_netreg_type__KEY_TRIAND	 -> fprintf fc "triand";	
-	| T_netreg_type__KEY_TRIOR	 -> fprintf fc "trior";	
-	| T_netreg_type__KEY_TRI0		 -> fprintf fc "tri0";	
-	| T_netreg_type__KEY_TRI1		 -> fprintf fc "tri1";	
-	| T_netreg_type__KEY_UWIRE	 -> fprintf fc "uwire";	
-	| T_netreg_type__KEY_WIRE		 -> fprintf fc "wire";	
-	| T_netreg_type__KEY_WAND		 -> fprintf fc "wand";		
-	| T_netreg_type__KEY_WOR		 -> fprintf fc "wor";	
-	| T_netreg_type__KEY_REG		 -> fprintf fc "reg";	
-	| T_netreg_type__KEY_INTEGER -> fprintf fc "integer";	
-	| T_netreg_type__KEY_TIME		 -> fprintf fc "time";	
+	T_netreg_type__NOSPEC      -> fprintf fc " ";
+	| T_netreg_type__KEY_SUPPLY0 -> fprintf fc " supply0 ";	
+	| T_netreg_type__KEY_SUPPLY1 -> fprintf fc " supply1 ";	
+	| T_netreg_type__KEY_TRI		 -> fprintf fc " tri ";	
+	| T_netreg_type__KEY_TRIAND	 -> fprintf fc " triand ";	
+	| T_netreg_type__KEY_TRIOR	 -> fprintf fc " trior ";	
+	| T_netreg_type__KEY_TRI0		 -> fprintf fc " tri0 ";	
+	| T_netreg_type__KEY_TRI1		 -> fprintf fc " tri1 ";	
+	| T_netreg_type__KEY_UWIRE	 -> fprintf fc " uwire ";	
+	| T_netreg_type__KEY_WIRE		 -> fprintf fc " wire ";	
+	| T_netreg_type__KEY_WAND		 -> fprintf fc " wand ";		
+	| T_netreg_type__KEY_WOR		 -> fprintf fc " wor ";	
+	| T_netreg_type__KEY_REG		 -> fprintf fc " reg ";	
+	| T_netreg_type__KEY_INTEGER -> fprintf fc " integer ";	
+	| T_netreg_type__KEY_TIME		 -> fprintf fc " time ";	
 end
 and print_range fc range = begin
 	match range with
@@ -421,7 +424,7 @@ and print_range fc range = begin
 		print_expression fc exp1;
 		fprintf fc ":";
 		print_expression fc exp2;
-		fprintf fc "]";
+		fprintf fc "]"
 	end
 end
 and print_port_reference fc port_reference = begin
@@ -486,10 +489,20 @@ and print_module_item fc module_item = begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
 		print_task_declaration fc task_declaration
 	end
-	(*| T_module_item__function_declaration of (attribute_instance list)*function_declaration
-	| T_module_item__local_parameter_declaration of (attribute_instance list)*local_parameter_declaration
-	| T_module_item__parameter_override of (attribute_instance list)*(defparam_assignment list)
-	| T_module_item__continuous_assign of (attribute_instance list)*continuous_assign
+	| T_module_item__function_declaration  ( attribute_instance_list , function_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_function_declaration fc function_declaration
+	end
+	| T_module_item__local_parameter_declaration ( attribute_instance_list , local_parameter_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_local_parameter_declaration fc local_parameter_declaration;
+		fprintf fc ";\n"
+	end
+	| T_module_item__parameter_override ( attribute_instance_list , defparam_assignment_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_parameter_override fc defparam_assignment_list
+	end
+	(*| T_module_item__continuous_assign of (attribute_instance list)*continuous_assign
 	| T_module_item__gate_instantiation of (attribute_instance list)*gate_instantiation
 	| T_module_item__udp_instantiation of (attribute_instance list)*udp_instantiation
 	| T_module_item__module_instantiation of (attribute_instance list)*module_instantiation
@@ -519,8 +532,11 @@ and print_inout_declaration fc inout_declaration = begin
 	T_inout_declaration ( net_type , signed , range , identifier_list ) -> begin
 		fprintf fc "  inout ";
 		print_net_type fc net_type;
+		fprintf fc " ";
 		print_signed_opt fc signed;
+		fprintf fc " ";
 		print_range fc range;
+		fprintf fc " ";
 		list_iter_with_sep identifier_list (print_identifier fc) (fun () -> fprintf fc ",")
 	end
 end
@@ -529,8 +545,11 @@ and print_input_declaration fc input_declaration = begin
 	T_input_declaration ( net_type , signed , range , identifier_list ) -> begin
 		fprintf fc "  input ";
 		print_net_type fc net_type;
+		fprintf fc " ";
 		print_signed_opt fc signed;
+		fprintf fc " ";
 		print_range fc range;
+		fprintf fc " ";
 		list_iter_with_sep identifier_list (print_identifier fc) (fun () -> fprintf fc ",")
 	end
 end
@@ -539,19 +558,25 @@ and print_output_declaration fc output_declaration = begin
 	T_output_declaration_net ( net_type , signed , range , identifier_list ) -> begin
 		fprintf fc "  output ";
 		print_net_type fc net_type;
+		fprintf fc " ";
 		print_signed_opt fc signed;
+		fprintf fc " ";
 		print_range fc range;
+		fprintf fc " ";
 		list_iter_with_sep identifier_list (print_identifier fc) (fun () -> fprintf fc ",")
 	end
 	|T_output_declaration_reg ( signed , range , port_identifier_equ1_expression_opt_list ) -> begin
 		fprintf fc "  output reg ";
 		print_signed_opt fc signed;
+		fprintf fc " ";
 		print_range fc range;
+		fprintf fc " ";
 		list_iter_with_sep port_identifier_equ1_expression_opt_list (print_port_identifier_equ1_expression_opt fc)  (fun () -> fprintf fc ",")
 	end
 	|T_output_declaration_var ( output_variable_type , port_identifier_equ1_expression_opt_list ) -> begin
 		fprintf fc "  output ";
 		print_output_variable_type fc output_variable_type;
+		fprintf fc " ";
 		list_iter_with_sep port_identifier_equ1_expression_opt_list (print_port_identifier_equ1_expression_opt fc)  (fun () -> fprintf fc ",")
 	end
 end
@@ -560,7 +585,7 @@ and print_port_identifier_equ1_expression_opt fc port_identifier_equ1_expression
 	T_port_identifier_equ1_expression_opt ( port_identifier , equ1_expression_opt ) -> begin
 		print_identifier fc port_identifier ;
 		match equ1_expression_opt with
-		T_expression_NOSPEC -> fprintf fc "";
+		T_expression_NOSPEC -> fprintf fc ""
 		| _ -> begin
 			fprintf fc " = ";
 			print_expression fc equ1_expression_opt
@@ -620,21 +645,33 @@ and print_net_declaration fc net_declaration = begin
 	match net_declaration with
 	  T_net_declaration_net_type3 ( net_type , drive_strength , vectored_scalared , signed , range , delay3 , net_identifier_dimension_list_list ) -> begin
 			print_net_type fc net_type ;
+			fprintf fc " ";
 			print_drive_strength fc drive_strength;
+			fprintf fc " ";
 			print_vectored_scalared fc vectored_scalared;
+			fprintf fc " ";
 			print_signed_opt fc signed;
+			fprintf fc " ";
 			print_range fc range;
+			fprintf fc " ";
 			print_delay3 fc delay3;
+			fprintf fc " ";
 			list_iter_with_sep net_identifier_dimension_list_list (print_net_identifier_dimension_list fc) (fun () -> fprintf fc " , ");
 			fprintf fc " ;\n";
 		end
 	| T_net_declaration_net_type4 ( net_type , drive_strength , vectored_scalared , signed , range , delay3 , net_decl_assignment_list ) -> begin
 			print_net_type fc net_type ;
+			fprintf fc " ";
 			print_drive_strength fc drive_strength;
+			fprintf fc " ";
 			print_vectored_scalared fc vectored_scalared;
+			fprintf fc " ";
 			print_signed_opt fc signed;
+			fprintf fc " ";
 			print_range fc range;
+			fprintf fc " ";
 			print_delay3 fc delay3;
+			fprintf fc " ";
 			list_iter_with_sep net_decl_assignment_list (print_net_decl_assignment fc) (fun () -> fprintf fc " , ");
 			fprintf fc " ;\n";
 	end
@@ -718,7 +755,7 @@ and print_dimension fc dimension = begin
 			print_expression fc expression1;
 		fprintf fc " : ";
 			print_expression fc expression2;
-		fprintf fc " ] ";
+		fprintf fc " ] "
 	end
 end
 and print_net_decl_assignment fc net_decl_assignment = begin
@@ -726,7 +763,7 @@ and print_net_decl_assignment fc net_decl_assignment = begin
 	T_net_decl_assignment ( identifier , expression ) -> begin
 		print_identifier fc identifier;
 		fprintf fc " = ";
-		print_expression fc expression;
+		print_expression fc expression
 	end
 end
 and print_reg_declaration fc reg_declaration = begin
@@ -862,53 +899,6 @@ and print_task_item_declaration fc task_item_declaration = begin
 		fprintf fc "  ;\n"
 	end
 end
-and print_block_item_declaration fc block_item_declaration = begin
-	match block_item_declaration with
-	T_block_item_declaration_reg ( attribute_instance_list , signed , range , block_variable_type_list ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		fprintf fc "  reg ";
-		print_signed_opt fc signed ;
-		print_range fc range ;
-		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
-		fprintf fc "  ;\n"
-	end
-	| T_block_item_declaration_integer ( attribute_instance_list , block_variable_type_list ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		fprintf fc "  integer ";
-		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
-		fprintf fc "  ;\n"
-	end
-	| T_block_item_declaration_time ( attribute_instance_list , block_variable_type_list ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		fprintf fc "  time ";
-		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
-		fprintf fc "  ;\n"
-	end
-	| T_block_item_declaration_real ( attribute_instance_list , block_real_type_list ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		fprintf fc "  real ";
-		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
-		fprintf fc "  ;\n"
-	end
-	| T_block_item_declaration_realtime ( attribute_instance_list , block_real_type_list ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		fprintf fc "  realtime ";
-		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
-		fprintf fc "  ;\n"
-	end
-	| T_block_item_declaration_event  ( attribute_instance_list , event_declaration ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		print_event_declaration fc event_declaration
-	end
-	| T_block_item_declaration_local_param ( attribute_instance_list , local_parameter_declaration ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		print_local_parameter_declaration fc local_parameter_declaration
-	end
-	| T_block_item_declaration_param ( attribute_instance_list , parameter_declaration ) -> begin
-		List.iter (print_attribute_instance fc) attribute_instance_list;
-		print_parameter_declaration fc parameter_declaration
-	end
-end
 and print_block_variable_type fc block_variable_type = begin
 	match block_variable_type with
 	T_block_variable_type ( identifier , dimension_list ) -> begin
@@ -1021,5 +1011,495 @@ and print_tf_inout_declaration fc tf_inout_declaration = begin
 		fprintf fc "  inout ";
 		print_task_port_type fc task_port_type;
 		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+end
+and print_function_declaration fc function_declaration = begin
+	match function_declaration with
+	T_function_declaration_1 ( automatic , function_range_or_type , identifier , function_item_declaration_list , statement ) -> begin
+		fprintf fc "  function ";
+		print_automatic fc automatic;
+		print_function_range_or_type fc function_range_or_type;
+		print_identifier fc identifier;
+		fprintf fc "  ;\n";
+		List.iter (print_function_item_declaration fc) function_item_declaration_list ;
+		print_statement fc statement;
+		fprintf fc "  endfunction\n"
+	end
+	| T_function_declaration_2 ( automatic , function_range_or_type , identifier , attribute_instance_list_tf_input_declaration_list , function_item_declaration_list , statement ) -> begin
+		fprintf fc "  function ";
+		print_automatic fc automatic;
+		print_function_range_or_type fc function_range_or_type;
+		print_identifier fc identifier;
+		fprintf fc " ( ";
+			list_iter_with_sep attribute_instance_list_tf_input_declaration_list (print_function_port fc) (fun () -> fprintf fc " , ");
+		fprintf fc " ) ";
+
+		fprintf fc "  endfunction\n"
+	end
+end
+and print_function_range_or_type fc function_range_or_type = begin
+	match function_range_or_type with
+	T_function_range_or_type_NOSPEC  -> fprintf fc " "
+	| T_function_range_or_type ( signed , range ) -> begin
+		print_signed_opt fc signed;
+		print_range fc range
+	end
+	| T_function_range_or_type_INTEGER  -> fprintf fc " integer "
+	| T_function_range_or_type_REAL  -> fprintf fc " real "
+	| T_function_range_or_type_REALTIME  -> fprintf fc " realtime "
+	| T_function_range_or_type_TIME  -> fprintf fc " time "
+end
+and print_function_item_declaration fc function_item_declaration = begin
+	match function_item_declaration with
+	T_function_item_declaration_block ( block_item_declaration ) -> 
+		print_block_item_declaration fc block_item_declaration
+	| T_function_item_declaration_input ( attribute_instance_list , tf_input_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_tf_input_declaration fc tf_input_declaration
+	end
+end
+and print_statement fc statement = begin
+	match statement with
+	T_statement_NOSPEC (attribute_instance_list)->  begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  ;\n"
+	end
+	| T_statement_blocking_assignment ( attribute_instance_list , blocking_assignment ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_blocking_assignment fc blocking_assignment;
+		fprintf fc "  ;\n"
+	end
+	| T_statement_case_statement (attribute_instance_list , case_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_case_statement fc case_statement
+	end
+	| T_statement_conditional_statement  ( attribute_instance_list , conditional_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_conditional_statement fc conditional_statement
+	end
+	| T_statement_disable_statement ( attribute_instance_list , disable_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_disable_statement fc disable_statement
+	end
+	| T_statement_event_trigger ( attribute_instance_list , event_trigger ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_event_trigger fc event_trigger
+	end
+	| T_statement_loop_statement ( attribute_instance_list , loop_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_loop_statement fc loop_statement
+	end
+	| T_statement_nonblocking_assignment ( attribute_instance_list , nonblocking_assignment ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_nonblocking_assignment fc nonblocking_assignment;
+		fprintf fc "  ;\n"
+	end
+	| T_statement_par_block ( attribute_instance_list , par_block ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_par_block fc par_block
+	end
+	| T_statement_procedural_continuous_assignments   ( attribute_instance_list , procedural_continuous_assignments ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_procedural_continuous_assignments fc procedural_continuous_assignments;
+		fprintf fc "  ;\n"
+	end
+	| T_statement_procedural_timing_control_statement  ( attribute_instance_list , procedural_timing_control_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_procedural_timing_control_statement fc procedural_timing_control_statement
+	end
+	| T_statement_seq_block ( attribute_instance_list , seq_block ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_seq_block fc seq_block
+	end
+	| T_statement_system_task_enable ( attribute_instance_list , system_task_enable ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_system_task_enable fc system_task_enable
+	end
+	| T_statement_task_enable ( attribute_instance_list , task_enable ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_task_enable fc task_enable
+	end
+	| T_statement_wait_statement  ( attribute_instance_list , wait_statement ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_wait_statement fc wait_statement
+	end
+end
+and print_blocking_assignment fc blocking_assignment = begin
+	match blocking_assignment with
+	T_blocking_assignment ( net_lvalue , delay_or_event_control , expression ) -> begin
+		print_net_lvalue fc net_lvalue;
+		fprintf fc " = ";
+		print_delay_or_event_control fc delay_or_event_control;
+		print_expression fc expression
+	end
+end
+and print_net_lvalue fc net_lvalue = begin
+	match net_lvalue with
+	T_net_lvalue_id ( hierarchical_identifier ) -> 
+		print_hierarchical_identifier fc hierarchical_identifier
+	| T_net_lvalue_idexp ( hierarchical_identifier , expression_list , range_expression ) -> begin
+		assert false
+	end
+	| T_net_lvalue_lvlist (net_lvalue_list) -> begin
+		fprintf fc " { ";
+			list_iter_with_sep net_lvalue_list ( print_net_lvalue fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " } ";
+	end
+end
+and print_case_statement fc case_statement = begin
+	match case_statement with
+	T_case_statement_case ( expression , case_item_list ) -> begin
+		fprintf fc " case ( ";
+		  print_expression fc expression;
+		fprintf fc " ) ";
+			List.iter (print_case_item fc) case_item_list;
+		fprintf fc " endcase ";
+	end
+	| T_case_statement_casez ( expression , case_item_list ) -> begin
+		fprintf fc " casez ( ";
+		  print_expression fc expression;
+		fprintf fc " ) ";
+			List.iter (print_case_item fc) case_item_list;
+		fprintf fc " endcase ";
+	end
+	| T_case_statement_casex ( expression , case_item_list ) -> begin
+		fprintf fc " casex ( ";
+		  print_expression fc expression;
+		fprintf fc " ) ";
+			List.iter (print_case_item fc) case_item_list;
+		fprintf fc " endcase ";
+	end
+end
+and print_case_item fc case_item = begin
+	match case_item with
+	T_case_item (expression_list , statement ) -> begin
+		list_iter_with_sep expression_list ( print_expression fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " : ";
+		print_statement fc statement
+	end
+	| T_case_item_default ( colon_opt ,  statement ) -> begin
+		fprintf fc " default  ";
+		print_colon_opt fc colon_opt;
+		print_statement fc statement
+	end
+end
+and print_colon_opt fc colon_opt = begin
+	match colon_opt with
+	T_colon_opt_false -> fprintf fc ""
+	| T_colon_opt_true -> fprintf fc " : "
+end
+and print_conditional_statement fc conditional_statement = begin
+	match conditional_statement with
+	T_conditional_statement_ifelse ( expression , statement1 , statement2 ) -> begin
+		fprintf fc " if (";
+		  print_expression fc expression;
+		fprintf fc " )";
+		  print_statement fc statement1;
+			match statement2 with
+			T_statement_NOSPEC (attribute_instance_list )->  begin
+				List.iter (print_attribute_instance fc) attribute_instance_list;
+				fprintf fc " ;\n";
+			end
+			| _ -> begin
+				fprintf fc " else ";
+				print_statement fc statement2
+			end
+	end
+	| _ -> assert false
+end
+and print_disable_statement fc disable_statement = begin
+	match disable_statement with
+	T_disable_statement ( hierarchical_identifier ) -> begin
+		fprintf fc " disable ";
+			print_hierarchical_identifier fc hierarchical_identifier ;
+		fprintf fc " ;\n";
+	end
+end
+and print_event_trigger fc event_trigger = begin
+	match event_trigger with
+	T_event_trigger ( hierarchical_identifier ) -> begin
+		fprintf fc " -> ";
+			print_hierarchical_identifier fc hierarchical_identifier;
+		fprintf fc " ;\n";
+	end
+end
+and print_loop_statement fc loop_statement = begin
+	match loop_statement with
+	T_loop_statement_forever ( statement ) -> begin
+		fprintf fc " forever ";
+		print_statement fc statement
+	end
+	| T_loop_statement_repeat ( expression , statement ) -> begin
+		fprintf fc " repeat ( ";
+			print_expression fc expression;
+		fprintf fc " ) ";
+			print_statement fc statement
+	end
+	| T_loop_statement_while ( expression , statement ) -> begin
+		fprintf fc " while ( ";
+			print_expression fc expression;
+		fprintf fc " ) ";
+			print_statement fc statement
+	end
+	| T_loop_statement_for ( net_assignment1 , expression , net_assignment2 , statement ) -> begin
+		fprintf fc " for ( ";
+		print_net_assignment fc net_assignment1;
+		fprintf fc " ; ";
+		print_expression fc expression;
+		fprintf fc " ; ";
+		print_net_assignment fc net_assignment2;
+		fprintf fc " ) ";
+		print_statement fc statement
+	end
+end
+and print_nonblocking_assignment fc nonblocking_assignment = begin
+	match nonblocking_assignment with
+	T_nonblocking_assignment ( net_lvalue , delay_or_event_control , expression ) -> begin
+		print_net_lvalue fc net_lvalue;
+		fprintf fc " <= ";
+		print_delay_or_event_control fc delay_or_event_control;
+		print_expression fc expression
+	end
+end
+and print_delay_or_event_control fc delay_or_event_control = begin
+	match delay_or_event_control with
+	T_delay_or_event_control_NOSPEC -> fprintf fc ""
+	| T_delay_or_event_control_delay_control ( delay_control ) -> 
+		print_delay_control fc delay_control
+	| T_delay_or_event_control_event_control ( event_control ) -> 
+		print_event_control fc event_control
+	| T_delay_or_event_control_3 ( expression , event_control ) -> begin
+		fprintf fc " repeat ( ";
+			print_expression fc expression;
+		fprintf fc " ) ";
+			print_event_control fc event_control
+	end
+end
+and print_delay_control fc delay_control = begin
+	match delay_control with
+	T_delay_control_delay_value ( delay_value ) -> begin
+		fprintf fc " # ";
+		print_delay_value fc delay_value
+	end
+	| T_delay_control_mintypmax_expression ( mintypmax_expression ) -> begin
+		fprintf fc " # ( ";
+			print_mintypmax_expression fc mintypmax_expression;
+		fprintf fc " ) ";
+	end
+end
+and print_event_control fc event_control = begin
+	match event_control with
+	T_event_control_eventid ( hierarchical_identifier ) -> begin
+		fprintf fc " @ ";
+		print_hierarchical_identifier fc hierarchical_identifier
+	end
+	| T_event_control_event_exp ( event_expression_list ) -> begin
+		fprintf fc " @ ( ";
+			list_iter_with_sep event_expression_list ( print_event_expression fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ) ";
+	end
+	| T_event_control_start -> 
+		fprintf fc " @(*) "
+end
+and print_event_expression fc event_expression = begin
+	match event_expression with
+	T_event_expression_exp ( expression ) -> 
+		print_expression fc expression
+	| T_event_expression_pos ( expression ) -> begin
+		fprintf fc " posedge ";
+		print_expression fc expression
+	end
+	| T_event_expression_neg ( expression ) -> begin
+		fprintf fc " negedge ";
+		print_expression fc expression
+	end
+	| T_event_expression_or ( event_expression1 , event_expression2 ) -> 
+		assert false
+end
+and print_par_block fc par_block = begin
+	match par_block with
+	T_par_block (  colon_block_identifier , statement_or_block_item_list ) -> begin
+		fprintf fc " fork ";
+			print_colon_block_identifier fc colon_block_identifier ;
+			fprintf fc "\n";
+			List.iter (print_statement_or_block_item fc) statement_or_block_item_list;
+		fprintf fc " join "
+	end
+end
+and print_statement_or_block_item fc statement_or_block_item = begin
+	match statement_or_block_item with
+	T_statement_or_block_item_statement ( statement ) -> 
+		print_statement fc statement
+	| T_statement_or_block_item_block ( block_item_declaration ) -> 
+		print_block_item_declaration fc block_item_declaration
+end
+and print_block_item_declaration fc block_item_declaration = begin
+	match block_item_declaration with
+	T_block_item_declaration_reg ( attribute_instance_list , signed , range , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " reg ";
+		print_signed_opt fc signed;
+		print_range fc range;
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_integer ( attribute_instance_list , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " integer ";
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_time ( attribute_instance_list , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " time ";
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_real ( attribute_instance_list , block_real_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " real ";
+		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_realtime ( attribute_instance_list , block_real_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " realtime ";
+		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_event ( attribute_instance_list , event_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_event_declaration fc event_declaration
+	end
+	| T_block_item_declaration_local_param ( attribute_instance_list , local_parameter_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_local_parameter_declaration fc local_parameter_declaration;
+		fprintf fc " ;\n"
+	end
+	| T_block_item_declaration_param ( attribute_instance_list , parameter_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_parameter_declaration fc parameter_declaration;
+		fprintf fc " ;\n"
+	end
+end
+and print_procedural_continuous_assignments fc procedural_continuous_assignments = begin
+	match procedural_continuous_assignments with
+	T_procedural_continuous_assignments_assign ( net_assignment ) -> begin
+		fprintf fc " assign ";
+		print_net_assignment fc net_assignment
+	end
+	| T_procedural_continuous_assignments_deassign ( net_lvalue ) -> begin
+		fprintf fc " deassign ";
+		print_net_lvalue fc net_lvalue;
+	end
+	| T_procedural_continuous_assignments_force1 ( net_assignment ) -> begin
+		fprintf fc " force ";
+		print_net_assignment fc net_assignment
+	end
+	| T_procedural_continuous_assignments_release1 ( net_lvalue )  -> begin
+		fprintf fc " release ";
+		print_net_lvalue fc net_lvalue
+	end
+	| _ -> assert false
+end
+and print_procedural_timing_control_statement fc procedural_timing_control_statement = begin
+	match procedural_timing_control_statement with
+	T_procedural_timing_control_statement ( procedural_timing_control , statement ) -> begin
+		print_procedural_timing_control fc procedural_timing_control;
+		print_statement fc statement
+	end
+end
+and print_procedural_timing_control fc procedural_timing_control = begin
+	match procedural_timing_control with
+	T_procedural_timing_control_delay ( delay_control ) -> 
+		print_delay_control fc delay_control
+	| T_procedural_timing_control_event ( event_control ) -> 
+		print_event_control fc event_control
+end
+and print_seq_block fc seq_block = begin
+	match seq_block with
+	T_seq_block ( colon_block_identifier , statement_or_block_item_list ) -> begin
+		fprintf fc " begin ";
+			print_colon_block_identifier fc colon_block_identifier ;
+		fprintf fc "\n";
+			List.iter (print_statement_or_block_item fc) statement_or_block_item_list;
+		fprintf fc " end\n";
+	end
+end
+and print_system_task_enable fc system_task_enable = begin
+	match system_task_enable with
+	T_system_task_enable (  system_function_identifier, expression_list ) -> begin
+		print_system_function_identifier fc system_function_identifier;
+		begin
+			match expression_list with
+			[] -> fprintf fc ""
+			| _ -> begin
+				fprintf fc " ( ";
+					list_iter_with_sep expression_list ( print_expression fc ) (fun () -> fprintf fc " , ");
+				fprintf fc " ) ";
+			end
+		end;
+		fprintf fc " ;\n";
+	end
+end
+and print_task_enable fc task_enable = begin
+	match task_enable with
+	T_task_enable ( hierarchical_identifier , expression_list ) -> begin
+		print_hierarchical_identifier fc hierarchical_identifier;
+		begin
+			match expression_list with
+			[] -> fprintf fc ""
+			| _ -> begin
+				fprintf fc " ( ";
+					list_iter_with_sep expression_list ( print_expression fc ) (fun () -> fprintf fc " , ");
+				fprintf fc " ) ";
+			end
+		end;
+		fprintf fc " ;\n";
+	end
+end
+and print_wait_statement fc wait_statement = begin
+	match wait_statement with
+	T_wait_statement ( expression , statement ) -> begin
+		fprintf fc " wait ( ";
+			print_expression fc expression;
+		fprintf fc " ) ";
+			print_statement fc statement
+	end
+end
+and print_function_port fc function_port = begin
+	match function_port with
+	T_attribute_instance_list_tf_input_declaration ( attribute_instance_list , tf_io_declaration_gen ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_tf_io_declaration_gen fc tf_io_declaration_gen
+	end
+end
+and print_net_assignment fc net_assignment = begin
+	match net_assignment with
+	T_net_assignment ( net_lvalue , expression ) -> begin
+		print_net_lvalue fc net_lvalue;
+		fprintf fc " = ";
+		print_expression fc expression
+	end
+end
+and print_colon_block_identifier fc colon_block_identifier = begin
+	match colon_block_identifier with
+	T_colon_block_identifier_NOSPEC -> fprintf fc ""
+	| T_colon_block_identifier ( identifier ) -> begin
+		fprintf fc " : ";
+		print_identifier fc identifier
+	end
+end
+and print_parameter_override fc defparam_assignment_list = begin
+	fprintf fc " defparam ";
+		list_iter_with_sep defparam_assignment_list ( print_defparam_assignment fc ) (fun () -> fprintf fc " , ");
+	fprintf fc " ;\n";
+end
+and print_defparam_assignment fc defparam_assignment = begin
+	match defparam_assignment with
+	T_defparam_assignment ( hierarchical_identifier , mintypmax_expression ) -> begin
+		print_hierarchical_identifier fc hierarchical_identifier;
+		fprintf fc " = ";
+		print_mintypmax_expression fc mintypmax_expression
 	end
 end

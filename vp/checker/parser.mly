@@ -1843,8 +1843,8 @@ case_generate_item :
 ;
 
 colon_opt :
-	{0}
-	| COLON {record_pos $1;0}
+	{T_colon_opt_false}
+	| COLON {record_pos $1;T_colon_opt_true}
 ;
 
 generate_block :
@@ -2259,7 +2259,7 @@ statement_or_null :
 	statement
 		{$1}
 	| attribute_instance_list SEMICOLON
-		{record_pos $2;T_statement_NOSPEC}
+		{record_pos $2;T_statement_NOSPEC($1)}
 ;
 
 function_statement :
@@ -2361,7 +2361,7 @@ conditional_statement :
 ;
 
 else_statement_or_null_opt :
-	{T_statement_NOSPEC}
+	{T_statement_NOSPEC ([])}
 	| KEY_ELSE statement_or_null
 		{record_pos $1;$2}
 ;
@@ -2408,7 +2408,7 @@ case_item :
 	expression comma_expression_list COLON statement_or_null
 		{record_pos $3;T_case_item($1::$2,$4)}
 	| KEY_DEFAULT colon_opt statement_or_null
-		{record_pos $1;T_case_item_default($3)}
+		{record_pos $1;T_case_item_default($2,$3)}
 ;
 
 

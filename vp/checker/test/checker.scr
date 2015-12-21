@@ -12,5 +12,5 @@ step3_noprotected.exe  nocomment.v > noprotected.v
 step4_nodef.exe  noprotected.v > nodef.v
 
 #OCAMLRUNPARAM=bp checker.exe nodef.v > dd
-checker.exe nodef.v > dd
+checker.exe nodef.v > print.v 2>err
 
