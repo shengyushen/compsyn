@@ -24,6 +24,7 @@ and print_module_declaration fc module_declaration = begin
 		module_item_list
 	) -> begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "\n";
 		fprintf fc "module  %s\n" (get_identifier_string module_identifier);
 
 		print_module_parameter_port_list_opt fc module_parameter_port_list_opt ;
@@ -394,13 +395,6 @@ and print_port_expression fc port_expression = begin
 		| _ -> assert false
 	end
 end
-and print_io_type fc io_type = begin
-	match io_type with
-	T_io_type_NOSPEC -> fprintf fc "";
-	| T_io_type_output -> fprintf fc "output";
-	| T_io_type_input  -> fprintf fc "input";
-	| T_io_type_inout  -> fprintf fc "inout";
-end
 and print_netreg_type fc netreg_type = begin
 	match netreg_type with
 	T_netreg_type__NOSPEC      -> fprintf fc "";
@@ -472,12 +466,27 @@ and print_module_item fc module_item = begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
 		print_real_declaration fc real_declaration
 	end
-	(*| T_module_item__time_declaration of (attribute_instance list)*time_declaration
-	| T_module_item__realtime_declaration of (attribute_instance list)*realtime_declaration
-	| T_module_item__event_declaration of (attribute_instance list)*event_declaration
-	| T_module_item__genvar_declaration of (attribute_instance list)*genvar_declaration
-	| T_module_item__task_declaration of (attribute_instance list)*task_declaration
-	| T_module_item__function_declaration of (attribute_instance list)*function_declaration
+	| T_module_item__time_declaration ( attribute_instance_list , time_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_time_declaration fc time_declaration
+	end
+	| T_module_item__realtime_declaration ( attribute_instance_list , realtime_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_realtime_declaration fc realtime_declaration
+	end
+	| T_module_item__event_declaration ( attribute_instance_list , event_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_event_declaration fc event_declaration 
+	end
+	| T_module_item__genvar_declaration ( attribute_instance_list , genvar_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_genvar_declaration fc genvar_declaration
+	end
+	| T_module_item__task_declaration ( attribute_instance_list , task_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_task_declaration fc task_declaration
+	end
+	(*| T_module_item__function_declaration of (attribute_instance list)*function_declaration
 	| T_module_item__local_parameter_declaration of (attribute_instance list)*local_parameter_declaration
 	| T_module_item__parameter_override of (attribute_instance list)*(defparam_assignment list)
 	| T_module_item__continuous_assign of (attribute_instance list)*continuous_assign
@@ -768,5 +777,249 @@ and print_real_type fc real_type = begin
 		print_identifier fc identifier;
 		fprintf fc " = ";
 		print_expression fc expression
+	end
+end
+and print_time_declaration fc time_declaration = begin
+	match time_declaration with
+	T_time_declaration ( variable_type_list ) -> begin
+		fprintf fc "  time ";
+			list_iter_with_sep variable_type_list (print_variable_type fc) (fun () -> fprintf fc " , " );
+		fprintf fc "  ;\n";
+	end
+end
+and print_realtime_declaration fc realtime_declaration = begin
+	match realtime_declaration with
+	T_realtime_declaration ( real_type_list ) -> begin
+		fprintf fc "  realtime ";
+			list_iter_with_sep real_type_list (print_real_type fc) (fun () -> fprintf fc " , " );
+		fprintf fc "  ;\n";
+	end
+end
+and print_event_declaration fc event_declaration  = begin
+	match event_declaration with
+	T_event_declaration ( event_identifier_dimension_list_list ) -> begin
+		fprintf fc "  event ";
+			list_iter_with_sep event_identifier_dimension_list_list (print_event_identifier_dimension_list fc) (fun () -> fprintf fc " , " );
+		fprintf fc "  ;\n";
+	end
+end
+and print_event_identifier_dimension_list fc event_identifier_dimension_list = begin
+	match event_identifier_dimension_list with
+	T_event_identifier_dimension_list ( identifier , dimension_list ) -> begin
+		print_identifier fc identifier;
+		List.iter ( print_dimension  fc ) dimension_list
+	end
+end
+and print_genvar_declaration fc genvar_declaration = begin
+	match genvar_declaration with
+	T_genvar_declaration ( identifier_list ) -> begin
+		fprintf fc "  genvar ";
+			list_iter_with_sep identifier_list (print_identifier fc) (fun () -> fprintf fc " ,\n");
+		fprintf fc "  ;\n";
+	end
+end
+and print_task_declaration fc task_declaration = begin
+	match task_declaration with
+	T_task_declaration1 ( automatic , identifier , task_item_declaration_list , statement ) -> begin
+		fprintf fc "  task ";
+		print_automatic fc automatic;
+		print_identifier fc identifier;
+		fprintf fc "  ;\n";
+		List.iter (print_task_item_declaration fc ) task_item_declaration_list;
+		fprintf fc "  endtask\n";
+	end
+	| T_task_declaration2 ( automatic , identifier , task_port_item_list , task_item_declaration_list , statement ) -> begin
+		fprintf fc "  task ";
+		print_automatic fc automatic;
+		print_identifier fc identifier;
+		fprintf fc "  ( ";
+			list_iter_with_sep task_port_item_list (print_task_port_item fc) (fun () -> fprintf fc " ,\n");
+		fprintf fc "  ) ";
+	end
+end
+and print_automatic fc automatic = begin
+	match automatic with
+	T_automatic_false -> fprintf fc ""
+	| T_automatic_true	-> fprintf fc " automatic "
+end
+and print_task_item_declaration fc task_item_declaration = begin
+	match task_item_declaration with
+	T_task_item_declaration_block ( block_item_declaration ) -> 
+		print_block_item_declaration fc block_item_declaration
+	| T_task_item_declaration_input ( attribute_instance_list ,  tf_input_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+			print_tf_input_declaration fc tf_input_declaration;
+		fprintf fc "  ;\n"
+	end
+	| T_task_item_declaration_output ( attribute_instance_list ,  tf_output_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		  print_tf_output_declaration fc tf_output_declaration;
+		fprintf fc "  ;\n"
+	end
+	| T_task_item_declaration_inout ( attribute_instance_list ,  tf_inout_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+			print_tf_inout_declaration fc tf_inout_declaration;
+		fprintf fc "  ;\n"
+	end
+end
+and print_block_item_declaration fc block_item_declaration = begin
+	match block_item_declaration with
+	T_block_item_declaration_reg ( attribute_instance_list , signed , range , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  reg ";
+		print_signed_opt fc signed ;
+		print_range fc range ;
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc "  ;\n"
+	end
+	| T_block_item_declaration_integer ( attribute_instance_list , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  integer ";
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc "  ;\n"
+	end
+	| T_block_item_declaration_time ( attribute_instance_list , block_variable_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  time ";
+		list_iter_with_sep block_variable_type_list ( print_block_variable_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc "  ;\n"
+	end
+	| T_block_item_declaration_real ( attribute_instance_list , block_real_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  real ";
+		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc "  ;\n"
+	end
+	| T_block_item_declaration_realtime ( attribute_instance_list , block_real_type_list ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc "  realtime ";
+		list_iter_with_sep block_real_type_list ( print_block_real_type fc ) (fun () -> fprintf fc " , ");
+		fprintf fc "  ;\n"
+	end
+	| T_block_item_declaration_event  ( attribute_instance_list , event_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_event_declaration fc event_declaration
+	end
+	| T_block_item_declaration_local_param ( attribute_instance_list , local_parameter_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_local_parameter_declaration fc local_parameter_declaration
+	end
+	| T_block_item_declaration_param ( attribute_instance_list , parameter_declaration ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_parameter_declaration fc parameter_declaration
+	end
+end
+and print_block_variable_type fc block_variable_type = begin
+	match block_variable_type with
+	T_block_variable_type ( identifier , dimension_list ) -> begin
+		print_identifier fc identifier;
+		List.iter (print_dimension fc) dimension_list
+	end
+end
+and print_block_real_type fc block_real_type = begin
+	match block_real_type with
+	T_block_real_type ( identifier , dimension_list ) -> begin
+		print_identifier fc identifier;
+		List.iter (print_dimension fc ) dimension_list
+	end
+end
+and print_local_parameter_declaration fc local_parameter_declaration = begin
+	match local_parameter_declaration with
+	T_local_parameter_declaration_1 ( signed , range , param_assignment_list ) -> begin
+		fprintf fc " localparam ";
+		print_signed_opt fc signed;
+		print_range fc range;
+		list_iter_with_sep param_assignment_list ( print_param_assignment fc ) (fun () -> fprintf fc " , ")
+	end
+	| T_local_parameter_declaration_2 ( parameter_type , param_assignment_list ) -> begin
+		fprintf fc " localparam ";
+		print_parameter_type fc parameter_type;
+		list_iter_with_sep param_assignment_list ( print_param_assignment fc ) (fun () -> fprintf fc " , ")
+	end
+end
+and print_tf_input_declaration fc tf_input_declaration = begin
+	match tf_input_declaration with
+	T_tf_input_declaration_reg ( reg , signed , range , identifier_list ) -> begin
+		fprintf fc "  input ";
+		print_reg fc reg;
+		print_signed_opt fc signed ;
+		print_range fc  range;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+	| T_tf_input_declaration_type ( task_port_type , identifier_list ) -> begin
+		fprintf fc "  input ";
+		print_task_port_type fc task_port_type;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+end
+and print_reg fc reg = begin
+	match reg with
+	T_reg_false -> fprintf fc ""
+	| T_reg_true -> fprintf fc " reg "
+end
+and print_task_port_type fc task_port_type = begin
+	match task_port_type with
+	T_task_port_type_integer -> fprintf fc " integer "
+	| T_task_port_type_real -> fprintf fc " real "
+	| T_task_port_type_realtime -> fprintf fc " realtime "
+	| T_task_port_type_time -> fprintf fc " time "
+end
+and print_task_port_item fc task_port_item = begin
+	match task_port_item with
+	T_task_port_item_input ( attribute_instance_list , tf_io_declaration_gen ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_tf_io_declaration_gen fc tf_io_declaration_gen
+	end
+end
+and print_tf_io_declaration_gen fc tf_io_declaration_gen = begin
+	match tf_io_declaration_gen with
+	T_tf_io_declaration_gen1 ( io_type , reg , signed , range , identifier ) -> begin
+		print_io_type fc io_type;
+		print_reg fc reg;
+		print_signed_opt fc signed;
+		print_range fc range;
+		print_identifier fc identifier;
+	end
+	| T_tf_io_declaration_gen2 ( io_type , task_port_type , identifier ) -> begin
+		print_io_type fc io_type;
+		print_task_port_type fc task_port_type;
+		print_identifier fc identifier
+	end
+end
+and print_io_type fc io_type = begin
+	match io_type with
+	T_io_type_NOSPEC -> fprintf fc ""
+	| T_io_type_output -> fprintf fc " output "
+	| T_io_type_input  -> fprintf fc " input "
+	| T_io_type_inout  -> fprintf fc " inout "
+end
+and  print_tf_output_declaration fc tf_output_declaration = begin
+	match tf_output_declaration with
+	T_tf_output_declaration_reg ( reg , signed , range , identifier_list ) -> begin
+		fprintf fc "  output ";
+		print_reg fc reg;
+		print_signed_opt fc signed;
+		print_range fc range;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+	| T_tf_output_declaration_type ( task_port_type , identifier_list ) -> begin
+		fprintf fc "  output ";
+		print_task_port_type fc task_port_type;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+end
+and print_tf_inout_declaration fc tf_inout_declaration = begin
+	match tf_inout_declaration with
+	T_tf_inout_declaration_reg ( reg , signed , range , identifier_list ) -> begin
+		fprintf fc "  inout ";
+		print_reg fc reg;
+		print_signed_opt fc signed;
+		print_range fc range;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
+	end
+	| T_tf_inout_declaration_type ( task_port_type , identifier_list ) -> begin
+		fprintf fc "  inout ";
+		print_task_port_type fc task_port_type;
+		list_iter_with_sep identifier_list ( print_identifier fc ) (fun () -> fprintf fc " , ")
 	end
 end

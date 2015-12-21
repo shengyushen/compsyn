@@ -1313,9 +1313,9 @@ task_item_declaration_list :
 task_item_declaration :
 	block_item_declaration
 		{T_task_item_declaration_block($1)}
-	|  attribute_instance_list  tf_input_declaration SEMICOLON  {record_pos $3;T_task_item_declaration_input($2)}
-	|  attribute_instance_list  tf_output_declaration SEMICOLON {record_pos $3;T_task_item_declaration_output($2)}
-	|  attribute_instance_list  tf_inout_declaration SEMICOLON  {record_pos $3;T_task_item_declaration_inout($2)}
+	|  attribute_instance_list  tf_input_declaration SEMICOLON  {record_pos $3;T_task_item_declaration_input($1,$2)}
+	|  attribute_instance_list  tf_output_declaration SEMICOLON {record_pos $3;T_task_item_declaration_output($1,$2)}
+	|  attribute_instance_list  tf_inout_declaration SEMICOLON  {record_pos $3;T_task_item_declaration_inout($1,$2)}
 ;
 
 task_port_list :

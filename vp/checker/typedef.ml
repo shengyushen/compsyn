@@ -208,9 +208,9 @@ and task_declaration =
 	| T_task_declaration2 of automatic*identifier*(task_port_item list)*(task_item_declaration list)*statement
 and task_item_declaration =
 	T_task_item_declaration_block of block_item_declaration
-	| T_task_item_declaration_input of tf_input_declaration
-	| T_task_item_declaration_output of tf_output_declaration
-	| T_task_item_declaration_inout of tf_inout_declaration
+	| T_task_item_declaration_input of  (attribute_instance list)*tf_input_declaration
+	| T_task_item_declaration_output of (attribute_instance list)*tf_output_declaration
+	| T_task_item_declaration_inout of  (attribute_instance list)*tf_inout_declaration
 and task_port_item =
 	T_task_port_item_input of (attribute_instance list)*tf_io_declaration_gen
 and reg =
