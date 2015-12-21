@@ -326,8 +326,7 @@ and parameter_value_assignment =
 and named_parameter_assignment =
 	T_named_parameter_assignment of identifier*mintypmax_expression
 and list_of_port_connections =
-	T_list_of_port_connections_NOSPEC
-	| T_list_of_port_connections_ordered of (ordered_port_connection list)
+	T_list_of_port_connections_ordered of (ordered_port_connection list)
 	| T_list_of_port_connections_named of (named_port_connection list)
 and ordered_port_connection =
 	T_ordered_port_connection of (attribute_instance list)*expression

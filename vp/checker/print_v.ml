@@ -71,7 +71,7 @@ end
 and print_parameter_declaration_gen fc parameter_declaration_gen = begin
 	match parameter_declaration_gen with
 	T_parameter_declaration_gen_1(parameter_type_opt,signed_opt,range_opt,param_assignment) -> begin
-		fprintf fc "parameter ";
+		fprintf fc " parameter ";
 		print_parameter_type_opt fc parameter_type_opt;
 		print_signed_opt fc signed_opt;
 		print_range_opt fc range_opt;
@@ -153,7 +153,7 @@ and print_primary fc primary = begin
 	| T_primary_mintypmax ( mintypmax_expression ) ->
 		print_mintypmax_expression fc mintypmax_expression
 	| T_primary_string ( str ) ->
-		fprintf fc "%s" str
+		fprintf fc "\"%s\"" str
 	end;
 	fprintf fc ")";
 end
@@ -258,7 +258,7 @@ end
 and print_hierarchical_identifier fc hierarchical_identifier = begin
 	match hierarchical_identifier with
 	T_hierarchical_identifier ( identifier_lsq_expression_rsq_list ) -> begin
-		List.iter (print_identifier_lsq_expression_rsq fc) identifier_lsq_expression_rsq_list
+		list_iter_with_sep identifier_lsq_expression_rsq_list (print_identifier_lsq_expression_rsq fc) (fun () -> fprintf fc ".");
 	end
 end
 and print_identifier_lsq_expression_rsq fc identifier_lsq_expression_rsq = begin
@@ -502,15 +502,37 @@ and print_module_item fc module_item = begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
 		print_parameter_override fc defparam_assignment_list
 	end
-	(*| T_module_item__continuous_assign of (attribute_instance list)*continuous_assign
-	| T_module_item__gate_instantiation of (attribute_instance list)*gate_instantiation
-	| T_module_item__udp_instantiation of (attribute_instance list)*udp_instantiation
-	| T_module_item__module_instantiation of (attribute_instance list)*module_instantiation
-	| T_module_item__initial_construct of (attribute_instance list)*initial_construct
-	| T_module_item__always_construct of (attribute_instance list)*always_construct
-	| T_module_item__loop_generate_construct of (attribute_instance list)*loop_generate_construct
-	| T_module_item__conditional_generate_construct of (attribute_instance list)*conditional_generate_construct*)
-	| _  -> fprintf fc ""
+	| T_module_item__continuous_assign  ( attribute_instance_list , continuous_assign ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_continuous_assign fc continuous_assign
+	end
+	| T_module_item__gate_instantiation ( attribute_instance_list , gate_instantiation ) -> begin
+		assert false
+	end
+	| T_module_item__udp_instantiation ( attribute_instance_list , udp_instantiation ) -> begin	
+		assert false
+	end
+	| T_module_item__module_instantiation  ( attribute_instance_list , module_instantiation ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_module_instantiation fc module_instantiation
+	end
+	| T_module_item__initial_construct ( attribute_instance_list , initial_construct ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_initial_construct fc initial_construct
+	end
+	| T_module_item__always_construct ( attribute_instance_list , always_construct ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_always_construct fc always_construct
+	end
+	| T_module_item__loop_generate_construct ( attribute_instance_list , loop_generate_construct ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_loop_generate_construct fc loop_generate_construct 
+	end
+	| T_module_item__conditional_generate_construct ( attribute_instance_list , conditional_generate_construct ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_conditional_generate_construct fc conditional_generate_construct
+	end
+	| _  -> assert false
 end
 and print_port_declaration fc port_declaration = begin
 	match port_declaration with
@@ -621,14 +643,13 @@ end
 and print_parameter_declaration fc parameter_declaration = begin
 	match parameter_declaration with
 	T_parameter_declaration_1 ( signed , range , param_assignment_list ) -> begin
-		fprintf fc "parameter ";
+		fprintf fc " parameter ";
 		print_signed_opt fc signed;
 		print_range fc range;
 		list_iter_with_sep param_assignment_list (print_param_assignment fc) (fun () -> fprintf fc " , ");
-		fprintf fc ";\n";
 	end
 	| T_parameter_declaration_2 ( parameter_type , param_assignment_list ) -> begin
-		fprintf fc "parameter ";
+		fprintf fc " parameter ";
 		print_parameter_type fc parameter_type;
 		list_iter_with_sep param_assignment_list (print_param_assignment fc) (fun () -> fprintf fc " , ");
 	end
@@ -1016,6 +1037,7 @@ end
 and print_function_declaration fc function_declaration = begin
 	match function_declaration with
 	T_function_declaration_1 ( automatic , function_range_or_type , identifier , function_item_declaration_list , statement ) -> begin
+		fprintf fc "\n";
 		fprintf fc "  function ";
 		print_automatic fc automatic;
 		print_function_range_or_type fc function_range_or_type;
@@ -1026,6 +1048,7 @@ and print_function_declaration fc function_declaration = begin
 		fprintf fc "  endfunction\n"
 	end
 	| T_function_declaration_2 ( automatic , function_range_or_type , identifier , attribute_instance_list_tf_input_declaration_list , function_item_declaration_list , statement ) -> begin
+		fprintf fc "\n";
 		fprintf fc "  function ";
 		print_automatic fc automatic;
 		print_function_range_or_type fc function_range_or_type;
@@ -1055,7 +1078,8 @@ and print_function_item_declaration fc function_item_declaration = begin
 		print_block_item_declaration fc block_item_declaration
 	| T_function_item_declaration_input ( attribute_instance_list , tf_input_declaration ) -> begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
-		print_tf_input_declaration fc tf_input_declaration
+		print_tf_input_declaration fc tf_input_declaration;
+		fprintf fc " ;\n"
 	end
 end
 and print_statement fc statement = begin
@@ -1151,23 +1175,23 @@ and print_case_statement fc case_statement = begin
 	T_case_statement_case ( expression , case_item_list ) -> begin
 		fprintf fc " case ( ";
 		  print_expression fc expression;
-		fprintf fc " ) ";
+		fprintf fc " )\n";
 			List.iter (print_case_item fc) case_item_list;
-		fprintf fc " endcase ";
+		fprintf fc " endcase\n";
 	end
 	| T_case_statement_casez ( expression , case_item_list ) -> begin
 		fprintf fc " casez ( ";
 		  print_expression fc expression;
-		fprintf fc " ) ";
+		fprintf fc " )\n";
 			List.iter (print_case_item fc) case_item_list;
-		fprintf fc " endcase ";
+		fprintf fc " endcase\n";
 	end
 	| T_case_statement_casex ( expression , case_item_list ) -> begin
 		fprintf fc " casex ( ";
 		  print_expression fc expression;
-		fprintf fc " ) ";
+		fprintf fc " )\n";
 			List.iter (print_case_item fc) case_item_list;
-		fprintf fc " endcase ";
+		fprintf fc " endcase\n";
 	end
 end
 and print_case_item fc case_item = begin
@@ -1198,7 +1222,6 @@ and print_conditional_statement fc conditional_statement = begin
 			match statement2 with
 			T_statement_NOSPEC (attribute_instance_list )->  begin
 				List.iter (print_attribute_instance fc) attribute_instance_list;
-				fprintf fc " ;\n";
 			end
 			| _ -> begin
 				fprintf fc " else ";
@@ -1501,5 +1524,211 @@ and print_defparam_assignment fc defparam_assignment = begin
 		print_hierarchical_identifier fc hierarchical_identifier;
 		fprintf fc " = ";
 		print_mintypmax_expression fc mintypmax_expression
+	end
+end
+and print_continuous_assign fc continuous_assign = begin
+	match continuous_assign with
+	T_continuous_assign ( drive_strength , delay3 , net_assignment_list ) -> begin
+		fprintf fc " assign ";
+		print_drive_strength fc drive_strength;
+		print_delay3 fc delay3;
+		list_iter_with_sep net_assignment_list ( print_net_assignment fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n";
+	end
+end
+and print_module_instantiation fc module_instantiation = begin
+	match module_instantiation with
+	T_module_instantiation ( identifier , parameter_value_assignment , module_instance_list ) -> begin
+		print_identifier fc identifier;
+		print_parameter_value_assignment fc parameter_value_assignment;
+		list_iter_with_sep module_instance_list ( print_module_instance fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ;\n"
+	end
+end
+and print_parameter_value_assignment fc parameter_value_assignment = begin
+	match parameter_value_assignment with
+	T_parameter_value_assignment_NOSPEC -> fprintf fc " "
+	| T_parameter_value_assignment_order ( expression_list ) -> begin
+		fprintf fc " # ( ";
+		list_iter_with_sep expression_list ( print_expression fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ) "
+	end
+	| T_parameter_value_assignment_named ( named_parameter_assignment_list ) -> begin
+		fprintf fc " # ( ";
+		list_iter_with_sep named_parameter_assignment_list ( print_named_parameter_assignment fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " ) ";
+	end
+end
+and print_named_parameter_assignment fc named_parameter_assignment = begin
+	match named_parameter_assignment with
+	T_named_parameter_assignment ( identifier , mintypmax_expression ) -> begin
+		fprintf fc " .";
+		print_identifier fc identifier;
+		fprintf fc " ( ";
+			print_mintypmax_expression fc mintypmax_expression;
+		fprintf fc " ) ";
+	end
+end
+and print_module_instance fc module_instance = begin
+	match module_instance with
+	T_module_instance ( name_of_module_instance , list_of_port_connections ) -> begin
+		print_name_of_module_instance fc name_of_module_instance;
+		fprintf fc " ( ";
+		print_list_of_port_connections fc list_of_port_connections;
+		fprintf fc " ) ";
+	end
+end
+and print_name_of_module_instance fc name_of_module_instance = begin
+	match name_of_module_instance with
+	T_name_of_module_instance ( identifier , range ) -> begin
+		print_identifier fc identifier;
+		print_range fc range
+	end
+end
+and print_list_of_port_connections fc list_of_port_connections = begin
+	match list_of_port_connections with
+	T_list_of_port_connections_ordered ( ordered_port_connection_list ) -> begin
+		list_iter_with_sep ordered_port_connection_list ( print_ordered_port_connection fc ) (fun () -> fprintf fc " , ");
+	end
+	| T_list_of_port_connections_named ( named_port_connection_list ) -> begin
+		list_iter_with_sep named_port_connection_list ( print_named_port_connection fc ) (fun () -> fprintf fc " , ");
+	end
+end
+and print_ordered_port_connection fc ordered_port_connection = begin
+	match ordered_port_connection with
+	T_ordered_port_connection ( attribute_instance_list , expression ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		print_expression fc expression
+	end
+end
+and print_named_port_connection fc named_port_connection = begin
+	match named_port_connection with
+	T_named_port_connection ( attribute_instance_list , identifier , expression ) -> begin
+		List.iter (print_attribute_instance fc) attribute_instance_list;
+		fprintf fc " .";
+		print_identifier fc identifier;
+		fprintf fc " ( ";
+			print_expression fc expression;
+		fprintf fc " ) "
+	end
+end
+and print_initial_construct fc initial_construct = begin
+	match initial_construct with
+	T_initial_construct ( statement ) -> begin
+		fprintf fc " initial  ";
+		print_statement fc statement
+	end
+end
+and print_always_construct fc always_construct = begin
+	match always_construct with
+	T_always_construct ( statement ) -> begin
+		fprintf fc "\n";
+		fprintf fc "always  ";
+		print_statement fc statement;
+		fprintf fc "\n"
+	end
+end
+and print_loop_generate_construct fc loop_generate_construct = begin
+	match loop_generate_construct with
+	T_loop_generate_construct ( genvar_initialization , expression , genvar_iteration , generate_block ) -> begin
+		fprintf fc " for ( ";
+		print_genvar_initialization fc genvar_initialization;
+		fprintf fc " ; ";
+		print_expression fc expression;
+		fprintf fc " ; ";
+		print_genvar_iteration fc genvar_iteration;
+		fprintf fc " ) ";
+		print_generate_block fc generate_block
+	end
+end
+and print_genvar_initialization fc genvar_initialization = begin
+	match genvar_initialization with
+	T_genvar_initialization ( identifier , expression ) -> begin
+		print_identifier fc identifier;
+		fprintf fc " = ";
+		print_expression fc expression
+	end
+end
+and print_genvar_iteration fc genvar_iteration = begin
+	match genvar_iteration with
+	T_genvar_iteration ( identifier , expression ) -> begin
+		print_identifier fc identifier;
+		fprintf fc " = ";
+		print_expression fc expression
+	end
+end
+and print_generate_block fc generate_block = begin
+	match generate_block with
+	T_generate_block_NOSPEC  -> fprintf fc ""
+	| T_generate_block_mgi ( module_item  ) -> begin
+		print_module_item fc module_item
+	end
+	| T_generate_block_begin ( identifier , module_item_list ) -> begin
+		fprintf fc " begin ";
+		begin
+			match identifier with
+			T_identifier_NOSPEC -> fprintf fc ""
+			| _ -> begin
+				fprintf fc " : ";
+				print_identifier fc identifier
+			end
+		end;
+		fprintf fc " \n";
+		List.iter (print_module_item fc) module_item_list;
+		fprintf fc " end\n";
+	end
+end
+and print_conditional_generate_construct fc conditional_generate_construct = begin
+	match conditional_generate_construct with
+	T_conditional_generate_construct_if ( if_generate_construct ) -> begin
+		print_if_generate_construct fc if_generate_construct
+	end
+	| T_conditional_generate_construct_case ( case_generate_construct ) -> begin
+		print_case_generate_construct fc case_generate_construct
+	end
+end
+and print_if_generate_construct fc if_generate_construct = begin
+	match if_generate_construct with
+	T_if_generate_construct ( expression , generate_block1 , generate_block2 ) -> begin
+		fprintf fc " if( ";
+			print_expression fc expression;
+		fprintf fc " ) ";
+			print_generate_block fc generate_block1;
+			match generate_block2 with
+			T_generate_block_NOSPEC -> fprintf fc " "
+			| _ -> begin
+				fprintf fc " else ";
+				print_generate_block fc generate_block2;
+			end
+	end
+end
+and print_case_generate_construct fc case_generate_construct = begin
+	match case_generate_construct with
+	T_case_generate_construct ( expression , case_generate_item_list ) -> begin
+		fprintf fc " case ( ";
+			print_expression fc expression;
+		fprintf fc " )\n";
+			List.iter (print_case_generate_item fc ) case_generate_item_list;
+		fprintf fc " endcase\n";
+	end
+end
+and print_case_generate_item fc case_generate_item = begin
+	match case_generate_item with
+	T_case_generate_item_case ( expression_list , generate_block ) -> begin
+		list_iter_with_sep expression_list ( print_expression fc ) (fun () -> fprintf fc " , ");
+		fprintf fc " : ";
+		print_generate_block fc generate_block
+	end
+	| T_case_generate_item_default ( generate_block ) -> begin
+		fprintf fc " default  ";
+		begin
+			match generate_block with
+			T_generate_block_NOSPEC -> fprintf fc " "
+			| _ -> begin
+				fprintf fc " :  ";
+				print_generate_block fc generate_block
+			end
+		end
+		;
 	end
 end
