@@ -35,7 +35,7 @@ let get_args () = begin
 	in
 	let oldspeclist = [
 	("-I",String(addpath) ," include paths");
-	("-S",String(addinput)," source file");
+	("-S",String(addinput)," source file")
 	]
 	in 
 	let speclist = align oldspeclist 
