@@ -1,8 +1,8 @@
 %{
 (*head*)
 open Printf
-open Verilogast
 open String
+open Verilogast
 
 
 
