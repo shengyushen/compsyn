@@ -1,44 +1,51 @@
 # $^ all depend files
 # #< first depend file
-# $@ tarhet file
+# $@ target file
 
 # MINISATDIR=../../other/MiniSat-ocaml-0.2.v1.14_simproof/MiniSat/src
-
 # search files in these dirs
 # VPATH = ../share/:$(MINISATDIR)
-
-OCAMLC	= ocamlopt
 #OCAMLC_OPT = -g str.cmxa unix.cmxa ../../other/caddie/libcaddie.cmxa -I /usr/local/lib  -I ../../other/caddie/ -I ../share
-OCAMLC_OPT = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ 
-OBJS	= typedef.cmx  very.cmx parser.cmx misc.cmx  print_v.cmx main.cmx 
 
+
+
+OCAMLC = ocamlc
+OCAMLOPT = ocamlopt
+OCAMLDEP = ocamldep
+OCAMLFLAGS = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/ 
+# add other options for ocamlc here
+OCAMLFLAGS_LINK = -cclib -lstdc++ -cclib -lasmrun -cc g++ 
+
+OBJS	= verilogast.cmx  very.cmx parser.cmx misc.cmx  print_v.cmx main.cmx 
 
 all : checker.exe
 
 checker.exe :  $(OBJS) 
-	$(OCAMLC)     \
-		$(OCAMLC_OPT) \
-		-cclib -lstdc++ -cclib -lasmrun -cc g++ \
+	$(OCAMLOPT)     \
+		$(OCAMLFLAGS) \
+		$(OCAMLFLAGS_LINK) \
 		-o $@ \
 		$(OBJS) 
 	otags -r *.ml 
 
+.SUFFIXES: .ml .mli .cmo .cmi .cmx
 
-parser.ml: parser.mly typedef.cmx
+.mli.cmi:
+	$(OCAMLOPT) $(OCAMLFLAGS) -c $<
+.ml.cmx:
+	$(OCAMLOPT) $(OCAMLFLAGS) -c $<
+
+parser.ml: parser.mly verilogast.cmx
 	ocamlyacc -v -b parser $<
-	$(OCAMLC) $(OCAMLC_OPT) -c parser.mli
+	$(OCAMLOPT) $(OCAMLFLAGS) -c parser.mli
 
-
-very.ml : very.mll typedef.cmx parser.cmx
+very.ml : very.mll verilogast.cmx parser.cmx
 	ocamllex -o very.ml $<
 
-%.cmx: %.ml
-	$(OCAMLC) $(OCAMLC_OPT) -c $<  
-
 depend : 
-	ocamldep *.ml > .depend
+	$(OCAMLDEP) *.mli *.ml > .depend
 
-sinclude .depend
+include .depend
 
 .PHONY : clean
 

@@ -761,3 +761,33 @@ let get_identifier_string identifier = begin
 	| T_identifier(_,_,str) -> str
 end
 
+
+class  verilogast = 
+object (self)
+	method ssy () = begin
+		Printf.printf "verilogast\n"
+	end
+end;;
+
+class verilogast1 = 
+object (self)
+	inherit verilogast
+	method ssy () = begin
+		Printf.printf "verilogast1\n"
+	end
+end ;;
+
+class  virtual verilogast_virt = 
+object (self)
+	method virtual ssy : unit  -> unit
+end;;
+
+
+class   verilogast_inh1 = 
+object (self)
+	inherit verilogast_virt
+	method  ssy () = begin
+		Printf.printf "verilogast_inh1\n"
+	end
+end;;
+

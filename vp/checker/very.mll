@@ -295,10 +295,6 @@ rule veriloglex  = parse
 			|"wor"                -> KEY_WOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xnor"               -> KEY_XNOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|"xor"                -> KEY_XOR(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"pulsestyle_onevent" -> KEY_PULSESTYLE_ONEVENT(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"pulsestyle_ondetect" -> KEY_PULSESTYLE_ONDETECT(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"showcancelled" -> KEY_SHOWCANCELLED(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
-			|"noshowcancelled" -> KEY_NOSHOWCANCELLED(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)
 			|_										-> SIMPLE_IDENTIFIER(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf, Lexing.lexeme lexbuf)
 		}
 	|"PATHPULSE$"					 {KEY_PATHPULSE(Lexing.lexeme_start_p lexbuf,Lexing.lexeme_end_p lexbuf,Lexing.lexeme lexbuf)}
@@ -317,7 +313,7 @@ rule veriloglex  = parse
 			in
 			UNSIGNED_NUMBER_size(Lexing.lexeme_start_p lexbuf, Lexing.lexeme_end_p lexbuf,(sz_no_,lxm_no_))
 		}
-	| (size? as sz)  decimal_base [' ']* x_digit '_'* {
+	| (size? )  decimal_base [' ']* x_digit '_'* {
 			assert false
 		}
 	| size?  decimal_base [' ']* z_digit '_'* {

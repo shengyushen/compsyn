@@ -6,7 +6,7 @@
 open Printf
 open Str
 
-open Typedef
+open Verilogast
 open Circuit_obj
 open Print_v
 open Misc

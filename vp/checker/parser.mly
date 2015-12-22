@@ -1,7 +1,7 @@
 %{
 (*head*)
 open Printf
-open Typedef
+open Verilogast
 open String
 
 
@@ -313,7 +313,7 @@ end
 
 
 %start source_text
-%type <Typedef.description list> source_text
+%type <Verilogast.description list> source_text
 
 %%
 
