@@ -6,7 +6,7 @@ let inputFileChannle = open_in inputFileName;;
 
 let lexbuf = Lexing.from_channel inputFileChannle;;
 
-lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = inputFileName };;
+lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = inputFileName };;
 
 let parseverilog lexbuf1 = 
 	while true do

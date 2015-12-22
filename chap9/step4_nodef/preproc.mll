@@ -273,20 +273,20 @@ and comment depth stpos = parse
 			comment depth stpos lexbuf
 		}
 and comment_inskip depth stpos = parse
-	"*/" as cmt  { (*end of current comment*)
+	"*/"   { (*end of current comment*)
 		if(depth==1) then (*the first level of nested comment*)
 			Other
 		else
 			comment_inskip(depth-1) stpos lexbuf
 		}
-	| "/*" as cmt {  (*new nested comment*)
+	| "/*"  {  (*new nested comment*)
 			comment_inskip (depth+1) stpos lexbuf
 		}
-	| '\n' as lsm {
+	| '\n'  {
 			Lexing.new_line lexbuf ;
 			comment_inskip depth stpos lexbuf
 		}
-	| _ as lsm {
+	| _  {
 			comment_inskip depth stpos lexbuf
 		}
 and preproc_str = parse
@@ -377,7 +377,7 @@ and proc_define = parse
 			in
 			proc_defined def (arg1::act_arglst2_list) lexbuf
 		}
-	| _ as lsm 	{
+	| _  	{
 			proc_define lexbuf
 		}
 and proc_defined def fml_arglst = parse 
@@ -391,7 +391,7 @@ and proc_defined def fml_arglst = parse
 	  	comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			proc_defined def fml_arglst lexbuf
 		}
-	| blanks as lsm	{
+	| blanks 	{
 			proc_defined def fml_arglst lexbuf
 		}
 	| [^ '\n' ' ' '\t'][^ '\n' ]* as defed1			{
@@ -649,7 +649,7 @@ and do_then  = parse
 			Other 
 		}
 and skip_else  = parse 
-	"//" [^ '\n']* '\n' as cmt   {
+	"//" [^ '\n']* '\n'    {
 			Lexing.new_line lexbuf ;
 			skip_else lexbuf
 		}
@@ -657,7 +657,7 @@ and skip_else  = parse
 			Lexing.new_line lexbuf ;
 			skip_else lexbuf
 		}
-	| "/*"              as cmt    { (*multiline comment*)
+	| "/*"                  { (*multiline comment*)
 	  	comment_inskip 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			skip_else lexbuf
 		}
@@ -674,16 +674,16 @@ and skip_else  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ 		{
 			skip_else lexbuf; 
 			Other
 		}
-	| _ as lsm				{
+	| _ 				{
 			skip_else lexbuf;
 			Other 
 		}
 and proc_ifdef_inskip  = parse 
-	"//" [^ '\n']* '\n' as cmt   {
+	"//" [^ '\n']* '\n'    {
 			Lexing.new_line lexbuf ;
 			proc_ifdef_inskip lexbuf
 		}
@@ -691,7 +691,7 @@ and proc_ifdef_inskip  = parse
 			Lexing.new_line lexbuf ;
 			proc_ifdef_inskip lexbuf
 		}
-	| "/*"              as cmt    { (*multiline comment*)
+	| "/*"                  { (*multiline comment*)
 	  	comment_inskip 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			proc_ifdef_inskip lexbuf
 		}
@@ -708,16 +708,16 @@ and proc_ifdef_inskip  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ 		{
 			proc_ifdef_inskip lexbuf; 
 			Other
 		}
-	| _ as lsm				{
+	| _ 				{
 			proc_ifdef_inskip lexbuf; 
 			Other 
 		}
 and do_else  = parse 
-	"//" [^ '\n']* '\n' as cmt   {
+	"//" [^ '\n']* '\n'    {
 			Lexing.new_line lexbuf ;
 			do_else lexbuf
 		}
@@ -725,7 +725,7 @@ and do_else  = parse
 			Lexing.new_line lexbuf ;
 			do_else lexbuf
 		}
-	| "/*"              as cmt    { (*multiline comment*)
+	| "/*"                  { (*multiline comment*)
 	  	comment_inskip 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			do_else lexbuf
 		}
@@ -751,7 +751,7 @@ and do_else  = parse
 	| "`endif"				{
 			DIRECTIVE_endif 
 		}
-	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ as lsm		{
+	| [' ' '\t' 'a'-'z' 'A'-'Z' '0'-'9' '_']+ 		{
 			do_else lexbuf; 
 			Other
 		}
@@ -945,7 +945,7 @@ and proc_undef = parse
 			Lexing.new_line lexbuf ;
 			Other
 		}
-	| _ as lsm 	{
+	| _  	{
 			proc_undef lexbuf
 		}
 and line_skip_blank  = parse
@@ -991,8 +991,8 @@ and line_filename  ln = parse
 	'\"' [^ '\n' ' ' '\t' ]+ '\"' as fn {
 		let realfn = String.sub fn 1 ((String.length fn)-2)
 		in begin
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = realfn };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_lnum  = ln };
 			Printf.printf " \"%s\" " realfn;
 			endofline lexbuf;
 			()
@@ -1007,11 +1007,8 @@ and line_filename  ln = parse
 and endofline = parse
 	'\n' {
 			print_endline "";
-			let endpos=Lexing.lexeme_end_p lexbuf
-			in begin
-				Lexing.new_line lexbuf;
-				Eol
-			end
+			Lexing.new_line lexbuf;
+			Eol
 		}
 	| eof {
 			Eof

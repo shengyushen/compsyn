@@ -104,7 +104,7 @@ and proc_include pathlist = parse
 					let inputFileChannle = open_in fn in
 					let lexbuf1 = Lexing.from_channel inputFileChannle 
 					in begin
-						lexbuf1.Lexing.lex_curr_p <- { lexbuf1.Lexing.lex_curr_p with pos_fname = fn};
+						lexbuf1.Lexing.lex_curr_p <- { lexbuf1.Lexing.lex_curr_p with Lexing.pos_fname = fn};
 						while (proc_inc pathlist lexbuf1)!=Eof do
 							flush stdout;
 						done

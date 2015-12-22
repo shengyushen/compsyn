@@ -31,7 +31,7 @@
 
 
 rule preproc = parse
-	"//" [^ '\n']* '\n' as cmt   {
+	"//" [^ '\n']* '\n'    {
 			Lexing.new_line lexbuf ;
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			Other
@@ -41,7 +41,7 @@ rule preproc = parse
 			Lexing.new_line lexbuf ;
 			Eol
 		}
-	| "/*"              as cmt    { (*multiline comment*)
+	| "/*"                  { (*multiline comment*)
 	  	comment 1 (Lexing.lexeme_start_p lexbuf)  lexbuf;
 			Printf.printf  "\n`line %d \"%s\" 1\n" ((lexbuf.Lexing.lex_curr_p.Lexing.pos_lnum)) (lexbuf.Lexing.lex_curr_p.Lexing.pos_fname) ;
 			Other
@@ -58,20 +58,20 @@ rule preproc = parse
 			print_char lsm; Other
 		}
 and comment depth stpos = parse
-	"*/" as cmt  { (*end of current comment*)
+	"*/"   { (*end of current comment*)
 		if(depth==1) then (*the first level of nested comment*)
 			Other
 		else
 			comment (depth-1) stpos lexbuf
 		}
-	| "/*" as cmt {  (*new nested comment*)
+	| "/*"  {  (*new nested comment*)
 			comment (depth+1) stpos lexbuf
 		}
-	| '\n' as lsm {
+	| '\n'  {
 			Lexing.new_line lexbuf ;
 			comment depth stpos lexbuf
 		}
-	| _ as lsm {
+	| _  {
 			comment depth stpos lexbuf
 		}
 and line_skip_blank  = parse
@@ -117,8 +117,8 @@ and line_filename  ln = parse
 	'\"' [^ '\n' ' ' '\t' ]+ '\"' as fn {
 		let realfn = String.sub fn 1 ((String.length fn)-2)
 		in begin
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = realfn };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_lnum  = ln };
 			Printf.printf " \"%s\" " realfn;
 			endofline lexbuf;
 			Other
@@ -133,11 +133,8 @@ and line_filename  ln = parse
 and endofline = parse
 	'\n' {
 			print_endline "";
-			let endpos=Lexing.lexeme_end_p lexbuf
-			in begin
-				Lexing.new_line lexbuf;
-				Eol
-			end
+			Lexing.new_line lexbuf;
+			Eol
 		}
 	| eof {
 			Eof

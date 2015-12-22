@@ -1,6 +1,8 @@
+# $^ all depend files
+# #< first depend file
+# $@ target file
 OCAMLC	= ocamlopt 
 OBJS	= preproc.cmx  main.cmx
-
 
 all : step3_noprotected.exe
 
@@ -12,8 +14,7 @@ step3_noprotected.exe : $(OBJS)
 	
 	
 preproc.ml : preproc.mll
-	ocamllex -o preproc.ml preproc.mll
-	$(OCAMLC) -c preproc.ml  
+	ocamllex -o $@ $<
 
 clean : 
 	rm -f *.o *.cmo *.cmx *.cmi preproc.ml a.out preproc preproc.exe step3_noprotected step3_noprotected.exe *.bak *~

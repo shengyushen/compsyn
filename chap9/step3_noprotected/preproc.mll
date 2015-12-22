@@ -8,11 +8,11 @@
 
 
 rule preproc = parse
-	"//" [' ' '\t']* "pragma" [' ' '\t']+ "protect" [' ' '\t']+ "begin_protected" [' ' '\t']* '\n' as cmt   {
+	"//" [' ' '\t']* "pragma" [' ' '\t']+ "protect" [' ' '\t']+ "begin_protected" [' ' '\t']* '\n'    {
 			can_print := false;
 			Other
 		} 
-	| "//" [' ' '\t']* "pragma" [' ' '\t']+ "protect" [' ' '\t']+ "end_protected" [' ' '\t']* '\n' as cmt   {
+	| "//" [' ' '\t']* "pragma" [' ' '\t']+ "protect" [' ' '\t']+ "end_protected" [' ' '\t']* '\n'    {
 			can_print := true;
 			Other
 		} 
