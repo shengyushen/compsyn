@@ -40,6 +40,7 @@ printf "anon_param %s\n" !anon_param;;
 
 (*module system*)
 (*instanation of Set*)
+module StringSet = SSYSet (OrderingString);;
 begin
 	let x = StringSet.add "ssy" (StringSet.empty )
 	in
@@ -52,3 +53,9 @@ begin
 end
 ;;
 
+begin
+	let objssy = new ssy 1
+	in 
+	objssy#display 2
+end
+;;

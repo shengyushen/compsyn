@@ -1,4 +1,7 @@
+open Printf
+
 type comparison = Less | Equal | Great
+;;
 
 (*abstract element type *)
 module type ORDERED_TYPE =
@@ -46,6 +49,7 @@ functor (Elt : ORDERED_TYPE) -> struct
 		end
 	end
 end
+
 (*implementation of ORDERED_TYPE*)
 module OrderingString =
 struct
@@ -59,7 +63,13 @@ struct
 		Printf.printf " %s " x
 	end
 end
-(*instanation of Set*)
-module StringSet = SSYSet (OrderingString)
 
 
+class ssy initv = 
+object (self)
+
+	method display i = begin
+		printf "init %d\n" initv;
+		printf "i %d\n" i
+	end
+end

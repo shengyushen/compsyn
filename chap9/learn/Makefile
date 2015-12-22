@@ -14,7 +14,7 @@ OCAMLFLAGS = -g str.cmxa unix.cmxa -I /usr/local/lib  -I ../../other/caddie/
 # add other options for ocamlc here
 OCAMLFLAGS_LINK = -cclib -lstdc++ -cclib -lasmrun -cc g++ 
 
-OBJS	=  misc.cmx  main.cmx 
+OBJS	= misc.cmx main.cmx 
 
 all : checker.exe
 
