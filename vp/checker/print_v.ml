@@ -85,7 +85,6 @@ and print_parameter_type_opt fc parameter_type_opt = begin
 	| T_parameter_type__REAL     -> fprintf fc "real"
 	| T_parameter_type__REALTIME -> fprintf fc "REALTIME"
 	| T_parameter_type__TIME     -> fprintf fc "time" 
-	| _ -> assert false
 end
 and print_signed_opt fc signed_opt = begin
 	match signed_opt with
@@ -532,7 +531,6 @@ and print_module_item fc module_item = begin
 		List.iter (print_attribute_instance fc) attribute_instance_list;
 		print_conditional_generate_construct fc conditional_generate_construct
 	end
-	| _  -> assert false
 end
 and print_port_declaration fc port_declaration = begin
 	match port_declaration with

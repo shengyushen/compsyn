@@ -494,7 +494,7 @@ and line_skip_blank  = parse
 		prt_fatal "`line must be followed by blanks and line number and  filename";
 		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
-		0
+		()
 	}
 and line_number  = parse
 	['0'-'9']+ as linenum {
@@ -514,7 +514,7 @@ and line_number  = parse
 		prt_fatal "`line and blanks must be followed by line number and  filename";
 		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
-		0
+		()
 	}
 and line_skip_blank2  ln = parse
 	[' ' '\t']+	{
@@ -524,25 +524,25 @@ and line_skip_blank2  ln = parse
 		prt_fatal "`line and blanks and line number must be followed by  blanks";
 		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
-		0
+		()
 	}
 and line_filename  ln = parse
 	'\"' [^ '\n' ' ' '\t' ]+ '\"' as fn {
 		let realfn = String.sub fn 1 ((String.length fn)-2)
 		in begin
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_fname = realfn };
-			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with pos_lnum  = ln };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = realfn };
+			lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_lnum  = ln };
 			endofline lexbuf;
 			(*printf "//INFO : at file name %s\n" realfn;
 			flush stdout;*)
-			0
+			()
 		end
 	}
 	| _ {
 		prt_fatal "`line and blanks and line number and blanks must be followed by filename";
 		print_pos (lexbuf.Lexing.lex_curr_p);
 		endofline lexbuf;
-		0
+		()
 	}
 	
 
