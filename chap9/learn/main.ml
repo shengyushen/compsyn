@@ -59,3 +59,87 @@ begin
 	objssy#display 2
 end
 ;;
+
+class ssy2 initv = 
+object 
+	inherit ssy 200 as super
+	method get_internal = begin
+		super#get_internal
+	end
+
+	initializer begin
+		internal_initv <- initv
+	end
+end
+;;
+begin
+	printf "\n\n\n";
+	let objssy2 = new ssy2 1
+	in  begin
+		printf "get_internal %d\n" (objssy2#get_internal ());
+		objssy2#display 150
+		(*the display result shows that the new initializer called after 
+		 the super#initializer*)
+	end
+end
+;;
+
+
+begin
+	printf "\n\n\n";
+	printf "now in circule 1\n";
+	let newssy= new ssy 1000
+	in
+	let new_circle = new circule newssy
+	in
+	new_circle#display ()
+end
+;;
+
+begin
+	printf "\n\n\n";
+	printf "now in circule2 1\n";
+	let newssy= new ssy_inhet 1000
+	in
+	let new_circle = new circule2 newssy
+	in
+	new_circle#display ()
+end
+;;
+
+begin
+	printf "\n\n\n";
+	printf "now in coercion\n";
+	let newssy= new ssy_inhet 10000
+	and oldssy= new ssy 11
+	and newssy_another = new ssy_another 12
+	in begin
+		newssy#display 100000;
+
+
+		printf "\n\n\n";
+		printf "after coercion\n";
+		(*let newssy_ssy = ((new ssy_2arg 1 2) :> ssy )*)
+		let newssy_ssy = new ssy_2arg 1 2
+		in
+		let newssylist=[oldssy;newssy;newssy_ssy;newssy_another]
+		in begin
+			List.iter (fun x -> x#display 1) newssylist
+		end
+	end
+end
+;;
+
+begin
+	printf "\n\n\n";
+	printf "in fun and function\n";
+	let f1 x y = x+y
+	and f2 = fun x y -> x+y
+	and f3 x = function y  -> x+y
+	and f4 x = function `A -> 1 | `B -> 2 | _ -> 3
+	in
+	let f4res = (f4 1 `A)
+	in
+	printf "%d %d %d %d\n"  (f1 1 2) (f2 1 2) (f3 1 2) f4res
+end
+;;
