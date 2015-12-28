@@ -1,9 +1,4 @@
 {
-	(*this is the list of definition*)
-	let def_list = ref [("","")] ;
-
-	exception Ssyeof of string
-	
 	type token =  DIRECTIVE_include
               | Other
               | Eof
