@@ -1,7 +1,9 @@
+sinclude Makefile.setting
+
 OBJS = main.o 
-GPP = g++
 TCLOPT = -I/usr/include/tcl8.6 -L/usr/lib/x86_64-linux-gnu -ltcl8.6
 GPPOPT = -std=gnu++11 $(TCLOPT)
+
 
 main.exe : $(OBJS)
 	$(GPP)  $^ -o $@  $(GPPOPT)
