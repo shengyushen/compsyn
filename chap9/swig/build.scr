@@ -1,0 +1,4 @@
+swig -c++ -tcl example.i
+g++ -fpic -c example.cpp example_wrap.cxx -I /usr/include/tcl8.6
+g++ -shared example.o example_wrap.o -o example.so
+

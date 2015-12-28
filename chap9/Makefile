@@ -15,5 +15,6 @@ depend :
 sinclude .depend
 
 clean : 
-	rm -f *.exe *.o */*.exe */*.o
+	rm -f *.exe *.o */*.exe */*.o */*.cmx */*.cmo */*.cmi
+
 
